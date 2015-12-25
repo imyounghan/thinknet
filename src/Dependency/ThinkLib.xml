@@ -1,0 +1,1487 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ThinkLib</name>
+    </assembly>
+    <members>
+        <member name="T:ThinkLib.Caching.CacheManager">
+            <summary>
+            缓存管理器
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Caching.CacheManager.CacheRegion">
+            <summary>
+            默认的缓存区
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.CacheManager.GetCache(System.String)">
+            <summary>
+            获取区域缓存
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.CacheManager.SetCacheProvider(System.Func{ThinkLib.Caching.ICacheProvider})">
+            <summary>
+            设置缓存
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.CacheManager.SetCacheProvider(System.Func{ThinkLib.Caching.ICacheProvider},System.Collections.Generic.IDictionary{System.String,System.String})">
+            <summary>
+            设置缓存
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.CacheManager.#ctor(ThinkLib.Caching.ICacheProvider)">
+            <summary>
+            Parameterized Constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.CacheManager.#ctor(ThinkLib.Caching.ICacheProvider,System.Collections.Generic.IDictionary{System.String,System.String})">
+            <summary>
+            Parameterized Constructor.
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Caching.CacheManager.Current">
+            <summary>
+            single instance
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Caching.ICache">
+            <summary>
+            缓存接口
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.ICache.Get(System.String)">
+            <summary>
+            从缓存获取对象实例。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.ICache.Put(System.String,System.Object)">
+            <summary>
+            放此对象实例放入缓存。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.ICache.Remove(System.String)">
+            <summary>
+            从缓存移除该键值对应的对象实例。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.ICache.Clear">
+            <summary>
+            清空缓存。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Caching.ICache.RegionName">
+            <summary>
+            获取此缓存的区域名称。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Caching.HashtableCacheProvider">
+            <summary>
+            .Net Hashtable
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Caching.ICacheProvider">
+            <summary>
+            缓存提供
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.ICacheProvider.BuildCache(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+            <summary>
+            建造缓存区。
+            </summary>
+            <param name="regionName">缓存区域的名称</param>
+            <param name="properties">配置项</param>
+        </member>
+        <member name="M:ThinkLib.Caching.HashtableCacheProvider.BuildCache(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+            <summary>
+            创建区域缓存
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Caching.MemoryCacheProvider">
+            <summary>
+            .Net MemoryCache
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.MemoryCacheProvider.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.MemoryCacheProvider.#ctor(System.String)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.MemoryCacheProvider.BuildCache(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+            <summary>
+            创建区域缓存
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Caching.CacheConfiguration">
+            <summary>
+            缓存配置
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.CacheConfiguration.#ctor(System.String,System.String,System.String)">
+            <summary>
+            build a configuration
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Caching.CacheConfiguration.Region">
+            <summary>
+            区域
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Caching.CacheConfiguration.Properties">
+            <summary>
+            配置属性
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Caching.WebCacheProvider">
+            <summary>
+            .Net WebCache
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.WebCacheProvider.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.WebCacheProvider.#ctor(System.String)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.WebCacheProvider.BuildCache(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+            <summary>
+            创建区域缓存
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Caching.CacheConfigurationSectionHandler">
+            <summary>
+            配置节点的访问
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Caching.CacheConfigurationSectionHandler.SectionName">
+            <summary>
+            配置节点名称
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Caching.CacheConfigurationSectionHandler.Create(System.Object,System.Object,System.Xml.XmlNode)">
+            <summary>
+            parse the config section
+            </summary>
+            <returns>an array of CacheConfig objects</returns>
+        </member>
+        <member name="T:ThinkLib.Context.ContextManager">
+            <summary>
+            <see cref="T:ThinkLib.Context.IContextManager"/> 的抽象实现类
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Context.IContextManager">
+            <summary>
+            实现上下文的管理接口
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Context.IContextManager.Id">
+            <summary>
+            上下文工厂标识
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Context.IContextManager.CurrentContext">
+            <summary>
+            获取当前的上下文
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Context.ContextManager.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Context.ContextManager.#ctor(System.String)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Context.ContextManager.Id">
+            <summary>
+            标识
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Context.ContextManager.ContextType">
+            <summary>
+            上下文类型
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Context.ContextManager.CurrentContext">
+            <summary>
+            获取当前的上下文
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Context.CurrentContext">
+            <summary>
+            <see cref="T:ThinkLib.Context.ICurrentContext"/> 的抽象实现。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Context.ICurrentContext">
+            <summary>
+            当前访问的上下文接口
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Context.ICurrentContext.CurrentContext">
+            <summary>
+            获取当前的上下文
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Context.CurrentContext.#ctor(ThinkLib.Context.IContextManager)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Context.CurrentContext.GetMap">
+            <summary>
+            Get the dicitonary mapping context manager to its current context.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Context.CurrentContext.SetMap(System.Collections.IDictionary)">
+            <summary>
+            Set the map mapping context manager to its current context.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Context.CurrentContext.Bind(ThinkLib.Context.IContext)">
+            <summary>
+            Binds the specified context to the current context.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Context.CurrentContext.HasBind(ThinkLib.Context.IContextManager)">
+            <summary>
+            Returns whether there is a context bound to the current context.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Context.CurrentContext.Unbind(ThinkLib.Context.IContextManager)">
+            <summary>
+            Unbinds and returns the current context.
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Context.CurrentContext.ContextManager">
+            <summary>
+            context factory
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Context.CurrentContext.Context">
+            <summary>
+            Gets or sets the currently bound context.
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Context.IContext">
+            <summary>
+            表示继承该接口的是一个上下文
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Context.IContext.ContextManager">
+            <summary>
+            获取当前的Manager
+            </summary>
+        </member>
+        <member name="T:System.Collections.Concurrent.ConcurrentDictionaryExtensions">
+            <summary>
+            ConcurrentDictionary的扩展
+            </summary>
+        </member>
+        <member name="M:System.Collections.Concurrent.ConcurrentDictionaryExtensions.Remove``2(System.Collections.Concurrent.ConcurrentDictionary{``0,``1},``0)">
+            <summary>
+            删除存在key的元素
+            </summary>
+        </member>
+        <member name="T:System.Data.DataReaderExtentions">
+            <summary>
+            对 <see cref="T:System.Data.IDataReader"/> 的扩展
+            </summary>
+        </member>
+        <member name="M:System.Data.DataReaderExtentions.ToDictionary(System.Data.IDataReader)">
+            <summary>
+            转成字典数据
+            </summary>
+        </member>
+        <member name="M:System.Data.DataReaderExtentions.ToDictionary(System.Data.IDataReader,System.Boolean)">
+            <summary>
+            转成字典数据
+            </summary>
+        </member>
+        <member name="M:System.Data.DataReaderExtentions.ToCollection(System.Data.IDataReader)">
+            <summary>
+            转成字典数据集合
+            </summary>
+        </member>
+        <member name="M:System.Data.DataReaderExtentions.ToCollection(System.Data.IDataReader,System.Boolean)">
+            <summary>
+            转成字典数据集合
+            </summary>
+        </member>
+        <member name="M:System.Data.DataReaderExtentions.ToList``1(System.Data.IDataReader)">
+            <summary>
+            转成实体集合
+            </summary>
+        </member>
+        <member name="M:System.Data.DataReaderExtentions.ToList``1(System.Data.IDataReader,System.Collections.IDictionary)">
+            <summary>
+            转成实体集合
+            </summary>
+        </member>
+        <member name="M:System.Data.DataReaderExtentions.ToList``1(System.Data.IDataReader,System.Boolean)">
+            <summary>
+            转成实体集合
+            </summary>
+        </member>
+        <member name="M:System.Data.DataReaderExtentions.ToList``1(System.Data.IDataReader,System.Boolean,System.Collections.IDictionary)">
+            <summary>
+            转成实体集合
+            </summary>
+        </member>
+        <member name="T:System.Data.DbConnectionExtentions">
+            <summary>
+            <see cref="T:System.Data.IDbConnection"/> 的扩展类
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteNonQuery(System.Data.IDbConnection,System.Data.CommandType,System.String,System.Data.IDbDataParameter[])">
+            <summary>
+            执行当前数据库连接对象的命令,指定参数.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteNonQuery(System.Data.IDbConnection,System.Data.CommandType,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            执行当前数据库连接对象的命令,指定参数.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteNonQuery(System.Data.IDbTransaction,System.Data.CommandType,System.String,System.Data.IDbDataParameter[])">
+            <summary>
+            执行当前数据库连接对象的命令,指定参数.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteNonQuery(System.Data.IDbTransaction,System.Data.CommandType,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            执行当前数据库连接对象的命令,指定参数.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteReader(System.Data.IDbConnection,System.Data.CommandType,System.String,System.Data.IDbDataParameter[])">
+            <summary>
+            执行当前数据库连接对象的数据阅读器,指定参数.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteReader(System.Data.IDbConnection,System.Data.CommandType,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            执行当前数据库连接对象的数据阅读器,指定参数.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteReader(System.Data.IDbTransaction,System.Data.CommandType,System.String,System.Data.IDbDataParameter[])">
+            <summary>
+            执行当前数据库连接对象的数据阅读器,指定参数.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteReader(System.Data.IDbTransaction,System.Data.CommandType,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            执行当前数据库连接对象的数据阅读器,指定参数.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteScalar(System.Data.IDbConnection,System.Data.CommandType,System.String,System.Data.IDbDataParameter[])">
+            <summary>
+            执行指定数据库连接对象的命令,指定参数,返回结果集中的第一行第一列.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteScalar(System.Data.IDbConnection,System.Data.CommandType,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            执行指定数据库连接对象的命令,指定参数,返回结果集中的第一行第一列.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteScalar(System.Data.IDbTransaction,System.Data.CommandType,System.String,System.Data.IDbDataParameter[])">
+            <summary>
+            执行指定数据库连接对象的命令,指定参数,返回结果集中的第一行第一列.
+            </summary>
+        </member>
+        <member name="M:System.Data.DbConnectionExtentions.ExecuteScalar(System.Data.IDbTransaction,System.Data.CommandType,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            执行指定数据库连接对象的命令,指定参数,返回结果集中的第一行第一列.
+            </summary>
+        </member>
+        <member name="T:System.Collections.Generic.DictionaryExtentions">
+            <summary>
+            对 <see cref="T:System.Collections.Generic.Dictionary`2"/> 的扩展
+            </summary>
+        </member>
+        <member name="M:System.Collections.Generic.DictionaryExtentions.GetOrAdd``2(System.Collections.Generic.Dictionary{``0,``1},``0,System.Func{``0,``1})">
+            <summary>
+            如果指定的键尚不存在，则将键/值对添加到字典中。
+            </summary>
+        </member>
+        <member name="M:System.Collections.Generic.DictionaryExtentions.TryAdd``2(System.Collections.Generic.Dictionary{``0,``1},``0,``1)">
+            <summary>
+            尝试将指定的键和值添加到字典中。
+            </summary>
+        </member>
+        <member name="M:System.Collections.Generic.DictionaryExtentions.TryRemove``2(System.Collections.Generic.Dictionary{``0,``1},``0,``1@)">
+            <summary>
+            尝试从字典中移除并返回具有指定键的值。
+            </summary>
+        </member>
+        <member name="M:System.Collections.Generic.DictionaryExtentions.AddOrUpdate``2(System.Collections.Generic.Dictionary{``0,``1},``0,System.Func{``0,``1},System.Func{``0,``1,``1})">
+            <summary>
+            如果指定的键尚不存在，则将键/值对添加到 <see cref="T:System.Collections.Generic.Dictionary`2"/> 中；如果指定的键已存在，则更新 <see cref="T:System.Collections.Generic.Dictionary`2"/> 中的键/值对。
+            </summary>
+        </member>
+        <member name="M:System.Collections.Generic.DictionaryExtentions.AddOrUpdate``2(System.Collections.Generic.Dictionary{``0,``1},``0,``1,System.Func{``0,``1,``1})">
+            <summary>
+            如果指定的键尚不存在，则将键/值对添加到 <see cref="T:System.Collections.Generic.Dictionary`2"/> 中；如果指定的键已存在，则更新 <see cref="T:System.Collections.Generic.Dictionary`2"/> 中的键/值对。
+            </summary>
+        </member>
+        <member name="T:System.Collections.Generic.EnumerableExtentions">
+            <summary>
+            <see cref="T:System.Collections.IEnumerable"/> 的扩展类
+            </summary>
+        </member>
+        <member name="M:System.Collections.Generic.EnumerableExtentions.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
+            <summary>
+            遍历结果集
+            </summary>
+        </member>
+        <member name="M:System.Collections.Generic.EnumerableExtentions.Safe``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            如果 <param name="source"/> 为null，则创建一个空的 <see cref="T:System.Collections.Generic.IEnumerable`1"/>。
+            </summary>
+        </member>
+        <member name="M:System.Collections.Generic.EnumerableExtentions.IsEmpty``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            检查 <param name="source" /> 是否为空。
+            </summary>
+        </member>
+        <member name="T:System.Collections.EnumerableExtentions">
+            <summary>
+            <see cref="T:System.Collections.IEnumerable"/> 的扩展类
+            </summary>
+        </member>
+        <member name="M:System.Collections.EnumerableExtentions.MapTo``1(System.Collections.IDictionary)">
+            <summary>
+            将字典数据映射成对应的模型
+            </summary>
+        </member>
+        <member name="M:System.Collections.EnumerableExtentions.MapTo``1(System.Collections.IDictionary,System.Collections.IDictionary)">
+            <summary>
+            将字典数据映射成对应的模型
+            </summary>
+        </member>
+        <member name="M:System.Collections.EnumerableExtentions.MapTo(System.Collections.IDictionary,System.Type)">
+            <summary>
+            将字典数据映射成对应的模型
+            </summary>
+        </member>
+        <member name="M:System.Collections.EnumerableExtentions.MapTo(System.Collections.IDictionary,System.Type,System.Collections.IDictionary)">
+            <summary>
+            将字典数据映射成对应的模型
+            </summary>
+        </member>
+        <member name="M:System.Collections.EnumerableExtentions.MapTo``1(System.Collections.ICollection)">
+            <summary>
+            将字典集合数据映射成对应的模型
+            </summary>
+        </member>
+        <member name="M:System.Collections.EnumerableExtentions.MapTo``1(System.Collections.ICollection,System.Collections.IDictionary)">
+            <summary>
+            将字典集合数据映射成对应的模型
+            </summary>
+        </member>
+        <member name="T:System.EventArgs`1">
+            <summary>
+            包含事件数据的泛型类
+            </summary>
+        </member>
+        <member name="M:System.EventArgs`1.#ctor(`0)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="P:System.EventArgs`1.Data">
+            <summary>
+            包含的数据
+            </summary>
+        </member>
+        <member name="T:System.Linq.Expressions.ParameterRebinder">
+            <summary>
+            Represents the parameter rebinder used for rebinding the parameters for the given expressions. For more information about this solution please refer to http://blogs.msdn.com/b/meek/archive/2008/05/02/linq-to-entities-combining-predicates.aspx.
+            </summary>
+        </member>
+        <member name="T:System.Linq.Expressions.ExpressionFuncExtender">
+            <summary>
+            Represents the extender for Expression[Func[T, bool]] type. For more information about this solution please refer to http://blogs.msdn.com/b/meek/archive/2008/05/02/linq-to-entities-combining-predicates.aspx.
+            </summary>
+        </member>
+        <member name="M:System.Linq.Expressions.ExpressionFuncExtender.And``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Combines two given expressions by using the AND semantics.
+            </summary>
+            <typeparam name="T">The type of the object.</typeparam>
+            <param name="first">The first part of the expression.</param>
+            <param name="second">The second part of the expression.</param>
+            <returns>The combined expression.</returns>
+        </member>
+        <member name="M:System.Linq.Expressions.ExpressionFuncExtender.AndAlso``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Combines two given expressions by using the AND semantics.
+            </summary>
+            <typeparam name="T">The type of the object.</typeparam>
+            <param name="first">The first part of the expression.</param>
+            <param name="second">The second part of the expression.</param>
+            <returns>The combined expression.</returns>
+        </member>
+        <member name="M:System.Linq.Expressions.ExpressionFuncExtender.Or``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Combines two given expressions by using the OR semantics.
+            </summary>
+            <typeparam name="T">The type of the object.</typeparam>
+            <param name="first">The first part of the expression.</param>
+            <param name="second">The second part of the expression.</param>
+            <returns>The combined expression.</returns>
+        </member>
+        <member name="M:System.Linq.Expressions.ExpressionFuncExtender.Not``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Represents the specification which indicates the semantics opposite to the given specification.
+            </summary>
+        </member>
+        <member name="M:System.Linq.Expressions.ExpressionFuncExtender.RemoveConvert(System.Linq.Expressions.Expression)">
+            <summary></summary>
+        </member>
+        <member name="M:System.Linq.Expressions.ExpressionFuncExtender.Parameter(System.Linq.Expressions.MemberExpression)">
+            <summary></summary>
+        </member>
+        <member name="T:System.Web.HttpRequestBaseExtensions">
+            <summary>
+            扩展 <see cref="T:System.Web.HttpRequestBase"/> 类，该类包含客户端在 Web 请求中发送的 HTTP 值。
+            </summary>
+        </member>
+        <member name="M:System.Web.HttpRequestBaseExtensions.IsPost(System.Web.HttpRequestBase)">
+            <summary>
+            判断当前页面是否接收到了 POST 请求
+            </summary>
+            <param name="request">一个包含客户端在 Web 请求中发送的 HTTP 值的对象。</param>
+            <returns>是否接收到了POST请求。</returns>
+        </member>
+        <member name="M:System.Web.HttpRequestBaseExtensions.IsGet(System.Web.HttpRequestBase)">
+            <summary>
+            判断当前页面是否接收到了 GET 请求
+            </summary>
+            <param name="request">一个包含客户端在 Web 请求中发送的 HTTP 值的对象。</param>
+            <returns>是否接收到了GET请求。</returns>
+        </member>
+        <member name="M:System.Web.HttpRequestBaseExtensions.GetString(System.Web.HttpRequestBase,System.String)">
+            <summary>
+            获取 <see cref="P:System.Web.HttpRequestBase.QueryString"/>、<see cref="P:System.Web.HttpRequestBase.Form"/>、<see cref="P:System.Web.HttpRequestBase.ServerVariables"/> 和 <see cref="P:System.Web.HttpRequestBase.Cookies"/> 项的集合中具有指定键的项。
+            </summary>
+            <param name="request">一个包含客户端在 Web 请求中发送的 HTTP 值的对象。</param>
+            <param name="name">键值</param>
+            <returns>该键值对应的值。</returns>
+        </member>
+        <member name="M:System.Web.HttpRequestBaseExtensions.GetFormString(System.Web.HttpRequestBase,System.String)">
+            <summary>
+            获得指定表单参数的值
+            </summary>
+            <param name="request">一个包含客户端在 Web 请求中发送的 HTTP 值的对象。</param>
+            <param name="name">表单参数</param>
+            <returns>表单参数的值</returns>
+        </member>
+        <member name="M:System.Web.HttpRequestBaseExtensions.GetQueryString(System.Web.HttpRequestBase,System.String)">
+            <summary>
+            获得指定Url参数的值
+            </summary>
+            <param name="request">一个包含客户端在 Web 请求中发送的 HTTP 值的对象。</param>
+            <param name="name">Url参数</param>
+            <returns>Url参数的值</returns>
+        </member>
+        <member name="M:System.Web.HttpRequestBaseExtensions.GetIP(System.Web.HttpRequestBase)">
+            <summary>
+            获得当前页面客户端的IP
+            </summary>
+            <param name="request">一个包含客户端在 Web 请求中发送的 HTTP 值的对象。</param>
+            <returns>当前页面客户端的IP</returns>
+        </member>
+        <member name="T:System.ObjectExtentions">
+            <summary>
+            对 基础类型 的扩展
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.IsNull(System.Object)">
+            <summary>
+            检查当前对象是否为 null
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.HtmlEncode(System.String)">
+            <summary>
+            返回 HTML 字符串的编码结果
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.HtmlDecode(System.String)">
+            <summary>
+            返回 HTML 字符串的解码结果
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.UrlEncode(System.String,System.String)">
+            <summary>
+            返回 URL 字符串的编码结果
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.UrlEncode(System.String,System.Text.Encoding)">
+            <summary>
+            返回 URL 字符串的编码结果
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.UrlDecode(System.String,System.String)">
+            <summary>
+            返回 URL 字符串的解码结果
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.UrlDecode(System.String,System.Text.Encoding)">
+            <summary>
+            返回 URL 字符串的解码结果
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.Safe(System.String,System.String)">
+            <summary>
+            如果当前的字符串为空，则返回安全值
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.BeforeContact(System.String,System.String)">
+            <summary>
+            如果当前的字符串不为空，则返回安全值
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.AfterContact(System.String,System.String)">
+            <summary>
+            如果当前的字符串不为空，则返回安全值
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TrueLength(System.String,System.String)">
+            <summary>
+            返回字符串真实长度, 1个汉字长度为2
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TrueLength(System.String,System.Text.Encoding)">
+            <summary>
+            返回字符串真实长度
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.Cutting(System.String,System.Int32,System.String)">
+            <summary>
+            取指定长度的字符串，超过部分替代
+            </summary>
+            <param name="str">原字符串</param>
+            <param name="len">指定长度</param>
+            <param name="tail">用于替换的字符串</param>
+        </member>
+        <member name="M:System.ObjectExtentions.Split(System.String,System.String)">
+            <summary>
+            分割字符串
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.InArray(System.String,System.String[],System.Boolean)">
+            <summary>
+            判断指定字符串是否属于指定字符串数组中的一个元素
+            </summary>
+            <param name="str">要查找的字符串</param>
+            <param name="array">字符串数组</param>
+            <param name="caseInsensetive">是否不区分大小写, true为不区分, false为区分</param>
+        </member>
+        <member name="M:System.ObjectExtentions.InArrayIndexOf(System.String,System.String[],System.Boolean)">
+            <summary>
+            判断指定字符串在指定字符串数组中的位置
+            </summary>
+            <param name="str">要查找的字符串</param>
+            <param name="array">字符串数组</param>
+            <param name="caseInsensetive">是否不区分大小写, true为不区分, false为区分</param>
+        </member>
+        <member name="M:System.ObjectExtentions.InArray(System.String,System.String,System.String,System.Boolean)">
+            <summary>
+            判断指定字符串是否属于指定字符串数组中的一个元素
+            </summary>
+            <param name="str">字符串</param>
+            <param name="strarray">内部以逗号分割单词的字符串</param>
+            <param name="strsplit">分割字符串</param>
+            <param name="caseInsensetive">是否不区分大小写, true为不区分, false为区分</param>
+            <returns>判断结果</returns>
+        </member>
+        <member name="M:System.ObjectExtentions.IsNumeric(System.String)">
+            <summary>
+            判定字符串是不是数值型
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.IsDate(System.String)">
+            <summary>
+            判断字符串是不是yyyy-mm-dd字符串
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.IsTime(System.String)">
+            <summary>
+            判断字符串是不是时间格式
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.IsDateTime(System.String)">
+            <summary>
+            判断字符串是不是日期模式
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.IsDecimal(System.String)">
+            <summary>
+            判断字符串是不是小数类型
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.IsEmail(System.String)">
+            <summary>
+            检测是否符合email格式
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.IsIPV4(System.String)">
+            <summary>
+            判断是否为IPv4地址
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.ToBoolean(System.String,System.Boolean)">
+            <summary>
+            转换为bool型
+            </summary>
+            <param name="str">要转换的字符串</param>
+            <param name="value">默认值</param>
+            <returns>转换后的bool类型结果</returns>
+        </member>
+        <member name="M:System.ObjectExtentions.ToInt(System.String,System.Int32)">
+            <summary>
+            转换为Int32类型
+            </summary>
+            <param name="str">要转换的字符串</param>
+            <param name="value">缺省值</param>
+            <returns>转换后的int类型结果</returns>
+        </member>
+        <member name="M:System.ObjectExtentions.ToDecimal(System.String,System.Decimal)">
+            <summary>
+            转换为decimal型
+            </summary>
+            <param name="str">要转换的字符串</param>
+            <param name="value">缺省值</param>
+        </member>
+        <member name="M:System.ObjectExtentions.ToDate(System.String)">
+            <summary>
+            转换为DateTime型
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.ToDate(System.String,System.DateTime)">
+            <summary>
+            转换为DateTime型
+            </summary>
+            <param name="str">要转换的字符串</param>
+            <param name="value">缺省值</param>
+        </member>
+        <member name="M:System.ObjectExtentions.ConvertTo(System.Object,System.Type)">
+            <summary>
+            Converts a value to an object
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.ConvertTo``1(System.Object)">
+            <summary>
+            Converts a value to an object type of <typeparam name="T" />
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.InIPArray(System.String,System.String[])">
+            <summary>
+            返回指定IP是否在指定的IP数组所限定的范围内, IP数组内的IP地址可以使用*表示该IP段任意, 例如192.168.1.*
+            </summary>
+            <param name="ip">指定的IP地址</param>
+            <param name="iparray">IP地址范围</param>
+            <returns>判断结果</returns>
+        </member>
+        <member name="M:System.ObjectExtentions.MapTo``1(System.Object)">
+            <summary>
+            Create an object from the source object.
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.MapTo``2(``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+            <summary>Create an object from the source object, assign the properties by the same name.
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.MapTo``2(``0,``1,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+            <summary>Update the target object by the source object, assign the properties by the same name.
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TypeConvert.ToNumber(System.Object,System.Type)">
+            <summary>
+            Converts a value to a number
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TypeConvert.ToNumber``1(System.Object)">
+            <summary>
+            Converts a value to a number
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TypeConvert.ToEnum(System.Object,System.Type)">
+            <summary>
+            Converts a value to an enum
+            (work with literals string values and numbers)
+            </summary>
+            <param name="o">The literal to convert</param>
+            <param name="enumType">The target enum type</param>
+        </member>
+        <member name="M:System.ObjectExtentions.TypeConvert.ToBoolean(System.Object)">
+            <summary>
+            Converts a value to a boolean
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TypeConvert.ToString(System.Object)">
+            <summary>
+            返回表示当前 System.Object 的 System.String。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TypeConvert.ToChar(System.Object)">
+            <summary>
+            返回表示当前 System.Object 的 System.Char。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TypeConvert.ToGuid(System.Object)">
+            <summary>
+            返回表示当前 System.Object 的 System.Guid。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TypeConvert.To(System.Object,System.Type)">
+            <summary>
+            Converts a value to an object
+            </summary>
+        </member>
+        <member name="T:System.Threading.ReaderWriterLockSlimExtensions">
+            <summary>
+            <see cref="T:System.Threading.ReaderWriterLockSlim"/> 的扩展类
+            </summary>
+        </member>
+        <member name="M:System.Threading.ReaderWriterLockSlimExtensions.AtomRead(System.Threading.ReaderWriterLockSlim,System.Action)">
+            <summary>
+            An atom read action wrapper.
+            </summary>
+        </member>
+        <member name="M:System.Threading.ReaderWriterLockSlimExtensions.AtomRead(System.Threading.ReaderWriterLockSlim,System.Action{System.Threading.ReaderWriterLockSlim})">
+            <summary>
+            An atom read action wrapper.
+            </summary>
+        </member>
+        <member name="M:System.Threading.ReaderWriterLockSlimExtensions.AtomRead``1(System.Threading.ReaderWriterLockSlim,System.Func{``0})">
+            <summary>
+            An atom read func wrapper.
+            </summary>
+        </member>
+        <member name="M:System.Threading.ReaderWriterLockSlimExtensions.AtomRead``1(System.Threading.ReaderWriterLockSlim,System.Func{System.Threading.ReaderWriterLockSlim,``0})">
+            <summary>
+            An atom read func wrapper.
+            </summary>
+        </member>
+        <member name="M:System.Threading.ReaderWriterLockSlimExtensions.AtomWrite(System.Threading.ReaderWriterLockSlim,System.Action)">
+            <summary>
+            An atom write action wrapper.
+            </summary>
+        </member>
+        <member name="M:System.Threading.ReaderWriterLockSlimExtensions.AtomWrite``1(System.Threading.ReaderWriterLockSlim,System.Func{``0})">
+            <summary>
+            An atom write func wrapper.
+            </summary>
+        </member>
+        <member name="T:System.Reflection.ReflectionExtentions">
+            <summary>
+            <see cref="T:System.Reflection.MemberInfo"/> 的扩展类
+            </summary>
+        </member>
+        <member name="M:System.Reflection.ReflectionExtentions.GetMemberType(System.Reflection.MemberInfo)">
+            <summary>
+            Returns the type of the specified member
+            </summary>
+            <param name="memberInfo">member to get type from</param>
+            <returns>Member type</returns>
+        </member>
+        <member name="M:System.Reflection.ReflectionExtentions.IsStaticMember(System.Reflection.MemberInfo)">
+            <summary>
+            check the member is static.
+            </summary>
+            <param name="memberInfo">member to get type from</param>
+            <returns>Member type</returns>
+        </member>
+        <member name="M:System.Reflection.ReflectionExtentions.GetMemberValue(System.Reflection.MemberInfo,System.Object)">
+            <summary>
+            Gets a field/property
+            </summary>
+            <param name="memberInfo">The memberInfo specifying the object</param>
+            <param name="o">The object</param>
+        </member>
+        <member name="M:System.Reflection.ReflectionExtentions.SetMemberValue(System.Reflection.MemberInfo,System.Object,System.Object)">
+            <summary>
+            Sets a field/property
+            </summary>
+            <param name="memberInfo">The memberInfo specifying the object</param>
+            <param name="o">The object</param>
+            <param name="value">The field/property value to assign</param>
+        </member>
+        <member name="M:System.Reflection.ReflectionExtentions.GetExposingProperty(System.Reflection.MemberInfo)">
+            <summary>
+            If memberInfo is a method related to a property, returns the PropertyInfo
+            </summary>
+        </member>
+        <member name="M:System.Reflection.ReflectionExtentions.GetFirstInnerReturnType(System.Reflection.MemberInfo)">
+            <summary>
+            This function returns the type that is the "return type" of the member.
+            If it is a template it returns the first template parameter type.
+            </summary>
+            <param name="memberInfo">The member info.</param>
+        </member>
+        <member name="M:System.Reflection.ReflectionExtentions.GetAttributes``1(System.Reflection.ICustomAttributeProvider,System.Boolean)">
+            <summary>
+            返回<paramref name="provider"/>上定义的<typeparamref name="A"/>特性数组。
+            </summary>
+            <typeparam name="A">特性类型</typeparam>
+            <param name="provider">为支持自定义属性的反映对象提供自定义属性。</param>
+            <param name="inherit">当为 true 时，查找继承的自定义属性的层次结构链。</param>
+        </member>
+        <member name="M:System.Reflection.ReflectionExtentions.GetAttribute``1(System.Reflection.ICustomAttributeProvider,System.Boolean)">
+            <summary>
+            返回<paramref name="provider"/>上定义的第一个<typeparamref name="A"/>特性。
+            </summary>
+            <typeparam name="A">特性类型</typeparam>
+            <param name="provider">为支持自定义属性的反映对象提供自定义属性。</param>
+            <param name="inherit">当为 true 时，查找继承的自定义属性的层次结构链。</param>
+        </member>
+        <member name="M:System.Reflection.ReflectionExtentions.IsDefined``1(System.Reflection.ICustomAttributeProvider,System.Boolean)">
+            <summary>
+            判断<paramref name="provider"/>上是否定义<typeparamref name="TAttribute"/>特性
+            </summary>
+            <typeparam name="TAttribute">特性类型</typeparam>
+            <param name="provider">为支持自定义属性的反映对象提供自定义属性。</param>
+            <param name="inherit">当为 true 时，查找继承的自定义属性的层次结构链。</param>
+        </member>
+        <member name="T:System.TypeExtensions">
+            <summary>
+            <see cref="T:System.Type"/> 的扩展类
+            </summary>
+        </member>
+        <member name="M:System.TypeExtensions.CanBeNull(System.Type)">
+            <summary>
+            Determines if a given type can have a null value
+            </summary>
+        </member>
+        <member name="M:System.TypeExtensions.GetSingleMember(System.Type,System.String)">
+            <summary>
+            Returns a unique MemberInfo
+            </summary>
+            <param name="t">The declaring type</param>
+            <param name="name">The member name</param>
+            <returns>A MemberInfo or null</returns>
+        </member>
+        <member name="M:System.TypeExtensions.GetSingleMember(System.Type,System.String,System.Reflection.BindingFlags)">
+            <summary>
+            Returns a unique MemberInfo
+            </summary>
+            <param name="t">The declaring type</param>
+            <param name="name">The member name</param>
+            <param name="bindingFlags">Binding flags</param>
+            <returns>A MemberInfo or null</returns>
+        </member>
+        <member name="M:System.TypeExtensions.IsNullable(System.Type)">
+            <summary>
+            Determines if a Type is specified as nullable
+            </summary>
+        </member>
+        <member name="M:System.TypeExtensions.GetNullableType(System.Type)">
+            <summary>
+            If the type is nullable, returns the underlying type
+            Undefined behavior otherwise (it's user responsibility to check for Nullable first)
+            </summary>
+        </member>
+        <member name="M:System.TypeExtensions.GetDefault(System.Type)">
+            <summary>
+            Returns default value for provided type
+            </summary>
+        </member>
+        <member name="M:System.TypeExtensions.GetShortName(System.Type)">
+            <summary>
+            Returns type name without generic specification
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Logging.ILogger">
+            <summary>
+            写日志接口
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.String)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.String,System.Object[])">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.Exception)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.Exception,System.String)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.Exception,System.String,System.Object[])">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Logging.ILogger.IsDebugEnabled">
+            <summary>
+            是否启用Debug日志
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Logging.ILogger.IsInfoEnabled">
+            <summary>
+            是否启用Info日志
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Logging.ILogger.IsWarnEnabled">
+            <summary>
+            是否启用Warn日志
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Logging.ILogger.IsErrorEnabled">
+            <summary>
+            是否启用Error日志
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Logging.ILogger.IsFatalEnabled">
+            <summary>
+            是否启用Fatal日志
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Logging.ILoggerProvider">
+            <summary>
+            表示继承此接口的是一个日志提供者
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILoggerProvider.Create(System.String)">
+            <summary>
+            通过名称创建一个日志
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILoggerProvider.Create(System.Type)">
+            <summary>
+            通过类型创建一个日志
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Logging.DefaultLoggerProvider.Instance">
+            <summary>
+            <see cref="T:ThinkLib.Logging.ILoggerProvider"/> 的一个实例
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Create(System.String)">
+            <summary>
+            获取写日志接口。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Create(System.Type)">
+            <summary>
+            获取写日志接口。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.String)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.String,System.Object[])">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.Exception)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.Exception,System.String)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.Exception,System.String,System.Object[])">
+            <summary>
+            写一个调试日志。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Logging.LoggingLevel">
+            <summary>
+            日志级别
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Logging.LoggingLevel.DEBUG">
+            <summary>
+            调试
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Logging.LoggingLevel.INFO">
+            <summary>
+            信息
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Logging.LoggingLevel.WARN">
+            <summary>
+            警告
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Logging.LoggingLevel.ERROR">
+            <summary>
+            错误
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Logging.LoggingLevel.FATAL">
+            <summary>
+            致命
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Logging.LogManager">
+            <summary>
+            日志管理器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.LogManager.SetLoggerProvider(System.Func{ThinkLib.Logging.ILoggerProvider})">
+            <summary>
+            设置日志Provider
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.LogManager.GetLogger(System.String)">
+            <summary>
+            获取logger
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.LogManager.GetLogger(System.Type)">
+            <summary>
+            获取logger
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Scheduling.AsynchronousMessageProcessor`1">
+            <summary>
+            异步消息处理器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.#ctor">
+            <summary>
+            default constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.TryAdd(`0)">
+            <summary>
+            尝试添加该消息到队列
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.Start">
+            <summary>
+            启动
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.Stop">
+            <summary>
+            停止
+            </summary>
+        </member>
+        <member name="E:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.MessageProcessing">
+            <summary>
+            处理消息事件
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.PengingCount">
+            <summary>
+            待处理的消息数量
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Scheduling.Dispatcher">
+            <summary>
+            定时调度器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Dispatcher.Create(System.String,System.Action)">
+            <summary>
+            创建一个定时器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Dispatcher.SetInterval(System.Double)">
+            <summary>
+            重新设置任务间隔
+            </summary>
+            <param name="interval">间隔时间(毫秒)</param>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Dispatcher.Start">
+            <summary>
+            Start the dispatcher
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Dispatcher.Stop">
+            <summary>
+            Start the dispatcher
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Dispatcher.Name">
+            <summary>
+            当前定时器名称
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler">
+            <summary>表示一个有限的并发任务调度器。
+            For more information about this solution please refer to https://github.com/tangxuehua/ecommon
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler._currentThreadIsProcessingItems">
+            <summary>Whether the current thread is processing work items.</summary>
+        </member>
+        <member name="F:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler._tasks">
+            <summary>The list of tasks to be executed.</summary>
+        </member>
+        <member name="F:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler._maxDegreeOfParallelism">
+            <summary>The maximum concurrency level allowed by this scheduler.</summary>
+        </member>
+        <member name="F:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler._delegatesQueuedOrRunning">
+            <summary>Whether the scheduler is currently processing work items.</summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler.#ctor(System.Int32)">
+            <summary>
+            Initializes an instance of the LimitedConcurrencyLevelTaskScheduler class with the specified degree of parallelism.
+            </summary>
+            <param name="maxDegreeOfParallelism">The maximum degree of parallelism provided by this scheduler.</param>
+        </member>
+        <member name="M:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler.QueueTask(System.Threading.Tasks.Task)">
+            <summary>Queues a task to the scheduler.</summary>
+            <param name="task">The task to be queued.</param>
+        </member>
+        <member name="M:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler.NotifyThreadPoolOfPendingWork">
+            <summary>
+            Informs the ThreadPool that there's work to be executed for this scheduler.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler.TryExecuteTaskInline(System.Threading.Tasks.Task,System.Boolean)">
+            <summary>Attempts to execute the specified task on the current thread.</summary>
+            <param name="task">The task to be executed.</param>
+            <param name="taskWasPreviouslyQueued"></param>
+            <returns>Whether the task could be executed on the current thread.</returns>
+        </member>
+        <member name="M:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler.TryDequeue(System.Threading.Tasks.Task)">
+            <summary>Attempts to remove a previously scheduled task from the scheduler.</summary>
+            <param name="task">The task to be removed.</param>
+            <returns>Whether the task could be found and removed.</returns>
+        </member>
+        <member name="M:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler.GetScheduledTasks">
+            <summary>Gets an enumerable of the tasks currently scheduled on this scheduler.</summary>
+            <returns>An enumerable of the tasks currently scheduled.</returns>
+        </member>
+        <member name="P:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler.MaximumConcurrencyLevel">
+            <summary>Gets the maximum concurrency level supported by this scheduler.</summary>
+        </member>
+        <member name="T:ThinkLib.Scheduling.Worker">
+            <summary>
+            后台循环执行一个特定的方法的工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Create(System.String,System.Action)">
+            <summary>
+            创建一个后台线程工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.#ctor(System.String,System.Action)">
+            <summary>Initialize a new Worker for the specified method to run.
+            </summary>
+            <param name="name">The name of worker.</param>
+            <param name="action">The delegate method to execute in a loop.</param>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Start">
+            <summary>
+            Start the worker.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Stop">
+            <summary>
+            Stop the worker.
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.Name">
+            <summary>
+            当前工作器名称
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.CancellationToken">
+            <summary>
+            获取取消操作的通知
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Utilities.CryptoUtil">
+            <summary>
+            加解密工具类
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.EncryptByBase64(System.String,System.String)">
+            <summary>
+            将字符串编码为Base64字符串
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.EncryptByBase64(System.String,System.Text.Encoding)">
+            <summary>
+            将字符串编码为Base64字符串
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.DecryptByBase64(System.String,System.String)">
+            <summary>
+            将Base64字符串解码为普通字符串
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.DecryptByBase64(System.String,System.Text.Encoding)">
+            <summary>
+            将Base64字符串解码为普通字符串
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.EncryptByAES(System.String,System.String,System.String)">
+            <summary>
+            AES加密字符串
+            </summary>
+            <param name="source">待加密的字符串</param>
+            <param name="key">加密密钥</param>
+            <param name="charset">字符集</param>
+            <returns>加密成功返回加密后的字符串,失败返加空字符串</returns>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.DecryptByAES(System.String,System.String,System.String)">
+            <summary>
+            AES解密字符串
+            </summary>
+            <param name="source">待解密的字符串</param>
+            <param name="key">解密密钥,和加密密钥相同</param>
+            <param name="charset">字符集</param>
+            <returns>解密成功返回解密后的字符串,失败返加空字符串</returns>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.MD5(System.String,System.String)">
+            <summary>
+            MD5加密
+            </summary>
+            <param name="source">原始字符串</param>
+            <param name="charset">字符集</param>
+            <returns>MD5结果</returns>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.EncryptByRSA(System.String,System.String,System.String)">
+            <summary>
+            RSA加密字符串
+            </summary>
+            <param name="content">待加密的字符串</param>
+            <param name="privateKey">加密密钥</param>
+            <param name="charset">字符集</param>
+            <returns>解密成功返回解密后的字符串,失败返加空字符串</returns>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.VerifyByRSA(System.String,System.String,System.String,System.String)">
+            <summary>
+            验证签名
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.CryptoUtil.DecryptByRSA(System.String,System.String,System.String)">
+            <summary>
+            RSA加密字符串
+            </summary>
+            <param name="content">加密的字符串</param>
+            <param name="privateKey">加密密钥</param>
+            <param name="charset">字符集</param>
+            <returns>加密成功返回加密后的字符串,失败返加空字符串</returns>
+        </member>
+        <member name="T:ThinkLib.Utilities.FileUtils">
+            <summary>
+            对文件相关操作的工具类
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.FileUtils.DirectoryExists(System.String)">
+            <summary>
+            判断目录是否存在
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.FileUtils.FileExists(System.String)">
+            <summary>
+            判断文件是否存在
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.FileUtils.FileMove(System.String,System.String)">
+            <summary>
+            移动文件
+            </summary>
+            <param name="sourceFileName">移动文件</param>
+            <param name="destFileName">目标文件</param>
+        </member>
+        <member name="M:ThinkLib.Utilities.FileUtils.FileCopy(System.String,System.String,System.Boolean)">
+            <summary>
+            复制文件
+            </summary>
+            <param name="sourceFileName">复制文件</param>
+            <param name="destFileName">目标文件</param>
+            <param name="overwrite">若为 true，则允许覆盖现有文件；否则为 false。</param>
+        </member>
+        <member name="M:ThinkLib.Utilities.FileUtils.FileDelete(System.String)">
+            <summary>
+            删除文件
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.FileUtils.FileSize(System.String)">
+            <summary>
+            文件大小
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.FileUtils.GetMapPath(System.String)">
+            <summary>
+            获得当前绝对路径
+            </summary>
+            <param name="strPath">指定的路径</param>
+            <returns>绝对路径</returns>
+        </member>
+        <member name="T:ThinkLib.Utilities.HttpUtil">
+            <summary>
+            http工具类
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.HttpUtil.GetLocalIPV4">
+            <summary>
+            获取本机IPV4
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.HttpUtil.GetClientIPV4">
+            <summary>
+            获取客户端ip
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.HttpUtil.BuildRequestWithPost(System.String,System.Collections.Generic.IDictionary{System.String,System.String},System.Int32)">
+            <summary>
+            建立请求，以模拟远程HTTP的POST请求方式构造并获取处理结果
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.HttpUtil.BuildRequestWithGet(System.String,System.Collections.Generic.IDictionary{System.String,System.String},System.Int32)">
+            <summary>
+            建立请求，以模拟远程HTTP的GET请求方式构造并获取处理结果
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Utilities.LockUtil">
+            <summary>
+            A class provide the functionality to lock object by value object.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.LockUtil.Lock(System.Object,System.Action)">
+            <summary>Lock an action by a given key value object.
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Utilities.RandomUtil">
+            <summary>
+            生成随机数工具类
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.RandomUtil.GenerateCode(System.Int32)">
+            <summary>
+            随机字符串
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.RandomUtil.GenerateNum(System.Int32)">
+            <summary>
+            随机数字
+            </summary>
+        </member>
+    </members>
+</doc>
