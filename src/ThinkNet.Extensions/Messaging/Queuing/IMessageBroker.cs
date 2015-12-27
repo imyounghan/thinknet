@@ -12,5 +12,7 @@ namespace ThinkNet.Messaging.Queuing
         bool TryGet(out MetaMessage message);
 
         MetaMessage Take();
+
+        void Complete(MetaMessage message);
     }
 }

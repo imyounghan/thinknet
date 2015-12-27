@@ -11,7 +11,7 @@ namespace ThinkNet.EventSourcing
         /// <summary>
         /// 获取最新的快照。
         /// </summary>
-        SnapshotData GetLastest(ComplexKey sourceKey);
+        SnapshotData GetLastest(SourceKey sourceKey);
         /// <summary>
         /// 存储聚合快照。
         /// </summary>
@@ -19,6 +19,6 @@ namespace ThinkNet.EventSourcing
         /// <summary>
         /// 从存储中删除快照。
         /// </summary>
-        void Remove(ComplexKey sourceKey);
+        void Remove(SourceKey sourceKey);
     }
 }

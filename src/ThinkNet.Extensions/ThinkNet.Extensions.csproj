@@ -55,13 +55,13 @@
     <Compile Include="Annotation\LifeCycleAttribute.cs" />
     <Compile Include="Annotation\RegisterComponentAttribute.cs" />
     <Compile Include="Annotation\RequiredComponentAttribute.cs" />
-    <Compile Include="EventSourcing\ComplexKey.cs" />
+    <Compile Include="EventSourcing\SourceKey.cs" />
     <Compile Include="EventSourcing\EventData.cs" />
-    <Compile Include="EventSourcing\IPartitionKeyProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="EventSourcing\SnapshotData.cs" />
     <Compile Include="Infrastructure\IInitializer.cs" />
+    <Compile Include="Messaging\CommandBus.cs" />
+    <Compile Include="Messaging\EventBus.cs" />
+    <Compile Include="Messaging\ICommandResultManager.cs" />
     <Compile Include="Messaging\IMessageStore.cs" />
     <Compile Include="EventSourcing\EventPublishedVersionInMemory.cs" />
     <Compile Include="EventSourcing\IEventPublishedVersionStore.cs" />
@@ -69,16 +69,9 @@
     <Compile Include="EventSourcing\IEventStore.cs" />
     <Compile Include="EventSourcing\ISnapshotPolicy.cs" />
     <Compile Include="EventSourcing\ISnapshotStore.cs" />
-    <Compile Include="Infrastructure\IMemoryCache.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
-    <Compile Include="Infrastructure\Serialization\IBinarySerializer.cs" />
-    <Compile Include="Infrastructure\Serialization\ITextSerializer.cs" />
-    <Compile Include="Infrastructure\Serialization\SerializerExtensions.cs" />
     <Compile Include="Messaging\AbstractBus.cs" />
-    <Compile Include="Messaging\DefaultMessageReceiver.cs" />
-    <Compile Include="Messaging\DefaultMessageSender.cs" />
     <Compile Include="Messaging\Handing\HandlerWrapper.cs" />
-    <Compile Include="Messaging\Handing\IHandlerProvider.cs" />
     <Compile Include="Messaging\Handing\IProxyHandler.cs" />
     <Compile Include="Messaging\Handing\HandlerRecordInMemory.cs" />
     <Compile Include="Messaging\Handing\IHandlerRecordStore.cs" />

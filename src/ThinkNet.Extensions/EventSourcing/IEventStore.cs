@@ -11,25 +11,25 @@ namespace ThinkNet.EventSourcing
         /// <summary>
         /// 保存溯源事件。
         /// </summary>
-        void Save(string partitionKey, IEnumerable<EventData> events);
+        void Save(SourceKey sourceKey, IEnumerable<EventData> events);
 
         /// <summary>
         /// 判断该命令下是否存在相关事件。
         /// </summary>
-        bool EventPersisted(string partitionKey, string correlationId);
+        bool EventPersisted(SourceKey sourceKey, string correlationId);
 
         /// <summary>
         /// 查询该命令下的事件。
         /// </summary>
-        IEnumerable<EventData> FindAll(string partitionKey, string correlationId);
+        IEnumerable<EventData> FindAll(SourceKey sourceKey, string correlationId);
         /// <summary>
         /// 查询聚合的溯源事件。
         /// </summary>
-        IEnumerable<EventData> FindAll(string partitionKey, ComplexKey sourceKey);
+        IEnumerable<EventData> FindAll(SourceKey sourceKey);
 
         /// <summary>
         /// 移除该聚合的溯源事件。
         /// </summary>
-        void RemoveAll(string partitionKey, ComplexKey sourceKey);
+        void RemoveAll(SourceKey sourceKey);
     }
 }

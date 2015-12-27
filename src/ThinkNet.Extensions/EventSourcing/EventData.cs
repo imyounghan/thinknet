@@ -18,18 +18,17 @@ namespace ThinkNet.EventSourcing
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public EventData(string sourceId, string sourceType, int version, string payload, string correlationId)
+        public EventData(int version, string payload, string correlationId)
             : this()
         {
-            this.SourceKey = new ComplexKey(sourceId, sourceType, version);
             this.Payload = payload;
             this.CorrelationId = correlationId;
         }
 
         /// <summary>
-        /// Key。
+        /// 版本号
         /// </summary>
-        public ComplexKey SourceKey { get; set; }        
+        public int Version { get; set; }     
         /// <summary>
         /// 事件流
         /// </summary>
@@ -42,10 +41,5 @@ namespace ThinkNet.EventSourcing
         /// 生成事件的时间戳
         /// </summary>
         public DateTime CreatedOn { get; set; }
-
-
-        public string AssemblyName { get; set; }
-        public string Namespace { get; set; }
-        public string TypeName { get; set; }
     }
 }

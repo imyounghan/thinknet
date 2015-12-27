@@ -19,7 +19,7 @@ namespace ThinkNet.Messaging
         public int QueueId { get; set; }
         public DateTime CreatedTime { get; set; }
         //public string Tag { get; set; }
-        //public string Topic { get; set; }
+        public string Topic { get; set; }
 
         public object Body { get; set; }
 

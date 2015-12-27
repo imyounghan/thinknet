@@ -73,7 +73,7 @@ namespace ThinkNet.Messaging.Queuing
         private readonly MessageQueue[] queues;
         private readonly int queueCount;
 
-        private long            runtimes = 0;
+        private long            runtimes = -1;
         private int index=0;
         private readonly ConcurrentDictionary<int, int> queueMonitor;
         private readonly BlockingCollection<MetaMessage> currentQueue;
@@ -109,6 +109,7 @@ namespace ThinkNet.Messaging.Queuing
             }
 
             queue.Enqueue(message);
+            Interlocked.CompareExchange(ref runtimes, 0, -1);
             return true;
         }
 
@@ -123,7 +124,7 @@ namespace ThinkNet.Messaging.Queuing
         public MetaMessage Take()
         {
             while (true) {
-                if (Interlocked.Read(ref runtimes) == 0) {
+                if (Interlocked.Read(ref runtimes) == -1) {
                     wait.WaitOne();
                 }
 
@@ -141,7 +142,7 @@ namespace ThinkNet.Messaging.Queuing
         public void Complete(MetaMessage message)
         {
             queues[message.QueueId].Ack();
-            if (Interlocked.CompareExchange(ref runtimes, queueCount, 0) == 0) {
+            if (Interlocked.CompareExchange(ref runtimes, queueCount, -1) == -1) {
                 wait.Set();
             }
         }

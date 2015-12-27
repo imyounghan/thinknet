@@ -20,14 +20,14 @@ namespace ThinkNet.EventSourcing
         public SnapshotData(string sourceId, string sourceType, int version, byte[] payload)
             : this()
         {
-            this.SourceKey = new ComplexKey(sourceId, sourceType, version);
+            this.SourceKey = new SourceKey(sourceId, sourceType);
             this.Payload = payload;
         }
 
         /// <summary>
         /// Key。
         /// </summary>
-        public ComplexKey SourceKey { get; set; }
+        public SourceKey SourceKey { get; set; }
         /// <summary>
         /// 聚合根数据
         /// </summary>
