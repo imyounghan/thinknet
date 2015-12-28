@@ -104,7 +104,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public static bool IsHandlerInterfaceType(Type type)
         {
-            return type.IsInterface && type.IsGenericType && typeof(IHandler).IsAssignableFrom(type);
+            return type.IsInterface && typeof(IHandler).IsAssignableFrom(type);
         }
         /// <summary>
         /// Check whether a type is a handler.
@@ -113,6 +113,22 @@ namespace ThinkNet.Infrastructure
         {
             return type.IsClass && !type.IsAbstract &&
                 type.GetInterfaces().Any(IsHandlerInterfaceType);
+        }
+
+        /// <summary>
+        /// Check whether a type is a handler type.
+        /// </summary>
+        public static bool IsMessageHandlerInterfaceType(Type type)
+        {
+            return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IMessageHandler<>);
+        }
+        /// <summary>
+        /// Check whether a type is a handler.
+        /// </summary>
+        public static bool IsMessageHandlerType(Type type)
+        {
+            return type.IsClass && !type.IsAbstract &&
+                type.GetInterfaces().Any(IsMessageHandlerInterfaceType);
         }
     }
 }

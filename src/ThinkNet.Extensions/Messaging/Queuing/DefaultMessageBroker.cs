@@ -29,9 +29,11 @@ namespace ThinkNet.Messaging.Queuing
             public void Enqueue(MetaMessage message)
             {
                 message.QueueId = _queueId;
-                if (message.Offset == 0) {
-                }
                 _queue.Enqueue(message);
+
+                if (_queue.IsEmpty) {
+                    Interlocked.Increment(ref runtimes);
+                }
             }
             /// <summary>
             /// 取出消息。
@@ -39,16 +41,20 @@ namespace ThinkNet.Messaging.Queuing
             public MetaMessage Dequeue()
             {
                 MetaMessage message = null;
-                if (!_queue.IsEmpty && Interlocked.CompareExchange(ref _running, 0, 1) == 1 
-                    && _queue.TryDequeue(out message)) {
+                if (!_queue.IsEmpty &&
+                    Interlocked.CompareExchange(ref _running, 0, 1) == 1 &&
+                    _queue.TryDequeue(out message)) {
+                    Interlocked.Decrement(ref runtimes);
                     return message;
                 }
                 return null;
             }
 
-            public bool Ack()
+            public void Ack()
             {
-                return Interlocked.CompareExchange(ref _running, 1, 0) == 0;
+                if (Interlocked.CompareExchange(ref _running, 1, 0) == 0) {
+                    Interlocked.Increment(ref runtimes);
+                }
             }
 
             /// <summary>
@@ -73,7 +79,7 @@ namespace ThinkNet.Messaging.Queuing
         private readonly MessageQueue[] queues;
         private readonly int queueCount;
 
-        private long            runtimes = -1;
+        private static long            runtimes = 0;
         private int index=0;
         private readonly ConcurrentDictionary<int, int> queueMonitor;
         private readonly BlockingCollection<MetaMessage> currentQueue;
@@ -109,11 +115,13 @@ namespace ThinkNet.Messaging.Queuing
             }
 
             queue.Enqueue(message);
-            Interlocked.CompareExchange(ref runtimes, 0, -1);
+            if (Interlocked.Read(ref runtimes) == 0) {
+                wait.Set();
+            }
             return true;
         }
 
-        public bool TryGet(out MetaMessage message)
+        public bool TryTake(out MetaMessage message)
         {
             var queueIndex = Interlocked.Increment(ref index) % queueCount;
             message = queues[queueIndex].Dequeue();
@@ -123,26 +131,22 @@ namespace ThinkNet.Messaging.Queuing
 
         public MetaMessage Take()
         {
-            while (true) {
-                if (Interlocked.Read(ref runtimes) == -1) {
-                    wait.WaitOne();
-                }
-
-                MetaMessage message;
-                if (this.TryGet(out message)) {
-                    Interlocked.Increment(ref runtimes);
-                    return message;
-                }
-                else {
-                    Interlocked.Decrement(ref runtimes);
-                }
+            if (Interlocked.Read(ref runtimes) == 0) {
+                wait.WaitOne();
             }
+
+            MetaMessage message;
+            while (!this.TryTake(out message)) {
+                return message;
+            }
+
+            return null;
         }
 
         public void Complete(MetaMessage message)
         {
             queues[message.QueueId].Ack();
-            if (Interlocked.CompareExchange(ref runtimes, queueCount, -1) == -1) {
+            if (Interlocked.Read(ref runtimes) == 0) {
                 wait.Set();
             }
         }

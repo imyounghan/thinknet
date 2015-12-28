@@ -59,6 +59,7 @@
     <Compile Include="EventSourcing\EventData.cs" />
     <Compile Include="EventSourcing\SnapshotData.cs" />
     <Compile Include="Infrastructure\IInitializer.cs" />
+    <Compile Include="Infrastructure\ParallelQueue.cs" />
     <Compile Include="Messaging\CommandBus.cs" />
     <Compile Include="Messaging\EventBus.cs" />
     <Compile Include="Messaging\ICommandResultManager.cs" />
