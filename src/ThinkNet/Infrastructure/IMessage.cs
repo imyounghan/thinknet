@@ -13,11 +13,11 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 获取生成该消息的时间戳
         /// </summary>
-        System.DateTime Timestamp { get; }
+        System.DateTime OnCreated { get; }
 
-        /// <summary>
-        /// 获取路由key。
-        /// </summary>
-        string GetRoutingKey();
+        ///// <summary>
+        ///// 获取路由key。
+        ///// </summary>
+        //string GetRoutingKey();
     }
 }

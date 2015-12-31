@@ -40,12 +40,12 @@ namespace ThinkNet.Kernel
             return this.SourceId.ToString();
         }
 
-        /// <summary>
-        /// 返回聚合根id
-        /// </summary>
-        public override string GetRoutingKey()
-        {
-            return base.GetRoutingKey();
-        }
+        ///// <summary>
+        ///// 返回聚合根id
+        ///// </summary>
+        //public override string GetRoutingKey()
+        //{
+        //    return base.GetRoutingKey();
+        //}
     }
 }

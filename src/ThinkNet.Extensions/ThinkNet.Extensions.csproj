@@ -58,7 +58,12 @@
     <Compile Include="EventSourcing\SourceKey.cs" />
     <Compile Include="EventSourcing\EventData.cs" />
     <Compile Include="EventSourcing\SnapshotData.cs" />
+    <Compile Include="Infrastructure\DataContextExtentions.cs" />
+    <Compile Include="Infrastructure\IDataContext.cs" />
+    <Compile Include="Infrastructure\IDataContextFactory.cs" />
     <Compile Include="Infrastructure\IInitializer.cs" />
+    <Compile Include="Infrastructure\IMetadataProvider.cs" />
+    <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
     <Compile Include="Infrastructure\ParallelQueue.cs" />
     <Compile Include="Messaging\CommandBus.cs" />
     <Compile Include="Messaging\EventBus.cs" />
@@ -79,8 +84,6 @@
     <Compile Include="Messaging\IMessageReceiver.cs" />
     <Compile Include="Messaging\IMessageSender.cs" />
     <Compile Include="Messaging\MetaMessage.cs" />
-    <Compile Include="Messaging\Queuing\DefaultMessageBroker.cs" />
-    <Compile Include="Messaging\Queuing\IMessageBroker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +94,9 @@
       <Project>{a8fcd0bf-04fc-4628-b376-6861d63d9538}</Project>
       <Name>ThinkNet</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Messaging\Queuing\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

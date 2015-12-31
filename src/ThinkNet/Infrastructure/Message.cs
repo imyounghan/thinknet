@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace ThinkNet.Infrastructure
@@ -19,7 +18,7 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 消息的时间戳
         /// </summary>
-        public DateTime Timestamp { get; private set; }
+        public DateTime OnCreated { get; private set; }
 
         /// <summary>
         /// Parameterized Constructor.
@@ -27,30 +26,26 @@ namespace ThinkNet.Infrastructure
         protected Message(string id)
         {
             this.Id = string.IsNullOrWhiteSpace(id) ? GuidUtil.NewSequentialId().ToString() : id;
-            this.Timestamp = DateTime.UtcNow;
+            this.OnCreated = DateTime.UtcNow;
         }
 
-        /// <summary>
-        /// 返回空的路由key
-        /// </summary>
-        public virtual string GetRoutingKey()
-        {
-            return string.Empty;
-        }
+        ///// <summary>
+        ///// 返回空的路由key
+        ///// </summary>
+        //public virtual string GetRoutingKey()
+        //{
+        //    return string.Empty;
+        //}
 
         /// <summary>
         /// 输出消息的字符串格式
         /// </summary>
         public override string ToString()
         {
-            var properties = new string[] {
-                string.Concat("Id=", this.Id),
-                string.Concat("Timestamp=", this.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"))
-            }.Concat(
-                this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            var properties = this.GetType().GetProperties()
                 .Where(prop => !prop.IsDefined(typeof(IgnoreDataMemberAttribute), false))
                 .Select(prop => string.Concat(prop.Name, "=", prop.GetValue(this, null)))
-                ).ToArray();
+                .ToArray();
 
             return string.Join("|", properties);
         }

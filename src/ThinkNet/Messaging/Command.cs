@@ -76,13 +76,13 @@ namespace ThinkNet.Messaging
             return this.AggregateRootId.ToString();
         }
 
-        /// <summary>
-        /// 返回聚合根ID
-        /// </summary>
-        public override string GetRoutingKey()
-        {
-            return this.GetAggregateRootStringId();
-        }
+        ///// <summary>
+        ///// 返回聚合根ID
+        ///// </summary>
+        //public override string GetRoutingKey()
+        //{
+        //    return this.GetAggregateRootStringId();
+        //}
 
         /// <summary>
         /// 输出字符串信息
