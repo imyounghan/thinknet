@@ -16,14 +16,14 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// Persist a new message to the store.
         /// </summary>
-        void Add(IEnumerable<MetaMessage> messages);
+        void Add(IEnumerable<Message> messages);
         /// <summary>
         /// Remove a existing message from the store.
         /// </summary>
-        void Remove(string messageId);
+        void Remove(Message message);
         /// <summary>
         /// Get all the existing messages of the store.
         /// </summary>
-        IEnumerable<MetaMessage> GetAll(string messageType);
+        IEnumerable<Message> GetAll();
     }
 }

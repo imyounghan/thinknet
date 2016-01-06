@@ -6,27 +6,50 @@ using System.Threading;
 
 namespace ThinkNet.Infrastructure
 {
+    /// <summary>
+    /// 表示这个并行的消息队列
+    /// </summary>
     public class ParallelQueue<T>
     {
+        /// <summary>
+        /// 队列消息
+        /// </summary>
         public class Message<T>
         {
+            /// <summary>
+            /// 元数据信息
+            /// </summary>
             IDictionary<string, string> MetadataInfo { get; set; }
 
+            /// <summary>
+            /// id
+            /// </summary>
             public string Id { get; set; }
 
-            public long SequenceNumber { get; set; }
+            /// <summary>
+            /// offset
+            /// </summary>
+            public long Offset { get; set; }
 
+            /// <summary>
+            /// 用于路由的值
+            /// </summary>
             public string RoutingKey { get; set; }
 
+            /// <summary>
+            /// 队列id
+            /// </summary>
             public int QueueId { get; internal set; }
 
+            /// <summary>
+            /// 数据
+            /// </summary>
             T Body { get; set; }
         }
 
         class MessageQueue
         {
             private readonly ConcurrentQueue<Message<T>> queue;
-            private int running = 1;
             private readonly int queueId;
 
             public MessageQueue(int queueId)
@@ -46,10 +69,6 @@ namespace ThinkNet.Infrastructure
             /// </summary>
             public void Enqueue(Message<T> message)
             {
-                if (queue.IsEmpty) {
-                    Interlocked.Increment(ref runtimes);
-                }
-
                 message.QueueId = this.queueId;
                 queue.Enqueue(message);
             }
@@ -58,20 +77,7 @@ namespace ThinkNet.Infrastructure
             /// </summary>
             public Message<T> Dequeue()
             {
-                Message<T> message = null;
-                if (!queue.IsEmpty && Interlocked.CompareExchange(ref running, 0, 1) == 1) {
-                    queue.TryDequeue(out message);
-                    Interlocked.Decrement(ref runtimes);
-
-                }
-                return message;
-            }
-
-            public void Ack()
-            {
-                if (Interlocked.CompareExchange(ref running, 1, 0) == 0 && !queue.IsEmpty) {
-                    Interlocked.Increment(ref runtimes);
-                }
+                return queue.Dequeue();
             }
 
             /// <summary>
@@ -94,9 +100,9 @@ namespace ThinkNet.Infrastructure
 
         private readonly EventWaitHandle waiter;
         private readonly MessageQueue[] queues;
-        private readonly int queueCount;
-        private int index;
-        private static long runtimes = 0;
+        private readonly ConcurrentDictionary<long, int> offsetDict;
+        private int lastQueueIndex;
+        private long offset;
 
         public ParallelQueue(int queueCount)
         {
@@ -117,20 +123,18 @@ namespace ThinkNet.Infrastructure
                     queue = queues.OrderBy(p => p.Count).First();
                 }
                 else {
-                    var queueIndex = message.RoutingKey.GetHashCode() % queueCount;
-                    if (queueIndex < 0) {
-                        queueIndex = Math.Abs(queueIndex);
-                    }
+                    var queueIndex = Math.Abs(message.RoutingKey.GetHashCode() % queues.Length);
                     queue = queues[queueIndex];
                 }
             }
 
-            if (queue.Count >= 1000) {
+
+            bool isEmpty = offsetDict.IsEmpty;
+            if (!offsetDict.TryAdd(message.Offset, queue.Id)) {
                 return false;
             }
-
             queue.Enqueue(message);
-            if (Interlocked.Read(ref runtimes) > 0) {
+            if (isEmpty) {
                 waiter.Set();
             }
             return true;
@@ -138,30 +142,38 @@ namespace ThinkNet.Infrastructure
 
         public bool TryTake(out Message<T> message)
         {
-            var queueIndex = Interlocked.Increment(ref index) % queueCount;
-            message = queues[queueIndex].Dequeue();
+            int queueIndex;
+            if (!offsetDict.TryGetValue(offset, out queueIndex) || lastQueueIndex == queueIndex) {
+                message = null;
+                return false;
+            }
 
-            return message != null;
+            if (offsetDict.TryRemove(offset, out queueIndex)) {
+                Interlocked.Exchange(ref lastQueueIndex, queueIndex);
+                Interlocked.Increment(ref offset);
+                
+                message = queues[queueIndex].Dequeue();
+                return true;
+            }            
+
+            message = null;
+            return false;
         }
 
         public Message<T> Take()
         {
-            if (Interlocked.Read(ref runtimes) == 0) {
+            Message<T> message;
+            if (!this.TryTake(out message)) {
                 waiter.WaitOne();
             }
 
-            Message<T> message;
-            while (!this.TryTake(out message)) {
-                return message;
-            }
-
-            return null;
+            return message;
         }
 
         public void Complete(Message<T> message)
         {
-            queues[message.QueueId].Ack();
-            if (Interlocked.Read(ref runtimes) > 0) {
+            int completeQueueIndex = message.QueueId;
+            if (Interlocked.CompareExchange(ref lastQueueIndex, -1, completeQueueIndex) == completeQueueIndex) {
                 waiter.Set();
             }
         }

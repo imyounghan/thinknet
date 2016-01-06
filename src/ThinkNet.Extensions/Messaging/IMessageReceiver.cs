@@ -10,7 +10,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// Event raised whenever a message is received. Consumer of the event is responsible for disposing the message when appropriate.
         /// </summary>
-        event EventHandler<EventArgs<MetaMessage>> MessageReceived;
+        event EventHandler<EventArgs<Message>> MessageReceived;
 
         /// <summary>
         /// Starts the listener.
@@ -23,34 +23,35 @@ namespace ThinkNet.Messaging
         void Stop();
     }
 
-    public class DefaultMessageReceiver : IMessageReceiver
+    internal class DefaultMessageReceiver : IMessageReceiver
     {
         private readonly Worker worker;
         private readonly IMessageBroker broker;
         private readonly object lockObject;
 
-        public DefaultMessageReceiver()
+        public DefaultMessageReceiver(IMessageBroker messageBroker)
         {
             this.lockObject = new object();
             this.worker = Worker.Create("", Processing);
+            this.broker = messageBroker;
         }
 
         private void Processing()
         {
             var message = broker.Take();
             if(message != null) {
-                //broker.
                 Task.Factory
                     .StartNew((state) => {
-                        this.MessageReceived(state, new EventArgs<MetaMessage>(message));
+                        this.MessageReceived(state, new EventArgs<Message>(message));
                         return message;
                     }, this, TaskCreationOptions.PreferFairness)
                     .ContinueWith(task => {
-                    });
+                        broker.Complete(task.Result);
+                    }, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnFaulted | TaskContinuationOptions.PreferFairness);
             }
         }
 
-        public event EventHandler<EventArgs<MetaMessage>> MessageReceived = (sender, args) => { };
+        public event EventHandler<EventArgs<Message>> MessageReceived = (sender, args) => { };
 
         public void Start()
         {

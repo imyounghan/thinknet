@@ -64,11 +64,11 @@
     <Compile Include="Infrastructure\IInitializer.cs" />
     <Compile Include="Infrastructure\IMetadataProvider.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
-    <Compile Include="Infrastructure\ParallelQueue.cs" />
+    <Compile Include="Infrastructure\StandardMetadata.cs" />
+    <Compile Include="Infrastructure\StandardMetadataProvider.cs" />
     <Compile Include="Messaging\CommandBus.cs" />
     <Compile Include="Messaging\EventBus.cs" />
     <Compile Include="Messaging\ICommandResultManager.cs" />
-    <Compile Include="Messaging\IMessageStore.cs" />
     <Compile Include="EventSourcing\EventPublishedVersionInMemory.cs" />
     <Compile Include="EventSourcing\IEventPublishedVersionStore.cs" />
     <Compile Include="EventSourcing\IEventSourcedFactory.cs" />
@@ -83,7 +83,9 @@
     <Compile Include="Messaging\Handing\IHandlerRecordStore.cs" />
     <Compile Include="Messaging\IMessageReceiver.cs" />
     <Compile Include="Messaging\IMessageSender.cs" />
-    <Compile Include="Messaging\MetaMessage.cs" />
+    <Compile Include="Messaging\Message.cs" />
+    <Compile Include="Messaging\Queuing\DefaultMessageBroker.cs" />
+    <Compile Include="Messaging\Queuing\IMessageBroker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -95,9 +97,7 @@
       <Name>ThinkNet</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Messaging\Queuing\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

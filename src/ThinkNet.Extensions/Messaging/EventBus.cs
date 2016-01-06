@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
@@ -9,6 +8,17 @@ namespace ThinkNet.Messaging
     public class EventBus : AbstractBus, IEventBus
     {
         private readonly IMessageSender messageSender;
+        private readonly IRoutingKeyProvider routingKeyProvider;
+        private readonly IMetadataProvider metadataProvider;
+
+        public EventBus(IMessageSender messageSender,
+            IRoutingKeyProvider routingKeyProvider,
+            IMetadataProvider metadataProvider)
+        {
+            this.messageSender = messageSender;
+            this.routingKeyProvider = routingKeyProvider;
+            this.metadataProvider = metadataProvider;
+        }
 
         protected override bool SearchMatchType(Type type)
         {
@@ -27,12 +37,13 @@ namespace ThinkNet.Messaging
             messageSender.Send(messages);
         }
 
-        private static MetaMessage Map(IEvent @event)
+        private Message Map(IEvent @event)
         {
-            return new MetaMessage {
+            return new Message {
                 Body = @event,
-                Topic = "Event",
-                RoutingKey = @event.GetRoutingKey()
+                MetadataInfo = metadataProvider.GetMetadata(@event),
+                RoutingKey = routingKeyProvider.GetRoutingKey(@event),
+                CreatedTime = DateTime.UtcNow
             };
         }
     }

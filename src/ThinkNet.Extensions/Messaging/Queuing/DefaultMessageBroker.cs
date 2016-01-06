@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using ThinkNet.Infrastructure;
 
@@ -10,57 +8,60 @@ namespace ThinkNet.Messaging.Queuing
 {
     public class DefaultMessageBroker : IMessageBroker
     {
+        class QueueMessage : Message
+        {
+            public QueueMessage(Message message)
+            {
+                this.Body = message.Body;
+                this.CreatedTime = message.CreatedTime;
+                this.MetadataInfo = message.MetadataInfo;
+                this.RoutingKey = message.RoutingKey;
+            }
+
+            public long Offset { get; set; }
+
+            /// <summary>
+            /// 队列id
+            /// </summary>
+            public int QueueId { get; internal set; }
+        }
         class MessageQueue
         {
-            private readonly ConcurrentQueue<MetaMessage> _queue;
-            private int _running = 1;
-            //private long            _offset = 0;
-            private int _queueId;
+            private readonly ConcurrentQueue<QueueMessage> queue;
+            private readonly int queueId;
 
-            public MessageQueue()
+            public MessageQueue(int queueId)
             {
-                this._queue = new ConcurrentQueue<MetaMessage>();
+                this.queue = new ConcurrentQueue<QueueMessage>();
+                this.queueId = queueId;
+            }
+
+            public int Id
+            {
+                get { return this.queueId; }
             }
 
 
             /// <summary>
             /// 将消息进队列。
             /// </summary>
-            public void Enqueue(MetaMessage message)
+            public void Enqueue(QueueMessage message)
             {
-                message.QueueId = _queueId;
-                _queue.Enqueue(message);
-
-                if (_queue.IsEmpty) {
-                    Interlocked.Increment(ref runtimes);
-                }
+                message.QueueId = this.queueId;
+                queue.Enqueue(message);
             }
             /// <summary>
             /// 取出消息。
             /// </summary>
-            public MetaMessage Dequeue()
+            public QueueMessage Dequeue()
             {
-                MetaMessage message = null;
-                if (!_queue.IsEmpty &&
-                    Interlocked.CompareExchange(ref _running, 0, 1) == 1 &&
-                    _queue.TryDequeue(out message)) {
-                    Interlocked.Decrement(ref runtimes);
-                    return message;
-                }
-                return null;
-            }
-
-            public void Ack()
-            {
-                if (Interlocked.CompareExchange(ref _running, 1, 0) == 0) {
-                    Interlocked.Increment(ref runtimes);
-                }
+                return queue.Dequeue();
             }
 
             /// <summary>
             /// 队列里的消息数量。
             /// </summary>
-            public int Count { get { return _queue.Count; } }
+            public int Count { get { return queue.Count; } }
 
             public static MessageQueue[] CreateGroup(int count)
             {
@@ -68,7 +69,7 @@ namespace ThinkNet.Messaging.Queuing
 
                 MessageQueue[] queues = new MessageQueue[count];
                 for (int i = 0; i < count; i++) {
-                    queues[i] = new MessageQueue();
+                    queues[i] = new MessageQueue(i);
                 }
 
                 return queues;
@@ -76,22 +77,22 @@ namespace ThinkNet.Messaging.Queuing
         }
 
 
+        private readonly EventWaitHandle waiter;
         private readonly MessageQueue[] queues;
-        private readonly int queueCount;
+        private readonly ConcurrentDictionary<long, int> offsetDict;
+        private readonly ConcurrentDictionary<string, long> topicOffset;
+        private int lastQueueIndex;
+        private long offset;
 
-        private static long            runtimes = 0;
-        private int index=0;
-        private readonly ConcurrentDictionary<int, int> queueMonitor;
-        private readonly BlockingCollection<MetaMessage> currentQueue;
-
-        private EventWaitHandle wait;
-
-        public DefaultMessageBroker()
+        public DefaultMessageBroker(int queueCount)
         {
-            this.wait = new EventWaitHandle(false, EventResetMode.AutoReset);
+            this.queues = MessageQueue.CreateGroup(queueCount);
+            this.waiter = new AutoResetEvent(false);
+            this.offsetDict = new ConcurrentDictionary<long, int>();
+            this.topicOffset = new ConcurrentDictionary<string, long>(StringComparer.CurrentCultureIgnoreCase);
         }
 
-        public bool TryAdd(MetaMessage message)
+        public bool TryAdd(Message message)
         {
             MessageQueue queue;
             if (queues.Length == 1) {
@@ -102,52 +103,78 @@ namespace ThinkNet.Messaging.Queuing
                     queue = queues.OrderBy(p => p.Count).First();
                 }
                 else {
-                    var queueIndex = message.RoutingKey.GetHashCode() % queueCount;
-                    if (queueIndex < 0) {
-                        queueIndex = Math.Abs(queueIndex);
-                    }
+                    var queueIndex = Math.Abs(message.RoutingKey.GetHashCode() % queues.Length);
                     queue = queues[queueIndex];
                 }
             }
 
-            if (queue.Count >= 1000) {
+
+            var queueMsg = new QueueMessage(message);
+
+
+            queueMsg.Offset = topicOffset.AddOrUpdate(message.MetadataInfo[StandardMetadata.Kind], 0,
+                            (topic, offset) => Interlocked.Increment(ref offset));
+
+            bool isEmpty = offsetDict.IsEmpty;
+            if (!offsetDict.TryAdd(queueMsg.Offset, queue.Id)) {
                 return false;
             }
-
-            queue.Enqueue(message);
-            if (Interlocked.Read(ref runtimes) == 0) {
-                wait.Set();
+            queue.Enqueue(queueMsg);
+            if (isEmpty) {
+                waiter.Set();
             }
             return true;
         }
 
-        public bool TryTake(out MetaMessage message)
+        public bool TryTake(out Message message)
         {
-            var queueIndex = Interlocked.Increment(ref index) % queueCount;
-            message = queues[queueIndex].Dequeue();
-
-            return message != null;
-        }
-
-        public MetaMessage Take()
-        {
-            if (Interlocked.Read(ref runtimes) == 0) {
-                wait.WaitOne();
+            int queueIndex;
+            if (!offsetDict.TryGetValue(offset, out queueIndex) || lastQueueIndex == queueIndex) {
+                message = null;
+                return false;
             }
 
-            MetaMessage message;
-            while (!this.TryTake(out message)) {
-                return message;
-            }
+            if (offsetDict.TryRemove(offset, out queueIndex)) {
+                while (true) {
+                    var queueMsg = queues[queueIndex].Dequeue();
+                    if (queueMsg.Offset == offset) {
+                        message = queueMsg as Message;
+                        break;
+                    }
+                    else {
+                        queues[queueIndex].Enqueue(queueMsg);
+                    }
+                }
 
-            return null;
+                Interlocked.Exchange(ref lastQueueIndex, queueIndex);
+                Interlocked.Increment(ref offset);
+                
+                return true;
+            }            
+
+            message = null;
+            return false;
         }
 
-        public void Complete(MetaMessage message)
+        public Message Take()
         {
-            queues[message.QueueId].Ack();
-            if (Interlocked.Read(ref runtimes) == 0) {
-                wait.Set();
+            Message message;
+            if (!this.TryTake(out message)) {
+                waiter.WaitOne();
+            }
+
+            return message;
+        }
+
+        public void Complete(Message message)
+        {
+            var queueMsg = message as QueueMessage;
+            if (queueMsg == null)
+                return;
+
+            int completeQueueIndex = queueMsg.QueueId;
+            if (Interlocked.CompareExchange(ref lastQueueIndex, -1, completeQueueIndex) == completeQueueIndex) {
+                waiter.Set();
             }
         }
     }

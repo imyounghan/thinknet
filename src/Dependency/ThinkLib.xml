@@ -292,6 +292,17 @@
             删除存在key的元素
             </summary>
         </member>
+        <member name="T:System.Collections.Concurrent.ConcurrentQueueExtensions">
+            <summary>
+            ConcurrentQueue 的扩展类
+            </summary>
+        </member>
+        <member name="M:System.Collections.Concurrent.ConcurrentQueueExtensions.Dequeue``1(System.Collections.Concurrent.ConcurrentQueue{``0})">
+            <summary>
+            移除并返回位于队列开始处的元素。
+            </summary>
+            <returns>如果成功移除返回队列开始处的元素，否则返回该泛型的默认值。</returns>
+        </member>
         <member name="T:System.Data.DataReaderExtentions">
             <summary>
             对 <see cref="T:System.Data.IDataReader"/> 的扩展
@@ -1108,7 +1119,7 @@
         </member>
         <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.Exception,System.String,System.Object[])">
             <summary>
-            写一个调试日志。
+            写日志。
             </summary>
         </member>
         <member name="T:ThinkLib.Logging.LoggingLevel">

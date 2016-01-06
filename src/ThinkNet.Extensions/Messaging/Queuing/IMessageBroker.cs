@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿
 namespace ThinkNet.Messaging.Queuing
 {
     public interface IMessageBroker
     {
-        bool TryAdd(MetaMessage message);
+        bool TryAdd(Message message);
 
-        bool TryGet(out MetaMessage message);
+        bool TryTake(out Message message);
 
-        MetaMessage Take();
+        Message Take();
 
-        void Complete(MetaMessage message);
+        void Complete(Message message);
     }
 }

@@ -9,7 +9,20 @@ namespace ThinkNet.Messaging
     public class CommandBus : AbstractBus, ICommandBus
     {
         private readonly IMessageSender messageSender;
-        private readonly ICommandResultManager _commandResultManager;
+        private readonly ICommandResultManager commandResultManager;
+        private readonly IRoutingKeyProvider routingKeyProvider;
+        private readonly IMetadataProvider metadataProvider;
+
+        public CommandBus(IMessageSender messageSender,
+            ICommandResultManager commandResultManager,
+            IRoutingKeyProvider routingKeyProvider,
+            IMetadataProvider metadataProvider)
+        {
+            this.messageSender = messageSender;
+            this.commandResultManager = commandResultManager;
+            this.routingKeyProvider = routingKeyProvider;
+            this.metadataProvider = metadataProvider;
+        }
 
         protected override bool SearchMatchType(Type type)
         {
@@ -17,7 +30,7 @@ namespace ThinkNet.Messaging
         }
         public Task<CommandResult> SendAsync(ICommand command, CommandReplyType commandReplyType)
         {
-            var task = _commandResultManager.RegisterCommand(command, commandReplyType);
+            var task = commandResultManager.RegisterCommand(command, commandReplyType);
 
             this.Send(command);
 
@@ -36,12 +49,13 @@ namespace ThinkNet.Messaging
         }
 
 
-        private static MetaMessage Map(ICommand command)
+        private Message Map(ICommand command)
         {
-            return new MetaMessage {
+            return new Message {
                 Body = command,
-                Topic = "Command",
-                RoutingKey = command.GetRoutingKey()
+                MetadataInfo = metadataProvider.GetMetadata(command),
+                RoutingKey = routingKeyProvider.GetRoutingKey(command),
+                CreatedTime = DateTime.UtcNow
             };
         }
     }
