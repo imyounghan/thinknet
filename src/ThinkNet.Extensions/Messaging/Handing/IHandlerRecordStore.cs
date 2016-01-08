@@ -1,6 +1,4 @@
-﻿
-using System;
-using ThinkNet.Annotation;
+﻿using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {

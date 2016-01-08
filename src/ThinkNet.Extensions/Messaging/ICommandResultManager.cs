@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
+    [RequiredComponent(typeof(DefaultCommandResultManager))]
     /// <summary>
     /// 表示命令结果管理器的接口
     /// </summary>
@@ -12,7 +14,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 注册当前命令到管理器
         /// </summary>
-        Task<CommandResult> RegisterCommand(ICommand command, CommandReplyType commandReturnType);
+        Task<CommandResult> RegisterCommand(ICommand command, CommandReplyType commandReplyType);
 
         /// <summary>
         /// 通知命令已完成
@@ -42,9 +44,9 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 注册一个命令
         /// </summary>
-        public Task<CommandResult> RegisterCommand(ICommand command, CommandReplyType commandReturnType)
+        public Task<CommandResult> RegisterCommand(ICommand command, CommandReplyType commandReplyType)
         {
-            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, key => new CommandTaskCompletionSource(commandReturnType));
+            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, key => new CommandTaskCompletionSource(commandReplyType));
 
             return commandTaskCompletionSource.TaskCompletionSource.Task;
         }
@@ -76,10 +78,10 @@ namespace ThinkNet.Messaging
             CommandTaskCompletionSource commandTaskCompletionSource;
             bool completed = false;
             if(_commandTaskDict.TryGetValue(commandId, out commandTaskCompletionSource)) {
-                if(commandTaskCompletionSource.CommandReturnType == CommandReplyType.CommandExecuted) {
+                if (commandTaskCompletionSource.CommandReplyType == CommandReplyType.CommandExecuted) {
                     completed = true;
                 }
-                else if(commandTaskCompletionSource.CommandReturnType == CommandReplyType.DomainEventHandled) {
+                else if (commandTaskCompletionSource.CommandReplyType == CommandReplyType.DomainEventHandled) {
                     completed = (status == CommandStatus.Failed || status == CommandStatus.NothingChanged);
                 }
             }
@@ -94,14 +96,14 @@ namespace ThinkNet.Messaging
 
         class CommandTaskCompletionSource
         {
-            public CommandTaskCompletionSource(CommandReplyType commandReturnType)
+            public CommandTaskCompletionSource(CommandReplyType commandReplyType)
             {
-                this.CommandReturnType = commandReturnType;
+                this.CommandReplyType = commandReplyType;
                 this.TaskCompletionSource = new TaskCompletionSource<CommandResult>();
             }
 
             public TaskCompletionSource<CommandResult> TaskCompletionSource { get; set; }
-            public CommandReplyType CommandReturnType { get; set; }
+            public CommandReplyType CommandReplyType { get; set; }
         }
     }
 }

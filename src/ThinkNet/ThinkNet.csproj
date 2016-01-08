@@ -78,6 +78,7 @@
     <Compile Include="Messaging\CommandStatus.cs" />
     <Compile Include="Messaging\Command.cs" />
     <Compile Include="Messaging\Event.cs" />
+    <Compile Include="Infrastructure\HandleOnlyOnceAttribute.cs" />
     <Compile Include="Messaging\ICommand.cs" />
     <Compile Include="Messaging\ICommandBus.cs" />
     <Compile Include="Messaging\ICommandContext.cs" />

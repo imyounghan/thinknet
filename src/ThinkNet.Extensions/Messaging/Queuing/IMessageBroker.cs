@@ -1,6 +1,8 @@
-﻿
+﻿using ThinkNet.Infrastructure;
+
 namespace ThinkNet.Messaging.Queuing
 {
+    [RequiredComponent(typeof(DefaultMessageBroker))]
     public interface IMessageBroker
     {
         bool TryAdd(Message message);

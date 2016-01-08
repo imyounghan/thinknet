@@ -11,11 +11,11 @@ namespace ThinkNet.EventSourcing
         /// <summary>
         /// 获取最新的快照。
         /// </summary>
-        SnapshotData GetLastest(SourceKey sourceKey);
+        Tuple<int, byte[]> GetLastest(SourceKey sourceKey);
         /// <summary>
         /// 存储聚合快照。
         /// </summary>
-        void Save(SnapshotData snapshot);
+        void Save(SourceKey sourceKey, int version, byte[] snapshot);
         /// <summary>
         /// 从存储中删除快照。
         /// </summary>

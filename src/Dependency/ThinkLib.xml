@@ -1017,27 +1017,77 @@
             写日志接口
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.String)">
+        <member name="M:ThinkLib.Logging.ILogger.Debug(System.Object)">
             <summary>
             写日志。
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.String,System.Object[])">
+        <member name="M:ThinkLib.Logging.ILogger.Debug(System.Object,System.Exception)">
             <summary>
             写日志。
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.Exception)">
+        <member name="M:ThinkLib.Logging.ILogger.DebugFormat(System.String,System.Object[])">
             <summary>
             写日志。
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.Exception,System.String)">
+        <member name="M:ThinkLib.Logging.ILogger.Info(System.Object)">
             <summary>
             写日志。
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.ILogger.Write(ThinkLib.Logging.LoggingLevel,System.Exception,System.String,System.Object[])">
+        <member name="M:ThinkLib.Logging.ILogger.Info(System.Object,System.Exception)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.InfoFormat(System.String,System.Object[])">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Warn(System.Object)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Warn(System.Object,System.Exception)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.WarnFormat(System.String,System.Object[])">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Error(System.Object)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Error(System.Object,System.Exception)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.ErrorFormat(System.String,System.Object[])">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Fatal(System.Object)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.Fatal(System.Object,System.Exception)">
+            <summary>
+            写日志。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Logging.ILogger.FatalFormat(System.String,System.Object[])">
             <summary>
             写日志。
             </summary>
@@ -1097,59 +1147,59 @@
             获取写日志接口。
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.String)">
+        <member name="T:ThinkLib.Logging.LoggerExtensions">
             <summary>
-            写日志。
+            <see cref="T:ThinkLib.Logging.ILogger"/> 的扩展方法类
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.String,System.Object[])">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Debug(ThinkLib.Logging.ILogger,System.Exception)">
             <summary>
-            写日志。
+            写日志
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.Exception)">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Debug(ThinkLib.Logging.ILogger,System.Exception,System.String,System.Object[])">
             <summary>
-            写日志。
+            写日志
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.Exception,System.String)">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Info(ThinkLib.Logging.ILogger,System.Exception)">
             <summary>
-            写日志。
+            写日志
             </summary>
         </member>
-        <member name="M:ThinkLib.Logging.DefaultLoggerProvider.Logger.Write(ThinkLib.Logging.LoggingLevel,System.Exception,System.String,System.Object[])">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Info(ThinkLib.Logging.ILogger,System.Exception,System.String,System.Object[])">
             <summary>
-            写日志。
+            写日志
             </summary>
         </member>
-        <member name="T:ThinkLib.Logging.LoggingLevel">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Warn(ThinkLib.Logging.ILogger,System.Exception)">
             <summary>
-            日志级别
+            写日志
             </summary>
         </member>
-        <member name="F:ThinkLib.Logging.LoggingLevel.DEBUG">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Warn(ThinkLib.Logging.ILogger,System.Exception,System.String,System.Object[])">
             <summary>
-            调试
+            写日志
             </summary>
         </member>
-        <member name="F:ThinkLib.Logging.LoggingLevel.INFO">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Error(ThinkLib.Logging.ILogger,System.Exception)">
             <summary>
-            信息
+            写日志
             </summary>
         </member>
-        <member name="F:ThinkLib.Logging.LoggingLevel.WARN">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Error(ThinkLib.Logging.ILogger,System.Exception,System.String,System.Object[])">
             <summary>
-            警告
+            写日志
             </summary>
         </member>
-        <member name="F:ThinkLib.Logging.LoggingLevel.ERROR">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Fatal(ThinkLib.Logging.ILogger,System.Exception)">
             <summary>
-            错误
+            写日志
             </summary>
         </member>
-        <member name="F:ThinkLib.Logging.LoggingLevel.FATAL">
+        <member name="M:ThinkLib.Logging.LoggerExtensions.Fatal(ThinkLib.Logging.ILogger,System.Exception,System.String,System.Object[])">
             <summary>
-            致命
+            写日志
             </summary>
         </member>
         <member name="T:ThinkLib.Logging.LogManager">
@@ -1413,14 +1463,19 @@
             判断文件是否存在
             </summary>
         </member>
-        <member name="M:ThinkLib.Utilities.FileUtils.FileMove(System.String,System.String)">
+        <member name="M:ThinkLib.Utilities.FileUtils.CreateFile(System.String)">
+            <summary>
+            创建文件
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.FileUtils.MoveFile(System.String,System.String)">
             <summary>
             移动文件
             </summary>
             <param name="sourceFileName">移动文件</param>
             <param name="destFileName">目标文件</param>
         </member>
-        <member name="M:ThinkLib.Utilities.FileUtils.FileCopy(System.String,System.String,System.Boolean)">
+        <member name="M:ThinkLib.Utilities.FileUtils.CopyFile(System.String,System.String,System.Boolean)">
             <summary>
             复制文件
             </summary>
@@ -1428,7 +1483,7 @@
             <param name="destFileName">目标文件</param>
             <param name="overwrite">若为 true，则允许覆盖现有文件；否则为 false。</param>
         </member>
-        <member name="M:ThinkLib.Utilities.FileUtils.FileDelete(System.String)">
+        <member name="M:ThinkLib.Utilities.FileUtils.DeleteFile(System.String)">
             <summary>
             删除文件
             </summary>

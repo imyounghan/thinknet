@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using ThinkLib.Caching;
-using ThinkNet.Annotation;
-using ThinkNet.Infrastructure.Serialization;
+
 
 namespace ThinkNet.Infrastructure
 {
@@ -29,19 +30,33 @@ namespace ThinkNet.Infrastructure
     internal class MemoryCache : IMemoryCache
     {
         internal readonly static IMemoryCache Instance = new MemoryCache();
-        private MemoryCache()
-        { }
 
-        private readonly IBinarySerializer _serializer;
+        private readonly BinaryFormatter _serializer;
         private readonly bool _enabled;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public MemoryCache(IBinarySerializer serializer)
+        public MemoryCache()
         {
-            this._serializer = serializer;
+            this._serializer = new BinaryFormatter();
             this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].Safe("false").ToBoolean();
         }
+
+        private byte[] Serialize(object obj)
+        {
+            using (var stream = new MemoryStream()) {
+                _serializer.Serialize(stream, obj);
+                return stream.ToArray();
+            }
+        }
+
+        private object Deserialize(byte[] data)
+        {
+            using (var stream = new MemoryStream(data)) {
+                return _serializer.Deserialize(stream);
+            }
+        }
+
         /// <summary>
         /// 从缓存中获取该类型的实例。
         /// </summary>
@@ -64,7 +79,7 @@ namespace ThinkNet.Infrastructure
             if (data == null)
                 return null;
 
-            return _serializer.Deserialize((byte[])data, type);
+            return this.Deserialize((byte[])data);
         }
         /// <summary>
         /// 设置实例到缓存
@@ -82,7 +97,7 @@ namespace ThinkNet.Infrastructure
             string cacheRegion = GetCacheRegion(type);
             string cacheKey = BuildCacheKey(type, key);
 
-            var data = _serializer.Serialize(entity);
+            var data = this.Serialize(entity);
 
             lock (cacheKey) {
                 CacheManager.GetCache(cacheRegion).Put(cacheKey, data);

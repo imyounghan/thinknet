@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ThinkLib.Scheduling;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Queuing;
 
 namespace ThinkNet.Messaging
 {
+    [RequiredComponent(typeof(DefaultMessageReceiver))]
     public interface IMessageReceiver
     {
         /// <summary>
@@ -47,7 +49,7 @@ namespace ThinkNet.Messaging
                     }, this, TaskCreationOptions.PreferFairness)
                     .ContinueWith(task => {
                         broker.Complete(task.Result);
-                    }, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnFaulted | TaskContinuationOptions.PreferFairness);
+                    }, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.PreferFairness);
             }
         }
 

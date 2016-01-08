@@ -1,4 +1,4 @@
-﻿using ThinkNet.Annotation;
+﻿using ThinkNet.Infrastructure;
 
 namespace ThinkNet.EventSourcing
 {

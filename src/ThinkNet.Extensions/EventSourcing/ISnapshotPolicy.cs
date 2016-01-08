@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Reflection;
-using ThinkNet.Annotation;
+using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
 
 namespace ThinkNet.EventSourcing

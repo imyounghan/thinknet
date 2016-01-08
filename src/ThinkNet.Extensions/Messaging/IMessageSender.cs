@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Queuing;
 
 namespace ThinkNet.Messaging
 {
+    [RequiredComponent(typeof(DefaultMessageSender))]
     public interface IMessageSender
     {
         void Send(Message message);

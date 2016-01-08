@@ -50,35 +50,33 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Annotation\CacheRegionAttribute.cs" />
-    <Compile Include="Annotation\Lifecycle.cs" />
-    <Compile Include="Annotation\LifeCycleAttribute.cs" />
-    <Compile Include="Annotation\RegisterComponentAttribute.cs" />
-    <Compile Include="Annotation\RequiredComponentAttribute.cs" />
+    <Compile Include="Infrastructure\CacheRegionAttribute.cs" />
+    <Compile Include="Infrastructure\LifeCycleAttribute.cs" />
+    <Compile Include="Infrastructure\RegisterComponentAttribute.cs" />
+    <Compile Include="Infrastructure\RequiredComponentAttribute.cs" />
     <Compile Include="EventSourcing\SourceKey.cs" />
-    <Compile Include="EventSourcing\EventData.cs" />
-    <Compile Include="EventSourcing\SnapshotData.cs" />
     <Compile Include="Infrastructure\DataContextExtentions.cs" />
+    <Compile Include="Infrastructure\DisposableObject.cs" />
     <Compile Include="Infrastructure\IDataContext.cs" />
     <Compile Include="Infrastructure\IDataContextFactory.cs" />
     <Compile Include="Infrastructure\IInitializer.cs" />
+    <Compile Include="Infrastructure\IMemoryCache.cs" />
     <Compile Include="Infrastructure\IMetadataProvider.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
     <Compile Include="Infrastructure\StandardMetadata.cs" />
     <Compile Include="Infrastructure\StandardMetadataProvider.cs" />
+    <Compile Include="Kernel\Repository.cs" />
     <Compile Include="Messaging\CommandBus.cs" />
     <Compile Include="Messaging\EventBus.cs" />
     <Compile Include="Messaging\ICommandResultManager.cs" />
     <Compile Include="EventSourcing\EventPublishedVersionInMemory.cs" />
     <Compile Include="EventSourcing\IEventPublishedVersionStore.cs" />
-    <Compile Include="EventSourcing\IEventSourcedFactory.cs" />
+    <Compile Include="Kernel\IAggregateRootFactory.cs" />
     <Compile Include="EventSourcing\IEventStore.cs" />
     <Compile Include="EventSourcing\ISnapshotPolicy.cs" />
     <Compile Include="EventSourcing\ISnapshotStore.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Messaging\AbstractBus.cs" />
-    <Compile Include="Messaging\Handing\HandlerWrapper.cs" />
-    <Compile Include="Messaging\Handing\IProxyHandler.cs" />
     <Compile Include="Messaging\Handing\HandlerRecordInMemory.cs" />
     <Compile Include="Messaging\Handing\IHandlerRecordStore.cs" />
     <Compile Include="Messaging\IMessageReceiver.cs" />
