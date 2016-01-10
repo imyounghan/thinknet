@@ -65,9 +65,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public static bool operator ==(Entity<TIdentify> left, Entity<TIdentify> right)
         {
-            return Object.Equals(left, null)
-                ? (Object.Equals(right, null))
-                : left.Equals(right);
+            return IsEqual(left, right);
         }
 
         /// <summary>
@@ -78,5 +76,13 @@ namespace ThinkNet.Infrastructure
             return !(left == right);
         }
 
+
+        private static bool IsEqual(Entity<TIdentify> left, Entity<TIdentify> right)
+        {
+            if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null)) {
+                return false;
+            }
+            return ReferenceEquals(left, null) || left.Equals(right);
+        }
     }
 }

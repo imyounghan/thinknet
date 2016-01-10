@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Sunsoft Studio(mail:young.han@foxmail.com)")]
 [assembly: AssemblyProduct("ThinkNet")]
 [assembly: AssemblyCopyright("Copyright © 2015 Sunsoft Studio")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("Sunsoft")]
 [assembly: AssemblyCulture("")]
 
 // 将 ComVisible 设置为 false 使此程序集中的类型

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkNet.Infrastructure;
+using ThinkNet.Common;
 
 
 namespace ThinkNet.Messaging
@@ -10,7 +10,7 @@ namespace ThinkNet.Messaging
     /// </summary>
     [DataContract]
     [Serializable]
-    public abstract class Command : Message, ICommand
+    public abstract class Command : ICommand
     {
 
         /// <summary>
@@ -23,8 +23,14 @@ namespace ThinkNet.Messaging
         /// Parameterized Constructor.
         /// </summary>
         protected Command(string id)
-            : base(id)
-        { }
+        {
+            this.Id = id.Safe(GuidUtil.NewSequentialId().ToString());
+        }
+
+        /// <summary>
+        /// 命令标识
+        /// </summary>
+        public string Id { get; private set; }
 
         /// <summary>
         /// 获取聚合根标识的字符串形式
@@ -32,6 +38,12 @@ namespace ThinkNet.Messaging
         protected virtual string GetAggregateRootStringId()
         {
             return string.Empty;
+        }
+
+        public override string ToString()
+        {
+            return string.Concat(this.GetType().FullName, "@", this.Id);
+            //return this.GetAggregateRootStringId().Safe(this.Id);
         }
         
         [IgnoreDataMember]

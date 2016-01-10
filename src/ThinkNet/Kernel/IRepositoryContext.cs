@@ -1,5 +1,5 @@
 ﻿using System;
-using ThinkNet.Infrastructure;
+using ThinkNet.Common;
 
 namespace ThinkNet.Kernel
 {

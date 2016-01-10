@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ThinkLib.Logging;
+using ThinkNet.Common;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
@@ -21,7 +22,6 @@ namespace ThinkNet.Kernel
         private readonly IMemoryCache _cache;
         private readonly IEventBus _eventBus;
         private readonly IAggregateRootFactory _aggregateFactory;
-        private readonly ITextSerializer _textSerializer;
         private readonly IBinarySerializer _binarySerializer;
 
         /// <summary>
@@ -32,7 +32,8 @@ namespace ThinkNet.Kernel
             ISnapshotPolicy snapshotPolicy,
             IMemoryCache cache,
             IEventBus eventBus,
-            IAggregateRootFactory aggregateFactory)
+            IAggregateRootFactory aggregateFactory,
+            IBinarySerializer binarySerializer)
         {
             this._eventStore = eventStore;
             this._snapshotStore = snapshotStore;
@@ -40,16 +41,18 @@ namespace ThinkNet.Kernel
             this._cache = cache;
             this._eventBus = eventBus;
             this._aggregateFactory = aggregateFactory;
+            this._binarySerializer = binarySerializer;
         }
 
         /// <summary>
         /// 根据主键获取聚合根实例。
         /// </summary>
-        public TAggregateRoot Find<TAggregateRoot>(object aggregateRootId)
-            where TAggregateRoot : class, IEventSourced
+        public IEventSourced Find(Type aggregateRootType, object aggregateRootId)
         {
-            var aggregateRootType = typeof(TAggregateRoot);
-            var aggregateRoot = _cache.Get(aggregateRootType, aggregateRootId) as TAggregateRoot;
+            if (!aggregateRootType.IsAssignableFrom(typeof(IEventSourced))) {
+            }
+
+            var aggregateRoot = _cache.Get(aggregateRootType, aggregateRootId) as IEventSourced;
 
             if (aggregateRoot != null) {
                 LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root {0} of id {1} from cache.",
@@ -58,11 +61,11 @@ namespace ThinkNet.Kernel
                 return aggregateRoot;
             }
 
-            var sourceKey = new SourceKey(aggregateRootId.ToString(), aggregateRootType);
+            var sourceKey = new SourceKey(aggregateRootId, aggregateRootType);
             try {
                 var snapshot = _snapshotStore.GetLastest(sourceKey);
                 if (snapshot != null) {
-                    aggregateRoot = _binarySerializer.Deserialize(snapshot.Item2, aggregateRootType) as TAggregateRoot;
+                    aggregateRoot = _binarySerializer.Deserialize(snapshot.Payload, aggregateRootType) as IEventSourced;
                     LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root {0} of id {1} from snapshot. version:{2}.",
                         aggregateRootType.FullName, aggregateRootId, aggregateRoot.Version);
                 }                
@@ -74,10 +77,10 @@ namespace ThinkNet.Kernel
             }
 
             if (aggregateRoot == null) {
-                aggregateRoot = _aggregateFactory.Create<TAggregateRoot>(aggregateRootId);
+                aggregateRoot = _aggregateFactory.Create(aggregateRootType, aggregateRootId) as IEventSourced;
             }
 
-            var events = _eventStore.FindAll(sourceKey, aggregateRoot.Version).Select(_textSerializer.Serialize).Cast<IVersionedEvent>().OrderBy(p => p.Version);
+            var events = _eventStore.FindAll(sourceKey, aggregateRoot.Version).Select(Deserialize).OfType<IVersionedEvent>().OrderBy(p => p.Version);
             if (!events.IsEmpty()) {
                 aggregateRoot.LoadFrom(events);
                 LogManager.GetLogger("ThinkNet").InfoFormat("restore the aggregate root {0} of id {1} from events. version:{2} ~ {3}",
@@ -89,11 +92,37 @@ namespace ThinkNet.Kernel
             return aggregateRoot;
         }
 
+        private object Deserialize(Stream stream)
+        {
+            return _binarySerializer.Deserialize(stream.Payload, stream.GetSourceType());
+        }
+
+        private Stream Serialize(IVersionedEvent @event)
+        {
+            return new Stream() {
+                Key = new SourceKey(@event.Id, @event.GetType()),
+                Version = @event.Version,
+                Payload = _binarySerializer.Serialize(@event)
+            };
+        }
+
+        private Stream Serialize(SourceKey sourceKey, IEventSourced aggregateRoot)
+        {
+            return new Stream() {
+                Key = sourceKey,
+                Version = aggregateRoot.Version,
+                Payload = _binarySerializer.Serialize(aggregateRoot)
+            };
+        }
+
 
         private VersionedEventStream Convert(SourceKey source, string correlationId, IEnumerable<IVersionedEvent> events)
         {
             return new VersionedEventStream {
-                AggregateRoot = source,
+                SourceAssemblyName = source.AssemblyName,
+                SourceNamespace = source.Namespace,
+                SourceTypeName = source.TypeName,
+                SourceId = source.SourceId,
                 CommandId = correlationId,
                 StartVersion = events.Min(item => item.Version),
                 EndVersion = events.Max(item => item.Version),
@@ -104,25 +133,24 @@ namespace ThinkNet.Kernel
         /// <summary>
         /// 保存聚合事件。
         /// </summary>
-        public void Save<TAggregateRoot>(TAggregateRoot aggregateRoot, string correlationId)
-            where TAggregateRoot : class, IEventSourced
+        public void Save(IEventSourced aggregateRoot, string correlationId)
         {
             if (string.IsNullOrWhiteSpace(correlationId)) {
                 LogManager.GetLogger("ThinkNet").Warn("Not use command to modify the state of the aggregate root.");
             }
 
             Type aggregateRootType = aggregateRoot.GetType();
-            string aggregateRootId = aggregateRoot.Id.ToString();
+            object aggregateRootId = aggregateRoot.Id;
             IEnumerable<IVersionedEvent> events = aggregateRoot.GetEvents();
             var key = new SourceKey(aggregateRootId, aggregateRootType);
 
             if (!_eventStore.EventPersisted(key, correlationId)) {
-                _eventStore.Save(key, correlationId, events.ToDictionary(item => item.Version, item => _textSerializer.Serialize(item)));
+                _eventStore.Save(key, correlationId, events.Select(Serialize));
                 LogManager.GetLogger("ThinkNet").InfoFormat("sourcing events persistent completed. aggregateRootId:{0},aggregateRootType:{1}.",
                     aggregateRootId, aggregateRootType.FullName);
             }
             else {
-                events = _eventStore.FindAll(key, correlationId).Select(_textSerializer.Deserialize).Cast<IVersionedEvent>().OrderBy(p => p.Version);
+                events = _eventStore.FindAll(key, correlationId).Select(Deserialize).OfType<IVersionedEvent>().OrderBy(p => p.Version);
                 LogManager.GetLogger("ThinkNet").InfoFormat("the command generates events have been saved, load from storage. command id:{0}", correlationId);
             }
 
@@ -137,11 +165,12 @@ namespace ThinkNet.Kernel
 
             _cache.Set(aggregateRoot, aggregateRoot.Id);
 
-            if (_snapshotPolicy.ShouldbeCreateSnapshot(aggregateRoot))
+            var snapshot = Serialize(key, aggregateRoot);
+            if (_snapshotPolicy.ShouldbeCreateSnapshot(snapshot))
                 return;
 
             try {
-                _snapshotStore.Save(key, aggregateRoot.Version, _binarySerializer.Serialize(aggregateRoot));
+                _snapshotStore.Save(snapshot);
 
                 LogManager.GetLogger("ThinkNet").InfoFormat("make snapshot completed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
                    aggregateRootId, aggregateRootType.FullName, aggregateRoot.Version);
@@ -153,15 +182,19 @@ namespace ThinkNet.Kernel
             }
         }
                 
+        /// <summary>
+        /// 删除该聚合根下的溯源事件
+        /// </summary>
+        public void Delete(IEventSourced aggregateRoot)
+        {
+            this.Delete(aggregateRoot.GetType(), aggregateRoot.Id);
+        }
 
         /// <summary>
         /// 删除该聚合根下的溯源事件
         /// </summary>
-        public void Delete<TAggregateRoot>(TAggregateRoot aggregateRoot) where TAggregateRoot : class, IEventSourced
+        public void Delete(Type aggregateRootType, object aggregateRootId)
         {
-            Type aggregateRootType = aggregateRoot.GetType();
-            string aggregateRootId = aggregateRoot.Id.ToString();
-
             var key = new SourceKey(aggregateRootId, aggregateRootType);
 
             _snapshotStore.Remove(key);

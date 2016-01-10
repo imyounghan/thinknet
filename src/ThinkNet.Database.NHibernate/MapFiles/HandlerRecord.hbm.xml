@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" default-lazy="false" assembly="ThinkNet.Database" namespace="ThinkNet.Database.Storage">
+  <class name="HandlerRecord" table="thinknet_handlers" lazy="false">
+    <composite-id>
+      <key-property name="CorrelationId" type="string" column="CorrelationId" />
+      <key-property name="HandlerTypeCode" type="int" column="HandlerTypeCode" />
+      <key-property name="MessageTypeCode" type="int" column="MessageTypeCode"/>
+    </composite-id>
+    
+    <property name="Timestamp" type="DateTime" column="OnCreated"  />
+  </class>
+</hibernate-mapping>

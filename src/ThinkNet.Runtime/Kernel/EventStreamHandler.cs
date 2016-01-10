@@ -4,36 +4,36 @@ using System.Threading;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
+using ThinkNet.Messaging.Handling;
 
 
 namespace ThinkNet.Kernel
 {
     public class EventStreamHandler : 
         IMessageHandler<VersionedEventStream>,
-        IMessageHandler<DomainEventStream>
+        IMessageHandler<EventStream>
     {
-        private readonly IMessageExecutor _eventExecutor;
+        private readonly IMessageExecutor _executor;
         private readonly IEventPublishedVersionStore _eventPublishedVersionStore;
 
-        public EventStreamHandler(IMessageExecutor eventExecutor,
+        public EventStreamHandler(IMessageExecutor executor,
             IEventPublishedVersionStore eventPublishedVersionStore)
         {
-            this._eventExecutor = eventExecutor;
+            this._executor = executor;
             this._eventPublishedVersionStore = eventPublishedVersionStore;
         }
 
         public void Handle(VersionedEventStream @event)
         {
-            this.Handle(@event as DomainEventStream);
+            this.Handle(@event as EventStream);
 
             _eventPublishedVersionStore.AddOrUpdatePublishedVersion(
-                @event.AggregateRoot.SourceId,
-                @event.AggregateRoot.SourceTypeName, 
+                new SourceKey(@event.SourceId, @event.SourceNamespace, @event.SourceTypeName, @event.SourceAssemblyName), 
                 @event.StartVersion,
                 @event.EndVersion);
         }
 
-        public void Handle(DomainEventStream @event)
+        public void Handle(EventStream @event)
         {
             if (@event.Events.IsEmpty())
                 return;
@@ -48,7 +48,7 @@ namespace ThinkNet.Kernel
 
             while (count++ < retryTimes) {
                 try {
-                    _eventExecutor.Execute(@event);
+                    _executor.Execute(@event);
                     break;
                 }
                 catch (Exception) {

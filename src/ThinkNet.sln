@@ -1,19 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet", "ThinkNet\ThinkNet.csproj", "{A8FCD0BF-04FC-4628-B376-6861D63D9538}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Extensions", "ThinkNet.Extensions\ThinkNet.Extensions.csproj", "{C7E22377-F468-4D0D-AE71-32158F71AB4C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Runtime", "ThinkNet.Runtime\ThinkNet.Runtime.csproj", "{7DD719E0-5AAA-4878-B259-5D8648D585FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Storage", "ThinkNet.Storage\ThinkNet.Storage.csproj", "{1F193073-7698-455A-9516-3D6F4358ED35}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Database", "ThinkNet.Database\ThinkNet.Database.csproj", "{1F193073-7698-455A-9516-3D6F4358ED35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Storage.EntityFramework", "ThinkNet.Storage.EntityFramework\ThinkNet.Storage.EntityFramework.csproj", "{02BDD654-C2CF-4E20-B74D-E620BB5ED13B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Database.EntityFramework", "ThinkNet.Database.EntityFramework\ThinkNet.Database.EntityFramework.csproj", "{02BDD654-C2CF-4E20-B74D-E620BB5ED13B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Storage.NHibernate", "ThinkNet.Storage.NHibernate\ThinkNet.Storage.NHibernate.csproj", "{1CC1E42F-B984-4668-94B0-EB322F833932}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Database.NHibernate", "ThinkNet.Database.NHibernate\ThinkNet.Database.NHibernate.csproj", "{1CC1E42F-B984-4668-94B0-EB322F833932}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,7 +22,7 @@ Global
 		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|x86 = Release|x86
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution	
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A8FCD0BF-04FC-4628-B376-6861D63D9538}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A8FCD0BF-04FC-4628-B376-6861D63D9538}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8FCD0BF-04FC-4628-B376-6861D63D9538}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -35,16 +33,6 @@ Global
 		{A8FCD0BF-04FC-4628-B376-6861D63D9538}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A8FCD0BF-04FC-4628-B376-6861D63D9538}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A8FCD0BF-04FC-4628-B376-6861D63D9538}.Release|x86.ActiveCfg = Release|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C}.Release|x86.ActiveCfg = Release|Any CPU
 		{7DD719E0-5AAA-4878-B259-5D8648D585FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7DD719E0-5AAA-4878-B259-5D8648D585FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DD719E0-5AAA-4878-B259-5D8648D585FD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -84,17 +72,9 @@ Global
 		{1CC1E42F-B984-4668-94B0-EB322F833932}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1CC1E42F-B984-4668-94B0-EB322F833932}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{1CC1E42F-B984-4668-94B0-EB322F833932}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{1CC1E42F-B984-4668-94B0-EB322F833932}.Release|x86.ActiveCfg = Release|Any CPU		
+		{1CC1E42F-B984-4668-94B0-EB322F833932}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{A8FCD0BF-04FC-4628-B376-6861D63D9538} = {B97AFC77-D0F3-4200-8147-A50A1EA6C3E4}
-		{C7E22377-F468-4D0D-AE71-32158F71AB4C} = {B97AFC77-D0F3-4200-8147-A50A1EA6C3E4}
-		{7DD719E0-5AAA-4878-B259-5D8648D585FD} = {B97AFC77-D0F3-4200-8147-A50A1EA6C3E4}
-		{1F193073-7698-455A-9516-3D6F4358ED35} = {B97AFC77-D0F3-4200-8147-A50A1EA6C3E4}
-		{02BDD654-C2CF-4E20-B74D-E620BB5ED13B} = {B97AFC77-D0F3-4200-8147-A50A1EA6C3E4}
-		{1CC1E42F-B984-4668-94B0-EB322F833932} = {B97AFC77-D0F3-4200-8147-A50A1EA6C3E4}
 	EndGlobalSection
 EndGlobal

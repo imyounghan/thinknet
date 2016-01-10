@@ -41,21 +41,48 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="ThinkLib">
+      <HintPath>..\Dependency\ThinkLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Infrastructure\Ensure.cs" />
-    <Compile Include="Infrastructure\IUnitOfWork.cs" />
+    <Compile Include="Common\CacheRegionAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Common\DisposableObject.cs" />
+    <Compile Include="Common\GuidUtil.cs" />
+    <Compile Include="Common\IInitializer.cs" />
+    <Compile Include="Common\IMemoryCache.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Common\LifeCycleAttribute.cs" />
+    <Compile Include="Common\RegisterComponentAttribute.cs" />
+    <Compile Include="Common\RequiredComponentAttribute.cs" />
+    <Compile Include="EventSourcing\EventPublishedVersionInMemory.cs" />
+    <Compile Include="EventSourcing\IEventPublishedVersionStore.cs" />
+    <Compile Include="EventSourcing\IEventStore.cs" />
+    <Compile Include="EventSourcing\ISnapshotPolicy.cs" />
+    <Compile Include="EventSourcing\ISnapshotStore.cs" />
+    <Compile Include="EventSourcing\SourceKey.cs" />
+    <Compile Include="Common\Ensure.cs" />
+    <Compile Include="Common\IUnitOfWork.cs" />
+    <Compile Include="EventSourcing\Stream.cs" />
+    <Compile Include="Infrastructure\IMetadataProvider.cs" />
+    <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
+    <Compile Include="Infrastructure\StandardMetadata.cs" />
+    <Compile Include="Infrastructure\StandardMetadataProvider.cs" />
     <Compile Include="Kernel\AggregateRoot.cs" />
     <Compile Include="Kernel\AggregateRootException.cs" />
     <Compile Include="Kernel\Event.cs" />
+    <Compile Include="Kernel\EventStream.cs" />
     <Compile Include="Kernel\IAggregateRoot.cs" />
     <Compile Include="Kernel\IRepository.cs" />
     <Compile Include="Kernel\IRepositoryContext.cs" />
     <Compile Include="Kernel\IRepositoryContextFactory.cs" />
     <Compile Include="Kernel\RepositoryExtensions.cs" />
-    <Compile Include="Kernel\EventHandlerNotFoundException.cs" />
     <Compile Include="Kernel\EventSourcedException.cs" />
     <Compile Include="Kernel\IEventSourced.cs" />
     <Compile Include="Kernel\IEventSourcedRepository.cs" />
@@ -66,10 +93,7 @@
     <Compile Include="Infrastructure\Entity.cs" />
     <Compile Include="Infrastructure\EntityExtensions.cs" />
     <Compile Include="Infrastructure\IEntity.cs" />
-    <Compile Include="Infrastructure\IHandler.cs" />
-    <Compile Include="Infrastructure\IMessageHandler.cs" />
-    <Compile Include="Infrastructure\IMessage.cs" />
-    <Compile Include="Infrastructure\Message.cs" />
+    <Compile Include="Messaging\Handling\IHandler.cs" />
     <Compile Include="Infrastructure\ModelValidationResult.cs" />
     <Compile Include="Infrastructure\ValueObject.cs" />
     <Compile Include="Infrastructure\TypeHelper.cs" />
@@ -78,19 +102,27 @@
     <Compile Include="Messaging\CommandStatus.cs" />
     <Compile Include="Messaging\Command.cs" />
     <Compile Include="Messaging\Event.cs" />
-    <Compile Include="Infrastructure\HandleOnlyOnceAttribute.cs" />
+    <Compile Include="Messaging\Handling\JustHandleOnceAttribute.cs" />
+    <Compile Include="Messaging\Handling\HandlerRecordInMemory.cs" />
+    <Compile Include="Messaging\Handling\IHandlerRecordStore.cs" />
+    <Compile Include="Messaging\Handling\IMessageHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Messaging\ICommand.cs" />
     <Compile Include="Messaging\ICommandBus.cs" />
     <Compile Include="Messaging\ICommandContext.cs" />
-    <Compile Include="Messaging\ICommandHandler.cs" />
+    <Compile Include="Messaging\Handling\ICommandHandler.cs" />
     <Compile Include="Messaging\IEvent.cs" />
     <Compile Include="Messaging\IEventBus.cs" />
-    <Compile Include="Messaging\IEventHandler.cs" />
+    <Compile Include="Messaging\Handling\IEventHandler.cs" />
     <Compile Include="Messaging\IEventPublisher.cs" />
-    <Compile Include="Messaging\MessageHandlerNotFoundException.cs" />
-    <Compile Include="Messaging\MessageHandlerTooManyException.cs" />
+    <Compile Include="Messaging\Handling\MessageHandlerNotFoundException.cs" />
+    <Compile Include="Messaging\Handling\MessageHandlerTooManyException.cs" />
+    <Compile Include="Messaging\IMessage.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ThinkNetException.cs" />
+    <Compile Include="Common\ThinkNetException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="thinknet.snk" />

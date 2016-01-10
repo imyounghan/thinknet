@@ -2,6 +2,7 @@
 using System.Linq;
 using ThinkNet.Kernel;
 using ThinkNet.Messaging;
+using ThinkNet.Messaging.Handling;
 
 
 namespace ThinkNet.Infrastructure

@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1F193073-7698-455A-9516-3D6F4358ED35}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ThinkNet.Database</RootNamespace>
+    <AssemblyName>ThinkNet.Database</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\ThinkNet.Storage.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>thinknet.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="ThinkLib">
+      <HintPath>..\Dependency\ThinkLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Infrastructure\RepositoryContextFactory.cs" />
+    <Compile Include="ISortItem.cs" />
+    <Compile Include="MemoryContextFactory.cs" />
+    <Compile Include="Storage\Event.cs" />
+    <Compile Include="Storage\EventPublishedVersion.cs" />
+    <Compile Include="Storage\EventStore.cs" />
+    <Compile Include="Infrastructure\Repository.cs" />
+    <Compile Include="Storage\Snapshot.cs" />
+    <Compile Include="Storage\SnapshotStore.cs" />
+    <Compile Include="Criteria.cs" />
+    <Compile Include="DataContextBase.cs" />
+    <Compile Include="DataContextExtentions.cs" />
+    <Compile Include="ICriteria.cs" />
+    <Compile Include="Storage\EventPublishedVersionStore.cs" />
+    <Compile Include="IDataContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IDataContextFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PageResult.cs" />
+    <Compile Include="Storage\HandlerRecord.cs" />
+    <Compile Include="Storage\HandlerRecordStore.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ILifecycle.cs" />
+    <Compile Include="ISortSet.cs" />
+    <Compile Include="IValidatable.cs" />
+    <Compile Include="LifecycleVeto.cs" />
+    <Compile Include="SortSet.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SqlScripts\mssql.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ThinkNet\ThinkNet.csproj">
+      <Project>{a8fcd0bf-04fc-4628-b376-6861d63d9538}</Project>
+      <Name>ThinkNet</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="thinknet.snk" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkNet.Infrastructure;
+using ThinkNet.Common;
 
 namespace ThinkNet.Messaging
 {
@@ -9,7 +9,7 @@ namespace ThinkNet.Messaging
     /// </summary>
     [DataContract]
     [Serializable]
-    public abstract class Event : Message, IEvent
+    public abstract class Event : IEvent
     {
         /// <summary>
         /// Default Constructor.
@@ -21,8 +21,14 @@ namespace ThinkNet.Messaging
         /// Parameterized constructor.
         /// </summary>
         protected Event(string id)
-            : base(id)
-        { }
+        {
+            this.Id = id.Safe(GuidUtil.NewSequentialId().ToString());
+        }
+
+        /// <summary>
+        /// 事件标识
+        /// </summary>
+        public string Id { get; private set; }
 
         /// <summary>
         /// 获取源标识的字符串形式
@@ -30,6 +36,12 @@ namespace ThinkNet.Messaging
         protected virtual string GetSourceStringId()
         {
             return string.Empty;
+        }
+
+        public override string ToString()
+        {
+            return string.Concat(this.GetType().FullName, "@", this.Id);
+            //return this.GetSourceStringId().Safe(this.Id);
         }
 
         [IgnoreDataMember]

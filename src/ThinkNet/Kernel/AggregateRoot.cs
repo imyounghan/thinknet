@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+using ThinkLib.Logging;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 
@@ -65,10 +66,9 @@ namespace ThinkNet.Kernel
             var aggregateRootType = this.GetType();
             var handler = AggregateRootInnerHandlerUtil.GetEventHandler(aggregateRootType, eventType);
             if (handler == null) {
-                // TODO..警告
-
-                if (@event is IVersionedEvent)
-                    throw new EventHandlerNotFoundException(aggregateRootType, eventType);
+                LogManager.GetLogger("ThinkNet").WarnFormat("Event handler not found on {0} for {1}.",
+                    aggregateRootType.FullName, eventType.FullName);
+                return;
             }
             handler(this, @event);
         }
