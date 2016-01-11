@@ -62,17 +62,18 @@ namespace ThinkNet.Database.Storage
 
             var task = Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
-                    return context.CreateQuery<Event>()
+                    var events = context.CreateQuery<Event>()
                         .Where(p => p.CorrelationId == correlationId &&
                             p.AggregateRootId == sourceKey.SourceId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode)
                         .OrderBy(p => p.Version)
-                        .ToList()
-                        .Select(item => new Stream {
-                            Key = new SourceKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
-                            Version = item.Version,
-                            Payload = item.Payload
-                        }).AsEnumerable();
+                        .ToList();
+
+                    return events.Select(item => new Stream {
+                        Key = new SourceKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
+                        Version = item.Version,
+                        Payload = item.Payload
+                    }).AsEnumerable();
                 }
             });
             task.Wait();
@@ -87,13 +88,14 @@ namespace ThinkNet.Database.Storage
 
             var task = Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
-                    return context.CreateQuery<Event>()
+                    var events =  context.CreateQuery<Event>()
                         .Where(p => p.AggregateRootId == sourceKey.SourceId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode &&
                             p.Version > version)
                         .OrderBy(p => p.Version)
-                        .ToList()
-                        .Select(item => new Stream {
+                        .ToList();
+
+                    return events.Select(item => new Stream {
                             Key = new SourceKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
                             Version = item.Version,
                             Payload = item.Payload

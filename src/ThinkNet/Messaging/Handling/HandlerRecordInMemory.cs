@@ -37,8 +37,6 @@ namespace ThinkNet.Messaging.Handling
             var handlerTypeCode = handlerType.GetHashCode();// _typeCodeProvider.GetTypeCode(handlerType);
 
             this.AddHandlerInfoToMemory(messageId, messageTypeCode, handlerTypeCode);
-
-            this.AddHandlerInfo(messageId, messageTypeCode, handlerTypeCode);
         }
 
 
@@ -47,11 +45,6 @@ namespace ThinkNet.Messaging.Handling
             _handlerInfoSet.Add(new HandlerRecordData(messageId, messageTypeCode, handlerTypeCode));
         }
 
-        /// <summary>
-        /// 添加处理程序信息
-        /// </summary>
-        protected virtual void AddHandlerInfo(string messageId, int messageTypeCode, int handlerTypeCode)
-        { }
         
 
         /// <summary>

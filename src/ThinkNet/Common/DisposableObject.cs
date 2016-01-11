@@ -29,6 +29,19 @@ namespace ThinkNet.Common
         {
             this.Dispose(true);
             GC.SuppressFinalize(this);
+
+            this.disposed = true;
+        }
+
+        private bool disposed;
+
+        /// <summary>
+        /// 表示该对象已释放的异常
+        /// </summary>
+        protected void ThrowIfDisposed()
+        {
+            if (this.disposed)
+                throw new ObjectDisposedException(this.GetType().FullName);
         }
     }
 }

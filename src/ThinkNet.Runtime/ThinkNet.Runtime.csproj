@@ -51,23 +51,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configurations\Bootstrapper.cs" />
+    <Compile Include="Configurations\Configuration.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
-    <Compile Include="Configurations\Lifetime.cs" />
+    <Compile Include="Configurations\Lifecycle.cs" />
+    <Compile Include="Configurations\TinyIoCServiceLocator.cs" />
     <Compile Include="Infrastructure\IAggregateRootFactory.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Messaging\AbstractBus.cs" />
     <Compile Include="Messaging\CommandBus.cs" />
     <Compile Include="Messaging\EventBus.cs" />
-    <Compile Include="Messaging\Handling\DefaultHandlerProvider.cs" />
     <Compile Include="Messaging\ICommandResultManager.cs" />
     <Compile Include="Infrastructure\IBinarySerializer.cs" />
-    <Compile Include="Messaging\Processing\IMessageExecutor.cs" />
-    <Compile Include="Messaging\Processing\MessageExecutor.cs" />
+    <Compile Include="Messaging\Handling\IMessageExecutor.cs" />
+    <Compile Include="Messaging\Handling\MessageExecutor.cs" />
     <Compile Include="Messaging\IMessageReceiver.cs" />
     <Compile Include="Messaging\IMessageSender.cs" />
     <Compile Include="Messaging\Message.cs" />
-    <Compile Include="Messaging\Processing\MessageProcessor.cs">
+    <Compile Include="Messaging\Handling\MessageProcessor.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Infrastructure\SerializerExtensions.cs" />
@@ -80,6 +80,12 @@
     <Compile Include="Messaging\Queuing\IMessageBroker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Kernel\EventStreamHandler.cs" />
+    <Compile Include="TinyIoC\IObjectLifetimeProvider.cs" />
+    <Compile Include="TinyIoC\NamedParameterOverloads.cs" />
+    <Compile Include="TinyIoC\ResolveOptions.cs" />
+    <Compile Include="TinyIoC\SafeDictionary.cs" />
+    <Compile Include="TinyIoC\TinyContainer.cs" />
+    <Compile Include="TinyIoC\TinyIoCExtentions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThinkNet\ThinkNet.csproj">

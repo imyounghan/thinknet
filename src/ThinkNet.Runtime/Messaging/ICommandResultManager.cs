@@ -19,12 +19,12 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 通知命令已完成
         /// </summary>
-        void NotifyCommandCompleted(string commandId, CommandStatus status, Exception exception);
+        void NotifyCommandCompleted(string commandId, CommandStatus status, Exception exception = null);
 
         /// <summary>
         /// 通知命令已执行
         /// </summary>
-        void NotifyCommandExecuted(string commandId, CommandStatus status, Exception exception);
+        void NotifyCommandExecuted(string commandId, CommandStatus status, Exception exception = null);
     }
 
 

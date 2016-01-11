@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
-using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 
 
@@ -25,12 +23,18 @@ namespace ThinkNet.Kernel
 
         public void Handle(VersionedEventStream @event)
         {
-            this.Handle(@event as EventStream);
-
-            _eventPublishedVersionStore.AddOrUpdatePublishedVersion(
-                new SourceKey(@event.SourceId, @event.SourceNamespace, @event.SourceTypeName, @event.SourceAssemblyName), 
-                @event.StartVersion,
-                @event.EndVersion);
+            try {
+                this.Handle(@event as EventStream);
+            }
+            catch (Exception) {
+                throw;
+            }
+            finally {
+                _eventPublishedVersionStore.AddOrUpdatePublishedVersion(
+                    new SourceKey(@event.SourceId, @event.SourceNamespace, @event.SourceTypeName, @event.SourceAssemblyName),
+                    @event.StartVersion,
+                    @event.EndVersion);
+            }
         }
 
         public void Handle(EventStream @event)
@@ -38,26 +42,7 @@ namespace ThinkNet.Kernel
             if (@event.Events.IsEmpty())
                 return;
 
-            @event.Events.ForEach(ExecuteEvent);
-        }
-
-        private void ExecuteEvent(IEvent @event)
-        {
-            int count = 0;
-            int retryTimes = 1;
-
-            while (count++ < retryTimes) {
-                try {
-                    _executor.Execute(@event);
-                    break;
-                }
-                catch (Exception) {
-                    if (count == retryTimes)
-                        throw;
-                    else
-                        Thread.Sleep(1000);
-                }
-            }
+            @event.Events.ForEach(_executor.Execute);
         }
     }
 }

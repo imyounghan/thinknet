@@ -4,7 +4,7 @@ namespace ThinkNet.Configurations
     /// <summary>
     /// 生命周期类型
     /// </summary>
-    public enum Lifetime : byte
+    public enum Lifecycle : byte
     {
         /// <summary>
         /// 每次都构造一个新实例
@@ -19,8 +19,8 @@ namespace ThinkNet.Configurations
         /// </summary>
         PerThread,
         /// <summary>
-        /// 同一个请求
+        /// 同一个会话
         /// </summary>
-        PerRequest,
+        PerSession,
     }
 }

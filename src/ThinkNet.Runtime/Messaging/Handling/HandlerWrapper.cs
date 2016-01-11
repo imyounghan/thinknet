@@ -52,8 +52,10 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            if (_lifetime != LifeCycleAttribute.Lifecycle.Singleton && disposing && _handler is IDisposable) {
-                ((IDisposable)_handler).Dispose();
+            if (_lifetime != LifeCycleAttribute.Lifecycle.Singleton && disposing) {
+                using (_handler as IDisposable) {
+                    // Dispose handler if it's disposable.
+                }
             }
         }
 

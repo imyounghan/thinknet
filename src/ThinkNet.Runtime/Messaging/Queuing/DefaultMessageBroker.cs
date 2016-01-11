@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using ThinkNet.Common;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Queuing

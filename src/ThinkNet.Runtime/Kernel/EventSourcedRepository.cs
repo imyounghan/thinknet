@@ -160,8 +160,8 @@ namespace ThinkNet.Kernel
             else {
                 _eventBus.Publish(Convert(key, correlationId, events));
             }
-            LogManager.GetLogger("ThinkNet").InfoFormat("publish all events. event ids: [{0}]",
-                string.Join(",", events.Select(@event => @event.Id).ToArray()));
+            LogManager.GetLogger("ThinkNet").InfoFormat("publish all events. event: [{0}]",
+                string.Join("|", events.Select(@event => @event.ToString())));
 
             _cache.Set(aggregateRoot, aggregateRoot.Id);
 

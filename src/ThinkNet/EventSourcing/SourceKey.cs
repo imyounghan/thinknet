@@ -84,7 +84,12 @@ namespace ThinkNet.EventSourcing
 
         public override bool Equals(object obj)
         {
-            return base.Equals(obj);
+            if (obj.IsNull() || obj.GetType() != typeof(SourceKey))
+                return false;
+
+            SourceKey other = (SourceKey)obj;
+
+            return IsEqual(this, other);
         }
 
         public override int GetHashCode()

@@ -1,7 +1,8 @@
-﻿using ThinkNet.Messaging;
-
-namespace ThinkNet.Infrastructure
+﻿
+using ThinkNet.Common;
+namespace ThinkNet.Messaging.Handling
 {
+    [RequiredComponent(typeof(MessageExecutor))]
     public interface IMessageExecutor
     {
         /// <summary>
