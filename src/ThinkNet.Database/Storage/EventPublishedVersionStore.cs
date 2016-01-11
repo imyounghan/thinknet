@@ -37,6 +37,9 @@ namespace ThinkNet.Database.Storage
                     else if (versionData.Version + 1 == startVersion) {
                         versionData.Version = endVersion;
                     }
+                    else {
+                        return;
+                    }
                     context.Commit();
                 }
             }).Wait();

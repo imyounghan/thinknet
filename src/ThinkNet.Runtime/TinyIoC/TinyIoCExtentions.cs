@@ -8,7 +8,7 @@ namespace TinyIoC
 
     public static class TinyContainerExtentions
     {
-        class PerSessionLifetimeProvider : IObjectLifetimeProvider
+        class PerSessionLifetimeProvider : TinyIoCContainer.ITinyIoCObjectLifetimeProvider
         {
             private readonly string key = Guid.NewGuid().ToString();
 
@@ -32,7 +32,7 @@ namespace TinyIoC
             #endregion
         }
 
-        class PerThreadLifetimeProvider : IObjectLifetimeProvider
+        class PerThreadLifetimeProvider : TinyIoCContainer.ITinyIoCObjectLifetimeProvider
         {
             [ThreadStatic]
             private static Dictionary<Guid, object> values;
@@ -82,14 +82,22 @@ namespace TinyIoC
 
         }
 
-        public static TinyContainer.RegisterOptions AsPerSession(this TinyContainer.RegisterOptions instance)
+        public static TinyIoCContainer.RegisterOptions AsPerSession(this TinyIoCContainer.RegisterOptions registerOptions)
         {
-            return TinyContainer.RegisterOptions.ToCustomLifetimeManager(instance, new PerSessionLifetimeProvider(), "per session singleton");
+            return TinyIoCContainer.RegisterOptions.ToCustomLifetimeManager(registerOptions, new PerSessionLifetimeProvider(), "per session singleton");
+        }
+        public static TinyIoCContainer.MultiRegisterOptions AsPerSession(this TinyIoCContainer.MultiRegisterOptions registerOptions)
+        {
+            return TinyIoCContainer.MultiRegisterOptions.ToCustomLifetimeManager(registerOptions, new PerSessionLifetimeProvider(), "per session singleton");
         }
 
-        public static TinyContainer.RegisterOptions AsPerThread(this TinyContainer.RegisterOptions instance)
+        public static TinyIoCContainer.RegisterOptions AsPerThread(this TinyIoCContainer.RegisterOptions registerOptions)
         {
-            return TinyContainer.RegisterOptions.ToCustomLifetimeManager(instance, new PerThreadLifetimeProvider(), "per thread singleton");
+            return TinyIoCContainer.RegisterOptions.ToCustomLifetimeManager(registerOptions, new PerThreadLifetimeProvider(), "per thread singleton");
+        }
+        public static TinyIoCContainer.MultiRegisterOptions AsPerThread(this TinyIoCContainer.MultiRegisterOptions registerOptions)
+        {
+            return TinyIoCContainer.MultiRegisterOptions.ToCustomLifetimeManager(registerOptions, new PerThreadLifetimeProvider(), "per thread singleton");
         }
     }
 

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // 有关程序集的常规信息通过以下
 // 特性集控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("ThinkNet.Kernel")]
+[assembly: AssemblyTitle("ThinkNet")]
 [assembly: AssemblyDescription("help you to develop DDD+CQRS style application.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Sunsoft Studio(mail:young.han@foxmail.com)")]
@@ -34,4 +34,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: InternalsVisibleTo("ThinkNet.Kernel.Extensions, PublicKey=0024000004800000940000000602000000240000525341310004000001000100cfb3f04799697c03c0ed021b261a0eab73da4c6652e666da067c18ed26793f98f00434a33092dbd1ad841a20fc1097595efc77b8377c17c326b6c28396a88491c4f1915c9eebdf3275064589748bd31210c7b79fd4374a49b391bec250af2c56806b352c712085264d6b4951487c1e796fb09aac3089f09d391da9986f3fbfc4")]
+//[assembly: AssemblyKeyFile("..\\thinknet.snk")]

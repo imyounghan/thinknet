@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Practices.ServiceLocation;
+using ThinkLib.Logging;
 using ThinkLib.Utilities;
 using ThinkNet.Common;
 using TinyIoC;
@@ -153,39 +154,43 @@ namespace ThinkNet.Configurations
             return this.LoadAssemblies(assemblies);
         }
 
+        private void Register(ServiceRegistration registration)
+        {
+            if (registration.RegisterType == null)
+                return;
+
+
+            var container = ServiceLocator.Current.GetInstance<TinyIoCContainer>();
+            if (registration.Instance != null) {
+                container.Register(registration.RegisterType, registration.Instance, registration.Name ?? string.Empty).AsSingleton();
+                return;
+            }
+
+            if (registration.ImplementationType != null) {
+                var options = container.Register(registration.RegisterType, registration.ImplementationType, registration.Name ?? string.Empty);
+                switch (registration.Lifecycle) {
+                    case Lifecycle.Singleton:
+                        options.AsSingleton();
+                        break;
+                    case Lifecycle.Transient:
+                        options.AsMultiInstance();
+                        break;
+                    case Lifecycle.PerSession:
+                        options.AsPerSession();
+                        break;
+                    case Lifecycle.PerThread:
+                        options.AsPerThread();
+                        break;
+                }
+            }
+        }
+
         public void Done()
         {
-            TinyContainer container = new TinyContainer();
+            TinyIoCContainer container = new TinyIoCContainer();
             ServiceLocator.SetLocatorProvider(() => new TinyIoCServiceLocator(container));
 
-            Action<ServiceRegistration> action = new Action<ServiceRegistration>(component => {
-                if (component.RegisterType == null)
-                    return;
-
-                if (component.Instance != null) {
-                    container.Register(component.RegisterType, component.Instance, component.Name ?? string.Empty).AsSingleton();
-                    return;
-                }
-
-                if (component.ImplementationType != null) {
-                    var option =container.Register(component.RegisterType, component.ImplementationType, component.Name ?? string.Empty);
-                    switch (component.Lifecycle) {
-                        case Lifecycle.Singleton:
-                            option.AsSingleton();
-                            break;
-                        case Lifecycle.Transient:
-                            option.AsMultiInstance();
-                            break;
-                        case Lifecycle.PerSession:
-                            option.AsPerSession();
-                            break;
-                        case Lifecycle.PerThread:
-                            option.AsPerThread();
-                            break;
-                    }
-                    return;
-                }
-            });
+            this.Done(Register);
         }
 
 
@@ -193,7 +198,7 @@ namespace ThinkNet.Configurations
         /// <summary>
         /// 配置完成。
         /// </summary>
-        public void Done(Action<ServiceRegistration> registration)
+        public void Done(Action<ServiceRegistration> serviceRegistry)
         {
             if (_running)
                 return;
@@ -202,10 +207,8 @@ namespace ThinkNet.Configurations
             if (_assemblies.Count == 0) {
                 this.LoadAssemblies();
 
-                //if (logger.IsDebugEnabled) {
-                //    logger.Write(LoggingLevel.DEBUG, "load assemblies[{0}] completed.",
-                //        string.Join(",", _assemblies.Select(item => item.FullName).ToArray()));
-                //}
+                LogManager.GetLogger("ThinkNet").DebugFormat("load assemblies[{0}] completed.",
+                    string.Join(",", _assemblies.Select(item => item.FullName)));
             }
 
 
@@ -214,7 +217,7 @@ namespace ThinkNet.Configurations
             allTypes.Where(IsRegisteredComponent).ForEach(RegisterComponent);
             allTypes.Where(IsRequiredComponent).ForEach(RegisterRequiredComponent);
 
-            _registeredComponents.ForEach(registration);
+            _registeredComponents.ForEach(serviceRegistry);
             _initializeTypes.Select(ServiceLocator.Current.GetInstance).OfType<IInitializer>().Concat(_initializers)
                 .ForEach(initializer => initializer.Initialize(allTypes));
             
@@ -226,9 +229,7 @@ namespace ThinkNet.Configurations
 
             _running = true;
 
-            //if (logger.IsDebugEnabled) {
-            //    logger.Write(LoggingLevel.DEBUG, "system is run.");
-            //}
+            LogManager.GetLogger("ThinkNet").Debug("system is running.");
         }
 
         

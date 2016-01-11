@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using ThinkNet.Common;
 using ThinkNet.Messaging.Handling;
 
@@ -22,34 +23,46 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// 添加处理程序信息
         /// </summary>
-        protected override void AddHandlerInfo(string messageId, int messageTypeCode, int handlerTypeCode)
+        public override void AddHandlerInfo(string messageId, string messageType, string handlerType)
         {
-            using (var context = _contextFactory.CreateDataContext()) {
-                if (IsHandlerInfoExist(context, messageId, messageTypeCode, handlerTypeCode))
-                    return;
+            base.AddHandlerInfo(messageId, messageType, handlerType);
 
-                var handlerInfo = new HandlerRecord(messageId, messageTypeCode, handlerTypeCode);
-                context.Save(handlerInfo);
-                context.Commit();
-            }
+            Task.Factory.StartNew((state) => {
+                using (var context = _contextFactory.CreateDataContext()) {
+                    if (IsHandlerInfoExist(context, state as HandlerRecord))
+                        return;
+
+                    context.Save(state);
+                    context.Commit();
+                }
+            }, new HandlerRecord(messageId, messageType, handlerType)).Wait();
+            
         }
 
-        private static bool IsHandlerInfoExist(IDataContext context, string messageId, int messageTypeCode, int handlerTypeCode)
+        private static bool IsHandlerInfoExist(IDataContext context, HandlerRecord handlerRecord)
         {
+            if (handlerRecord == null)
+                return false;
+
             return context.CreateQuery<HandlerRecord>()
-                .Any(p => p.MessageId == messageId &&
-                    p.MessageTypeCode == messageTypeCode &&
-                    p.HandlerTypeCode == handlerTypeCode);
+                .Any(p => p.MessageId == handlerRecord.MessageId &&
+                    p.MessageTypeCode == handlerRecord.MessageTypeCode &&
+                    p.HandlerTypeCode == handlerRecord.HandlerTypeCode);
         }
 
         /// <summary>
         /// 检查该处理程序信息是否存在
         /// </summary>
-        protected override bool IsHandlerInfoExist(string messageId, int messageTypeCode, int handlerTypeCode)
+        protected override bool CheckHandlerInfoExist(string messageId, string messageType, string handlerType)
         {
-            using (var context = _contextFactory.CreateDataContext()) {
-                return IsHandlerInfoExist(context, messageId, messageTypeCode, handlerTypeCode);
-            }
+            var task = Task.Factory.StartNew((state) => {
+                using (var context = _contextFactory.CreateDataContext()) {
+                    return IsHandlerInfoExist(context, state as HandlerRecord);
+                }
+            }, new HandlerRecord(messageId, messageType, handlerType));
+            task.Wait();
+
+            return task.Result;
         } 
     }
 }

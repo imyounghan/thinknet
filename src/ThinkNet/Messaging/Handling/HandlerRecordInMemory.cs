@@ -59,7 +59,7 @@ namespace ThinkNet.Messaging.Handling
                 return true;
             }
 
-            var existence = this.IsHandlerInfoExist(messageId, messageTypeCode, handlerTypeCode);
+            var existence = this.IsHandlerInfoExist(messageId, messageType, handlerType);
             if (existence) {
                 this.AddHandlerInfoToMemory(messageId, messageTypeCode, handlerTypeCode);
             }
@@ -71,7 +71,7 @@ namespace ThinkNet.Messaging.Handling
         /// 检查该处理程序信息是否存在
         /// </summary>
         /// <returns></returns>
-        protected virtual bool IsHandlerInfoExist(string messageId, int messageTypeCode, int handlerTypeCode)
+        protected virtual bool CheckHandlerInfoExist(string messageId, string messageType, string handlerType)
         {
             return false;
         }

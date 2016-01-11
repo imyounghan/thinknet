@@ -28,13 +28,13 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\ThinkNet.Storage.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\ThinkNet.Database.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>thinknet.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\thinknet.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -86,9 +86,6 @@
       <Project>{a8fcd0bf-04fc-4628-b376-6861d63d9538}</Project>
       <Name>ThinkNet</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="thinknet.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

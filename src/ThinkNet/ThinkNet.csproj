@@ -33,15 +33,16 @@
     <DocumentationFile>bin\Release\ThinkNet.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>thinknet.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\thinknet.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="ThinkLib">
@@ -52,6 +53,8 @@
     <Compile Include="Common\CacheRegionAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Common\CachingAttribute.cs" />
+    <Compile Include="Common\CachingMethod.cs" />
     <Compile Include="Common\DisposableObject.cs" />
     <Compile Include="Common\GuidUtil.cs" />
     <Compile Include="Common\IInitializer.cs" />
@@ -123,9 +126,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\ThinkNetException.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="thinknet.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

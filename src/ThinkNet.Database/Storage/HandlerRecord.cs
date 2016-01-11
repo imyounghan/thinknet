@@ -12,19 +12,19 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// Default constructor.
         /// </summary>
-        protected HandlerRecord()
-        {
-            this.Timestamp = DateTime.UtcNow;
-        }
+        public HandlerRecord()
+        { }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public HandlerRecord(string messageId, int messageTypeCode, int handlerTypeCode)
-            : this()
+        public HandlerRecord(string messageId, string messageType, string handlerType)
         {
             this.MessageId = messageId;
-            this.HandlerTypeCode = handlerTypeCode;
-            this.MessageTypeCode = messageTypeCode;
+            this.HandlerTypeCode = handlerType.GetHashCode();
+            this.MessageTypeCode = messageType.GetHashCode();
+            this.HandlerType = handlerType;
+            this.MessageType = messageType;
+            this.Timestamp = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -39,6 +39,15 @@ namespace ThinkNet.Database.Storage
         /// 处理器类型编码
         /// </summary>
         public int HandlerTypeCode { get; set; }
+
+        /// <summary>
+        /// 消息类型名称
+        /// </summary>
+        public string MessageType { get; set; }
+        /// <summary>
+        /// 处理器类型名称
+        /// </summary>
+        public string HandlerType { get; set; }
 
         /// <summary>
         /// 创建时间
