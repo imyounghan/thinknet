@@ -31,6 +31,10 @@ namespace ThinkNet.Database
         /// </summary>
         void Attach(object entity);
         /// <summary>
+        /// 自动保存或更新
+        /// </summary>
+        void SaveOrUpdate(object entity);
+        /// <summary>
         /// 保存 <paramref name="entity"/> 到数据库(提交时会触发sql-insert)
         /// </summary>
         void Save(object entity);

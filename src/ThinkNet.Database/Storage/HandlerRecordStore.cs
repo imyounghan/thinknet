@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ThinkNet.Common;
 using ThinkNet.Messaging.Handling;
@@ -23,7 +24,7 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// 添加处理程序信息
         /// </summary>
-        public override void AddHandlerInfo(string messageId, string messageType, string handlerType)
+        public override void AddHandlerInfo(string messageId, Type messageType, Type handlerType)
         {
             base.AddHandlerInfo(messageId, messageType, handlerType);
 
@@ -35,7 +36,7 @@ namespace ThinkNet.Database.Storage
                     context.Save(state);
                     context.Commit();
                 }
-            }, new HandlerRecord(messageId, messageType, handlerType)).Wait();
+            }, new HandlerRecord(messageId, messageType.FullName, handlerType.FullName)).Wait();
             
         }
 
@@ -53,13 +54,13 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// 检查该处理程序信息是否存在
         /// </summary>
-        protected override bool CheckHandlerInfoExist(string messageId, string messageType, string handlerType)
+        protected override bool CheckHandlerInfoExist(string messageId, Type messageType, Type handlerType)
         {
             var task = Task.Factory.StartNew((state) => {
                 using (var context = _contextFactory.CreateDataContext()) {
                     return IsHandlerInfoExist(context, state as HandlerRecord);
                 }
-            }, new HandlerRecord(messageId, messageType, handlerType));
+            }, new HandlerRecord(messageId, messageType.FullName, handlerType.FullName));
             task.Wait();
 
             return task.Result;

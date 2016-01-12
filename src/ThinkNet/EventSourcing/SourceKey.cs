@@ -11,9 +11,9 @@ namespace ThinkNet.EventSourcing
     public struct SourceKey : IEquatable<SourceKey>
     {
         public SourceKey(object sourceId, Type sourceType)
-            : this(sourceId.ToString(), 
-            sourceType.FullName, 
-            sourceType.Namespace, 
+            : this(sourceId.ToString(),
+            sourceType.Namespace,
+            sourceType.Name,
             Path.GetFileNameWithoutExtension(sourceType.Assembly.ManifestModule.FullyQualifiedName))
         { }
 

@@ -25,5 +25,7 @@ namespace ThinkNet.Common
         public ThinkNetException(string message, Exception innerException)
             : base(message, innerException)
         { }
+
+        public virtual string MessageCode { get; set; }
     }
 }

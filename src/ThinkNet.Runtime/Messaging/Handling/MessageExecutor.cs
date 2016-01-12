@@ -21,46 +21,50 @@ namespace ThinkNet.Messaging.Handling
             this._handlerStore = handlerStore;
         }
 
+        private void ProcessHandler(EventStream message, IProxyHandler messageHandler)
+        {
+            try {
+                messageHandler.Handle(message);
+            }
+            catch (Exception ex) {
+                throw ex;
+            }
+        }
+
         /// <summary>
         /// 处理当前消息。
         /// </summary>
         protected void ProcessHandler(Type messageType, IMessage message, IProxyHandler messageHandler)
         {
+            var @event = message as EventStream;
+            if (@event != null) {
+                messageHandler.Handle(message);
+                return;
+            }
+
             var messageHandlerType = messageHandler.GetInnerHandler().GetType();
-            var messageHandlerTypeName = messageHandlerType.FullName;
-            var messageTypeName = messageType.FullName;
-            
-
             try {
-                if (message is EventStream) {
-                    messageHandler.Handle(message);
-                    return;
-                }
-
-                if (_handlerStore.IsHandlerInfoExist(message.Id, messageTypeName, messageHandlerTypeName)) {
+                if (_handlerStore.IsHandlerInfoExist(message.Id, messageType, messageHandlerType)) {
                     LogManager.GetLogger("ThinkNet").DebugFormat("The message has been handled. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
-                        messageHandlerTypeName, messageTypeName, message.Id);
+                        messageHandlerType.FullName, messageType.FullName, message.Id);
                     return;
                 }
 
                 messageHandler.Handle(message);
-                _handlerStore.AddHandlerInfo(message.Id, messageTypeName, messageHandlerTypeName);
 
                 LogManager.GetLogger("ThinkNet").DebugFormat("Handle message success. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
-                    messageHandlerTypeName, messageTypeName, message.Id);
+                    messageHandlerType.FullName, messageType.FullName, message.Id);
             }
             catch (Exception ex) {
-                if (!(message is EventStream)) {
-                    string errorMessage = string.Format("Exception raised when {0} handling {1}. message info:{2}.",
-                        messageHandlerTypeName, messageTypeName, message.ToString());
-                    LogManager.GetLogger("ThinkNet").Error(errorMessage, ex);
-                }
+                string errorMessage = string.Format("Exception raised when {0} handling {1}. message info:{2}.",
+                    messageHandlerType.FullName, messageType.FullName, message);
+                LogManager.GetLogger("ThinkNet").Error(errorMessage, ex);
 
                 throw ex;
             }
             finally {
-                if (messageHandler is IDisposable) {
-                    ((IDisposable)messageHandler).Dispose();
+                _handlerStore.AddHandlerInfo(message.Id, messageType, messageHandlerType);
+                using (messageHandler as IDisposable) {
                 }
             }
         }

@@ -10,6 +10,19 @@ namespace ThinkNet.Kernel
         /// <summary>
         /// 根据标识id获得聚合实例。如果不存在则会抛异常
         /// </summary>
+        public static TEventSourced Get<TEventSourced>(this IEventSourcedRepository repository, object id)
+            where TEventSourced : class, IEventSourced
+        {
+            var aggregate = repository.Find(typeof(TEventSourced), id);
+            if (aggregate == null)
+                throw new EntityNotFoundException(id, typeof(TEventSourced));
+
+            return aggregate as TEventSourced;
+        }
+
+        /// <summary>
+        /// 根据标识id获得聚合实例。如果不存在则会抛异常
+        /// </summary>
         public static TAggregateRoot Get<TAggregateRoot, TIdentify>(this IRepository<TAggregateRoot> repository, TIdentify id)
             where TAggregateRoot : class, IAggregateRoot
         {

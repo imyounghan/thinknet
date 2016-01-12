@@ -1,142 +1,125 @@
-﻿using ThinkLib.Logging;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using ThinkLib.Logging;
 using ThinkNet.Common;
 using ThinkNet.Database;
 using ThinkNet.Kernel;
+using ThinkNet.Messaging;
 
 namespace ThinkNet.Infrastructure
 {
-
-
-    /// <summary>
-    /// 仓储接口实现
-    /// </summary>
-    /// <typeparam name="TAggregateRoot">聚合类型</typeparam>
-    public class Repository<TAggregateRoot> : IRepository<TAggregateRoot>
-        where TAggregateRoot : class, IAggregateRoot
+    [RegisterComponent(typeof(IRepository))]
+    public sealed class Repository : IRepository
     {
-        class EmptyCache : IMemoryCache
-        {
-            public static readonly IMemoryCache Instance = new EmptyCache();
-
-            private EmptyCache()
-            { }
-
-            public object Get(System.Type type, object key)
-            {
-                return null;
-            }
-
-            public void Set(object entity, object key)
-            { }
-
-            public void Remove(System.Type type, object key)
-            { }
-        }
-
-        private readonly IDataContext _context;
+        private readonly IDataContextFactory _dbContextFactory;
+        private readonly IEventBus _eventBus;
         private readonly IMemoryCache _cache;
-
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public Repository(IDataContext context)
-            : this(context, EmptyCache.Instance)
-        { }
-
-        /// <summary>
-        /// Parameterized constructor.
-        /// </summary>
-        public Repository(IDataContext context, IMemoryCache cache)
+        public Repository(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache)
         {
-            this._context = context;
+            this._dbContextFactory = dbContextFactory;
+            this._eventBus = eventBus;
             this._cache = cache;
         }
 
-        /// <summary>
-        /// 数据上下文
-        /// </summary>
-        protected IDataContext DataContext
-        {
-            get { return this._context; }
-        }
-        /// <summary>
-        /// 缓存程序
-        /// </summary>
-        protected IMemoryCache Cache
-        {
-            get { return this._cache; }
-        }
+        #region IRepository 成员
 
-        /// <summary>
-        /// 添加聚合根到仓储
-        /// </summary>
-        public virtual void Add(TAggregateRoot aggregateRoot)
+        public TAggregateRoot Find<TAggregateRoot, TKey>(TKey key) where TAggregateRoot : class, IAggregateRoot
         {
-            DataContext.Save(aggregateRoot);
+            var aggregateRoot = (TAggregateRoot)_cache.Get(typeof(TAggregateRoot), key);
 
-        }
-        void IRepository<TAggregateRoot>.Add(TAggregateRoot aggregateRoot)
-        {
-            this.Add(aggregateRoot);
-
-            DataContext.DataCommitted += (sender, args) => {
-                Cache.Set(aggregateRoot, aggregateRoot.Id);
-            };
-
-            LogManager.GetLogger("ThinkNet").InfoFormat("the aggregate root {0} of id {1} is added the dbcontext.",
-                    typeof(TAggregateRoot).FullName, aggregateRoot.Id);
-        }
-
-        /// <summary>
-        /// 从仓储中移除聚合
-        /// </summary>
-        public virtual void Remove(TAggregateRoot aggregateRoot)
-        {
-            DataContext.Delete(aggregateRoot);
-        }
-        void IRepository<TAggregateRoot>.Remove(TAggregateRoot aggregateRoot)
-        {
-            this.Remove(aggregateRoot);
-
-            DataContext.DataCommitted += (sender, args) => {
-                Cache.Remove(typeof(TAggregateRoot), aggregateRoot.Id);
-            };
-
-            LogManager.GetLogger("ThinkNet").InfoFormat("remove the aggregate root {0} of id {1} in dbcontext.",
-                   typeof(TAggregateRoot).FullName, aggregateRoot.Id);
-        }
-
-        /// <summary>
-        /// 根据标识id获取聚合实例，如未找到则返回null
-        /// </summary>
-        public virtual TAggregateRoot Find<TIdentify>(TIdentify id)
-        {
-            return DataContext.Get<TAggregateRoot>(id);
-        }
-        TAggregateRoot IRepository<TAggregateRoot>.Find<TIdentify>(TIdentify id)
-        {
-            var aggregateRoot = (TAggregateRoot)_cache.Get(typeof(TAggregateRoot), id);
-            
             if (aggregateRoot == null) {
-                aggregateRoot = this.Find(id);
+                aggregateRoot = this.LoadFromStorage<TAggregateRoot>(key);
 
-                LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root '{0}' of id '{1}' from storage.",
-                    typeof(TAggregateRoot).FullName, id);
-
-                Cache.Set(aggregateRoot, aggregateRoot.Id);
+                if (aggregateRoot != null) {
+                    LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root '{0}' of id '{1}' from storage.",
+                        typeof(TAggregateRoot).FullName, key);
+                }
             }
             else {
                 LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root '{0}' of id '{1}' from cache.",
-                        typeof(TAggregateRoot).FullName, id);
-
-
-                DataContext.DataCommitted += (sender, args) => {
-                    Cache.Set(aggregateRoot, aggregateRoot.Id);
-                };
+                        typeof(TAggregateRoot).FullName, key);
             }
-
 
             return aggregateRoot;
         }
+
+        private T LoadFromStorage<T>(object id) where T : class
+        {
+            var task = Task.Factory.StartNew(() => {
+                using (var context = _dbContextFactory.CreateDataContext()) {
+                    var entity = context.Find<T>(id);
+                    if (entity != null) {
+                        _cache.Set(entity, id);
+                    }
+
+                    return entity;
+                }
+            });
+            task.Wait();
+
+            return task.Result;
+        }
+
+        public void Save<TAggregateRoot>(TAggregateRoot aggregateRoot, string correlationId) where TAggregateRoot : class, IAggregateRoot
+        {
+            Task.Factory.StartNew(() => {
+                using (var context = _dbContextFactory.CreateDataContext()) {
+                    context.SaveOrUpdate(aggregateRoot);
+                    context.Commit();
+                }
+
+                _cache.Set(aggregateRoot, aggregateRoot.Id);
+            }).Wait();
+            
+
+            var eventPublisher = aggregateRoot as IEventPublisher;
+            if (eventPublisher == null)
+                return;
+
+            var events = eventPublisher.Events;
+            if (string.IsNullOrWhiteSpace(correlationId)) {
+                _eventBus.Publish(events);
+            }
+            else {
+                _eventBus.Publish(new EventStream(aggregateRoot.Id, typeof(TAggregateRoot)) {
+                    CommandId = correlationId,
+                    Events = eventPublisher.Events
+                });
+            }
+            LogManager.GetLogger("ThinkNet").InfoFormat("publish all events. events: [{0}]", string.Join("|",
+                events.Select(@event => @event.ToString())));
+        }
+
+        public void Delete<TAggregateRoot>(TAggregateRoot aggregateRoot) where TAggregateRoot : class, IAggregateRoot
+        {
+            Task.Factory.StartNew(() => {
+                using (var context = _dbContextFactory.CreateDataContext()) {
+                    context.Delete(aggregateRoot);
+                    context.Commit();
+                }
+
+                _cache.Remove(typeof(TAggregateRoot), aggregateRoot.Id);
+            }).Wait();
+        }
+
+        public void Delete<TAggregateRoot, TKey>(TKey key) where TAggregateRoot : class, IAggregateRoot
+        {
+            Task.Factory.StartNew(() => {
+                using (var context = _dbContextFactory.CreateDataContext()) {
+                    var aggregateRoot = context.Find<TAggregateRoot>(key);
+                    if (aggregateRoot != null) {
+                        context.Delete(aggregateRoot);
+                        context.Commit();
+                    }
+                }
+
+                _cache.Remove(typeof(TAggregateRoot), key);
+            }).Wait();
+        }
+
+        #endregion
     }
 }

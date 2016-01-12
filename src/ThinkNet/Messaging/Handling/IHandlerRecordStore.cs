@@ -1,4 +1,5 @@
-﻿using ThinkNet.Common;
+﻿using System;
+using ThinkNet.Common;
 
 namespace ThinkNet.Messaging.Handling
 {
@@ -11,10 +12,10 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 添加处理程序信息
         /// </summary>
-        void AddHandlerInfo(string messageId, string messageType, string handlerType);
+        void AddHandlerInfo(string messageId, Type messageType, Type handlerType);
         /// <summary>
         /// 检查该处理程序信息是否存在
         /// </summary>
-        bool IsHandlerInfoExist(string messageId, string messageType, string handlerType);
+        bool IsHandlerInfoExist(string messageId, Type messageType, Type handlerType);
     }
 }

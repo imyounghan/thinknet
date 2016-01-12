@@ -23,24 +23,23 @@ namespace ThinkNet.Configurations
                 : this(type, name)
             {
                 this.Instance = instance;
-                this.Lifecycle = Configurations.Lifecycle.Singleton;
             }
 
             public ServiceRegistration(Type type, string name)
-                : this(type, type, name, Configurations.Lifecycle.Singleton)
+                : this(type, name, Configurations.Lifecycle.Singleton)
             { }
 
             public ServiceRegistration(Type type, string name, Lifecycle lifecycle)
-                : this(type, type, name, lifecycle)
-            { }
+            {
+                this.RegisterType = type;
+                this.Name = name ?? string.Empty;
+                this.Lifecycle = lifecycle;
+            }
 
             public ServiceRegistration(Type from, Type to, string name, Lifecycle lifecycle)
                 : this(from, name, lifecycle)
             {
-                this.RegisterType = from;
-                this.Name = name;
                 this.ImplementationType = to;
-                this.Lifecycle = lifecycle;
             }
 
             public string Name { get; set; }
@@ -52,21 +51,6 @@ namespace ThinkNet.Configurations
             public Type ImplementationType { get; private set; }
 
             public Lifecycle Lifecycle { get; private set; }
-
-            //public void Register(IContainer container)
-            //{
-            //    if (_instance != null) {
-            //        container.RegisterInstance(_registerType, _instance, _name);
-            //        return;
-            //    }
-
-            //    if (_serviceType != null) {
-            //        container.RegisterType(_registerType, _serviceType, _name, _lifetimeType);
-            //        return;
-            //    }
-
-            //    container.RegisterType(_registerType, _name, _lifetimeType);
-            //}
 
             public override bool Equals(object obj)
             {
@@ -90,10 +74,7 @@ namespace ThinkNet.Configurations
             }
         }
 
-        //public static Configuration Create()
-        //{
-        //    return new Configuration(new TinyContainer());
-        //}
+
         /// <summary>
         /// 当前配置
         /// </summary>
@@ -111,13 +92,7 @@ namespace ThinkNet.Configurations
             this._initializeTypes = new List<Type>();
             this._registeredComponents = new HashSet<ServiceRegistration>();
         }
-
-
-        ///// <summary>
-        ///// 对象容器
-        ///// </summary>
-        //public IObjectContainer Container { get; private set; }
-
+        
 
         /// <summary>
         /// 加载程序集
@@ -159,36 +134,42 @@ namespace ThinkNet.Configurations
             if (registration.RegisterType == null)
                 return;
 
+            if (TinyIoCContainer.Current.CanResolve(registration.RegisterType, registration.Name))
+                return;
 
-            var container = ServiceLocator.Current.GetInstance<TinyIoCContainer>();
+
             if (registration.Instance != null) {
-                container.Register(registration.RegisterType, registration.Instance, registration.Name ?? string.Empty).AsSingleton();
+                TinyIoCContainer.Current.Register(registration.RegisterType, registration.Instance, registration.Name).AsSingleton();
                 return;
             }
 
-            if (registration.ImplementationType != null) {
-                var options = container.Register(registration.RegisterType, registration.ImplementationType, registration.Name ?? string.Empty);
-                switch (registration.Lifecycle) {
-                    case Lifecycle.Singleton:
-                        options.AsSingleton();
-                        break;
-                    case Lifecycle.Transient:
-                        options.AsMultiInstance();
-                        break;
-                    case Lifecycle.PerSession:
-                        options.AsPerSession();
-                        break;
-                    case Lifecycle.PerThread:
-                        options.AsPerThread();
-                        break;
-                }
+            TinyIoCContainer.RegisterOptions options;
+            if (registration.ImplementationType == null) {
+                options = TinyIoCContainer.Current.Register(registration.RegisterType, registration.Name);
+            }
+            else {
+                options = TinyIoCContainer.Current.Register(registration.RegisterType, registration.ImplementationType, registration.Name);
+            }
+
+            switch (registration.Lifecycle) {
+                case Lifecycle.Singleton:
+                    options.AsSingleton();
+                    break;
+                case Lifecycle.Transient:
+                    options.AsMultiInstance();
+                    break;
+                case Lifecycle.PerSession:
+                    options.AsPerSession();
+                    break;
+                case Lifecycle.PerThread:
+                    options.AsPerThread();
+                    break;
             }
         }
 
         public void Done()
         {
-            TinyIoCContainer container = new TinyIoCContainer();
-            ServiceLocator.SetLocatorProvider(() => new TinyIoCServiceLocator(container));
+            ServiceLocator.SetLocatorProvider(() => new TinyIoCServiceLocator(TinyIoCContainer.Current));
 
             this.Done(Register);
         }
@@ -364,8 +345,5 @@ namespace ThinkNet.Configurations
                 }
             }
         }
-
-
-        
     }
 }

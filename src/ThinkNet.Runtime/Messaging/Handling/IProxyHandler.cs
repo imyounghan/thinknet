@@ -15,6 +15,6 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// Get the inner handler.
         /// </summary>
-        object GetInnerHandler();
+        IHandler GetInnerHandler();
     }
 }

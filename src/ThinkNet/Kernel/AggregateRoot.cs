@@ -43,16 +43,13 @@ namespace ThinkNet.Kernel
         protected void RaiseEvent<TEvent>(TEvent @event)
             where TEvent : IEvent
         {
-            var domainEvent = @event as Event<TIdentify>;
-            var versionedEvent = @event as VersionedEvent<TIdentify>;
+            if (@event is VersionedEvent<TIdentify>)
+                HandleVersionedEvent(@event as VersionedEvent<TIdentify>);
+            else if (@event is Event<TIdentify>)
+                HandleDomainEvent(@event as Event<TIdentify>);
+            else
+                HandleEvent(@event);
 
-            if (domainEvent != null)
-                domainEvent.SourceId = this.Id;
-            if (versionedEvent!=null)
-                versionedEvent.Version = this.Version + 1;
-            this.Handling(@event);
-            if (versionedEvent != null)
-                this.Version = versionedEvent.Version;
 
             if (pendingEvents == null) {
                 pendingEvents = new List<IEvent>();
@@ -60,7 +57,20 @@ namespace ThinkNet.Kernel
             pendingEvents.Add(@event);
         }
 
-        private void Handling(IEvent @event)
+        private void HandleDomainEvent(Event<TIdentify> @event)
+        {
+            @event.SourceId = this.Id;
+            this.HandleEvent(@event);
+        }
+
+        private void HandleVersionedEvent(VersionedEvent<TIdentify> @event)
+        {
+            @event.Version = this.Version + 1;
+            this.HandleDomainEvent(@event);
+            this.Version = @event.Version;
+        }
+
+        private void HandleEvent(IEvent @event)
         {
             var eventType = @event.GetType();
             var aggregateRootType = this.GetType();

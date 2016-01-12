@@ -216,6 +216,8 @@ namespace ThinkNet.Messaging.Handling
 
         public void Initialize(IEnumerable<Type> types)
         {
+            AggregateRootInnerHandlerUtil.Initialize(types);
+
             types.Where(IsHandlerType).ForEach(RegisterType);
         }
 

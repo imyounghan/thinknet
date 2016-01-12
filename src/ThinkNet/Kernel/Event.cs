@@ -1,11 +1,13 @@
-﻿using ThinkNet.Messaging;
+﻿using System;
+using ThinkNet.Messaging;
 
 namespace ThinkNet.Kernel
 {
     /// <summary>
     /// Represents an abstract domain event.
     /// </summary>
-    public class Event<TSourceId> : Event
+    [Serializable]
+    public abstract class Event<TSourceId> : Event
     {
         /// <summary>
         /// Default Constructor.

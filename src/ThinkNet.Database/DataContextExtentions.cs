@@ -28,49 +28,49 @@ namespace ThinkNet.Database
             return dataContext.Find(typeof(T), keyValues) as T;
         }
 
-        /// <summary>
-        /// 根据标识id获得实例。如果不存在则会抛异常
-        /// </summary>
-        public static object Get(this IDataContext dataContext, Type type, object id)
-        {
-            var entity = dataContext.Find(type, id);
-            if (entity == null)
-                throw new EntityNotFoundException(id, type);
+        ///// <summary>
+        ///// 根据标识id获得实例。如果不存在则会抛异常
+        ///// </summary>
+        //public static object Get(this IDataContext dataContext, Type type, object id)
+        //{
+        //    var entity = dataContext.Find(type, id);
+        //    if (entity == null)
+        //        throw new EntityNotFoundException(id, type);
 
-            return entity;
-        }
+        //    return entity;
+        //}
 
-        /// <summary>
-        /// 根据标识id获得实例。如果不存在则会抛异常
-        /// </summary>
-        public static object Get(this IDataContext dataContext, Type type, params object[] keyValues)
-        {
-            var entity = dataContext.Find(type, keyValues);
-            if (entity == null) {
-                var id = string.Join(":", keyValues.Select(item => item.ToString()));
-                throw new EntityNotFoundException(id, type);
-            }
+        ///// <summary>
+        ///// 根据标识id获得实例。如果不存在则会抛异常
+        ///// </summary>
+        //public static object Get(this IDataContext dataContext, Type type, params object[] keyValues)
+        //{
+        //    var entity = dataContext.Find(type, keyValues);
+        //    if (entity == null) {
+        //        var id = string.Join(":", keyValues.Select(item => item.ToString()));
+        //        throw new EntityNotFoundException(id, type);
+        //    }
 
-            return entity;
-        }
+        //    return entity;
+        //}
 
-        /// <summary>
-        /// 根据标识id获得实例。如果不存在则会抛异常
-        /// </summary>
-        public static T Get<T>(this IDataContext dataContext, object id)
-            where T : class
-        {
-            return dataContext.Get(typeof(T), id) as T;
-        }
+        ///// <summary>
+        ///// 根据标识id获得实例。如果不存在则会抛异常
+        ///// </summary>
+        //public static T Get<T>(this IDataContext dataContext, object id)
+        //    where T : class
+        //{
+        //    return dataContext.Get(typeof(T), id) as T;
+        //}
 
-        /// <summary>
-        /// 根据标识id获得实例。如果不存在则会抛异常
-        /// </summary>
-        public static T Get<T>(this IDataContext dataContext, params object[] keyValues)
-            where T : class
-        {
-            return dataContext.Get(typeof(T), keyValues) as T;
-        }
+        ///// <summary>
+        ///// 根据标识id获得实例。如果不存在则会抛异常
+        ///// </summary>
+        //public static T Get<T>(this IDataContext dataContext, params object[] keyValues)
+        //    where T : class
+        //{
+        //    return dataContext.Get(typeof(T), keyValues) as T;
+        //}
 
         /// <summary>
         /// 获取符合条件的记录总数

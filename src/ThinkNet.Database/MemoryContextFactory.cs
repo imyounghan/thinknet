@@ -154,11 +154,13 @@ namespace ThinkNet.Database
             public override void Refresh(object entity)
             { }
 
-            public override void Save(object entity)
+            protected override void Save(object entity, Func<object, bool> beforeSave)
             {
+                if (!beforeSave(entity))
+                    return;
+
                 if (localDeletedCollection.Contains(entity))
                     throw new Exception("The object cannot be registered as a new object since it was marked as deleted.");
-
                 if (localModifiedCollection.Contains(entity))
                     throw new Exception("The object cannot be registered as a new object since it was marked as modified.");
 
@@ -170,11 +172,13 @@ namespace ThinkNet.Database
                 localNewCollection.Add(entity);
             }
 
-            public override void Update(object entity)
+            protected override void Update(object entity, Func<object, bool> beforeUpdate)
             {
+                if (!beforeUpdate(entity))
+                    return;
+
                 if (localDeletedCollection.Contains(entity))
                     throw new Exception("The object cannot be registered as a modified object since it was marked as deleted.");
-
                 if (localNewCollection.Contains(entity))
                     throw new Exception("The object cannot be registered as a modified object since it was marked as created.");
 
@@ -184,8 +188,11 @@ namespace ThinkNet.Database
                 localModifiedCollection.Add(entity);
             }
 
-            public override void Delete(object entity)
+            protected override void Delete(object entity, Func<object, bool> beforeDelete)
             {
+                if (!beforeDelete(entity))
+                    return;
+
                 if (localNewCollection.Contains(entity))
                 {
                     if (localNewCollection.Remove(entity))
@@ -195,6 +202,16 @@ namespace ThinkNet.Database
                 if (!localDeletedCollection.Contains(entity))
                 {
                     localDeletedCollection.Add(entity);
+                }
+            }
+
+            protected override void SaveOrUpdate(object entity, Func<object, bool> beforeSave, Func<object, bool> beforeUpdate)
+            {
+                if (this.Contains(entity)) {
+                    this.Save(entity, beforeSave);
+                }
+                else {
+                    this.Update(entity, beforeUpdate);
                 }
             }
 

@@ -1917,7 +1917,7 @@ namespace TinyIoC
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
-        private bool CanResolve(Type resolveType, string name)
+        public bool CanResolve(Type resolveType, string name)
         {
             return CanResolveInternal(new TypeRegistration(resolveType, name), NamedParameterOverloads.Default, ResolveOptions.Default);
         }

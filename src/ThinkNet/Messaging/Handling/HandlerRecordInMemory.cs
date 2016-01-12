@@ -9,16 +9,6 @@ namespace ThinkNet.Messaging.Handling
     public class HandlerRecordInMemory : IHandlerRecordStore
     {
         private readonly HashSet<HandlerRecordData> _handlerInfoSet = new HashSet<HandlerRecordData>();
-        //private readonly ITypeCodeProvider _typeCodeProvider;
-
-        ///// <summary>
-        ///// Default Constructor.
-        ///// </summary>
-        //public HandlerRecordInMemory(ITypeCodeProvider typeCodeProvider)
-        //{
-        //    this._handlerInfoSet = new HashSet<HandlerRecordData>();
-        //    this._typeCodeProvider = typeCodeProvider;
-        //}
 
         /// <summary>
         /// 移除超出期限的信息
@@ -31,10 +21,10 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 添加处理程序信息
         /// </summary>
-        public virtual void AddHandlerInfo(string messageId, string messageType, string handlerType)
+        public virtual void AddHandlerInfo(string messageId, Type messageType, Type handlerType)
         {
-            var messageTypeCode = messageType.GetHashCode();// _typeCodeProvider.GetTypeCode(messageType);
-            var handlerTypeCode = handlerType.GetHashCode();// _typeCodeProvider.GetTypeCode(handlerType);
+            var messageTypeCode = messageType.FullName.GetHashCode();
+            var handlerTypeCode = handlerType.FullName.GetHashCode();
 
             this.AddHandlerInfoToMemory(messageId, messageTypeCode, handlerTypeCode);
         }
@@ -50,10 +40,10 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 检查该处理程序信息是否存在
         /// </summary>
-        public bool IsHandlerInfoExist(string messageId, string messageType, string handlerType)
+        public bool IsHandlerInfoExist(string messageId, Type messageType, Type handlerType)
         {
-            var messageTypeCode = messageType.GetHashCode();// _typeCodeProvider.GetTypeCode(messageType);
-            var handlerTypeCode = handlerType.GetHashCode();// _typeCodeProvider.GetTypeCode(handlerType);
+            var messageTypeCode = messageType.FullName.GetHashCode();
+            var handlerTypeCode = handlerType.FullName.GetHashCode();
 
             if (_handlerInfoSet.Contains(new HandlerRecordData(messageId, messageTypeCode, handlerTypeCode))) {
                 return true;
@@ -71,7 +61,7 @@ namespace ThinkNet.Messaging.Handling
         /// 检查该处理程序信息是否存在
         /// </summary>
         /// <returns></returns>
-        protected virtual bool CheckHandlerInfoExist(string messageId, string messageType, string handlerType)
+        protected virtual bool CheckHandlerInfoExist(string messageId, Type messageType, Type handlerType)
         {
             return false;
         }

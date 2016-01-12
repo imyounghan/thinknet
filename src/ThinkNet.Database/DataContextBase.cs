@@ -83,43 +83,53 @@ namespace ThinkNet.Database
             this.DataCommitted(this, EventArgs.Empty);
         }
 
+
+        protected abstract void SaveOrUpdate(object entity, Func<object, bool> beforeSave, Func<object, bool> beforeUpdate);
+
+        public void SaveOrUpdate(object entity)
+        {
+            this.Validate(entity);
+
+            this.SaveOrUpdate(entity,
+                (state) => this.Callback(state, OnSaving) == LifecycleVeto.Veto,
+                (state) => this.Callback(state, OnUpdating) == LifecycleVeto.Veto);
+        }
+
+        
+        protected abstract void Save(object entity, Func<object, bool> beforeSave);
         /// <summary>
         /// 新增一个新对象到当前上下文
         /// </summary>
-        public abstract void Save(object entity);
-        void IDataContext.Save(object entity)
+        public void Save(object entity)
         {
             this.Validate(entity);
-            if (this.Callback(entity, OnSaving) == LifecycleVeto.Veto)
-                return;
 
-            this.Save(entity);
+            this.Save(entity,
+                (state) => this.Callback(state, OnSaving) == LifecycleVeto.Veto);
         }
+
+        
+        protected abstract void Update(object entity, Func<object, bool> beforeUpdate);
 
         /// <summary>
         /// 修改一个对象到当前上下文
         /// </summary>
-        public abstract void Update(object entity);
-        void IDataContext.Update(object entity)
+        public void Update(object entity)
         {
             this.Validate(entity);
-            if (this.Callback(entity, OnUpdating) == LifecycleVeto.Veto)
-                return;
 
-            this.Update(entity);
+            this.Update(entity,
+                (state) => this.Callback(state, OnUpdating) == LifecycleVeto.Veto);
         }
         
+        protected abstract void Delete(object entity, Func<object, bool> beforeDelete);
         /// <summary>
         /// 删除一个对象到当前上下文
         /// </summary>
-        public abstract void Delete(object entity);
-        void IDataContext.Delete(object entity)
+        public void Delete(object entity)
         {
-            this.Validate(entity);
-            if (this.Callback(entity, OnDeleting) == LifecycleVeto.Veto)
-                return;
-
-            this.Delete(entity);
+            this.Delete(entity,
+                (state) => this.Callback(state, OnDeleting) == LifecycleVeto.Veto);
         }
 
         /// <summary>
@@ -140,19 +150,13 @@ namespace ThinkNet.Database
         /// 从数据库刷新最新状态
         /// </summary>
         public abstract void Refresh(object entity);
-        void IDataContext.Refresh(object entity)
-        {
-            this.Refresh(entity);
-
-            if (entity != null && entity is ILifecycle) {
-                (entity as ILifecycle).OnLoaded(this);
-            }
-        }
         
         /// <summary>
         /// 获取实例信息
         /// </summary>
         public abstract object Find(Type type, object id);
+
+
         object IDataContext.Find(Type type, object id)
         {
             var entity = this.Find(type, id);

@@ -64,9 +64,9 @@ namespace ThinkNet.Messaging.Handling
             this.Handle(message as T);
         }
 
-        object IProxyHandler.GetInnerHandler()
+        IHandler IProxyHandler.GetInnerHandler()
         {
-            return _handler;
+            return this._handler;
         }
     }
 }

@@ -85,6 +85,7 @@
     <Compile Include="Kernel\IRepository.cs" />
     <Compile Include="Kernel\IRepositoryContext.cs" />
     <Compile Include="Kernel\IRepositoryContextFactory.cs" />
+    <Compile Include="Kernel\IRepository`.cs" />
     <Compile Include="Kernel\RepositoryExtensions.cs" />
     <Compile Include="Kernel\EventSourcedException.cs" />
     <Compile Include="Kernel\IEventSourced.cs" />

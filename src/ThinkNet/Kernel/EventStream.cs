@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
@@ -19,10 +20,25 @@ namespace ThinkNet.Kernel
         public EventStream()
         { }
 
-        ///// <summary>
-        ///// 聚合根标识。
-        ///// </summary>
-        //public EventSourcing.SourceKey AggregateRoot { get; set; }
+        public EventStream(object sourceId, Type sourceType)
+            : this(sourceId.ToString(),
+            sourceType.Namespace,
+            sourceType.Name,
+            Path.GetFileNameWithoutExtension(sourceType.Assembly.ManifestModule.FullyQualifiedName))
+        { }
+
+        public EventStream(string sourceId, string sourceNamespace, string sourceTypeName)
+            : this(sourceId, sourceNamespace, sourceTypeName, string.Empty)
+        { }
+
+        public EventStream(string sourceId, string sourceNamespace, string sourceTypeName, string sourceAssemblyName)
+        {
+            this.SourceId = sourceId;
+            this.SourceNamespace = sourceNamespace;
+            this.SourceTypeName = sourceTypeName;
+            this.SourceAssemblyName = sourceAssemblyName;
+        }
+
         /// <summary>
         /// 程序集
         /// </summary>

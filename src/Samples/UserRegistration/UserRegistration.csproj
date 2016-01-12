@@ -1,18 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1F193073-7698-455A-9516-3D6F4358ED35}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{700AFC24-7314-493F-A47D-AFA41D756D28}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ThinkNet.Database</RootNamespace>
-    <AssemblyName>ThinkNet.Database</AssemblyName>
+    <RootNamespace>UserRegistration</RootNamespace>
+    <AssemblyName>UserRegistration</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,71 +23,56 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\ThinkNet.Database.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\thinknet.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="ThinkLib">
-      <HintPath>..\Dependency\ThinkLib.dll</HintPath>
+      <HintPath>..\..\Dependency\ThinkLib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Infrastructure\Repository.cs" />
-    <Compile Include="Infrastructure\RepositoryContextFactory.cs" />
-    <Compile Include="ISortItem.cs" />
-    <Compile Include="MemoryContextFactory.cs" />
-    <Compile Include="Storage\Event.cs" />
-    <Compile Include="Storage\EventPublishedVersion.cs" />
-    <Compile Include="Storage\EventStore.cs" />
-    <Compile Include="Infrastructure\Repository`.cs" />
-    <Compile Include="Storage\Snapshot.cs" />
-    <Compile Include="Storage\SnapshotStore.cs" />
-    <Compile Include="Criteria.cs" />
-    <Compile Include="DataContextBase.cs" />
-    <Compile Include="DataContextExtentions.cs" />
-    <Compile Include="ICriteria.cs" />
-    <Compile Include="Storage\EventPublishedVersionStore.cs" />
-    <Compile Include="IDataContext.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="IDataContextFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="PageResult.cs" />
-    <Compile Include="Storage\HandlerRecord.cs" />
-    <Compile Include="Storage\HandlerRecordStore.cs" />
+    <Compile Include="Application\IAuthenticationService.cs" />
+    <Compile Include="ReadModel\IUserDao.cs" />
+    <Compile Include="ReadModel\UserModel.cs" />
+    <Compile Include="Commands\RegisterUser.cs" />
+    <Compile Include="User.cs" />
+    <Compile Include="Events\UserCreated.cs" />
+    <Compile Include="Events\UserLogined.cs" />
+    <Compile Include="Handlers\UserHandler.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ILifecycle.cs" />
-    <Compile Include="ISortSet.cs" />
-    <Compile Include="IValidatable.cs" />
-    <Compile Include="LifecycleVeto.cs" />
-    <Compile Include="SortSet.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SqlScripts\mssql.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ThinkNet\ThinkNet.csproj">
+    <ProjectReference Include="..\..\ThinkNet.Database\ThinkNet.Database.csproj">
+      <Project>{1f193073-7698-455a-9516-3d6f4358ed35}</Project>
+      <Name>ThinkNet.Database</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ThinkNet.Runtime\ThinkNet.Runtime.csproj">
+      <Project>{7dd719e0-5aaa-4878-b259-5d8648d585fd}</Project>
+      <Name>ThinkNet.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ThinkNet\ThinkNet.csproj">
       <Project>{a8fcd0bf-04fc-4628-b376-6861d63d9538}</Project>
       <Name>ThinkNet</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

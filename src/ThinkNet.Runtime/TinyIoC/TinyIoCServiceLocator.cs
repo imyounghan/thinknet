@@ -12,8 +12,7 @@ namespace TinyIoC
         public TinyIoCServiceLocator(TinyIoCContainer container)
         {
             this.container = container;
-            container.Register<IServiceLocator>(this).AsSingleton();
-            container.Register<TinyIoCContainer>(container).AsSingleton();            
+            container.Register<IServiceLocator>(this).AsSingleton();      
         }
 
         protected override IEnumerable<object> DoGetAllInstances(Type serviceType)
