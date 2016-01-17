@@ -34,7 +34,7 @@ namespace ThinkNet.Messaging
         public DefaultMessageReceiver(IMessageBroker messageBroker)
         {
             this.lockObject = new object();
-            this.worker = Worker.Create("", Processing);
+            this.worker = Worker.Create(Processing);
             this.broker = messageBroker;
         }
 

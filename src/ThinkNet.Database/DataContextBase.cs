@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using ThinkLib.Context;
+using ThinkLib.Contexts;
 using ThinkNet.Common;
 using ThinkNet.Infrastructure;
 
@@ -84,7 +84,15 @@ namespace ThinkNet.Database
         }
 
 
-        protected abstract void SaveOrUpdate(object entity, Func<object, bool> beforeSave, Func<object, bool> beforeUpdate);
+        protected virtual void SaveOrUpdate(object entity, Func<object, bool> beforeSave, Func<object, bool> beforeUpdate)
+        {
+            if (this.Contains(entity)) {
+                this.Update(entity, beforeUpdate);
+            }
+            else {
+                this.Save(entity, beforeSave);
+            }
+        }
 
         public void SaveOrUpdate(object entity)
         {

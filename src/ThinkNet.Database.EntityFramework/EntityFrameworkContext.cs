@@ -5,7 +5,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-using ThinkLib.Context;
+using ThinkLib.Contexts;
 using ThinkNet.Common;
 
 namespace ThinkNet.Database.EntityFramework
@@ -56,22 +56,28 @@ namespace ThinkNet.Database.EntityFramework
             _efContext.Entry(entity).State = EntityState.Unchanged;
         }
 
-        public override void Delete(object entity)
+        protected override void Delete(object entity, Func<object, bool> beforeDelete)
         {
             Ensure.NotNull(entity, "entity");
-            _efContext.Entry(entity).State = EntityState.Deleted;
+
+            if (beforeDelete(entity))
+                _efContext.Entry(entity).State = EntityState.Deleted;
         }
 
-        public override void Save(object entity)
+        protected override void Save(object entity, Func<object, bool> beforeSave)
         {
             Ensure.NotNull(entity, "entity");
-            _efContext.Entry(entity).State = EntityState.Added;
+
+            if (beforeSave(entity))
+                _efContext.Entry(entity).State = EntityState.Added;
         }
 
-        public override void Update(object entity)
+        protected override void Update(object entity, Func<object, bool> beforeUpdate)
         {
             Ensure.NotNull(entity, "entity");
-            _efContext.Entry(entity).State = EntityState.Modified;
+
+            if (beforeUpdate(entity))
+                _efContext.Entry(entity).State = EntityState.Modified;
         }
 
         public override void Refresh(object entity)

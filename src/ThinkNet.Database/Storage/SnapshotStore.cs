@@ -25,7 +25,7 @@ namespace ThinkNet.Database.Storage
         {
             this._dbContextFactory = dbContextFactory;
 
-            this._persistent = ConfigurationManager.AppSettings["thinkcfg.snapshot_storage"].Safe("false").ToBoolean();
+            this._persistent = ConfigurationManager.AppSettings["thinkcfg.snapshot_storage"].To(false);
         }
 
         /// <summary>

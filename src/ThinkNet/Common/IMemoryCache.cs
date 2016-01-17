@@ -39,7 +39,7 @@ namespace ThinkNet.Common
         public MemoryCache()
         {
             this._serializer = new BinaryFormatter();
-            this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].Safe("false").ToBoolean();
+            this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].To(false);
         }
 
         private byte[] Serialize(object obj)

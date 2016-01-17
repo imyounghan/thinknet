@@ -1,5 +1,5 @@
 ﻿using System.Data.Common;
-using ThinkLib.Context;
+using ThinkLib.Contexts;
 
 namespace ThinkNet.Database.NHibernate
 {

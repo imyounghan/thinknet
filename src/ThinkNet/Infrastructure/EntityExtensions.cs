@@ -13,15 +13,12 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 验证模型的正确性
         /// </summary>
-        public static bool IsValid(this IEntity entity, out IEnumerable<ModelValidationResult> errors)
+        public static bool IsValid(this IEntity entity, out IEnumerable<ValidationResult> errors)
         {
             errors = from property in TypeDescriptor.GetProperties(entity).Cast<PropertyDescriptor>()
                      from attribute in property.Attributes.OfType<ValidationAttribute>()
                      where !attribute.IsValid(property.GetValue(entity))
-                     select new ModelValidationResult {
-                         MemberName = property.Name,
-                         Message = attribute.FormatErrorMessage(property.DisplayName ?? property.Name)
-                     };
+                     select new ValidationResult(attribute.FormatErrorMessage(property.DisplayName ?? property.Name));
 
             return errors != null && errors.Any();
         }

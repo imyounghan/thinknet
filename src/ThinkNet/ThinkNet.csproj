@@ -98,7 +98,6 @@
     <Compile Include="Infrastructure\EntityExtensions.cs" />
     <Compile Include="Infrastructure\IEntity.cs" />
     <Compile Include="Messaging\Handling\IHandler.cs" />
-    <Compile Include="Infrastructure\ModelValidationResult.cs" />
     <Compile Include="Infrastructure\ValueObject.cs" />
     <Compile Include="Infrastructure\TypeHelper.cs" />
     <Compile Include="Messaging\CommandResult.cs" />

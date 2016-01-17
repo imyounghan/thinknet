@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Mapping;
-using System.Data.Common;
-using ThinkLib.Context;
+using ThinkLib.Contexts;
+using ThinkNet.Common;
 
 
 namespace ThinkNet.Database.NHibernate
@@ -71,14 +72,12 @@ namespace ThinkNet.Database.NHibernate
             return Session.Contains(entity);
         }
 
-        public override void Delete(object entity)
+        protected override void Delete(object entity, Func<object, bool> beforeDelete)
         {
-            Session.Delete(entity);
-        }
+            Ensure.NotNull(entity, "entity");
 
-        public override void Update(object entity)
-        {
-            Session.Update(entity);
+            if (beforeDelete(entity))
+                Session.Delete(entity);
         }
 
         public override void Detach(object entity)
@@ -91,9 +90,27 @@ namespace ThinkNet.Database.NHibernate
             Session.Merge(entity);
         }
 
-        public override void Save(object entity)
+        protected override void Save(object entity, Func<object, bool> beforeSave)
         {
-            Session.Save(entity);
+            Ensure.NotNull(entity, "entity");
+
+            if (beforeSave(entity))
+                Session.Save(entity);
+        }
+
+        protected override void Update(object entity, Func<object, bool> beforeUpdate)
+        {
+            Ensure.NotNull(entity, "entity");
+
+            if (beforeUpdate(entity))
+                Session.Update(entity);
+        }
+
+        protected override void SaveOrUpdate(object entity, Func<object, bool> beforeSave, Func<object, bool> beforeUpdate)
+        {
+            Ensure.NotNull(entity, "entity");
+
+            Session.SaveOrUpdate(entity);
         }
 
         public override void Refresh(object entity)

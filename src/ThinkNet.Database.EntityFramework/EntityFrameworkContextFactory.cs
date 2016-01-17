@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using System.Data.Entity;
-using ThinkLib.Context;
+using ThinkLib.Contexts;
 
 namespace ThinkNet.Database.EntityFramework
 {

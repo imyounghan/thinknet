@@ -172,112 +172,112 @@
             </summary>
             <returns>an array of CacheConfig objects</returns>
         </member>
-        <member name="T:ThinkLib.Context.ContextManager">
+        <member name="T:ThinkLib.Contexts.ContextManager">
             <summary>
-            <see cref="T:ThinkLib.Context.IContextManager"/> 的抽象实现类
+            <see cref="T:ThinkLib.Contexts.IContextManager"/> 的抽象实现类
             </summary>
         </member>
-        <member name="T:ThinkLib.Context.IContextManager">
+        <member name="T:ThinkLib.Contexts.IContextManager">
             <summary>
             实现上下文的管理接口
             </summary>
         </member>
-        <member name="P:ThinkLib.Context.IContextManager.Id">
+        <member name="P:ThinkLib.Contexts.IContextManager.Id">
             <summary>
             上下文工厂标识
             </summary>
         </member>
-        <member name="P:ThinkLib.Context.IContextManager.CurrentContext">
+        <member name="P:ThinkLib.Contexts.IContextManager.CurrentContext">
             <summary>
             获取当前的上下文
             </summary>
         </member>
-        <member name="M:ThinkLib.Context.ContextManager.#ctor">
+        <member name="M:ThinkLib.Contexts.ContextManager.#ctor">
             <summary>
             Default constructor.
             </summary>
         </member>
-        <member name="M:ThinkLib.Context.ContextManager.#ctor(System.String)">
+        <member name="M:ThinkLib.Contexts.ContextManager.#ctor(System.String)">
             <summary>
             Parameterized constructor.
             </summary>
         </member>
-        <member name="P:ThinkLib.Context.ContextManager.Id">
+        <member name="P:ThinkLib.Contexts.ContextManager.Id">
             <summary>
             标识
             </summary>
         </member>
-        <member name="P:ThinkLib.Context.ContextManager.ContextType">
+        <member name="P:ThinkLib.Contexts.ContextManager.ContextType">
             <summary>
             上下文类型
             </summary>
         </member>
-        <member name="P:ThinkLib.Context.ContextManager.CurrentContext">
+        <member name="P:ThinkLib.Contexts.ContextManager.CurrentContext">
             <summary>
             获取当前的上下文
             </summary>
         </member>
-        <member name="T:ThinkLib.Context.CurrentContext">
+        <member name="T:ThinkLib.Contexts.CurrentContext">
             <summary>
-            <see cref="T:ThinkLib.Context.ICurrentContext"/> 的抽象实现。
+            <see cref="T:ThinkLib.Contexts.ICurrentContext"/> 的抽象实现。
             </summary>
         </member>
-        <member name="T:ThinkLib.Context.ICurrentContext">
+        <member name="T:ThinkLib.Contexts.ICurrentContext">
             <summary>
             当前访问的上下文接口
             </summary>
         </member>
-        <member name="M:ThinkLib.Context.ICurrentContext.CurrentContext">
+        <member name="M:ThinkLib.Contexts.ICurrentContext.CurrentContext">
             <summary>
             获取当前的上下文
             </summary>
         </member>
-        <member name="M:ThinkLib.Context.CurrentContext.#ctor(ThinkLib.Context.IContextManager)">
+        <member name="M:ThinkLib.Contexts.CurrentContext.#ctor(ThinkLib.Contexts.IContextManager)">
             <summary>
             Parameterized constructor.
             </summary>
         </member>
-        <member name="M:ThinkLib.Context.CurrentContext.GetMap">
+        <member name="M:ThinkLib.Contexts.CurrentContext.GetMap">
             <summary>
             Get the dicitonary mapping context manager to its current context.
             </summary>
         </member>
-        <member name="M:ThinkLib.Context.CurrentContext.SetMap(System.Collections.IDictionary)">
+        <member name="M:ThinkLib.Contexts.CurrentContext.SetMap(System.Collections.IDictionary)">
             <summary>
             Set the map mapping context manager to its current context.
             </summary>
         </member>
-        <member name="M:ThinkLib.Context.CurrentContext.Bind(ThinkLib.Context.IContext)">
+        <member name="M:ThinkLib.Contexts.CurrentContext.Bind(ThinkLib.Contexts.IContext)">
             <summary>
             Binds the specified context to the current context.
             </summary>
         </member>
-        <member name="M:ThinkLib.Context.CurrentContext.HasBind(ThinkLib.Context.IContextManager)">
+        <member name="M:ThinkLib.Contexts.CurrentContext.HasBind(ThinkLib.Contexts.IContextManager)">
             <summary>
             Returns whether there is a context bound to the current context.
             </summary>
         </member>
-        <member name="M:ThinkLib.Context.CurrentContext.Unbind(ThinkLib.Context.IContextManager)">
+        <member name="M:ThinkLib.Contexts.CurrentContext.Unbind(ThinkLib.Contexts.IContextManager)">
             <summary>
             Unbinds and returns the current context.
             </summary>
         </member>
-        <member name="P:ThinkLib.Context.CurrentContext.ContextManager">
+        <member name="P:ThinkLib.Contexts.CurrentContext.ContextManager">
             <summary>
             context factory
             </summary>
         </member>
-        <member name="P:ThinkLib.Context.CurrentContext.Context">
+        <member name="P:ThinkLib.Contexts.CurrentContext.Context">
             <summary>
             Gets or sets the currently bound context.
             </summary>
         </member>
-        <member name="T:ThinkLib.Context.IContext">
+        <member name="T:ThinkLib.Contexts.IContext">
             <summary>
             表示继承该接口的是一个上下文
             </summary>
         </member>
-        <member name="P:ThinkLib.Context.IContext.ContextManager">
+        <member name="P:ThinkLib.Contexts.IContext.ContextManager">
             <summary>
             获取当前的Manager
             </summary>
@@ -750,49 +750,14 @@
             判断是否为IPv4地址
             </summary>
         </member>
-        <member name="M:System.ObjectExtentions.ToBoolean(System.String,System.Boolean)">
+        <member name="M:System.ObjectExtentions.To``1(System.String,``0)">
             <summary>
-            转换为bool型
-            </summary>
-            <param name="str">要转换的字符串</param>
-            <param name="value">默认值</param>
-            <returns>转换后的bool类型结果</returns>
-        </member>
-        <member name="M:System.ObjectExtentions.ToInt(System.String,System.Int32)">
-            <summary>
-            转换为Int32类型
-            </summary>
-            <param name="str">要转换的字符串</param>
-            <param name="value">缺省值</param>
-            <returns>转换后的int类型结果</returns>
-        </member>
-        <member name="M:System.ObjectExtentions.ToDecimal(System.String,System.Decimal)">
-            <summary>
-            转换为decimal型
-            </summary>
-            <param name="str">要转换的字符串</param>
-            <param name="value">缺省值</param>
-        </member>
-        <member name="M:System.ObjectExtentions.ToDate(System.String)">
-            <summary>
-            转换为DateTime型
+            将字符串 <param name="str" /> 转换为 <typeparam name="T" /> 的值。如果转换失败则使用 <param name="default" />
             </summary>
         </member>
-        <member name="M:System.ObjectExtentions.ToDate(System.String,System.DateTime)">
+        <member name="M:System.ObjectExtentions.TryParse(System.String,System.Type,System.Object@)">
             <summary>
-            转换为DateTime型
-            </summary>
-            <param name="str">要转换的字符串</param>
-            <param name="value">缺省值</param>
-        </member>
-        <member name="M:System.ObjectExtentions.ConvertTo(System.Object,System.Type)">
-            <summary>
-            Converts a value to an object
-            </summary>
-        </member>
-        <member name="M:System.ObjectExtentions.ConvertTo``1(System.Object)">
-            <summary>
-            Converts a value to an object type of <typeparam name="T" />
+            将字符串 <param name="str" /> 转换为 <param name="targetType" /> 的值。一个指示转换是否成功的返回值 <param name="result" />。
             </summary>
         </member>
         <member name="M:System.ObjectExtentions.InIPArray(System.String,System.String[])">
@@ -814,49 +779,6 @@
         </member>
         <member name="M:System.ObjectExtentions.MapTo``2(``0,``1,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
             <summary>Update the target object by the source object, assign the properties by the same name.
-            </summary>
-        </member>
-        <member name="M:System.ObjectExtentions.TypeConvert.ToNumber(System.Object,System.Type)">
-            <summary>
-            Converts a value to a number
-            </summary>
-        </member>
-        <member name="M:System.ObjectExtentions.TypeConvert.ToNumber``1(System.Object)">
-            <summary>
-            Converts a value to a number
-            </summary>
-        </member>
-        <member name="M:System.ObjectExtentions.TypeConvert.ToEnum(System.Object,System.Type)">
-            <summary>
-            Converts a value to an enum
-            (work with literals string values and numbers)
-            </summary>
-            <param name="o">The literal to convert</param>
-            <param name="enumType">The target enum type</param>
-        </member>
-        <member name="M:System.ObjectExtentions.TypeConvert.ToBoolean(System.Object)">
-            <summary>
-            Converts a value to a boolean
-            </summary>
-        </member>
-        <member name="M:System.ObjectExtentions.TypeConvert.ToString(System.Object)">
-            <summary>
-            返回表示当前 System.Object 的 System.String。
-            </summary>
-        </member>
-        <member name="M:System.ObjectExtentions.TypeConvert.ToChar(System.Object)">
-            <summary>
-            返回表示当前 System.Object 的 System.Char。
-            </summary>
-        </member>
-        <member name="M:System.ObjectExtentions.TypeConvert.ToGuid(System.Object)">
-            <summary>
-            返回表示当前 System.Object 的 System.Guid。
-            </summary>
-        </member>
-        <member name="M:System.ObjectExtentions.TypeConvert.To(System.Object,System.Type)">
-            <summary>
-            Converts a value to an object
             </summary>
         </member>
         <member name="T:System.Threading.ReaderWriterLockSlimExtensions">
@@ -1222,72 +1144,6 @@
             获取logger
             </summary>
         </member>
-        <member name="T:ThinkLib.Scheduling.AsynchronousMessageProcessor`1">
-            <summary>
-            异步消息处理器
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.#ctor">
-            <summary>
-            default constructor.
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.TryAdd(`0)">
-            <summary>
-            尝试添加该消息到队列
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.Start">
-            <summary>
-            启动
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.Stop">
-            <summary>
-            停止
-            </summary>
-        </member>
-        <member name="E:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.MessageProcessing">
-            <summary>
-            处理消息事件
-            </summary>
-        </member>
-        <member name="P:ThinkLib.Scheduling.AsynchronousMessageProcessor`1.PengingCount">
-            <summary>
-            待处理的消息数量
-            </summary>
-        </member>
-        <member name="T:ThinkLib.Scheduling.Dispatcher">
-            <summary>
-            定时调度器
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.Dispatcher.Create(System.String,System.Action)">
-            <summary>
-            创建一个定时器
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.Dispatcher.SetInterval(System.Double)">
-            <summary>
-            重新设置任务间隔
-            </summary>
-            <param name="interval">间隔时间(毫秒)</param>
-        </member>
-        <member name="M:ThinkLib.Scheduling.Dispatcher.Start">
-            <summary>
-            Start the dispatcher
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.Dispatcher.Stop">
-            <summary>
-            Start the dispatcher
-            </summary>
-        </member>
-        <member name="P:ThinkLib.Scheduling.Dispatcher.Name">
-            <summary>
-            当前定时器名称
-            </summary>
-        </member>
         <member name="T:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler">
             <summary>表示一个有限的并发任务调度器。
             For more information about this solution please refer to https://github.com/tangxuehua/ecommon
@@ -1343,16 +1199,30 @@
             后台循环执行一个特定的方法的工作器
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.Create(System.String,System.Action)">
+        <member name="M:ThinkLib.Scheduling.Worker.Create(System.Action)">
             <summary>
             创建一个后台线程工作器
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.#ctor(System.String,System.Action)">
+        <member name="M:ThinkLib.Scheduling.Worker.Create(System.Action,System.Action)">
+            <summary>
+            创建一个后台线程工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Create(System.Action,System.Action,System.Action{System.Exception})">
+            <summary>
+            创建一个后台线程工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.#ctor(System.Action,System.Action,System.Action{System.Exception})">
             <summary>Initialize a new Worker for the specified method to run.
             </summary>
-            <param name="name">The name of worker.</param>
-            <param name="action">The delegate method to execute in a loop.</param>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.SetInterval(System.Int32)">
+            <summary>
+            等待下一个任务的间隔时间
+            </summary>
+            <param name="interval">毫秒</param>
         </member>
         <member name="M:ThinkLib.Scheduling.Worker.Start">
             <summary>
@@ -1364,9 +1234,24 @@
             Stop the worker.
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.Name">
+        <member name="P:ThinkLib.Scheduling.Worker.Interval">
             <summary>
-            当前工作器名称
+            间隔时间(毫秒数)
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.Action">
+            <summary>
+            要执行的函数。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.SuccessCallback">
+            <summary>
+            成功调用的函数
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.ExceptionCallback">
+            <summary>
+            失败调用的函数
             </summary>
         </member>
         <member name="P:ThinkLib.Scheduling.Worker.CancellationToken">
@@ -1547,6 +1432,52 @@
         <member name="M:ThinkLib.Utilities.RandomUtil.GenerateNum(System.Int32)">
             <summary>
             随机数字
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Utilities.TypeConverter">
+            <summary>
+            Types conversion.
+            A "smart" extension to System.Convert (at least that's what we hope)
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.TypeConverter.ToNumber(System.Object,System.Type)">
+            <summary>
+            Convert a value to a number
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.TypeConverter.ToEnum(System.Object,System.Type)">
+            <summary>
+            Converts a value to an enum
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.TypeConverter.ToBoolean(System.Object)">
+            <summary>
+            Converts a value to a boolean
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.TypeConverter.ToString(System.Object)">
+            <summary>
+            Converts a value to a string
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.TypeConverter.ToChar(System.Object)">
+            <summary>
+            Converts a value to a chars
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.TypeConverter.ToGuid(System.Object)">
+            <summary>
+            Converts a value to a guid
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.TypeConverter.To(System.Object,System.Type)">
+            <summary>
+            Converts a value to an object
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.TypeConverter.To``1(System.Object)">
+            <summary>
+            Converts a value to an object type of <typeparam name="T" />
             </summary>
         </member>
     </members>
