@@ -2,8 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using ThinkLib.Common;
 using ThinkLib.Logging;
-using ThinkNet.Common;
 using ThinkNet.Database;
 using ThinkNet.Kernel;
 using ThinkNet.Messaging;
@@ -169,7 +169,7 @@ namespace ThinkNet.Infrastructure
 
         private static bool IsRepositoryType(Type type)
         {
-            if (type == typeof(Object))
+            if (type.IsNull() || type == typeof(Object))
                 return false;
 
             var result = type.IsClass && !type.IsAbstract &&

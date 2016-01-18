@@ -2,22 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using ThinkNet.Common;
+using ThinkLib.Common;
 using ThinkNet.Configurations;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
-using ThinkNet.Messaging.Queuing;
 
 
 namespace ThinkNet.Messaging.Handling
 {
+    [RegisterComponent(typeof(IProcessor), "MessageProcessor")]
     public class MessageProcessor : DisposableObject, IInitializer, IProcessor
     {
         private readonly IMessageReceiver receiver;
         private readonly IMessageExecutor executor;
         private readonly IEventPublishedVersionStore eventPublishedVersionStore;
-        private readonly IMessageBroker broker;
+        private readonly MessageBroker broker;
         private readonly ICommandResultManager commandResultManager;
         
         private readonly object lockObject = new object();
@@ -29,13 +29,12 @@ namespace ThinkNet.Messaging.Handling
         public MessageProcessor(IMessageReceiver receiver,
             IMessageExecutor executor,
             IEventPublishedVersionStore eventPublishedVersionStore,
-            IMessageBroker broker,
             ICommandResultManager commandResultManager)
         {
             this.receiver = receiver;
             this.executor = executor;
             this.eventPublishedVersionStore = eventPublishedVersionStore;
-            this.broker = broker;
+            this.broker = MessageBrokerFactory.Instance.GetOrCreate("message");
             this.commandResultManager = commandResultManager;
         }
 

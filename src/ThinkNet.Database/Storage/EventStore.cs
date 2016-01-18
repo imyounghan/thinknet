@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkNet.Common;
+using ThinkLib.Common;
 using ThinkNet.EventSourcing;
 
 
@@ -88,7 +88,7 @@ namespace ThinkNet.Database.Storage
 
             var task = Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
-                    var events =  context.CreateQuery<Event>()
+                    var events = context.CreateQuery<Event>()
                         .Where(p => p.AggregateRootId == sourceKey.SourceId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode &&
                             p.Version > version)
@@ -96,10 +96,10 @@ namespace ThinkNet.Database.Storage
                         .ToList();
 
                     return events.Select(item => new Stream {
-                            Key = new SourceKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
-                            Version = item.Version,
-                            Payload = item.Payload
-                        }).AsEnumerable();
+                        Key = new SourceKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
+                        Version = item.Version,
+                        Payload = item.Payload
+                    }).AsEnumerable();
                 }
             });
             task.Wait();

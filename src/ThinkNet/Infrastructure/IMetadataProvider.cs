@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ThinkNet.Common;
+using ThinkLib.Common;
 
 namespace ThinkNet.Infrastructure
 {

@@ -1,4 +1,4 @@
-﻿using ThinkNet.Common;
+﻿using ThinkLib.Common;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Infrastructure

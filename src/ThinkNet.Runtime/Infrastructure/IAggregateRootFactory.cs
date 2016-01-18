@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.Serialization;
-using ThinkNet.Common;
+using ThinkLib.Common;
 using ThinkNet.Kernel;
 
 

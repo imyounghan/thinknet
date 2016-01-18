@@ -1,5 +1,5 @@
 ﻿using System;
-using ThinkNet.Common;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
 {

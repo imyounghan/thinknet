@@ -3,6 +3,7 @@ using ThinkNet.Kernel;
 using ThinkNet.Messaging.Handling;
 using UserRegistration.Commands;
 using UserRegistration.Events;
+using UserRegistration.ReadModel;
 
 
 namespace UserRegistration.Handlers
@@ -11,9 +12,11 @@ namespace UserRegistration.Handlers
         IMessageHandler<UserCreated>, IMessageHandler<UserLogined>
     {
         private readonly IEventSourcedRepository _repository;
-        public UserHandler(IEventSourcedRepository repository)
+        private readonly IUserDao _userDao;
+        public UserHandler(IEventSourcedRepository repository, IUserDao userDao)
         {
             this._repository = repository;
+            this._userDao = userDao;
         }
 
         public void Handle(RegisterUser command)
@@ -29,10 +32,12 @@ namespace UserRegistration.Handlers
         {
             //var user = _repository.Get<User>(@event.SourceId);
 
-            //using (var context = _contextFactory.CreateRepositoryContext()) {
-            //    context.GetRepository<IRepository<User>>().Add(user);
-            //    context.Commit();
-            //}
+            (_userDao as UserDao).Save(new UserModel {
+                UserID = @event.SourceId,
+                LoginId = @event.LoginId,
+                Password = @event.Password,
+                UserName = @event.UserName
+            });
 
             Console.ResetColor();
             Console.WriteLine("同步到Q端数据库");

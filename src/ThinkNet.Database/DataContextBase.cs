@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using ThinkLib.Common;
 using ThinkLib.Contexts;
-using ThinkNet.Common;
-using ThinkNet.Infrastructure;
 
 
 namespace ThinkNet.Database

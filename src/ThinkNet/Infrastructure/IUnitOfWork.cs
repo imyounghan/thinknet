@@ -1,5 +1,5 @@
 ﻿
-namespace ThinkNet.Common
+namespace ThinkNet.Infrastructure
 {
     /// <summary>
     /// 表示继承该接口的类型是一个工作单元

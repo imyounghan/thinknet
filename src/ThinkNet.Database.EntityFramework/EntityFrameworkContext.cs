@@ -5,8 +5,8 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
+using ThinkLib.Common;
 using ThinkLib.Contexts;
-using ThinkNet.Common;
 
 namespace ThinkNet.Database.EntityFramework
 {

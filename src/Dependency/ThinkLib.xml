@@ -172,6 +172,302 @@
             </summary>
             <returns>an array of CacheConfig objects</returns>
         </member>
+        <member name="T:ThinkLib.Common.CacheRegionAttribute">
+            <summary>
+            表示定义缓存区域策略的特性
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.CacheRegionAttribute.#ctor(System.String)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.CacheRegionAttribute.CacheRegion">
+            <summary>
+            区域名称
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.CachingAttribute">
+            <summary>
+            表示由此特性所描述的方法，能够获得框架所提供的缓存功能。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.CachingAttribute.#ctor(ThinkLib.Common.CachingMethod)">
+            <summary>
+            Parameterized Constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.CachingAttribute.#ctor(ThinkLib.Common.CachingMethod,System.String[])">
+            <summary>
+            Parameterized Constructor.
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.CachingAttribute.Method">
+            <summary>
+            获取或设置缓存方式。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.CachingAttribute.CacheKey">
+            <summary>
+            缓存标识
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.CachingAttribute.RelatedAreas">
+            <summary>
+            获取与当前缓存方式相关的区域名称。注：此参数仅在缓存方式为Remove时起作用。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.CachingMethod">
+            <summary>
+            表示用于缓存特性的缓存方式。
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.CachingMethod.Get">
+            <summary>
+            表示需要从缓存中获取对象。如果缓存中不存在所需的对象，系统则会调用实际的方法获取对象，然后将获得的结果添加到缓存中。
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.CachingMethod.Put">
+            <summary>
+            表示需要将对象存入缓存。此方式会调用实际方法以获取对象，然后将获得的结果添加到缓存中，并直接返回方法的调用结果。
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.CachingMethod.Remove">
+            <summary>
+            表示需要将对象从缓存中移除。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.DisposableObject">
+            <summary>
+            表示派生对象是需要释放资源的
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.DisposableObject.Finalize">
+            <summary>
+            析构函数
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.DisposableObject.Dispose(System.Boolean)">
+            <summary>
+            释放资源
+            </summary>
+            <param name="disposing">表示对象是否应该明确处理</param>
+        </member>
+        <member name="M:ThinkLib.Common.DisposableObject.Dispose">
+            <summary>
+            释放资源
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.DisposableObject.ThrowIfDisposed">
+            <summary>
+            表示该对象已释放的异常
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.Ensure">
+            <summary>
+            参数约定
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.NotNull``1(``0,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的值不能是 null。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.NotEmpty(System.String,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的字符串不能 <see cref="F:System.String.Empty"/> 字符串。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.NotNullOrEmpty(System.String,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的字符串不能是 null 或 <see cref="F:System.String.Empty"/> 字符串。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.NotWhiteSpace(System.String,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的字符串不能是空白字符串。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.NotNullOrWhiteSpace(System.String,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的字符串不能是 null 或 空白字符串。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.Positive(System.Int32,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值必须是正整数。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.Positive(System.Int64,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值必须是正整数。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.Nonnegative(System.Int64,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值不能是负数。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.Nonnegative(System.Int32,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值不能是负数。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.NotEmptyGuid(System.Guid,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的标识符不能是均为零的标识。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.Equal(System.Int32,System.Int32,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的变量值 <paramref name="expected" /> 必须与 <paramref name="actual" /> 相等。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.Equal(System.Int64,System.Int64,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的变量值 <paramref name="expected" /> 必须与 <paramref name="actual" /> 相等。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Ensure.Equal(System.Boolean,System.Boolean,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的变量值 <paramref name="expected" /> 必须与 <paramref name="actual" /> 相等。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.LifeCycleAttribute">
+            <summary>
+            表示实例的生命周期的特性(默认为Singleton)
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.LifeCycleAttribute.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.LifeCycleAttribute.#ctor(ThinkLib.Common.LifeCycleAttribute.Lifecycle)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.LifeCycleAttribute.GetLifecycle(System.Type)">
+            <summary>
+            获取生命周期
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.LifeCycleAttribute.Lifetime">
+            <summary>
+            返回生命周期类型(默认为Singleton)
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.LifeCycleAttribute.Lifecycle">
+            <summary>
+            生命周期
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.LifeCycleAttribute.Lifecycle.Transient">
+            <summary>
+            每次都构造一个新实例
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.LifeCycleAttribute.Lifecycle.Singleton">
+            <summary>
+            单例
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.RegisterComponentAttribute">
+            <summary>
+            表示该特性的类会被注册到IOC容器中
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.RegisterComponentAttribute.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.RegisterComponentAttribute.#ctor(System.String)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.RegisterComponentAttribute.#ctor(System.Type)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.RegisterComponentAttribute.#ctor(System.Type,System.String)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.RegisterComponentAttribute.GetFinalRegisterName(System.Type)">
+            <summary>
+            获取最终的注册名称。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.RegisterComponentAttribute.RegisterType">
+            <summary>
+            要注册的服务类型。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.RegisterComponentAttribute.RegisterName">
+            <summary>
+            注册的名称
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.RegisterComponentAttribute.RegisterTypeName">
+            <summary>
+            使用类型名称
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.RequiredComponentAttribute">
+            <summary>
+            标记此特性的类型是运行时必须的组件。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.RequiredComponentAttribute.#ctor">
+            <summary>
+            default constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.RequiredComponentAttribute.#ctor(System.Type)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.RequiredComponentAttribute.#ctor(System.Type,System.String)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.RequiredComponentAttribute.GetFinalRegisterName">
+            <summary>
+            获取最终的注册名称。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.RequiredComponentAttribute.RegisterName">
+            <summary>
+            注册的名称
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.RequiredComponentAttribute.ServiceType">
+            <summary>
+            要注册的服务类型。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.RequiredComponentAttribute.RegisterTypeName">
+            <summary>
+            使用类型名称
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.RequiredComponentAttribute.CreateInstance">
+            <summary>
+            是否创建实例。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.RequiredComponentAttribute.ConstructorParameters">
+            <summary>
+            构造函数的参数。
+            </summary>
+        </member>
         <member name="T:ThinkLib.Contexts.ContextManager">
             <summary>
             <see cref="T:ThinkLib.Contexts.IContextManager"/> 的抽象实现类
@@ -1385,6 +1681,16 @@
             <param name="strPath">指定的路径</param>
             <returns>绝对路径</returns>
         </member>
+        <member name="T:ThinkLib.Utilities.GuidUtil">
+            <summary>
+            Guid工具
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.GuidUtil.NewSequentialId">
+            <summary>
+            Creates a sequential GUID according to SQL Server's ordering rules.
+            </summary>
+        </member>
         <member name="T:ThinkLib.Utilities.HttpUtil">
             <summary>
             http工具类
@@ -1434,48 +1740,48 @@
             随机数字
             </summary>
         </member>
-        <member name="T:ThinkLib.Utilities.TypeConverter">
+        <member name="T:ThinkLib.Common.TypeConverter">
             <summary>
             Types conversion.
             A "smart" extension to System.Convert (at least that's what we hope)
             </summary>
         </member>
-        <member name="M:ThinkLib.Utilities.TypeConverter.ToNumber(System.Object,System.Type)">
+        <member name="M:ThinkLib.Common.TypeConverter.ToNumber(System.Object,System.Type)">
             <summary>
             Convert a value to a number
             </summary>
         </member>
-        <member name="M:ThinkLib.Utilities.TypeConverter.ToEnum(System.Object,System.Type)">
+        <member name="M:ThinkLib.Common.TypeConverter.ToEnum(System.Object,System.Type)">
             <summary>
             Converts a value to an enum
             </summary>
         </member>
-        <member name="M:ThinkLib.Utilities.TypeConverter.ToBoolean(System.Object)">
+        <member name="M:ThinkLib.Common.TypeConverter.ToBoolean(System.Object)">
             <summary>
             Converts a value to a boolean
             </summary>
         </member>
-        <member name="M:ThinkLib.Utilities.TypeConverter.ToString(System.Object)">
+        <member name="M:ThinkLib.Common.TypeConverter.ToString(System.Object)">
             <summary>
             Converts a value to a string
             </summary>
         </member>
-        <member name="M:ThinkLib.Utilities.TypeConverter.ToChar(System.Object)">
+        <member name="M:ThinkLib.Common.TypeConverter.ToChar(System.Object)">
             <summary>
             Converts a value to a chars
             </summary>
         </member>
-        <member name="M:ThinkLib.Utilities.TypeConverter.ToGuid(System.Object)">
+        <member name="M:ThinkLib.Common.TypeConverter.ToGuid(System.Object)">
             <summary>
             Converts a value to a guid
             </summary>
         </member>
-        <member name="M:ThinkLib.Utilities.TypeConverter.To(System.Object,System.Type)">
+        <member name="M:ThinkLib.Common.TypeConverter.To(System.Object,System.Type)">
             <summary>
             Converts a value to an object
             </summary>
         </member>
-        <member name="M:ThinkLib.Utilities.TypeConverter.To``1(System.Object)">
+        <member name="M:ThinkLib.Common.TypeConverter.To``1(System.Object)">
             <summary>
             Converts a value to an object type of <typeparam name="T" />
             </summary>

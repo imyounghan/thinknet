@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using ThinkNet.Common;
-using ThinkNet.Messaging.Queuing;
+using ThinkLib.Common;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
@@ -15,10 +15,10 @@ namespace ThinkNet.Messaging
 
     internal class DefaultMessageSender : IMessageSender
     {
-        private readonly IMessageBroker broker;
-        public DefaultMessageSender(IMessageBroker messageBroker)
+        private readonly MessageBroker broker;
+        public DefaultMessageSender()
         {
-            this.broker = messageBroker;
+            this.broker = MessageBrokerFactory.Instance.GetOrCreate("message");
         }
 
 

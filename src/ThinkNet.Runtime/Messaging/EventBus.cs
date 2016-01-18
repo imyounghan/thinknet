@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ThinkLib.Common;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
+    [RegisterComponent(typeof(IEventBus))]
     public class EventBus : AbstractBus, IEventBus
     {
         private readonly IMessageSender messageSender;

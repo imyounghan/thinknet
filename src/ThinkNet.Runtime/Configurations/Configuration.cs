@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Practices.ServiceLocation;
+using ThinkLib.Common;
 using ThinkLib.Logging;
 using ThinkLib.Utilities;
-using ThinkNet.Common;
-using TinyIoC;
+using ThinkNet.Infrastructure;
 
 
 namespace ThinkNet.Configurations
@@ -17,26 +17,26 @@ namespace ThinkNet.Configurations
     /// </summary>
     public sealed class Configuration
     {
-        public class ServiceRegistration
+        public class TypeRegistration
         {
-            public ServiceRegistration(Type type, object instance, string name)
+            public TypeRegistration(Type type, object instance, string name)
                 : this(type, name)
             {
                 this.Instance = instance;
             }
 
-            public ServiceRegistration(Type type, string name)
+            public TypeRegistration(Type type, string name)
                 : this(type, name, Configurations.Lifecycle.Singleton)
             { }
 
-            public ServiceRegistration(Type type, string name, Lifecycle lifecycle)
+            public TypeRegistration(Type type, string name, Lifecycle lifecycle)
             {
                 this.RegisterType = type;
                 this.Name = name ?? string.Empty;
                 this.Lifecycle = lifecycle;
             }
 
-            public ServiceRegistration(Type from, Type to, string name, Lifecycle lifecycle)
+            public TypeRegistration(Type from, Type to, string name, Lifecycle lifecycle)
                 : this(from, name, lifecycle)
             {
                 this.ImplementationType = to;
@@ -54,7 +54,7 @@ namespace ThinkNet.Configurations
 
             public override bool Equals(object obj)
             {
-                var other = obj as ServiceRegistration;
+                var other = obj as TypeRegistration;
 
                 if (other == null)
                     return false;
@@ -83,14 +83,14 @@ namespace ThinkNet.Configurations
 
         private readonly List<Assembly> _assemblies;
         private readonly List<IInitializer> _initializers;
-        private readonly List<Type> _initializeTypes;
-        private readonly HashSet<ServiceRegistration> _registeredComponents;
+        private readonly List<KeyValuePair<Type, string>> _initializeTypes;
+        private readonly HashSet<TypeRegistration> _registeredComponents;
         private Configuration()
         {
             this._assemblies = new List<Assembly>();
             this._initializers = new List<IInitializer>();
-            this._initializeTypes = new List<Type>();
-            this._registeredComponents = new HashSet<ServiceRegistration>();
+            this._initializeTypes = new List<KeyValuePair<Type, string>>();
+            this._registeredComponents = new HashSet<TypeRegistration>();
         }
         
 
@@ -128,58 +128,18 @@ namespace ThinkNet.Configurations
 
             return this.LoadAssemblies(assemblies);
         }
-
-        private void Register(ServiceRegistration registration)
+        
+        private object Resolve(KeyValuePair<Type, string> serviceType)
         {
-            if (registration.RegisterType == null)
-                return;
-
-            if (TinyIoCContainer.Current.CanResolve(registration.RegisterType, registration.Name))
-                return;
-
-
-            if (registration.Instance != null) {
-                TinyIoCContainer.Current.Register(registration.RegisterType, registration.Instance, registration.Name).AsSingleton();
-                return;
-            }
-
-            TinyIoCContainer.RegisterOptions options;
-            if (registration.ImplementationType == null) {
-                options = TinyIoCContainer.Current.Register(registration.RegisterType, registration.Name);
-            }
-            else {
-                options = TinyIoCContainer.Current.Register(registration.RegisterType, registration.ImplementationType, registration.Name);
-            }
-
-            switch (registration.Lifecycle) {
-                case Lifecycle.Singleton:
-                    options.AsSingleton();
-                    break;
-                case Lifecycle.Transient:
-                    options.AsMultiInstance();
-                    break;
-                case Lifecycle.PerSession:
-                    options.AsPerSession();
-                    break;
-                case Lifecycle.PerThread:
-                    options.AsPerThread();
-                    break;
-            }
-        }
-
-        public void Done()
-        {
-            ServiceLocator.SetLocatorProvider(() => new TinyIoCServiceLocator(TinyIoCContainer.Current));
-
-            this.Done(Register);
-        }
+            return ServiceLocator.Current.GetInstance(serviceType.Key, serviceType.Value ?? string.Empty);
+        }            
 
 
         private bool _running = false;
         /// <summary>
         /// 配置完成。
         /// </summary>
-        public void Done(Action<ServiceRegistration> serviceRegistry)
+        public void Done(Action<TypeRegistration> typeRegistry)
         {
             if (_running)
                 return;
@@ -198,14 +158,16 @@ namespace ThinkNet.Configurations
             allTypes.Where(IsRegisteredComponent).ForEach(RegisterComponent);
             allTypes.Where(IsRequiredComponent).ForEach(RegisterRequiredComponent);
 
-            _registeredComponents.ForEach(serviceRegistry);
-            _initializeTypes.Select(ServiceLocator.Current.GetInstance).OfType<IInitializer>().Concat(_initializers)
+            _registeredComponents.ForEach(typeRegistry);
+            _initializeTypes.Select(Resolve).OfType<IInitializer>().Concat(_initializers)
                 .ForEach(initializer => initializer.Initialize(allTypes));
             
             _assemblies.Clear();
             _initializers.Clear();
             _initializeTypes.Clear();
             _registeredComponents.Clear();
+
+            ServiceLocator.Current.GetAllInstances(typeof(IProcessor)).OfType<IProcessor>().ForEach(p => p.Start());
             
 
             _running = true;
@@ -226,7 +188,7 @@ namespace ThinkNet.Configurations
             Ensure.NotNull(type, "type");
             Ensure.NotNull(instance, "instance");
 
-            _registeredComponents.Add(new ServiceRegistration(type, instance, name));
+            _registeredComponents.Add(new TypeRegistration(type, instance, name));
 
             if (IsInitializer(instance)) {
                 _initializers.Add((IInitializer)instance);
@@ -246,9 +208,9 @@ namespace ThinkNet.Configurations
 
             Ensure.NotNull(type, "type");
 
-            var result = _registeredComponents.Add(new ServiceRegistration(type, name, lifecycle));
+            var result = _registeredComponents.Add(new TypeRegistration(type, name, lifecycle));
             if (lifecycle == Lifecycle.Singleton && IsInitializerType(type)) {
-                _initializeTypes.Add(type);
+                _initializeTypes.Add(new KeyValuePair<Type, string>(type, name));
             }
 
             return this;
@@ -266,9 +228,9 @@ namespace ThinkNet.Configurations
             Ensure.NotNull(from, "from");
             Ensure.NotNull(to, "to");
 
-            _registeredComponents.Add(new ServiceRegistration(from, to, name, lifecycle));
+            _registeredComponents.Add(new TypeRegistration(from, to, name, lifecycle));
             if (lifecycle == Lifecycle.Singleton && IsInitializerType(to)) {
-                _initializeTypes.Add(from);
+                _initializeTypes.Add(new KeyValuePair<Type, string>(from, name));
             }
 
             return this;

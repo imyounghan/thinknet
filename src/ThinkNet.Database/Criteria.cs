@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using ThinkNet.Common;
+using ThinkLib.Common;
 
 namespace ThinkNet.Database
 {

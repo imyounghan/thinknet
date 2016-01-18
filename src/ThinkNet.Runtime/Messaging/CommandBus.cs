@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ThinkLib.Common;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
+    [RegisterComponent(typeof(ICommandBus))]
     public class CommandBus : AbstractBus, ICommandBus
     {
         private readonly IMessageSender messageSender;

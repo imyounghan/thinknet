@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ThinkNet.Common
+namespace ThinkNet.Infrastructure
 {
     /// <summary>
     /// 表示框架执行过程发生的错误

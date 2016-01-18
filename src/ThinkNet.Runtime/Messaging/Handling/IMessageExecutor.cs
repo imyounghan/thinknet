@@ -1,5 +1,5 @@
-﻿
-using ThinkNet.Common;
+﻿using ThinkLib.Common;
+
 namespace ThinkNet.Messaging.Handling
 {
     [RequiredComponent(typeof(MessageExecutor))]

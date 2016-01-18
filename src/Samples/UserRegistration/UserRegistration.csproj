@@ -50,6 +50,9 @@
     <Compile Include="ReadModel\IUserDao.cs" />
     <Compile Include="ReadModel\UserModel.cs" />
     <Compile Include="Commands\RegisterUser.cs" />
+    <Compile Include="TinyIoC\TinyIoC.cs" />
+    <Compile Include="TinyIoC\TinyIoCExtentions.cs" />
+    <Compile Include="TinyIoC\TinyIoCServiceLocator.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Events\UserCreated.cs" />
     <Compile Include="Events\UserLogined.cs" />

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using ThinkNet.Common;
-using ThinkNet.Infrastructure;
+using ThinkLib.Common;
 
 
 namespace ThinkNet.Messaging.Handling

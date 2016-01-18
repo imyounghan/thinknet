@@ -50,28 +50,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\CacheRegionAttribute.cs">
+    <Compile Include="Infrastructure\IInitializer.cs" />
+    <Compile Include="Infrastructure\IMemoryCache.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Common\CachingAttribute.cs" />
-    <Compile Include="Common\CachingMethod.cs" />
-    <Compile Include="Common\DisposableObject.cs" />
-    <Compile Include="Common\GuidUtil.cs" />
-    <Compile Include="Common\IInitializer.cs" />
-    <Compile Include="Common\IMemoryCache.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Common\LifeCycleAttribute.cs" />
-    <Compile Include="Common\RegisterComponentAttribute.cs" />
-    <Compile Include="Common\RequiredComponentAttribute.cs" />
     <Compile Include="EventSourcing\EventPublishedVersionInMemory.cs" />
     <Compile Include="EventSourcing\IEventPublishedVersionStore.cs" />
     <Compile Include="EventSourcing\IEventStore.cs" />
     <Compile Include="EventSourcing\ISnapshotPolicy.cs" />
     <Compile Include="EventSourcing\ISnapshotStore.cs" />
     <Compile Include="EventSourcing\SourceKey.cs" />
-    <Compile Include="Common\Ensure.cs" />
-    <Compile Include="Common\IUnitOfWork.cs" />
+    <Compile Include="Infrastructure\IUnitOfWork.cs" />
     <Compile Include="EventSourcing\Stream.cs" />
     <Compile Include="Infrastructure\IMetadataProvider.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
@@ -125,7 +114,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Common\ThinkNetException.cs" />
+    <Compile Include="Infrastructure\ThinkNetException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

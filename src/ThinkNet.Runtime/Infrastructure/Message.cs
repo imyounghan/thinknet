@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ThinkNet.Messaging
+namespace ThinkNet.Infrastructure
 {
     public class Message
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using ThinkNet.Common;
+using ThinkLib.Common;
 
 namespace ThinkNet.Messaging
 {

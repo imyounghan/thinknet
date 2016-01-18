@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Practices.ServiceLocation;
 using ThinkLib.Logging;
+using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
 
 
@@ -107,13 +108,17 @@ namespace ThinkNet.Messaging.Handling
             var handlers = ServiceLocator.Current.GetAllInstances(handlerType);
             handlerlist.AddRange(handlers);
 
-            handlerType = typeof(ICommandHandler<>).MakeGenericType(type);
-            handlers = ServiceLocator.Current.GetAllInstances(handlerType);
-            handlerlist.AddRange(handlers);
+            if (TypeHelper.IsCommand(type)) {
+                handlerType = typeof(ICommandHandler<>).MakeGenericType(type);
+                handlers = ServiceLocator.Current.GetAllInstances(handlerType);
+                handlerlist.AddRange(handlers);
+            }
 
-            handlerType = typeof(IEventHandler<>).MakeGenericType(type);
-            handlers = ServiceLocator.Current.GetAllInstances(handlerType);
-            handlerlist.AddRange(handlers);
+            if (TypeHelper.IsEvent(type)) {
+                handlerType = typeof(IEventHandler<>).MakeGenericType(type);
+                handlers = ServiceLocator.Current.GetAllInstances(handlerType);
+                handlerlist.AddRange(handlers);
+            }
 
 
             return handlerlist.Select(handler => {

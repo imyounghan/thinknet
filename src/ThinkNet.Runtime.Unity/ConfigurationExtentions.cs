@@ -6,7 +6,7 @@ using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.Configuration;
 using Microsoft.Practices.Unity.InterceptionExtension;
-using ThinkNet.Common;
+using ThinkLib.Common;
 
 namespace ThinkNet.Configurations
 {
@@ -27,7 +27,7 @@ namespace ThinkNet.Configurations
             if (string.IsNullOrWhiteSpace(name) && container.IsRegistered(type)) {
                 return;
             }
-            if (string.IsNullOrWhiteSpace(name) && container.IsRegistered(type, name)) {
+            if (!string.IsNullOrWhiteSpace(name) && container.IsRegistered(type, name)) {
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace ThinkNet.Configurations
             if (string.IsNullOrWhiteSpace(name) && container.IsRegistered(from)) {
                 return;
             }
-            if (string.IsNullOrWhiteSpace(name) && container.IsRegistered(from, name)) {
+            if (!string.IsNullOrWhiteSpace(name) && container.IsRegistered(from, name)) {
                 return;
             }
 
@@ -87,7 +87,7 @@ namespace ThinkNet.Configurations
             }
         }
 
-        private static void Register(Configuration.ServiceRegistration registration)
+        private static void Register(Configuration.TypeRegistration registration)
         {
             if (registration.RegisterType == null)
                 return;

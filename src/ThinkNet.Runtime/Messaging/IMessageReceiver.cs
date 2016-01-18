@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ThinkLib.Common;
 using ThinkLib.Scheduling;
-using ThinkNet.Common;
-using ThinkNet.Messaging.Queuing;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
@@ -28,14 +28,14 @@ namespace ThinkNet.Messaging
     internal class DefaultMessageReceiver : IMessageReceiver
     {
         private readonly Worker worker;
-        private readonly IMessageBroker broker;
+        private readonly MessageBroker broker;
         private readonly object lockObject;
 
-        public DefaultMessageReceiver(IMessageBroker messageBroker)
+        public DefaultMessageReceiver()
         {
             this.lockObject = new object();
             this.worker = Worker.Create(Processing);
-            this.broker = messageBroker;
+            this.broker = MessageBrokerFactory.Instance.GetOrCreate("message");
         }
 
         private void Processing()

@@ -7,8 +7,8 @@ using System.Linq;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Mapping;
+using ThinkLib.Common;
 using ThinkLib.Contexts;
-using ThinkNet.Common;
 
 
 namespace ThinkNet.Database.NHibernate

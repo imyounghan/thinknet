@@ -4,9 +4,10 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using ThinkLib.Caching;
+using ThinkLib.Common;
 
 
-namespace ThinkNet.Common
+namespace ThinkNet.Infrastructure
 {
     /// <summary>
     /// 设置或获取聚合的缓存接口

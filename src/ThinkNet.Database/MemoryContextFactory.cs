@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 
 namespace ThinkNet.Database
@@ -243,10 +244,10 @@ namespace ThinkNet.Database
 
         public IDataContext CreateDataContext(string nameOrConnectionString)
         {
-            throw new NotImplementedException();
+            return new MemoryContext();
         }
 
-        public IDataContext CreateDataContext(System.Data.Common.DbConnection connection)
+        public IDataContext CreateDataContext(DbConnection connection)
         {
             throw new NotImplementedException();
         }

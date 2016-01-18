@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkNet.Common;
+using ThinkLib.Utilities;
 
 namespace ThinkNet.Messaging
 {
