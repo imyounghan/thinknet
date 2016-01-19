@@ -50,7 +50,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Infrastructure\IInitializer.cs" />
     <Compile Include="Infrastructure\IMemoryCache.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -60,7 +59,6 @@
     <Compile Include="EventSourcing\ISnapshotPolicy.cs" />
     <Compile Include="EventSourcing\ISnapshotStore.cs" />
     <Compile Include="EventSourcing\SourceKey.cs" />
-    <Compile Include="Infrastructure\IUnitOfWork.cs" />
     <Compile Include="EventSourcing\Stream.cs" />
     <Compile Include="Infrastructure\IMetadataProvider.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />

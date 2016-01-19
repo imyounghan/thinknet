@@ -18,6 +18,13 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
+        public EventPublishedVersion(int aggregateRootTypeCode, string aggregateRootId)
+            : this(aggregateRootTypeCode, aggregateRootId, 0)
+        { }
+
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public EventPublishedVersion(int aggregateRootTypeCode, string aggregateRootId, int version)
         {
             this.AggregateRootId = aggregateRootId;
@@ -45,8 +52,7 @@ namespace ThinkNet.Database.Storage
         {
             return new int[] {
                 AggregateRootTypeCode.GetHashCode(),
-                AggregateRootId.GetHashCode(),
-                Version.GetHashCode()
+                AggregateRootId.GetHashCode()
             }.Aggregate((x, y) => x ^ y);
         }
 
@@ -61,8 +67,7 @@ namespace ThinkNet.Database.Storage
             }
 
             return other.AggregateRootTypeCode == this.AggregateRootTypeCode &&
-                other.AggregateRootId == this.AggregateRootId &&
-                other.Version == this.Version;
+                other.AggregateRootId == this.AggregateRootId;
         }
 
         /// <summary>

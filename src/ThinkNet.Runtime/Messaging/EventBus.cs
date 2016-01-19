@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using ThinkLib.Common;
+using ThinkLib.Logging;
 using ThinkNet.Infrastructure;
+using ThinkNet.Kernel;
 
 namespace ThinkNet.Messaging
 {
@@ -12,14 +14,18 @@ namespace ThinkNet.Messaging
         private readonly IMessageSender messageSender;
         private readonly IRoutingKeyProvider routingKeyProvider;
         private readonly IMetadataProvider metadataProvider;
+        private readonly ILogger logger;
 
         public EventBus(IMessageSender messageSender,
             IRoutingKeyProvider routingKeyProvider,
-            IMetadataProvider metadataProvider)
+            IMetadataProvider metadataProvider,
+            ITextSerializer serializer)
+            : base(serializer)
         {
             this.messageSender = messageSender;
             this.routingKeyProvider = routingKeyProvider;
             this.metadataProvider = metadataProvider;
+            this.logger = LogManager.GetLogger("ThinkNet");
         }
 
         protected override bool SearchMatchType(Type type)
@@ -37,6 +43,10 @@ namespace ThinkNet.Messaging
         {
             var messages = events.Select(Map).AsEnumerable();
             messageSender.Send(messages);
+
+            if (logger.IsInfoEnabled && !events.OfType<EventStream>().Any()) {
+                logger.InfoFormat("event published. events:{0}", Serialize(events));
+            }
         }
 
         private Message Map(IEvent @event)

@@ -15,6 +15,7 @@ namespace TinyIoC
             //container.Register<IServiceLocator>(this).AsSingleton();      
         }
 
+
         protected override IEnumerable<object> DoGetAllInstances(Type serviceType)
         {
             if (this.container == null)
@@ -28,16 +29,16 @@ namespace TinyIoC
             if (this.container == null)
                 throw new ObjectDisposedException("TinyContainer");
 
-            return this.container.Resolve(serviceType, key);
+            return this.container.Resolve(serviceType, key ?? string.Empty);
         }
 
-        public override object GetInstance(Type serviceType)
-        {
-            if (this.container == null)
-                throw new ObjectDisposedException("TinyContainer");
+        //public override object GetInstance(Type serviceType)
+        //{
+        //    if (this.container == null)
+        //        throw new ObjectDisposedException("TinyContainer");
 
-            return this.container.Resolve(serviceType);
-        }
+        //    return this.container.Resolve(serviceType);
+        //}
 
         #region IDisposable 成员
 

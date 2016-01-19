@@ -81,17 +81,18 @@ namespace ThinkNet.Infrastructure
         private readonly EventWaitHandle waiter;
         private readonly MessageQueue[] queues;
         private readonly ConcurrentDictionary<long, int> offsetDict;
-        private readonly ConcurrentDictionary<string, long> topicOffset;
+
         private int lastQueueIndex;
-        private long offset;
+        private long consumeOffset;
+        private long produceOffset;
 
         public MessageBroker()
         {
             this.queues = MessageQueue.CreateGroup(4);
-            this.waiter = new AutoResetEvent(false);
+            this.waiter = new EventWaitHandle(true, EventResetMode.AutoReset);
             this.offsetDict = new ConcurrentDictionary<long, int>();
-            this.topicOffset = new ConcurrentDictionary<string, long>(StringComparer.CurrentCultureIgnoreCase);
             this.lastQueueIndex = -1;
+            this.produceOffset = -1;
         }
 
         public bool TryAdd(Message message)
@@ -111,18 +112,18 @@ namespace ThinkNet.Infrastructure
             }
 
 
-            var queueMsg = new QueueMessage(message);
+            var queueMsg = new QueueMessage(message) {
+                Offset = Interlocked.Increment(ref produceOffset)
+            };
+            //queueMsg.Offset = topicOffset.AddOrUpdate(message.MetadataInfo[StandardMetadata.Kind], 0,
+            //                (topic, offset) => Interlocked.Increment(ref offset));
 
-
-            queueMsg.Offset = topicOffset.AddOrUpdate(message.MetadataInfo[StandardMetadata.Kind], 0,
-                            (topic, offset) => Interlocked.Increment(ref offset));
-
-            bool isEmpty = offsetDict.IsEmpty;
-            if (!offsetDict.TryAdd(queueMsg.Offset, queue.Id)) {
+            //bool isEmpty = offsetDict.IsEmpty;
+            if (!offsetDict.TryAdd(produceOffset, queue.Id)) {
                 return false;
             }
             queue.Enqueue(queueMsg);
-            if (isEmpty) {
+            if (lastQueueIndex == -1) {
                 waiter.Set();
             }
             return true;
@@ -131,25 +132,26 @@ namespace ThinkNet.Infrastructure
         public bool TryTake(out Message message)
         {
             int queueIndex;
-            if (!offsetDict.TryGetValue(offset, out queueIndex) || lastQueueIndex == queueIndex) {
+            if (!offsetDict.TryGetValue(consumeOffset, out queueIndex) || lastQueueIndex == queueIndex) {
                 message = null;
                 return false;
             }
 
-            if (offsetDict.TryRemove(offset, out queueIndex)) {
-                while (true) {
-                    var queueMsg = queues[queueIndex].Dequeue();
-                    if (queueMsg.Offset == offset) {
-                        message = queueMsg as Message;
-                        break;
-                    }
-                    else {
-                        queues[queueIndex].Enqueue(queueMsg);
-                    }
-                }
+            if (offsetDict.TryRemove(consumeOffset, out queueIndex)) {
+                //while (true) {
+                //    var queueMsg = queues[queueIndex].Dequeue();
+                //    if (queueMsg.Offset == consumeOffset) {
+                //        message = queueMsg as Message;
+                //        break;
+                //    }
+                //    else {
+                //        queues[queueIndex].Enqueue(queueMsg);
+                //    }
+                //}
+                message = queues[queueIndex].Dequeue();
 
                 Interlocked.Exchange(ref lastQueueIndex, queueIndex);
-                Interlocked.Increment(ref offset);
+                Interlocked.Increment(ref consumeOffset);
                 
                 return true;
             }            

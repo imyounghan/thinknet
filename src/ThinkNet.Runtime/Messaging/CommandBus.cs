@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ThinkLib.Common;
+using ThinkLib.Logging;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
@@ -14,16 +15,20 @@ namespace ThinkNet.Messaging
         private readonly ICommandResultManager commandResultManager;
         private readonly IRoutingKeyProvider routingKeyProvider;
         private readonly IMetadataProvider metadataProvider;
+        private readonly ILogger logger;
 
         public CommandBus(IMessageSender messageSender,
             ICommandResultManager commandResultManager,
             IRoutingKeyProvider routingKeyProvider,
-            IMetadataProvider metadataProvider)
+            IMetadataProvider metadataProvider,
+            ITextSerializer serializer)
+            : base(serializer)
         {
             this.messageSender = messageSender;
             this.commandResultManager = commandResultManager;
             this.routingKeyProvider = routingKeyProvider;
             this.metadataProvider = metadataProvider;
+            this.logger = LogManager.GetLogger("ThinkNet");
         }
 
         protected override bool SearchMatchType(Type type)
@@ -48,6 +53,10 @@ namespace ThinkNet.Messaging
         {
             var messages = commands.Select(Map).AsEnumerable();
             messageSender.Send(messages);
+
+            if (logger.IsInfoEnabled) {
+                logger.InfoFormat("command sended. commands:{0}", Serialize(commands));
+            }
         }
 
 

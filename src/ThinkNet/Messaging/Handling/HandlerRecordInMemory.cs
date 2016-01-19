@@ -49,7 +49,7 @@ namespace ThinkNet.Messaging.Handling
                 return true;
             }
 
-            var existence = this.IsHandlerInfoExist(messageId, messageType, handlerType);
+            var existence = this.CheckHandlerInfoExist(messageId, messageType, handlerType);
             if (existence) {
                 this.AddHandlerInfoToMemory(messageId, messageTypeCode, handlerTypeCode);
             }

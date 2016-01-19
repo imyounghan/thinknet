@@ -61,8 +61,8 @@ namespace ThinkNet.Database.Storage
         {
             return new int[] {
                 MessageId.GetHashCode(),
-                MessageTypeCode.GetHashCode(),
-                HandlerTypeCode.GetHashCode()
+                MessageTypeCode,
+                HandlerTypeCode
             }.Aggregate((x, y) => x ^ y);
         }
 
@@ -86,7 +86,7 @@ namespace ThinkNet.Database.Storage
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}_{1}_{2}", MessageId, MessageTypeCode, HandlerTypeCode);
+            return string.Format("{0}_{1}_{2}", MessageId, MessageType, HandlerType);
         }
     }
 }

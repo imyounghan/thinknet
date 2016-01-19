@@ -187,37 +187,11 @@ namespace ThinkNet.Messaging.Handling
         
 
         #region IInitializer 成员
-        private static bool IsHandlerType(Type type)
-        {
-            return type.IsClass && !type.IsAbstract && type.IsAssignableFrom(typeof(IHandler));
-        }
-
-        private static bool IsRegisterType(Type type)
-        {
-            if (!type.IsGenericType)
-                return false;
-
-            var genericType = type.GetGenericTypeDefinition();
-            return genericType == typeof(IMessageHandler<>) ||
-                genericType == typeof(ICommandHandler<>) ||
-                genericType == typeof(IEventHandler<>);
-        }
-
-        private void RegisterType(Type type)
-        {
-            var interfaceTypes = type.GetInterfaces().Where(IsRegisterType);
-
-            var lifetime = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
-            foreach (var interfaceType in interfaceTypes) {
-                Configuration.Current.RegisterType(interfaceType, type, lifetime, type.FullName);
-            }
-        }
-
         public void Initialize(IEnumerable<Type> types)
         {
             AggregateRootInnerHandlerUtil.Initialize(types);
 
-            types.Where(IsHandlerType).ForEach(RegisterType);
+            this.Start();
         }
 
         #endregion

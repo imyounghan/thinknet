@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ThinkLib.Common;
+using ThinkNet.Database;
 
 
 namespace UserRegistration.ReadModel
@@ -15,24 +16,22 @@ namespace UserRegistration.ReadModel
 
     public class UserDao : IUserDao
     {
-        //public readonly static UserDao Instance = new UserDao();
-
-        private readonly HashSet<UserModel> collection = new HashSet<UserModel>();
-        public void Save(UserModel userModel)
+        private readonly IDataContextFactory contextFactory;
+        public UserDao(IDataContextFactory contextFactory)
         {
-            collection.Add(userModel);
+            this.contextFactory = contextFactory;
         }
 
         #region IUserDao 成员
 
         public UserModel Find(string loginid)
         {
-            return collection.FirstOrDefault(p => p.LoginId == loginid);
+            return this.GetAll().FirstOrDefault(p => p.LoginId == loginid);
         }
 
         public IEnumerable<UserModel> GetAll()
         {
-            return collection;
+            return contextFactory.CreateDataContext().CreateQuery<UserModel>();
         }
 
         #endregion

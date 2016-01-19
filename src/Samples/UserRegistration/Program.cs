@@ -136,6 +136,7 @@ namespace UserRegistration
         {
             Configuration.Current.DoneWithTinyIoC();
 
+
             var userRegister = new RegisterUser {
                 UserName = "老韩",
                 Password = "hanyang",
@@ -143,17 +144,17 @@ namespace UserRegistration
                 Email = "19126332@qq.com"
             };
 
-            var commandBus = (ICommandBus)ServiceLocator.Current.GetInstance(typeof(ICommandBus));
+            var commandBus = ServiceLocator.Current.GetInstance<ICommandBus>();
 
             commandBus.SendAsync(userRegister, CommandReplyType.DomainEventHandled).Wait();
 
-            var userDao = (IUserDao)ServiceLocator.Current.GetInstance(typeof(IUserDao));
+            var userDao = ServiceLocator.Current.GetInstance<IUserDao>();
 
             var count = userDao.GetAll().Count();
             Console.ResetColor();
-            Console.WriteLine("共有 " + count + " 个用户。\r\n");
+            Console.WriteLine("共有 " + count + " 个用户。");
 
-            var authenticationService = (IAuthenticationService)ServiceLocator.Current.GetInstance(typeof(IAuthenticationService));
+            var authenticationService = ServiceLocator.Current.GetInstance<IAuthenticationService>();
             if (!authenticationService.Authenticate("young.han", "hanyang", "127.0.0.1")) {
                 Console.WriteLine("用户名或密码错误");
             }

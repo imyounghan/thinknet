@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinkLib.Common;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Kernel

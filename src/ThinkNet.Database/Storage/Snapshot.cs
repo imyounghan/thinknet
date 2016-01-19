@@ -9,20 +9,19 @@ namespace ThinkNet.Database.Storage
     [Serializable]
     public class Snapshot
     {
-        ///// <summary>
-        ///// Default constructor.
-        ///// </summary>
-        //public SnapshotData()
-        //{ }
-        ///// <summary>
-        ///// Parameterized constructor.
-        ///// </summary>
-        //public SnapshotData(int aggregateRootTypeCode, string aggregateRootId)
-        //{
-        //    this.Timestamp = DateTime.UtcNow;
-        //    this.AggregateRootId = aggregateRootId;
-        //    this.AggregateRootTypeCode = aggregateRootTypeCode;
-        //}
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public Snapshot()
+        { }
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
+        public Snapshot(int aggregateRootTypeCode, string aggregateRootId)
+        {
+            this.AggregateRootId = aggregateRootId;
+            this.AggregateRootTypeCode = aggregateRootTypeCode;
+        }
 
         /// <summary>
         /// 聚合根标识

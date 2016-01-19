@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.Serialization;
 using ThinkLib.Logging;
 using ThinkNet.Infrastructure;
@@ -76,11 +77,27 @@ namespace ThinkNet.Kernel
             var aggregateRootType = this.GetType();
             var handler = AggregateRootInnerHandlerUtil.GetEventHandler(aggregateRootType, eventType);
             if (handler == null) {
-                LogManager.GetLogger("ThinkNet").WarnFormat("Event handler not found on {0} for {1}.",
+                string errorMessage = string.Format("Event handler not found on {0} for {1}.",
                     aggregateRootType.FullName, eventType.FullName);
+                if (@event is VersionedEvent<TIdentify>) {
+                    throw new EventSourcedException(errorMessage);
+                }
+                LogManager.GetLogger("ThinkNet").Warn(errorMessage);
                 return;
             }
             handler(this, @event);
+        }
+
+        private void CheckEvent(IVersionedEvent @event)
+        {
+            if (@event.Version == 1 && this.Id.Equals(default(TIdentify)))
+                this.Id = @event.SourceId.To<TIdentify>();
+
+            if (@event.Version > 1 && this.Id.ToString() != @event.SourceId)
+                throw new EventSourcedException(@event.SourceId, this.Id.ToString());
+
+            if (@event.Version != this.Version + 1)
+                throw new EventSourcedException(@event.Version, this.Version);
         }
 
         /// <summary>
@@ -131,24 +148,17 @@ namespace ThinkNet.Kernel
 
         IEnumerable<IVersionedEvent> IEventSourced.GetEvents()
         {
-            throw new NotImplementedException();
+            return this.GetPendingEvents().OfType<IVersionedEvent>();
         }
-
-        private void CheckEvent(IVersionedEvent @event)
-        {
-            if (@event.Version == 1 && this.Id.Equals(default(TIdentify)))
-                this.Id = (TIdentify)TypeDescriptor.GetConverter(typeof(TIdentify)).ConvertFromString(@event.SourceId);
-
-            if (@event.Version > 1 && this.Id.ToString() != @event.SourceId)
-                throw new EventSourcedException(@event.SourceId, this.Id.ToString());
-
-            if (@event.Version != this.Version + 1)
-                throw new EventSourcedException(@event.Version, this.Version);
-        }        
+      
 
         void IEventSourced.LoadFrom(IEnumerable<IVersionedEvent> events)
         {
-            throw new NotImplementedException();
+            foreach (var @event in events) {
+                this.CheckEvent(@event);
+                this.HandleEvent(@event);
+                this.Version = @event.Version;
+            }
         }
 
         #endregion
@@ -182,7 +192,7 @@ namespace ThinkNet.Kernel
 
         object ICloneable.Clone()
         {
-            throw new NotImplementedException();
+            return this.Clone();
         }
 
         #endregion

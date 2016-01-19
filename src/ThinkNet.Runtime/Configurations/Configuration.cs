@@ -155,8 +155,10 @@ namespace ThinkNet.Configurations
 
             var allTypes = _assemblies.SelectMany(assembly => assembly.GetTypes()).ToArray();
 
-            allTypes.Where(IsRegisteredComponent).ForEach(RegisterComponent);
+            allTypes.Where(IsRegisterComponent).ForEach(RegisterComponent);
             allTypes.Where(IsRequiredComponent).ForEach(RegisterRequiredComponent);
+            allTypes.Where(TypeHelper.IsHandlerType).ForEach(RegisterHandler);
+
 
             _registeredComponents.ForEach(typeRegistry);
             _initializeTypes.Select(Resolve).OfType<IInitializer>().Concat(_initializers)
@@ -166,9 +168,7 @@ namespace ThinkNet.Configurations
             _initializers.Clear();
             _initializeTypes.Clear();
             _registeredComponents.Clear();
-
-            ServiceLocator.Current.GetAllInstances(typeof(IProcessor)).OfType<IProcessor>().ForEach(p => p.Start());
-            
+                        
 
             _running = true;
 
@@ -190,8 +190,9 @@ namespace ThinkNet.Configurations
 
             _registeredComponents.Add(new TypeRegistration(type, instance, name));
 
-            if (IsInitializer(instance)) {
-                _initializers.Add((IInitializer)instance);
+            var initializer = instance as IInitializer;
+            if (initializer != null) {
+                _initializers.Add(initializer);
             }
 
             return this;
@@ -242,12 +243,7 @@ namespace ThinkNet.Configurations
             return type.IsClass && !type.IsAbstract && typeof(IInitializer).IsAssignableFrom(type);
         }
 
-        private static bool IsInitializer(object instance)
-        {
-            return instance is IInitializer;
-        }
-
-        private bool IsRegisteredComponent(Type type)
+        private bool IsRegisterComponent(Type type)
         {
             return type.IsClass && !type.IsAbstract && type.IsDefined<RegisterComponentAttribute>(false);
         }
@@ -271,6 +267,31 @@ namespace ThinkNet.Configurations
                 else {
                     this.RegisterType(registerType, type, lifecycle, name);
                 }
+            }
+        }
+
+        private void RegisterHandler(Type type)
+        {
+            var interfaceTypes = type.GetInterfaces().Where(p => TypeHelper.IsCommandHandlerInterfaceType(p) ||
+                TypeHelper.IsEventHandlerInterfaceType(p) || TypeHelper.IsMessageHandlerInterfaceType(p));
+
+            var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
+
+            object instance = null;
+            if (lifecycle == Lifecycle.Singleton) {
+                var member = type.GetMember("Instance", MemberTypes.Field | MemberTypes.Property,
+                    BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase).FirstOrDefault();
+
+                if (member != null) {
+                    instance = member.GetMemberValue(null);
+                }
+            }
+
+            foreach (var interfaceType in interfaceTypes) {
+                if (instance == null)
+                    this.RegisterType(interfaceType, type, lifecycle, type.FullName);
+                else
+                    this.RegisterInstance(interfaceType, instance, type.FullName);
             }
         }
 

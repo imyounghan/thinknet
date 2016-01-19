@@ -1,4 +1,5 @@
-﻿
+﻿using System.IO;
+
 namespace ThinkNet.Infrastructure
 {
     /// <summary>
@@ -12,6 +13,48 @@ namespace ThinkNet.Infrastructure
         public static T Deserialize<T>(this IBinarySerializer serializer, byte[] data) where T : class
         {
             return serializer.Deserialize(data, typeof(T)) as T;
-        }        
+        }
+
+        /// <summary>
+        /// Serializes the given data object as a string.
+        /// </summary>
+        public static string Serialize<T>(this ITextSerializer serializer, T data)
+        {
+            using (var writer = new StringWriter()) {
+                serializer.Serialize(writer, data);
+                return writer.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Serializes the given data object as a string.
+        /// </summary>
+        public static string Serialize(this ITextSerializer serializer, object data)
+        {
+            using (var writer = new StringWriter()) {
+                serializer.Serialize(writer, data);
+                return writer.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Deserializes the specified string into an object of type <typeparamref name="T"/>.
+        /// </summary>
+        public static T Deserialize<T>(this ITextSerializer serializer, string serialized)
+        {
+            using (var reader = new StringReader(serialized)) {
+                return (T)serializer.Deserialize(reader, typeof(T));
+            }
+        }
+
+        /// <summary>
+        /// Deserializes the specified string into an object.
+        /// </summary>
+        public static object Deserialize(this ITextSerializer serializer, string serialized)
+        {
+            using (var reader = new StringReader(serialized)) {
+                return serializer.Deserialize(reader);
+            }
+        }
     }
 }

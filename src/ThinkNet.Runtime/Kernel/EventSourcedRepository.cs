@@ -13,7 +13,7 @@ namespace ThinkNet.Kernel
     /// <summary>
     /// <see cref="IRepository"/> 的实现
     /// </summary>
-    [RegisterComponent(typeof(IRepository))]
+    [RegisterComponent(typeof(IEventSourcedRepository))]
     public class EventSourcedRepository : IEventSourcedRepository
     {
         private readonly IEventStore _eventStore;
@@ -23,6 +23,8 @@ namespace ThinkNet.Kernel
         private readonly IEventBus _eventBus;
         private readonly IAggregateRootFactory _aggregateFactory;
         private readonly IBinarySerializer _binarySerializer;
+        private readonly ITextSerializer _textSerializer;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Parameterized constructor.
@@ -33,7 +35,8 @@ namespace ThinkNet.Kernel
             IMemoryCache cache,
             IEventBus eventBus,
             IAggregateRootFactory aggregateFactory,
-            IBinarySerializer binarySerializer)
+            IBinarySerializer binarySerializer,
+            ITextSerializer textSerializer)
         {
             this._eventStore = eventStore;
             this._snapshotStore = snapshotStore;
@@ -42,6 +45,8 @@ namespace ThinkNet.Kernel
             this._eventBus = eventBus;
             this._aggregateFactory = aggregateFactory;
             this._binarySerializer = binarySerializer;
+            this._textSerializer = textSerializer;
+            this._logger = LogManager.GetLogger("ThinkNet");
         }
 
         /// <summary>
@@ -55,7 +60,7 @@ namespace ThinkNet.Kernel
             var aggregateRoot = _cache.Get(aggregateRootType, aggregateRootId) as IEventSourced;
 
             if (aggregateRoot != null) {
-                LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root {0} of id {1} from cache.",
+                _logger.InfoFormat("find the aggregate root {0} of id {1} from cache.",
                     aggregateRootType.FullName, aggregateRootId);
 
                 return aggregateRoot;
@@ -66,12 +71,12 @@ namespace ThinkNet.Kernel
                 var snapshot = _snapshotStore.GetLastest(sourceKey);
                 if (snapshot != null) {
                     aggregateRoot = _binarySerializer.Deserialize(snapshot.Payload, aggregateRootType) as IEventSourced;
-                    LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root {0} of id {1} from snapshot. version:{2}.",
+                    _logger.InfoFormat("find the aggregate root {0} of id {1} from snapshot. version:{2}.",
                         aggregateRootType.FullName, aggregateRootId, aggregateRoot.Version);
                 }                
             }
             catch (Exception ex) {
-                LogManager.GetLogger("ThinkNet").Warn(ex,
+                _logger.Warn(ex,
                     "get the latest snapshot failed. aggregateRootId:{0},aggregateRootType:{1}.",
                     aggregateRootId, aggregateRootType.FullName);
             }
@@ -83,7 +88,7 @@ namespace ThinkNet.Kernel
             var events = _eventStore.FindAll(sourceKey, aggregateRoot.Version).Select(Deserialize).OfType<IVersionedEvent>().OrderBy(p => p.Version);
             if (!events.IsEmpty()) {
                 aggregateRoot.LoadFrom(events);
-                LogManager.GetLogger("ThinkNet").InfoFormat("restore the aggregate root {0} of id {1} from events. version:{2} ~ {3}",
+                _logger.InfoFormat("restore the aggregate root {0} of id {1} from events. version:{2} ~ {3}",
                         aggregateRootType.FullName, aggregateRootId, events.Min(p => p.Version), events.Max(p => p.Version));
             }
 
@@ -136,7 +141,7 @@ namespace ThinkNet.Kernel
         public void Save(IEventSourced aggregateRoot, string correlationId)
         {
             if (string.IsNullOrWhiteSpace(correlationId)) {
-                LogManager.GetLogger("ThinkNet").Warn("Not use command to modify the state of the aggregate root.");
+                _logger.Warn("Not use command to modify the state of the aggregate root.");
             }
 
             Type aggregateRootType = aggregateRoot.GetType();
@@ -146,12 +151,12 @@ namespace ThinkNet.Kernel
 
             if (!_eventStore.EventPersisted(key, correlationId)) {
                 _eventStore.Save(key, correlationId, events.Select(Serialize));
-                LogManager.GetLogger("ThinkNet").InfoFormat("sourcing events persistent completed. aggregateRootId:{0},aggregateRootType:{1}.",
+                _logger.InfoFormat("sourcing events persistent completed. aggregateRootId:{0},aggregateRootType:{1}.",
                     aggregateRootId, aggregateRootType.FullName);
             }
             else {
                 events = _eventStore.FindAll(key, correlationId).Select(Deserialize).OfType<IVersionedEvent>().OrderBy(p => p.Version);
-                LogManager.GetLogger("ThinkNet").InfoFormat("the command generates events have been saved, load from storage. command id:{0}", correlationId);
+                _logger.InfoFormat("the command generates events have been saved, load from storage. command id:{0}", correlationId);
             }
 
             if (string.IsNullOrWhiteSpace(correlationId)) {
@@ -160,23 +165,24 @@ namespace ThinkNet.Kernel
             else {
                 _eventBus.Publish(Convert(key, correlationId, events));
             }
-            LogManager.GetLogger("ThinkNet").InfoFormat("publish all events. event: [{0}]",
-                string.Join("|", events.Select(@event => @event.ToString())));
+
+            if (_logger.IsInfoEnabled)
+                _logger.InfoFormat("publish all events. event:{0}", _textSerializer.Serialize(events));
 
             _cache.Set(aggregateRoot, aggregateRoot.Id);
 
             var snapshot = Serialize(key, aggregateRoot);
-            if (_snapshotPolicy.ShouldbeCreateSnapshot(snapshot))
+            if (!_snapshotPolicy.ShouldbeCreateSnapshot(snapshot))
                 return;
 
             try {
                 _snapshotStore.Save(snapshot);
 
-                LogManager.GetLogger("ThinkNet").InfoFormat("make snapshot completed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
+                _logger.InfoFormat("make snapshot completed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
                    aggregateRootId, aggregateRootType.FullName, aggregateRoot.Version);
             }
             catch (Exception ex) {
-                LogManager.GetLogger("ThinkNet").Warn(ex,
+                _logger.Warn(ex,
                     "snapshot persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
                     aggregateRootId, aggregateRootType.FullName, aggregateRoot.Version);
             }

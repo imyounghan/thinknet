@@ -97,8 +97,8 @@ namespace ThinkNet.Database
             this.Validate(entity);
 
             this.SaveOrUpdate(entity,
-                (state) => this.Callback(state, OnSaving) == LifecycleVeto.Veto,
-                (state) => this.Callback(state, OnUpdating) == LifecycleVeto.Veto);
+                (state) => this.Callback(state, OnSaving) == LifecycleVeto.Accept,
+                (state) => this.Callback(state, OnUpdating) == LifecycleVeto.Accept);
         }
 
         
@@ -111,7 +111,7 @@ namespace ThinkNet.Database
             this.Validate(entity);
 
             this.Save(entity,
-                (state) => this.Callback(state, OnSaving) == LifecycleVeto.Veto);
+                (state) => this.Callback(state, OnSaving) == LifecycleVeto.Accept);
         }
 
         
@@ -125,7 +125,7 @@ namespace ThinkNet.Database
             this.Validate(entity);
 
             this.Update(entity,
-                (state) => this.Callback(state, OnUpdating) == LifecycleVeto.Veto);
+                (state) => this.Callback(state, OnUpdating) == LifecycleVeto.Accept);
         }
         
         protected abstract void Delete(object entity, Func<object, bool> beforeDelete);
@@ -135,7 +135,7 @@ namespace ThinkNet.Database
         public void Delete(object entity)
         {
             this.Delete(entity,
-                (state) => this.Callback(state, OnDeleting) == LifecycleVeto.Veto);
+                (state) => this.Callback(state, OnDeleting) == LifecycleVeto.Accept);
         }
 
         /// <summary>

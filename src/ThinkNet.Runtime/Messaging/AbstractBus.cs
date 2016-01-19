@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Web.Script.Serialization;
+using ThinkLib.Common;
 using ThinkNet.Infrastructure;
 
 
@@ -8,6 +11,19 @@ namespace ThinkNet.Messaging
 {
     public abstract class AbstractBus : IInitializer
     {
+        private readonly ITextSerializer serializer;
+        protected AbstractBus(ITextSerializer serializer)
+        {
+            this.serializer = serializer;
+        }
+
+
+        protected virtual string Serialize(object data)
+        {
+            return serializer.Serialize(data);
+        }
+
+
         /// <summary>
         /// 检索匹配的类型
         /// </summary>
