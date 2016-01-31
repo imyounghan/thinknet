@@ -34,23 +34,19 @@ namespace ThinkNet.Messaging
         public DefaultMessageReceiver()
         {
             this.lockObject = new object();
-            this.worker = Worker.Create(Processing);
             this.broker = MessageBrokerFactory.Instance.GetOrCreate("message");
+            this.worker = WorkerFactory.Create<Message>(broker.Take, Processing, broker.Complete);
         }
 
-        private void Processing()
+        private void Processing(Message message)
         {
-            var message = broker.Take();
-            if(message != null) {
-                Task.Factory
-                    .StartNew((state) => {
-                        this.MessageReceived(state, new EventArgs<Message>(message));
-                        return message;
-                    }, this, TaskCreationOptions.PreferFairness)
-                    .ContinueWith(task => {
-                        broker.Complete(task.Result);
-                    }, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.PreferFairness);
-            }
+            if (message.IsNull())
+                return;
+
+            Task.Factory
+                .StartNew((state) => {
+                    this.MessageReceived(state, new EventArgs<Message>(message));
+                }, this, TaskCreationOptions.PreferFairness);
         }
 
         public event EventHandler<EventArgs<Message>> MessageReceived = (sender, args) => { };

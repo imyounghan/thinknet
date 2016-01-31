@@ -35,6 +35,8 @@ namespace ThinkNet.Infrastructure
 
     internal class DefaultTextSerializer : ITextSerializer, IInitializer
     {
+        public static readonly ITextSerializer Instance = new DefaultTextSerializer();
+
         private readonly JavaScriptSerializer _jsonSerializer;
 
         public DefaultTextSerializer()

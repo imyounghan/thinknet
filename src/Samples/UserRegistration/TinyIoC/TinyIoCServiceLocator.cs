@@ -11,8 +11,7 @@ namespace TinyIoC
 
         public TinyIoCServiceLocator(TinyIoCContainer container)
         {
-            this.container = container;
-            //container.Register<IServiceLocator>(this).AsSingleton();      
+            this.container = container;    
         }
 
 

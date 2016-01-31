@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 
@@ -10,7 +11,7 @@ namespace ThinkNet.Kernel
     /// <summary>
     /// 事件流
     /// </summary>
-    [Serializable]
+    [DataContract]
     [JustHandleOnce]
     public class EventStream : Event
     {
@@ -42,26 +43,32 @@ namespace ThinkNet.Kernel
         /// <summary>
         /// 程序集
         /// </summary>
+        [DataMember]
         public string SourceAssemblyName { get; set; }
         /// <summary>
         /// 命名空间
         /// </summary>
+        [DataMember]
         public string SourceNamespace { get; set; }
         /// <summary>
         /// 类型名称
         /// </summary>
+        [DataMember]
         public string SourceTypeName { get; set; }
         /// <summary>
         /// 标识。
         /// </summary>
+        [DataMember]
         public string SourceId { get; set; }
         /// <summary>
         /// 产生事件的命令标识
         /// </summary>
+        [DataMember]
         public string CommandId { get; set; }
         /// <summary>
         /// 事件源
         /// </summary>
+        [DataMember]
         public IEnumerable<IEvent> Events { get; set; }
 
         protected override string GetSourceStringId()

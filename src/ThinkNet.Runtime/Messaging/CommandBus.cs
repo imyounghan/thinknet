@@ -20,9 +20,7 @@ namespace ThinkNet.Messaging
         public CommandBus(IMessageSender messageSender,
             ICommandResultManager commandResultManager,
             IRoutingKeyProvider routingKeyProvider,
-            IMetadataProvider metadataProvider,
-            ITextSerializer serializer)
-            : base(serializer)
+            IMetadataProvider metadataProvider)
         {
             this.messageSender = messageSender;
             this.commandResultManager = commandResultManager;
@@ -52,11 +50,12 @@ namespace ThinkNet.Messaging
         public void Send(IEnumerable<ICommand> commands)
         {
             var messages = commands.Select(Map).AsEnumerable();
-            messageSender.Send(messages);
-
-            if (logger.IsInfoEnabled) {
-                logger.InfoFormat("command sended. commands:{0}", Serialize(commands));
-            }
+            messageSender.SendAsync(messages, () => {
+                if (logger.IsDebugEnabled) {
+                    logger.DebugFormat("command sended. commands:{0}", Serialize(commands));
+                }
+            }, (ex) => {
+            });        
         }
 
 

@@ -51,9 +51,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configurations\Configuration.cs" />
+    <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
-    <Compile Include="Configurations\Lifecycle.cs" />
     <Compile Include="Infrastructure\IAggregateRootFactory.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Infrastructure\ITextSerializer.cs" />

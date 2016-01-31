@@ -11,16 +11,11 @@ namespace ThinkNet.Messaging
 {
     public abstract class AbstractBus : IInitializer
     {
-        private readonly ITextSerializer serializer;
-        protected AbstractBus(ITextSerializer serializer)
-        {
-            this.serializer = serializer;
-        }
 
 
         protected virtual string Serialize(object data)
         {
-            return serializer.Serialize(data);
+            return DefaultTextSerializer.Instance.Serialize(data);
         }
 
 

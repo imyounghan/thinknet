@@ -23,7 +23,7 @@ namespace ThinkNet.Kernel
         private readonly IEventBus _eventBus;
         private readonly IAggregateRootFactory _aggregateFactory;
         private readonly IBinarySerializer _binarySerializer;
-        private readonly ITextSerializer _textSerializer;
+        //private readonly ITextSerializer _textSerializer;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -35,8 +35,7 @@ namespace ThinkNet.Kernel
             IMemoryCache cache,
             IEventBus eventBus,
             IAggregateRootFactory aggregateFactory,
-            IBinarySerializer binarySerializer,
-            ITextSerializer textSerializer)
+            IBinarySerializer binarySerializer)
         {
             this._eventStore = eventStore;
             this._snapshotStore = snapshotStore;
@@ -45,7 +44,7 @@ namespace ThinkNet.Kernel
             this._eventBus = eventBus;
             this._aggregateFactory = aggregateFactory;
             this._binarySerializer = binarySerializer;
-            this._textSerializer = textSerializer;
+            //this._textSerializer = textSerializer;
             this._logger = LogManager.GetLogger("ThinkNet");
         }
 
@@ -60,8 +59,9 @@ namespace ThinkNet.Kernel
             var aggregateRoot = _cache.Get(aggregateRootType, aggregateRootId) as IEventSourced;
 
             if (aggregateRoot != null) {
-                _logger.InfoFormat("find the aggregate root {0} of id {1} from cache.",
-                    aggregateRootType.FullName, aggregateRootId);
+                if (_logger.IsInfoEnabled)
+                    _logger.InfoFormat("find the aggregate root {0} of id {1} from cache.",
+                        aggregateRootType.FullName, aggregateRootId);
 
                 return aggregateRoot;
             }
@@ -71,14 +71,17 @@ namespace ThinkNet.Kernel
                 var snapshot = _snapshotStore.GetLastest(sourceKey);
                 if (snapshot != null) {
                     aggregateRoot = _binarySerializer.Deserialize(snapshot.Payload, aggregateRootType) as IEventSourced;
-                    _logger.InfoFormat("find the aggregate root {0} of id {1} from snapshot. version:{2}.",
-                        aggregateRootType.FullName, aggregateRootId, aggregateRoot.Version);
+
+                    if (_logger.IsInfoEnabled)
+                        _logger.InfoFormat("find the aggregate root {0} of id {1} from snapshot. version:{2}.",
+                            aggregateRootType.FullName, aggregateRootId, aggregateRoot.Version);
                 }                
             }
             catch (Exception ex) {
-                _logger.Warn(ex,
-                    "get the latest snapshot failed. aggregateRootId:{0},aggregateRootType:{1}.",
-                    aggregateRootId, aggregateRootType.FullName);
+                if (_logger.IsWarnEnabled)
+                    _logger.Warn(ex,
+                        "get the latest snapshot failed. aggregateRootId:{0},aggregateRootType:{1}.",
+                        aggregateRootId, aggregateRootType.FullName);
             }
 
             if (aggregateRoot == null) {
@@ -88,8 +91,10 @@ namespace ThinkNet.Kernel
             var events = _eventStore.FindAll(sourceKey, aggregateRoot.Version).Select(Deserialize).OfType<IVersionedEvent>().OrderBy(p => p.Version);
             if (!events.IsEmpty()) {
                 aggregateRoot.LoadFrom(events);
-                _logger.InfoFormat("restore the aggregate root {0} of id {1} from events. version:{2} ~ {3}",
-                        aggregateRootType.FullName, aggregateRootId, events.Min(p => p.Version), events.Max(p => p.Version));
+
+                if (_logger.IsInfoEnabled)
+                    _logger.InfoFormat("restore the aggregate root {0} of id {1} from events. version:{2} ~ {3}",
+                            aggregateRootType.FullName, aggregateRootId, events.Min(p => p.Version), events.Max(p => p.Version));
             }
 
             _cache.Set(aggregateRoot, aggregateRoot.Id);
@@ -141,22 +146,28 @@ namespace ThinkNet.Kernel
         public void Save(IEventSourced aggregateRoot, string correlationId)
         {
             if (string.IsNullOrWhiteSpace(correlationId)) {
-                _logger.Warn("Not use command to modify the state of the aggregate root.");
+                if (_logger.IsWarnEnabled)
+                    _logger.Warn("Not use command to modify the state of the aggregate root.");
             }
 
-            Type aggregateRootType = aggregateRoot.GetType();
-            object aggregateRootId = aggregateRoot.Id;
-            IEnumerable<IVersionedEvent> events = aggregateRoot.GetEvents();
-            var key = new SourceKey(aggregateRootId, aggregateRootType);
+            var aggregateRootType = aggregateRoot.GetType();
+            var aggregateRootId = aggregateRoot.Id;
+            var events = aggregateRoot.GetEvents();
+            var key = new SourceKey(aggregateRootId, aggregateRootType);            
 
             if (!_eventStore.EventPersisted(key, correlationId)) {
                 _eventStore.Save(key, correlationId, events.Select(Serialize));
-                _logger.InfoFormat("sourcing events persistent completed. aggregateRootId:{0},aggregateRootType:{1}.",
-                    aggregateRootId, aggregateRootType.FullName);
+
+                if (_logger.IsInfoEnabled)
+                    _logger.InfoFormat("sourcing events persistent completed. aggregateRootId:{0},aggregateRootType:{1}.",
+                        aggregateRootId, aggregateRootType.FullName);
             }
             else {
                 events = _eventStore.FindAll(key, correlationId).Select(Deserialize).OfType<IVersionedEvent>().OrderBy(p => p.Version);
-                _logger.InfoFormat("the command generates events have been saved, load from storage. command id:{0}", correlationId);
+
+                if (_logger.IsInfoEnabled)
+                    _logger.InfoFormat("the command generates events have been saved, load from storage. command id:{0}", 
+                        correlationId);
             }
 
             if (string.IsNullOrWhiteSpace(correlationId)) {
@@ -166,8 +177,16 @@ namespace ThinkNet.Kernel
                 _eventBus.Publish(Convert(key, correlationId, events));
             }
 
-            if (_logger.IsInfoEnabled)
-                _logger.InfoFormat("publish all events. event:{0}", _textSerializer.Serialize(events));
+            var eventPublisher = aggregateRoot as IEventPublisher;
+            if (eventPublisher != null) {
+                eventPublisher.Events.ForEach(item => {
+                    if (item is IVersionedEvent)
+                        return;
+                });
+            }
+
+            //if (_logger.IsInfoEnabled)
+            //    _logger.InfoFormat("publish all events. event:{0}", _textSerializer.Serialize(events));
 
             _cache.Set(aggregateRoot, aggregateRoot.Id);
 
@@ -176,15 +195,15 @@ namespace ThinkNet.Kernel
                 return;
 
             try {
-                _snapshotStore.Save(snapshot);
-
-                _logger.InfoFormat("make snapshot completed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
-                   aggregateRootId, aggregateRootType.FullName, aggregateRoot.Version);
+                if (_snapshotStore.Save(snapshot) && _logger.IsInfoEnabled)
+                    _logger.InfoFormat("make snapshot completed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
+                       aggregateRootId, aggregateRootType.FullName, aggregateRoot.Version);
             }
             catch (Exception ex) {
-                _logger.Warn(ex,
-                    "snapshot persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
-                    aggregateRootId, aggregateRootType.FullName, aggregateRoot.Version);
+                if (_logger.IsWarnEnabled)
+                    _logger.Warn(ex,
+                        "snapshot persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
+                        aggregateRootId, aggregateRootType.FullName, aggregateRoot.Version);
             }
         }
                 

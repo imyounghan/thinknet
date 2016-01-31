@@ -14,6 +14,7 @@ namespace ThinkNet.Infrastructure
         private readonly IDataContextFactory _dbContextFactory;
         private readonly IEventBus _eventBus;
         private readonly IMemoryCache _cache;
+        private readonly ILogger _logger;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
@@ -22,25 +23,28 @@ namespace ThinkNet.Infrastructure
             this._dbContextFactory = dbContextFactory;
             this._eventBus = eventBus;
             this._cache = cache;
+            this._logger = LogManager.GetLogger("ThinkNet");
         }
 
         #region IRepository 成员
 
         public TAggregateRoot Find<TAggregateRoot, TKey>(TKey key) where TAggregateRoot : class, IAggregateRoot
         {
-            var aggregateRoot = (TAggregateRoot)_cache.Get(typeof(TAggregateRoot), key);
+            var aggregateRootType = typeof(TAggregateRoot);
+            var aggregateRoot = (TAggregateRoot)_cache.Get(aggregateRootType, key);
 
             if (aggregateRoot == null) {
                 aggregateRoot = this.LoadFromStorage<TAggregateRoot>(key);
 
-                if (aggregateRoot != null) {
-                    LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root '{0}' of id '{1}' from storage.",
-                        typeof(TAggregateRoot).FullName, key);
+                if (aggregateRoot != null && _logger.IsInfoEnabled) {
+                    _logger.InfoFormat("find the aggregate root '{0}' of id '{1}' from storage.",
+                        aggregateRootType.FullName, key);
                 }
             }
             else {
-                LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root '{0}' of id '{1}' from cache.",
-                        typeof(TAggregateRoot).FullName, key);
+                if (_logger.IsInfoEnabled)
+                    _logger.InfoFormat("find the aggregate root '{0}' of id '{1}' from cache.",
+                        aggregateRootType.FullName, key);
             }
 
             return aggregateRoot;
@@ -89,8 +93,6 @@ namespace ThinkNet.Infrastructure
                     Events = eventPublisher.Events
                 });
             }
-            LogManager.GetLogger("ThinkNet").InfoFormat("publish all events. events: [{0}]", string.Join("|",
-                events.Select(@event => @event.ToString())));
         }
 
         public void Delete<TAggregateRoot>(TAggregateRoot aggregateRoot) where TAggregateRoot : class, IAggregateRoot

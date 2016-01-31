@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading;
 using ThinkLib.Common;
+using ThinkNet.Infrastructure;
 
 
 namespace ThinkNet.Messaging.Handling
@@ -12,7 +14,9 @@ namespace ThinkNet.Messaging.Handling
         where T : class, IMessage
     {
         private readonly IHandler _handler;
-        private readonly LifeCycleAttribute.Lifecycle _lifetime;
+        private readonly Lifecycle _lifetime;
+
+        private int retryTimes = 0;
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
@@ -46,12 +50,30 @@ namespace ThinkNet.Messaging.Handling
             //    interceptor.OnExecuted(message);
         }
 
+        private void RetryHandle(T message)
+        {
+            try {
+                this.Handle(message);
+                return;
+            }
+            catch (ThinkNetException) {
+                throw;
+            }
+            catch (Exception) {
+                if (retryTimes < 3){
+                    Thread.Sleep(1000);
+                    RetryHandle(message);
+                }
+                throw;
+            }
+        }
+
         /// <summary>
         /// dispose
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            if (_lifetime != LifeCycleAttribute.Lifecycle.Singleton && disposing) {
+            if (_lifetime != Lifecycle.Singleton && disposing) {
                 using (_handler as IDisposable) {
                     // Dispose handler if it's disposable.
                 }

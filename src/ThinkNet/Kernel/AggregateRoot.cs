@@ -14,7 +14,6 @@ namespace ThinkNet.Kernel
     /// 实现 <see cref="IAggregateRoot"/> 的抽象类
     /// </summary>
     [DataContract]
-    [Serializable]
     public abstract class AggregateRoot<TIdentify> : Entity<TIdentify>, IEventSourced, IEventPublisher, ICloneable
     {
         /// <summary>
@@ -33,6 +32,7 @@ namespace ThinkNet.Kernel
         /// <summary>
         /// 版本号
         /// </summary>
+        [DataMember]
         public int Version { get; private set; }
 
 
@@ -75,14 +75,17 @@ namespace ThinkNet.Kernel
         {
             var eventType = @event.GetType();
             var aggregateRootType = this.GetType();
-            var handler = AggregateRootInnerHandlerUtil.GetEventHandler(aggregateRootType, eventType);
+            var handler = AggregateRootInnerHandlerProvider.GetEventHandler(aggregateRootType, eventType);
             if (handler == null) {
                 string errorMessage = string.Format("Event handler not found on {0} for {1}.",
                     aggregateRootType.FullName, eventType.FullName);
                 if (@event is VersionedEvent<TIdentify>) {
                     throw new EventSourcedException(errorMessage);
                 }
-                LogManager.GetLogger("ThinkNet").Warn(errorMessage);
+
+                var log = LogManager.GetLogger("ThinkNet");
+                if (log.IsWarnEnabled)
+                    log.Warn(errorMessage);
                 return;
             }
             handler(this, @event);

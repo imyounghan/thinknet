@@ -172,6 +172,106 @@
             </summary>
             <returns>an array of CacheConfig objects</returns>
         </member>
+        <member name="T:ThinkLib.Common.Bootstrapper">
+            <summary>
+            引导程序
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.Bootstrapper.Current">
+            <summary>
+            当前配置
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.LoadAssemblies(System.Reflection.Assembly[])">
+            <summary>
+            加载程序集
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.LoadAssemblies">
+            <summary>
+            扫描bin目录的程序集
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.Done(System.Action{ThinkLib.Common.Bootstrapper.TypeRegistration})">
+            <summary>
+            配置完成。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.RegisterInstance(System.Type,System.Object,System.String)">
+            <summary>
+            注册实例
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.RegisterType(System.Type,ThinkLib.Common.Lifecycle,System.String)">
+            <summary>
+            注册类型
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.RegisterType(System.Type,System.Type,ThinkLib.Common.Lifecycle,System.String)">
+            <summary>
+            注册类型
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.Bootstrapper.TypeRegistration">
+            <summary>
+            注册类型
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.TypeRegistration.#ctor(System.Type,System.Object,System.String)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.TypeRegistration.#ctor(System.Type,System.String)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.TypeRegistration.#ctor(System.Type,System.String,ThinkLib.Common.Lifecycle)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.TypeRegistration.#ctor(System.Type,System.Type,System.String,ThinkLib.Common.Lifecycle)">
+            <summary>
+            Parameterized constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.TypeRegistration.Equals(System.Object)">
+            <summary>
+            返回一个值，该值指示此实例是否与指定的对象相等。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.Bootstrapper.TypeRegistration.GetHashCode">
+            <summary>
+            返回此实例的哈希代码。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.Bootstrapper.TypeRegistration.Name">
+            <summary>
+            要注册的名称
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.Bootstrapper.TypeRegistration.RegisterType">
+            <summary>
+            要注册的类型
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.Bootstrapper.TypeRegistration.Instance">
+            <summary>
+            要注册类型的实例
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.Bootstrapper.TypeRegistration.ImplementationType">
+            <summary>
+            要注册类型的实现类型
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.Bootstrapper.TypeRegistration.Lifecycle">
+            <summary>
+            生命周期
+            </summary>
+        </member>
         <member name="T:ThinkLib.Common.CacheRegionAttribute">
             <summary>
             表示定义缓存区域策略的特性
@@ -353,6 +453,31 @@
             提交事务
             </summary>
         </member>
+        <member name="T:ThinkLib.Common.Lifecycle">
+            <summary>
+            生命周期类型
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.Lifecycle.Transient">
+            <summary>
+            每次都构造一个新实例
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.Lifecycle.Singleton">
+            <summary>
+            单例
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.Lifecycle.PerThread">
+            <summary>
+            同一个线程
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.Lifecycle.PerSession">
+            <summary>
+            同一个会话
+            </summary>
+        </member>
         <member name="T:ThinkLib.Common.LifeCycleAttribute">
             <summary>
             表示实例的生命周期的特性(默认为Singleton)
@@ -363,7 +488,7 @@
             Default constructor.
             </summary>
         </member>
-        <member name="M:ThinkLib.Common.LifeCycleAttribute.#ctor(ThinkLib.Common.LifeCycleAttribute.Lifecycle)">
+        <member name="M:ThinkLib.Common.LifeCycleAttribute.#ctor(ThinkLib.Common.Lifecycle)">
             <summary>
             Parameterized constructor.
             </summary>
@@ -376,21 +501,6 @@
         <member name="P:ThinkLib.Common.LifeCycleAttribute.Lifetime">
             <summary>
             返回生命周期类型(默认为Singleton)
-            </summary>
-        </member>
-        <member name="T:ThinkLib.Common.LifeCycleAttribute.Lifecycle">
-            <summary>
-            生命周期
-            </summary>
-        </member>
-        <member name="F:ThinkLib.Common.LifeCycleAttribute.Lifecycle.Transient">
-            <summary>
-            每次都构造一个新实例
-            </summary>
-        </member>
-        <member name="F:ThinkLib.Common.LifeCycleAttribute.Lifecycle.Singleton">
-            <summary>
-            单例
             </summary>
         </member>
         <member name="T:ThinkLib.Common.RegisterComponentAttribute">
@@ -1460,6 +1570,101 @@
             获取logger
             </summary>
         </member>
+        <member name="T:ThinkLib.Scheduling.Worker`1">
+            <summary>
+            后台循环执行一个特定的方法的工作器
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Scheduling.Worker">
+            <summary>
+            后台循环执行一个特定的方法的工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.#ctor">
+            <summary>
+            default 
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.#ctor(System.Action,System.Action,System.Action{System.Exception})">
+            <summary>Initialize a new Worker for the specified method to run.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Working">
+            <summary>
+            表示一个持续工作的方法
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.SetInterval(System.Int32)">
+            <summary>
+            等待下一个任务的间隔时间
+            </summary>
+            <param name="interval">毫秒</param>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Start">
+            <summary>
+            Start the worker.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Stop">
+            <summary>
+            Stop the worker.
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.Interval">
+            <summary>
+            间隔时间(毫秒数)
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.Action">
+            <summary>
+            要执行的函数。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.SuccessCallback">
+            <summary>
+            成功调用的函数
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.ExceptionCallback">
+            <summary>
+            失败调用的函数
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.CancellationToken">
+            <summary>
+            获取取消操作的通知
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker`1.#ctor(System.Func{`0},System.Action{`0},System.Action{`0},System.Action{`0,System.Exception})">
+            <summary>
+            default constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker`1.Working">
+            <summary>
+            表示一个持续工作的方法
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker`1.Factory">
+            <summary>
+            获取该消息的工厂。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker`1.Action">
+            <summary>
+            要执行的函数。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker`1.SuccessCallback">
+            <summary>
+            成功调用的函数
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker`1.ExceptionCallback">
+            <summary>
+            失败调用的函数
+            </summary>
+        </member>
         <member name="T:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler">
             <summary>表示一个有限的并发任务调度器。
             For more information about this solution please refer to https://github.com/tangxuehua/ecommon
@@ -1510,69 +1715,199 @@
         <member name="P:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler.MaximumConcurrencyLevel">
             <summary>Gets the maximum concurrency level supported by this scheduler.</summary>
         </member>
-        <member name="T:ThinkLib.Scheduling.Worker">
+        <member name="T:ThinkLib.Scheduling.WorkerFactory">
             <summary>
-            后台循环执行一个特定的方法的工作器
+            创建后台线程工作器工厂类
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.Create(System.Action)">
-            <summary>
-            创建一个后台线程工作器
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.Worker.Create(System.Action,System.Action)">
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create(System.Action)">
             <summary>
             创建一个后台线程工作器
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.Create(System.Action,System.Action,System.Action{System.Exception})">
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create(System.Action,System.Action)">
             <summary>
             创建一个后台线程工作器
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.#ctor(System.Action,System.Action,System.Action{System.Exception})">
-            <summary>Initialize a new Worker for the specified method to run.
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create(System.Action,System.Action{System.Exception})">
+            <summary>
+            创建一个后台线程工作器
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.SetInterval(System.Int32)">
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create(System.Action,System.Action,System.Action{System.Exception})">
             <summary>
-            等待下一个任务的间隔时间
-            </summary>
-            <param name="interval">毫秒</param>
-        </member>
-        <member name="M:ThinkLib.Scheduling.Worker.Start">
-            <summary>
-            Start the worker.
+            创建一个后台线程工作器
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.Stop">
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Action{``0})">
             <summary>
-            Stop the worker.
+            创建一个后台线程工作器
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.Interval">
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Action{``0},System.Action{``0})">
             <summary>
-            间隔时间(毫秒数)
+            创建一个后台线程工作器
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.Action">
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Action{``0},System.Action{``0,System.Exception})">
             <summary>
-            要执行的函数。
+            创建一个后台线程工作器
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.SuccessCallback">
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Action{``0},System.Action{``0},System.Action{``0,System.Exception})">
             <summary>
-            成功调用的函数
+            创建一个后台线程工作器
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.ExceptionCallback">
+        <member name="T:ThinkLib.Serialization.DefaultBinarySerializer">
             <summary>
-            失败调用的函数
+            <see cref="T:ThinkLib.Serialization.IBinarySerializer"/> 的默认实现。
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.CancellationToken">
+        <member name="T:ThinkLib.Serialization.IBinarySerializer">
             <summary>
-            获取取消操作的通知
+            表示一个序列化器。用来序列化对象的字节数组
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.IBinarySerializer.Serialize(System.IO.Stream,System.Object)">
+            <summary>
+            序列化一个对象到 <see cref="T:System.IO.Stream"/>。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.IBinarySerializer.Serialize(System.IO.Stream,System.Object,System.Boolean)">
+            <summary>
+            序列化一个对象到 <see cref="T:System.IO.Stream"/>。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.IBinarySerializer.Deserialize(System.IO.Stream)">
+            <summary>
+            反序列化一个对象从一个 <see cref="T:System.IO.Stream"/>。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.IBinarySerializer.Deserialize(System.IO.Stream,System.Type)">
+            <summary>
+            反序列化一个对象从一个 <see cref="T:System.IO.Stream"/>。
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Serialization.DefaultBinarySerializer.Instance">
+            <summary>
+            <see cref="T:ThinkLib.Serialization.IBinarySerializer"/> 的一个实例。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultBinarySerializer.Serialize(System.IO.Stream,System.Object)">
+            <summary>
+            序列化一个对象到 <see cref="T:System.IO.Stream"/>。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultBinarySerializer.Serialize(System.IO.Stream,System.Object,System.Boolean)">
+            <summary>
+            序列化一个对象到 <see cref="T:System.IO.Stream"/>。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultBinarySerializer.Deserialize(System.IO.Stream)">
+            <summary>
+            反序列化一个对象从一个 <see cref="T:System.IO.Stream"/>。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultBinarySerializer.Deserialize(System.IO.Stream,System.Type)">
+            <summary>
+            反序列化一个对象从一个 <see cref="T:System.IO.Stream"/>。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Serialization.DefaultTextSerializer">
+            <summary>
+            <see cref="T:ThinkLib.Serialization.ITextSerializer"/> 的默认实现。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Serialization.ITextSerializer">
+            <summary>
+            表示一个序列化器。用来序列化对象的字符串形式
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.ITextSerializer.Serialize(System.IO.TextWriter,System.Object)">
+            <summary>
+            序列化一个对象到 <see cref="T:System.IO.TextWriter"/>
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.ITextSerializer.Serialize(System.IO.TextWriter,System.Object,System.Boolean)">
+            <summary>
+            序列化一个对象到 <see cref="T:System.IO.TextWriter"/>
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.ITextSerializer.Deserialize(System.IO.TextReader)">
+            <summary>
+            从 <see cref="T:System.IO.TextReader"/> 反序列化一个对象。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.ITextSerializer.Deserialize(System.IO.TextReader,System.Type)">
+            <summary>
+            根据 <see cref="T:System.Type"/> 从 <see cref="T:System.IO.TextReader"/> 反序列化一个对象。
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Serialization.DefaultTextSerializer.Instance">
+            <summary>
+            <see cref="T:ThinkLib.Serialization.ITextSerializer"/> 的一个实例。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultTextSerializer.Serialize(System.IO.TextWriter,System.Object)">
+            <summary>
+            序列化一个对象到 <see cref="T:System.IO.TextWriter"/>
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultTextSerializer.Serialize(System.IO.TextWriter,System.Object,System.Boolean)">
+            <summary>
+            序列化一个对象到 <see cref="T:System.IO.TextWriter"/>
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultTextSerializer.Deserialize(System.IO.TextReader)">
+            <summary>
+            从 <see cref="T:System.IO.TextReader"/> 反序列化一个对象。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultTextSerializer.Deserialize(System.IO.TextReader,System.Type)">
+            <summary>
+            从 <see cref="T:System.IO.TextReader"/> 反序列化一个对象。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultTextSerializer.CustomJavaScriptConverter.Serialize(System.Object,System.Web.Script.Serialization.JavaScriptSerializer)">
+            <summary>
+            将对象序列化成名称/值对的字典
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.DefaultTextSerializer.CustomJavaScriptConverter.Deserialize(System.Collections.Generic.IDictionary{System.String,System.Object},System.Type,System.Web.Script.Serialization.JavaScriptSerializer)">
+            <summary>
+            将所提供的字典转换为指定类型的对象
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Serialization.DefaultTextSerializer.CustomJavaScriptConverter.SupportedTypes">
+            <summary>
+            返回支持的类型
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Serialization.SerializerExtensions">
+            <summary>
+            序列化器的扩展。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.SerializerExtensions.Deserialize``1(ThinkLib.Serialization.IBinarySerializer,System.Byte[],System.Boolean)">
+            <summary>
+            从字节数组反序列化一个对象。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.SerializerExtensions.Serialize(ThinkLib.Serialization.IBinarySerializer,System.Object,System.Boolean)">
+            <summary>
+            序列化一个对象到字节数组。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.SerializerExtensions.Deserialize``1(ThinkLib.Serialization.ITextSerializer,System.String,System.Boolean)">
+            <summary>
+            从字符串反序列化一个对象。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.SerializerExtensions.Serialize(ThinkLib.Serialization.ITextSerializer,System.Object,System.Boolean)">
+            <summary>
+            序列化一个对象到字节串。
             </summary>
         </member>
         <member name="T:ThinkLib.Utilities.CryptoUtil">

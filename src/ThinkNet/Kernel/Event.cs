@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Runtime.Serialization;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Kernel
@@ -6,7 +6,7 @@ namespace ThinkNet.Kernel
     /// <summary>
     /// Represents an abstract domain event.
     /// </summary>
-    [Serializable]
+    [DataContract]
     public abstract class Event<TSourceId> : Event
     {
         /// <summary>
@@ -24,6 +24,7 @@ namespace ThinkNet.Kernel
         /// <summary>
         /// 事件来源的标识id
         /// </summary>
+        [DataMember]
         public TSourceId SourceId { get; internal set; }
 
         /// <summary>
@@ -41,13 +42,5 @@ namespace ThinkNet.Kernel
         {
             return this.SourceId.ToString();
         }
-
-        ///// <summary>
-        ///// 返回聚合根id
-        ///// </summary>
-        //public override string GetRoutingKey()
-        //{
-        //    return base.GetRoutingKey();
-        //}
     }
 }

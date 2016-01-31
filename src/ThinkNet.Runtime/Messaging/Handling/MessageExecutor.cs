@@ -13,6 +13,7 @@ namespace ThinkNet.Messaging.Handling
     public class MessageExecutor : IMessageExecutor, IHandlerProvider
     {
         private readonly IHandlerRecordStore _handlerStore;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Parameterized Constructor.
@@ -20,17 +21,9 @@ namespace ThinkNet.Messaging.Handling
         public MessageExecutor(IHandlerRecordStore handlerStore)
         {
             this._handlerStore = handlerStore;
+            this._logger = LogManager.GetLogger("ThinkNet");
         }
 
-        private void ProcessHandler(EventStream message, IProxyHandler messageHandler)
-        {
-            try {
-                messageHandler.Handle(message);
-            }
-            catch (Exception ex) {
-                throw ex;
-            }
-        }
 
         /// <summary>
         /// 处理当前消息。
@@ -43,23 +36,31 @@ namespace ThinkNet.Messaging.Handling
                 return;
             }
 
+            if (_logger.IsDebugEnabled)
+                _logger.DebugFormat("executing a message. data:{0}",
+                    DefaultTextSerializer.Instance.Serialize(message));
+
             var messageHandlerType = messageHandler.GetInnerHandler().GetType();
             try {
                 if (_handlerStore.IsHandlerInfoExist(message.Id, messageType, messageHandlerType)) {
-                    LogManager.GetLogger("ThinkNet").DebugFormat("The message has been handled. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
-                        messageHandlerType.FullName, messageType.FullName, message.Id);
+                    if (_logger.IsInfoEnabled)
+                        _logger.InfoFormat("The message has been handled. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
+                            messageHandlerType.FullName, messageType.FullName, message.Id);
                     return;
                 }
 
                 messageHandler.Handle(message);
 
-                LogManager.GetLogger("ThinkNet").DebugFormat("Handle message success. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
-                    messageHandlerType.FullName, messageType.FullName, message.Id);
+                if (_logger.IsInfoEnabled)
+                    _logger.InfoFormat("Handle message success. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
+                        messageHandlerType.FullName, messageType.FullName, message.Id);
             }
             catch (Exception ex) {
-                string errorMessage = string.Format("Exception raised when {0} handling {1}. message info:{2}.",
-                    messageHandlerType.FullName, messageType.FullName, message);
-                LogManager.GetLogger("ThinkNet").Error(errorMessage, ex);
+                if (_logger.IsErrorEnabled) {
+                    string errorMessage = string.Format("Exception raised when {0} handling {1}. message info:{2}.",
+                        messageHandlerType.FullName, messageType.FullName, message);
+                    _logger.Error(errorMessage, ex);
+                }
 
                 throw ex;
             }
@@ -67,6 +68,9 @@ namespace ThinkNet.Messaging.Handling
                 _handlerStore.AddHandlerInfo(message.Id, messageType, messageHandlerType);
                 using (messageHandler as IDisposable) {
                 }
+
+                if (_logger.IsDebugEnabled)
+                    _logger.DebugFormat("message executed. messageId:{0}", message.Id);
             }
         }
 

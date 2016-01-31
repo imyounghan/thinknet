@@ -118,14 +118,11 @@ namespace ThinkNet.Infrastructure
             //queueMsg.Offset = topicOffset.AddOrUpdate(message.MetadataInfo[StandardMetadata.Kind], 0,
             //                (topic, offset) => Interlocked.Increment(ref offset));
 
-            //bool isEmpty = offsetDict.IsEmpty;
             if (!offsetDict.TryAdd(produceOffset, queue.Id)) {
                 return false;
             }
             queue.Enqueue(queueMsg);
-            if (lastQueueIndex == -1) {
-                waiter.Set();
-            }
+
             return true;
         }
 
@@ -170,14 +167,20 @@ namespace ThinkNet.Infrastructure
             return message;
         }
 
-        public void Complete(Message message)
+        public void Complete(Message message = null)
         {
             var queueMsg = message as QueueMessage;
-            if (queueMsg == null)
-                return;
 
-            int completeQueueIndex = queueMsg.QueueId;
-            if (Interlocked.CompareExchange(ref lastQueueIndex, -1, completeQueueIndex) == completeQueueIndex) {
+            bool release;
+            if (queueMsg != null) {
+                int completeQueueIndex = queueMsg.QueueId;
+                release = Interlocked.CompareExchange(ref lastQueueIndex, -1, completeQueueIndex) == completeQueueIndex;
+            }
+            else {
+                release = lastQueueIndex == -1;
+            }
+
+            if (release) {
                 waiter.Set();
             }
         }

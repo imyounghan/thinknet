@@ -15,11 +15,11 @@ namespace ThinkNet.EventSourcing
         /// <summary>
         /// 存储聚合快照。
         /// </summary>
-        void Save(Stream snapshot);
+        bool Save(Stream snapshot);
         /// <summary>
         /// 从存储中删除快照。
         /// </summary>
-        void Remove(SourceKey sourceKey);
+        bool Remove(SourceKey sourceKey);
     }
 
 
@@ -30,10 +30,14 @@ namespace ThinkNet.EventSourcing
             return null;
         }
 
-        public void Save(Stream snapshot)
-        { }
+        public bool Save(Stream snapshot)
+        {
+            return false;
+        }
 
-        public void Remove(SourceKey sourceKey)
-        { }
+        public bool Remove(SourceKey sourceKey)
+        {
+            return false;
+        }
     }
 }

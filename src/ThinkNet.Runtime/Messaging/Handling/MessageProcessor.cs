@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using ThinkLib.Common;
-using ThinkNet.Configurations;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
@@ -16,9 +13,7 @@ namespace ThinkNet.Messaging.Handling
     {
         private readonly IMessageReceiver receiver;
         private readonly IMessageExecutor executor;
-        private readonly IEventPublishedVersionStore eventPublishedVersionStore;
         private readonly MessageBroker broker;
-        private readonly ICommandResultManager commandResultManager;
         
         private readonly object lockObject = new object();
         private bool started = false;
@@ -27,15 +22,11 @@ namespace ThinkNet.Messaging.Handling
         /// Parameterized Constructor.
         /// </summary>
         public MessageProcessor(IMessageReceiver receiver,
-            IMessageExecutor executor,
-            IEventPublishedVersionStore eventPublishedVersionStore,
-            ICommandResultManager commandResultManager)
+            IMessageExecutor executor)
         {
             this.receiver = receiver;
             this.executor = executor;
-            this.eventPublishedVersionStore = eventPublishedVersionStore;
             this.broker = MessageBrokerFactory.Instance.GetOrCreate("message");
-            this.commandResultManager = commandResultManager;
         }
 
         /// <summary>
@@ -84,97 +75,21 @@ namespace ThinkNet.Messaging.Handling
             }
         }
 
-        protected virtual void ProcessMessage(Message message)
+        protected virtual void Process()
         {
-            var msg = message.Body as IMessage;
-            if (msg == null)
-                return;
-
-            int count = 0;
-            int retryTimes = 1;
-
-            while (count++ < retryTimes) {
-                try {
-                    executor.Execute(msg);
-                    break;
-                }
-                catch (ThinkNetException) {
-                    throw;
-                }
-                catch (Exception) {
-                    if (count == retryTimes)
-                        throw;
-                    else
-                        Thread.Sleep(1000);
-                }
-            }
         }
-
-        private bool OnProcessing(Message message)
-        {
-            var stream = message.Body as VersionedEventStream;
-            if (stream != null) {
-                var sourceKey = new SourceKey(
-                    message.MetadataInfo[StandardMetadata.SourceId],
-                    message.MetadataInfo[StandardMetadata.Namespace],
-                    message.MetadataInfo[StandardMetadata.TypeName],
-                    message.MetadataInfo[StandardMetadata.AssemblyName]
-                    );
-
-                var version = eventPublishedVersionStore.GetPublishedVersion(sourceKey);
-
-                if (version + 1 != stream.StartVersion) { //如果当前的消息版本不是要处理的情况
-                    if (stream.StartVersion > version + 1) //如果该消息的版本大于要处理的版本则重新进队列等待下次处理
-                        broker.TryAdd(message);
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private void OnProcessed(Message message)
-        {
-            var command = message.Body as ICommand;
-            if (command != null) {
-                commandResultManager.NotifyCommandExecuted(command.Id, CommandStatus.Success, null);
-                return;
-            }
-
-            var @event = message.Body as EventStream;
-            if (@event != null) {
-                commandResultManager.NotifyCommandCompleted(@event.CommandId, 
-                    @event.Events.IsEmpty() ? CommandStatus.NothingChanged : CommandStatus.Success);
-                return;
-            }
-        }
-
-        private void OnException(Message message, Exception ex)
-        {
-            var command = message.Body as ICommand;
-            if (command != null) {
-                commandResultManager.NotifyCommandExecuted(command.Id, CommandStatus.Failed, ex);
-                return;
-            }
-
-            var @event = message.Body as EventStream;
-            if (@event != null) {
-                commandResultManager.NotifyCommandCompleted(@event.CommandId, CommandStatus.Failed, ex);
-                return;
-            }
-        }
-
-
+        
         private void OnMessageReceived(object sender, EventArgs<Message> args)
         {
+            var message = args.Data.Body as IMessage;
+            if (message == null)
+                return;
+
             try {
-                if (OnProcessing(args.Data)) { //如果是有序的消息
-                    ProcessMessage(args.Data);
-                    OnProcessed(args.Data);
-                }
+                executor.Execute(message);
             }
             catch (Exception ex) {
-                OnException(args.Data, ex);
+                //commandResultManager.NotifyCommandExecuted(command.Id, CommandStatus.Failed, ex);
                 // NOTE: we catch ANY exceptions as this is for local 
                 // development/debugging. The Windows Azure implementation 
                 // supports retries and dead-lettering, which would 
@@ -189,7 +104,7 @@ namespace ThinkNet.Messaging.Handling
         #region IInitializer 成员
         public void Initialize(IEnumerable<Type> types)
         {
-            AggregateRootInnerHandlerUtil.Initialize(types);
+            AggregateRootInnerHandlerProvider.Initialize(types);
 
             this.Start();
         }

@@ -57,15 +57,7 @@ namespace ThinkNet.Infrastructure
                         CommandId = correlationId,
                         Events = events
                     });
-                }
-                LogManager.GetLogger("ThinkNet").InfoFormat("publish all events. event ids: [{0}]", string.Join(",", events.Select(@event => @event.Id).ToArray()));
-
-
-                //var eventIds = events.Select(@event => @event.Id).ToArray();
-                //if (!string.IsNullOrEmpty(correlationId)) {
-                //    events.Insert(0, new CommandHandled(correlationId, eventIds));
-                //}
-                //_eventBus.Publish(events);
+                }                
             }
 
             private object CreateRepository(Type repositoryType)
@@ -82,7 +74,7 @@ namespace ThinkNet.Infrastructure
                     return constructor.Invoke(new object[] { _context });
                 }
 
-                string errorMessage = string.Format("Type '{0}' must have a constructor with the following signature: .ctor(IDbContext) or .ctor(IDbContext,IMemoryCache,ILogger)", serviceType.FullName);
+                string errorMessage = string.Format("Type '{0}' must have a constructor with the following signature: .ctor(IDbContext) or .ctor(IDbContext,IMemoryCache)", serviceType.FullName);
                 LogManager.GetLogger("ThinkNet").Error(errorMessage);
                 throw new InvalidCastException(errorMessage);
             }

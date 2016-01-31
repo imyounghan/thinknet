@@ -25,14 +25,13 @@ namespace UserRegistration
                 return;
             }
 
-            TinyIoCContainer.RegisterOptions options;
+            //TinyIoCContainer.RegisterOptions options;
             if (string.IsNullOrWhiteSpace(name)) {
-                options = TinyIoCContainer.Current.Register(type, instance);
+                TinyIoCContainer.Current.Register(type, instance);
             }
             else {
-                options = TinyIoCContainer.Current.Register(type, instance, name);
+                TinyIoCContainer.Current.Register(type, instance, name).AsSingleton();
             }
-            options.AsSingleton();
         }
 
         private static void RegisterType(Type type, string name, Lifecycle lifecycle)
@@ -108,7 +107,7 @@ namespace UserRegistration
             }
         }
 
-        private static void Register(Configuration.TypeRegistration registration)
+        private static void Register(BootstrapperExtentions.TypeRegistration registration)
         {
             if (registration.RegisterType == null)
                 return;
@@ -122,7 +121,7 @@ namespace UserRegistration
             RegisterType(registration.RegisterType, registration.ImplementationType, registration.Name, registration.Lifecycle);
         }
 
-        public static void DoneWithTinyIoC(this Configuration that)
+        public static void DoneWithTinyIoC(this BootstrapperExtentions that)
         {
             ServiceLocator.SetLocatorProvider(() => new TinyIoCServiceLocator(TinyIoCContainer.Current));
 
@@ -134,7 +133,7 @@ namespace UserRegistration
     {
         static void Main(string[] args)
         {
-            Configuration.Current.DoneWithTinyIoC();
+            BootstrapperExtentions.Current.DoneWithTinyIoC();
 
 
             var userRegister = new RegisterUser {

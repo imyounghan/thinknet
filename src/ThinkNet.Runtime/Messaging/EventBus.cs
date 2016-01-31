@@ -18,9 +18,7 @@ namespace ThinkNet.Messaging
 
         public EventBus(IMessageSender messageSender,
             IRoutingKeyProvider routingKeyProvider,
-            IMetadataProvider metadataProvider,
-            ITextSerializer serializer)
-            : base(serializer)
+            IMetadataProvider metadataProvider)
         {
             this.messageSender = messageSender;
             this.routingKeyProvider = routingKeyProvider;
@@ -42,11 +40,21 @@ namespace ThinkNet.Messaging
         public void Publish(IEnumerable<IEvent> events)
         {
             var messages = events.Select(Map).AsEnumerable();
-            messageSender.Send(messages);
+            messageSender.SendAsync(messages, () => {
+                if (logger.IsDebugEnabled) {
+                    var list = new List<IEvent>();
+                    events.ForEach(@event => {
+                        var stream = @event as EventStream;
+                        if (stream != null)
+                            list.AddRange(stream.Events);
+                        else
+                            list.Add(@event);
+                    });
 
-            if (logger.IsInfoEnabled && !events.OfType<EventStream>().Any()) {
-                logger.InfoFormat("event published. events:{0}", Serialize(events));
-            }
+                    logger.DebugFormat("event published. events:{0}", Serialize(list));
+                }
+            }, (ex) => {
+            });
         }
 
         private Message Map(IEvent @event)

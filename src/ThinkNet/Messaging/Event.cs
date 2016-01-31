@@ -8,7 +8,6 @@ namespace ThinkNet.Messaging
     /// 实现 <see cref="IEvent"/> 的抽象类
     /// </summary>
     [DataContract]
-    [Serializable]
     public abstract class Event : IEvent
     {
         /// <summary>
@@ -28,6 +27,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 事件标识
         /// </summary>
+        [DataMember]
         public string Id { get; private set; }
 
         /// <summary>

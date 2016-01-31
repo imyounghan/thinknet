@@ -9,7 +9,6 @@ namespace ThinkNet.Messaging
     /// 实现 <see cref="ICommand"/> 的抽象类
     /// </summary>
     [DataContract]
-    [Serializable]
     public abstract class Command : ICommand
     {
 
@@ -30,6 +29,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 命令标识
         /// </summary>
+        [DataMember]
         public string Id { get; private set; }
 
         /// <summary>
@@ -57,12 +57,12 @@ namespace ThinkNet.Messaging
     /// Represents an abstract aggregate command.
     /// </summary>
     [DataContract]
-    [Serializable]
     public abstract class Command<TAggregateRootId> : Command
     {
         /// <summary>
         /// Represents the aggregate root which is related with the command.
         /// </summary>
+        [DataMember]
         public TAggregateRootId AggregateRootId { get; private set; }
 
         /// <summary>
@@ -87,14 +87,6 @@ namespace ThinkNet.Messaging
         {
             return this.AggregateRootId.ToString();
         }
-
-        ///// <summary>
-        ///// 返回聚合根ID
-        ///// </summary>
-        //public override string GetRoutingKey()
-        //{
-        //    return this.GetAggregateRootStringId();
-        //}
 
         /// <summary>
         /// 输出字符串信息

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Infrastructure
@@ -6,7 +7,7 @@ namespace ThinkNet.Infrastructure
     /// <summary>
     /// 实现 <see cref="IEntity"/> 的抽象类
     /// </summary>
-    [Serializable]
+    [DataContract]
     public abstract class Entity<TIdentify> : IEntity
     {
         protected Entity()
@@ -23,6 +24,7 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 标识ID
         /// </summary>
+        [DataMember]
         public virtual TIdentify Id { get; protected set; }
 
 

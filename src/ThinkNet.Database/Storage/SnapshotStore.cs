@@ -67,10 +67,10 @@ namespace ThinkNet.Database.Storage
             
         }
 
-        public void Save(Stream snapshot)
+        public bool Save(Stream snapshot)
         {
             if (!_persistent)
-                return;
+                return false;
 
             var aggregateRootTypeName = string.Concat(snapshot.Key.Namespace, ".", snapshot.Key.TypeName);
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
@@ -83,7 +83,7 @@ namespace ThinkNet.Database.Storage
                 Timestamp = DateTime.UtcNow
             };
 
-            Task.Factory.StartNew(() => {
+            var task = Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
                     bool exist = context.CreateQuery<Snapshot>()
                         .Any(entity => entity.AggregateRootId == data.AggregateRootId &&
@@ -96,18 +96,21 @@ namespace ThinkNet.Database.Storage
                     }
                     context.Commit();
                 }
-            }).Wait();
+            });
+            task.Wait();
+
+            return task.Exception == null;
         }
 
-        public void Remove(SourceKey sourceKey)
+        public bool Remove(SourceKey sourceKey)
         {
             if (!_persistent)
-                return;
+                return false;
 
             var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
 
-            Task.Factory.StartNew(() => {
+            var task = Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
                     context.CreateQuery<Snapshot>()
                         .Where(p => p.AggregateRootId == sourceKey.SourceId &&
@@ -116,7 +119,10 @@ namespace ThinkNet.Database.Storage
                         .ForEach(context.Delete);
                     context.Commit();
                 }
-            }).Wait();            
+            });
+            task.Wait();
+
+            return task.Exception == null;
         }
     }
 }

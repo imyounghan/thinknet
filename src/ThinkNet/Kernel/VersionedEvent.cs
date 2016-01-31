@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace ThinkNet.Kernel
 {
     /// <summary>
     /// Represents an abstract sourced event.
     /// </summary>
-    [Serializable]
+    [DataContract]
     public abstract class VersionedEvent<TSourceId> : Event<TSourceId>, IVersionedEvent
     {
         /// <summary>
         /// 当前事件版本号
         /// </summary>
+        [DataMember]
         public int Version { get; internal set; }
 
         /// <summary>

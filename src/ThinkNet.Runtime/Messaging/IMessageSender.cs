@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using ThinkLib.Common;
+using ThinkLib.Scheduling;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
@@ -9,7 +12,11 @@ namespace ThinkNet.Messaging
     {
         void Send(Message message);
 
+        void SendAsync(Message message, Action successCallback, Action<Exception> failCallback);
+
         void Send(IEnumerable<Message> messages);
+
+        void SendAsync(IEnumerable<Message> messages, Action successCallback, Action<Exception> failCallback);
     }
 
 
@@ -24,12 +31,31 @@ namespace ThinkNet.Messaging
 
         public void Send(Message message)
         {
-            this.Send(new[] { message });
+            this.SendAsync(message, () => { }, (ex) => { });
+        }
+
+        public void SendAsync(Message message, Action successCallback, Action<Exception> failCallback)
+        {
+            this.SendAsync(new[] { message }, successCallback, failCallback);
         }
 
         public void Send(IEnumerable<Message> messages)
         {
-            messages.ForEach(message => broker.TryAdd(message));
+            this.SendAsync(messages, () => { }, (ex) => { });
+        }
+
+        public void SendAsync(IEnumerable<Message> messages, Action successCallback, Action<Exception> failCallback)
+        {
+            try {
+                messages.ForEach(message => broker.TryAdd(message));
+                successCallback();               
+            }
+            catch (Exception ex) {
+                failCallback(ex);
+            }
+            finally {
+                broker.Complete();
+            }
         }
     }
 }
