@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkLib.Utilities;
+using ThinkNet.Infrastructure;
+using ThinkNet.Messaging.Handling;
 
 
 namespace ThinkNet.Messaging
@@ -9,6 +10,7 @@ namespace ThinkNet.Messaging
     /// 实现 <see cref="ICommand"/> 的抽象类
     /// </summary>
     [DataContract]
+    [Serializable]
     public abstract class Command : ICommand
     {
 
@@ -23,7 +25,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected Command(string id)
         {
-            this.Id = id.Safe(GuidUtil.NewSequentialId().ToString());
+            this.Id = id.Safe(ObjectId.GenerateNewStringId());
         }
 
         /// <summary>
@@ -57,6 +59,7 @@ namespace ThinkNet.Messaging
     /// Represents an abstract aggregate command.
     /// </summary>
     [DataContract]
+    [Serializable]
     public abstract class Command<TAggregateRootId> : Command
     {
         /// <summary>
@@ -93,7 +96,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Concat(this.GetType().Name, "|", this.AggregateRootId);
+            return string.Concat(this.GetType().FullName, "|", this.AggregateRootId);
         }
     }
 }

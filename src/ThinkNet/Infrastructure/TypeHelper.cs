@@ -131,5 +131,21 @@ namespace ThinkNet.Infrastructure
             return type.IsClass && !type.IsAbstract &&
                 type.GetInterfaces().Any(IsMessageHandlerInterfaceType);
         }
+
+        /// <summary>
+        /// Check whether a type is a interceptor type.
+        /// </summary>
+        public static bool IsIInterceptorInterfaceType(Type type)
+        {
+            return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IInterceptor<>);
+        }
+        /// <summary>
+        /// Check whether a type is a interceptor.
+        /// </summary>
+        public static bool IsIInterceptorType(Type type)
+        {
+            return type.IsClass && !type.IsAbstract &&
+                type.GetInterfaces().Any(IsIInterceptorInterfaceType);
+        }
     }
 }

@@ -7,6 +7,7 @@ namespace ThinkNet.Kernel
     /// Represents an abstract sourced event.
     /// </summary>
     [DataContract]
+    [Serializable]
     public abstract class VersionedEvent<TSourceId> : Event<TSourceId>, IVersionedEvent
     {
         /// <summary>

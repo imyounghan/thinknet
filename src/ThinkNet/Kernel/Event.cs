@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Kernel
@@ -7,6 +8,7 @@ namespace ThinkNet.Kernel
     /// Represents an abstract domain event.
     /// </summary>
     [DataContract]
+    [Serializable]
     public abstract class Event<TSourceId> : Event
     {
         /// <summary>
@@ -32,7 +34,7 @@ namespace ThinkNet.Kernel
         /// </summary>
         public override string ToString()
         {
-            return string.Concat(this.GetType().Name, "|", this.SourceId);
+            return string.Concat(this.GetType().FullName, "|", this.SourceId);
         }
 
         /// <summary>

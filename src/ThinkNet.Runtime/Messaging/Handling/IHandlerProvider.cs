@@ -8,7 +8,6 @@ namespace ThinkNet.Messaging.Handling
     /// <summary>
     /// 消息处理程序的提供者
     /// </summary>
-    //[RequiredComponent(typeof(DefaultHandlerProvider))]
     public interface IHandlerProvider
     {
         /// <summary>

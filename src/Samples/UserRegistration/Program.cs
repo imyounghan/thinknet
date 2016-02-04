@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Practices.ServiceLocation;
+using ThinkLib.Common;
 using ThinkNet.Configurations;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
-using TinyIoC;
 using UserRegistration.Application;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
@@ -13,127 +14,21 @@ using UserRegistration.ReadModel;
 namespace UserRegistration
 {
 
-    static class ConfigurationExtentions
-    {
-
-        private static void RegisterInstance(Type type, object instance, string name)
-        {
-            if (string.IsNullOrWhiteSpace(name) && TinyIoCContainer.Current.CanResolve(type)) {
-                return;
-            }
-            if (!string.IsNullOrWhiteSpace(name) && TinyIoCContainer.Current.CanResolve(type, name)) {
-                return;
-            }
-
-            //TinyIoCContainer.RegisterOptions options;
-            if (string.IsNullOrWhiteSpace(name)) {
-                TinyIoCContainer.Current.Register(type, instance);
-            }
-            else {
-                TinyIoCContainer.Current.Register(type, instance, name).AsSingleton();
-            }
-        }
-
-        private static void RegisterType(Type type, string name, Lifecycle lifecycle)
-        {
-            if (string.IsNullOrWhiteSpace(name) && TinyIoCContainer.Current.CanResolve(type)) {
-                return;
-            }
-            if (!string.IsNullOrWhiteSpace(name) && TinyIoCContainer.Current.CanResolve(type, name)) {
-                return;
-            }
-
-            TinyIoCContainer.RegisterOptions options;
-            if (string.IsNullOrWhiteSpace(name)) {
-                options = TinyIoCContainer.Current.Register(type);
-            }
-            else {
-                options = TinyIoCContainer.Current.Register(type, name);
-            }
-
-            switch (lifecycle) {
-                case Lifecycle.Singleton:
-                    options.AsSingleton();
-                    break;
-                case Lifecycle.Transient:
-                    options.AsMultiInstance();
-                    break;
-                case Lifecycle.PerSession:
-                    options.AsPerSession();
-                    break;
-                case Lifecycle.PerThread:
-                    options.AsPerThread();
-                    break;
-            }
-        }
-
-        private static void RegisterType(Type from, Type to, string name, Lifecycle lifecycle)
-        {
-            if (string.IsNullOrWhiteSpace(name) && TinyIoCContainer.Current.CanResolve(from)) {
-                return;
-            }
-            if (!string.IsNullOrWhiteSpace(name) && TinyIoCContainer.Current.CanResolve(from, name)) {
-                return;
-            }
-
-            TinyIoCContainer.RegisterOptions options;
-
-            if (string.IsNullOrWhiteSpace(name)) {
-                if (to == null)
-                    options = TinyIoCContainer.Current.Register(from);
-                else
-                    options = TinyIoCContainer.Current.Register(from, to);
-            }
-            else {
-                if (to == null)
-                    options = TinyIoCContainer.Current.Register(from);
-                else
-                    options = TinyIoCContainer.Current.Register(from, to, name);
-            }
-
-            switch (lifecycle) {
-                case Lifecycle.Singleton:
-                    options.AsSingleton();
-                    break;
-                case Lifecycle.Transient:
-                    options.AsMultiInstance();
-                    break;
-                case Lifecycle.PerSession:
-                    options.AsPerSession();
-                    break;
-                case Lifecycle.PerThread:
-                    options.AsPerThread();
-                    break;
-            }
-        }
-
-        private static void Register(BootstrapperExtentions.TypeRegistration registration)
-        {
-            if (registration.RegisterType == null)
-                return;
-
-
-            if (registration.Instance != null) {
-                RegisterInstance(registration.RegisterType, registration.Instance, registration.Name);
-                return;
-            }
-
-            RegisterType(registration.RegisterType, registration.ImplementationType, registration.Name, registration.Lifecycle);
-        }
-
-        public static void DoneWithTinyIoC(this BootstrapperExtentions that)
-        {
-            ServiceLocator.SetLocatorProvider(() => new TinyIoCServiceLocator(TinyIoCContainer.Current));
-
-            that.Done(Register);
-        }
-    }
 
     class Program
     {
         static void Main(string[] args)
         {
-            BootstrapperExtentions.Current.DoneWithTinyIoC();
+            Bootstrapper.Current.StartThinkNet().DoneWithUnity();
+
+            //Dictionary<string, string> dict = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+
+            //int counter = 0;
+            //while (counter++ < 1000) {
+            //    var id = ObjectId.GenerateNewId().ToString();
+            //    dict.Add(id, id);
+            //    Console.WriteLine(id);
+            //}
 
 
             var userRegister = new RegisterUser {
@@ -145,7 +40,7 @@ namespace UserRegistration
 
             var commandBus = ServiceLocator.Current.GetInstance<ICommandBus>();
 
-            commandBus.SendAsync(userRegister, CommandReplyType.DomainEventHandled).Wait();
+            commandBus.Send(userRegister, CommandReplyType.DomainEventHandled).Wait();
 
             var userDao = ServiceLocator.Current.GetInstance<IUserDao>();
 

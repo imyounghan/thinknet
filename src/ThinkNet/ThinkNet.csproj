@@ -39,10 +39,6 @@
     <AssemblyOriginatorKeyFile>..\thinknet.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
@@ -66,6 +62,7 @@
     <Compile Include="EventSourcing\Stream.cs" />
     <Compile Include="Infrastructure\IMetadataProvider.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
+    <Compile Include="Infrastructure\ObjectId.cs" />
     <Compile Include="Infrastructure\StandardMetadata.cs" />
     <Compile Include="Infrastructure\StandardMetadataProvider.cs" />
     <Compile Include="Kernel\AggregateRoot.cs" />
@@ -88,6 +85,8 @@
     <Compile Include="Infrastructure\Entity.cs" />
     <Compile Include="Infrastructure\EntityExtensions.cs" />
     <Compile Include="Infrastructure\IEntity.cs" />
+    <Compile Include="Messaging\Handling\ICommandHandlingContext.cs" />
+    <Compile Include="Messaging\Handling\IEventHandlingContext.cs" />
     <Compile Include="Messaging\Handling\IHandler.cs" />
     <Compile Include="Infrastructure\ValueObject.cs" />
     <Compile Include="Infrastructure\TypeHelper.cs" />
@@ -96,15 +95,16 @@
     <Compile Include="Messaging\CommandStatus.cs" />
     <Compile Include="Messaging\Command.cs" />
     <Compile Include="Messaging\Event.cs" />
-    <Compile Include="Messaging\Handling\JustHandleOnceAttribute.cs" />
+    <Compile Include="Messaging\Handling\IInterceptor.cs" />
+    <Compile Include="Messaging\Handling\OnlyoneHandlerAttribute.cs" />
     <Compile Include="Messaging\Handling\HandlerRecordInMemory.cs" />
     <Compile Include="Messaging\Handling\IHandlerRecordStore.cs" />
     <Compile Include="Messaging\Handling\IMessageHandler.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Messaging\Handling\RequireHandlerAttribute.cs" />
     <Compile Include="Messaging\ICommand.cs" />
     <Compile Include="Messaging\ICommandBus.cs" />
-    <Compile Include="Messaging\ICommandContext.cs" />
     <Compile Include="Messaging\Handling\ICommandHandler.cs" />
     <Compile Include="Messaging\IEvent.cs" />
     <Compile Include="Messaging\IEventBus.cs" />
@@ -117,9 +117,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Infrastructure\ThinkNetException.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

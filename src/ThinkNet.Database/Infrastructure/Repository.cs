@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using ThinkLib.Common;
 using ThinkLib.Logging;
+using ThinkLib.Serialization;
 using ThinkNet.Database;
 using ThinkNet.Kernel;
 using ThinkNet.Messaging;
@@ -14,15 +15,17 @@ namespace ThinkNet.Infrastructure
         private readonly IDataContextFactory _dbContextFactory;
         private readonly IEventBus _eventBus;
         private readonly IMemoryCache _cache;
+        private readonly ITextSerializer _serializer;
         private readonly ILogger _logger;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public Repository(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache)
+        public Repository(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache, ITextSerializer serializer)
         {
             this._dbContextFactory = dbContextFactory;
             this._eventBus = eventBus;
             this._cache = cache;
+            this._serializer = serializer;
             this._logger = LogManager.GetLogger("ThinkNet");
         }
 
@@ -90,7 +93,9 @@ namespace ThinkNet.Infrastructure
             else {
                 _eventBus.Publish(new EventStream(aggregateRoot.Id, typeof(TAggregateRoot)) {
                     CommandId = correlationId,
-                    Events = eventPublisher.Events
+                    Events = events.Select(item => new EventStream.Stream(item.GetType()) {
+                        Payload = _serializer.Serialize(item)
+                    }).ToArray()
                 });
             }
         }

@@ -10,6 +10,6 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 处理命令。
         /// </summary>
-        void Handle(ICommandContext commandContext, TCommand command);
+        void Handle(ICommandHandlingContext context, TCommand command);
     }
 }

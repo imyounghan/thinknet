@@ -13,6 +13,18 @@ namespace ThinkNet.Messaging.Handling
     public class HandlerWrapper<T> : DisposableObject, IProxyHandler
         where T : class, IMessage
     {
+        class EmptyInterceptor : IInterceptor<T>
+        {
+            public static readonly EmptyInterceptor Instance = new EmptyInterceptor();
+
+            public void OnHandling(T message)
+            { }
+
+
+            public void OnHandled(AggregateException exception, T message)
+            { }
+        }
+
         private readonly IHandler _handler;
         private readonly Lifecycle _lifetime;
 
@@ -35,19 +47,16 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         public void Handle(T message)
         {
-            //var interceptor = _handler as IInterceptor<T>;
+            var interceptor = _handler as IInterceptor<T> ?? EmptyInterceptor.Instance;
 
-            //if (interceptor != null)
-            //    interceptor.OnExecuting(message);
+            interceptor.OnHandling(message);
 
             var messageHandler = _handler as IMessageHandler<T>;
-            if (messageHandler != null)
-            {
+            if (messageHandler != null) {
                 messageHandler.Handle(message);
             }
 
-            //if (interceptor != null)
-            //    interceptor.OnExecuted(message);
+            interceptor.OnHandled(null, message);
         }
 
         private void RetryHandle(T message)

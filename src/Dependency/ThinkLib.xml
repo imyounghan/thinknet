@@ -192,7 +192,7 @@
             扫描bin目录的程序集
             </summary>
         </member>
-        <member name="M:ThinkLib.Common.Bootstrapper.Done(System.Action{ThinkLib.Common.Bootstrapper.TypeRegistration})">
+        <member name="M:ThinkLib.Common.Bootstrapper.Done(System.Action{ThinkLib.Common.Bootstrapper.TypeRegistration},System.Func{System.Type,System.String,System.Object})">
             <summary>
             配置完成。
             </summary>
@@ -210,6 +210,11 @@
         <member name="M:ThinkLib.Common.Bootstrapper.RegisterType(System.Type,System.Type,ThinkLib.Common.Lifecycle,System.String)">
             <summary>
             注册类型
+            </summary>
+        </member>
+        <member name="E:ThinkLib.Common.Bootstrapper.TypesLoaded">
+            <summary>
+            类型加载后的操作
             </summary>
         </member>
         <member name="T:ThinkLib.Common.Bootstrapper.TypeRegistration">
@@ -335,6 +340,56 @@
         <member name="F:ThinkLib.Common.CachingMethod.Remove">
             <summary>
             表示需要将对象从缓存中移除。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.ComponentAttribute">
+            <summary>
+            标记此特性的类型将要注册到容器中。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.ComponentAttribute.Register(ThinkLib.Common.Bootstrapper,System.Type)">
+            <summary>
+            类型注册
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.ComponentAttribute.Register(ThinkLib.Common.Bootstrapper)">
+            <summary>
+            类型注册
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.ComponentAttribute.RegisterName">
+            <summary>
+            注册的名称
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.ComponentAttribute.RegisterTypeName">
+            <summary>
+            使用类型名称
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.ComponentAttribute.CreateInstance">
+            <summary>
+            是否创建实例。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.ComponentAttribute.ConstructorParameters">
+            <summary>
+            构造函数的参数。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.ComponentAttribute.ImplementType">
+            <summary>
+            要注册类型的实现类。如果为null则表示实现类是注册类型本身。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.ComponentAttribute.RegisterType">
+            <summary>
+            要注册的类型。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.ComponentAttribute.Order">
+            <summary>
+            注册顺序
             </summary>
         </member>
         <member name="T:ThinkLib.Common.DisposableObject">
@@ -505,20 +560,10 @@
         </member>
         <member name="T:ThinkLib.Common.RegisterComponentAttribute">
             <summary>
-            表示该特性的类会被注册到IOC容器中
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.RegisterComponentAttribute.#ctor">
-            <summary>
-            Default constructor.
+            表示该特性的类会被优先注册到容器中。
             </summary>
         </member>
         <member name="M:ThinkLib.Common.RegisterComponentAttribute.#ctor(System.String)">
-            <summary>
-            Parameterized constructor.
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.RegisterComponentAttribute.#ctor(System.Type)">
             <summary>
             Parameterized constructor.
             </summary>
@@ -528,74 +573,39 @@
             Parameterized constructor.
             </summary>
         </member>
-        <member name="M:ThinkLib.Common.RegisterComponentAttribute.GetFinalRegisterName(System.Type)">
+        <member name="M:ThinkLib.Common.RegisterComponentAttribute.Register(ThinkLib.Common.Bootstrapper,System.Type)">
             <summary>
-            获取最终的注册名称。
+            类型注册
             </summary>
         </member>
-        <member name="P:ThinkLib.Common.RegisterComponentAttribute.RegisterType">
+        <member name="P:ThinkLib.Common.RegisterComponentAttribute.Order">
             <summary>
-            要注册的服务类型。
+            注册顺序
             </summary>
         </member>
-        <member name="P:ThinkLib.Common.RegisterComponentAttribute.RegisterName">
+        <member name="T:ThinkLib.Common.UnderlyingComponentAttribute">
             <summary>
-            注册的名称
+            标记此特性的类型是基础组件。
             </summary>
         </member>
-        <member name="P:ThinkLib.Common.RegisterComponentAttribute.RegisterTypeName">
-            <summary>
-            使用类型名称
-            </summary>
-        </member>
-        <member name="T:ThinkLib.Common.RequiredComponentAttribute">
-            <summary>
-            标记此特性的类型是运行时必须的组件。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.RequiredComponentAttribute.#ctor">
+        <member name="M:ThinkLib.Common.UnderlyingComponentAttribute.#ctor(System.String)">
             <summary>
             default constructor.
             </summary>
         </member>
-        <member name="M:ThinkLib.Common.RequiredComponentAttribute.#ctor(System.Type)">
+        <member name="M:ThinkLib.Common.UnderlyingComponentAttribute.#ctor(System.Type,System.String)">
             <summary>
             Parameterized constructor.
             </summary>
         </member>
-        <member name="M:ThinkLib.Common.RequiredComponentAttribute.#ctor(System.Type,System.String)">
+        <member name="M:ThinkLib.Common.UnderlyingComponentAttribute.Register(ThinkLib.Common.Bootstrapper,System.Type)">
             <summary>
-            Parameterized constructor.
+            类型注册
             </summary>
         </member>
-        <member name="M:ThinkLib.Common.RequiredComponentAttribute.GetFinalRegisterName">
+        <member name="P:ThinkLib.Common.UnderlyingComponentAttribute.Order">
             <summary>
-            获取最终的注册名称。
-            </summary>
-        </member>
-        <member name="P:ThinkLib.Common.RequiredComponentAttribute.RegisterName">
-            <summary>
-            注册的名称
-            </summary>
-        </member>
-        <member name="P:ThinkLib.Common.RequiredComponentAttribute.ServiceType">
-            <summary>
-            要注册的服务类型。
-            </summary>
-        </member>
-        <member name="P:ThinkLib.Common.RequiredComponentAttribute.RegisterTypeName">
-            <summary>
-            使用类型名称
-            </summary>
-        </member>
-        <member name="P:ThinkLib.Common.RequiredComponentAttribute.CreateInstance">
-            <summary>
-            是否创建实例。
-            </summary>
-        </member>
-        <member name="P:ThinkLib.Common.RequiredComponentAttribute.ConstructorParameters">
-            <summary>
-            构造函数的参数。
+            注册顺序
             </summary>
         </member>
         <member name="T:ThinkLib.Contexts.ContextManager">
@@ -1647,7 +1657,7 @@
         </member>
         <member name="P:ThinkLib.Scheduling.Worker`1.Factory">
             <summary>
-            获取该消息的工厂。
+            获取该 <typeparamref name="T"/> 实例的工厂。
             </summary>
         </member>
         <member name="P:ThinkLib.Scheduling.Worker`1.Action">
@@ -1890,6 +1900,11 @@
             序列化器的扩展。
             </summary>
         </member>
+        <member name="M:ThinkLib.Serialization.SerializerExtensions.Deserialize(ThinkLib.Serialization.IBinarySerializer,System.Byte[],System.Type)">
+            <summary>
+            从字节数组反序列化一个对象。
+            </summary>
+        </member>
         <member name="M:ThinkLib.Serialization.SerializerExtensions.Deserialize``1(ThinkLib.Serialization.IBinarySerializer,System.Byte[],System.Boolean)">
             <summary>
             从字节数组反序列化一个对象。
@@ -1898,6 +1913,11 @@
         <member name="M:ThinkLib.Serialization.SerializerExtensions.Serialize(ThinkLib.Serialization.IBinarySerializer,System.Object,System.Boolean)">
             <summary>
             序列化一个对象到字节数组。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Serialization.SerializerExtensions.Deserialize(ThinkLib.Serialization.ITextSerializer,System.String,System.Type)">
+            <summary>
+            从字符串反序列化一个对象。
             </summary>
         </member>
         <member name="M:ThinkLib.Serialization.SerializerExtensions.Deserialize``1(ThinkLib.Serialization.ITextSerializer,System.String,System.Boolean)">

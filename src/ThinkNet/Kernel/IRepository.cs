@@ -2,6 +2,7 @@
 using System.Linq;
 using ThinkLib.Common;
 using ThinkLib.Logging;
+using ThinkLib.Serialization;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Kernel
@@ -42,11 +43,13 @@ namespace ThinkNet.Kernel
     {
         private readonly Dictionary<int, ISet<IAggregateRoot>> dictionary;
         private readonly IEventBus eventBus;
+        private readonly ITextSerializer serializer;
 
-        public MemoryRepository(IEventBus eventBus)
+        public MemoryRepository(IEventBus eventBus, ITextSerializer serializer)
         {
             this.dictionary = new Dictionary<int, ISet<IAggregateRoot>>();
             this.eventBus = eventBus;
+            this.serializer = serializer;
         }
 
 
@@ -81,7 +84,9 @@ namespace ThinkNet.Kernel
             else {
                 eventBus.Publish(new EventStream(aggregateRoot.Id, type) {
                     CommandId = correlationId,
-                    Events = eventPublisher.Events
+                    Events = events.Select(item => new EventStream.Stream(item.GetType()) {
+                        Payload = serializer.Serialize(item)
+                    }).ToArray()
                 });
             }
             LogManager.GetLogger("ThinkNet").InfoFormat("publish all events. events: [{0}]", string.Join("|", 

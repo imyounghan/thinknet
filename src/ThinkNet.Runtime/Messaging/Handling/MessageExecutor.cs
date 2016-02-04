@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Practices.ServiceLocation;
 using ThinkLib.Logging;
+using ThinkLib.Serialization;
 using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
 
@@ -13,14 +14,16 @@ namespace ThinkNet.Messaging.Handling
     public class MessageExecutor : IMessageExecutor, IHandlerProvider
     {
         private readonly IHandlerRecordStore _handlerStore;
+        private readonly ITextSerializer _serializer;
         private readonly ILogger _logger;
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public MessageExecutor(IHandlerRecordStore handlerStore)
+        public MessageExecutor(IHandlerRecordStore handlerStore, ITextSerializer serializer)
         {
             this._handlerStore = handlerStore;
+            this._serializer = serializer;
             this._logger = LogManager.GetLogger("ThinkNet");
         }
 
@@ -37,8 +40,7 @@ namespace ThinkNet.Messaging.Handling
             }
 
             if (_logger.IsDebugEnabled)
-                _logger.DebugFormat("executing a message. data:{0}",
-                    DefaultTextSerializer.Instance.Serialize(message));
+                _logger.DebugFormat("executing a message. data:{0}", _serializer.Serialize(message));
 
             var messageHandlerType = messageHandler.GetInnerHandler().GetType();
             try {
@@ -82,22 +84,45 @@ namespace ThinkNet.Messaging.Handling
             var messageType = message.GetType();
             var messageHandlers = this.GetHandlers(messageType);
 
-            if (messageHandlers.IsEmpty()) {
-                var exception = new MessageHandlerNotFoundException(messageType);
-                LogManager.GetLogger("ThinkNet").Warn(exception.Message);
+            //if (messageHandlers.IsEmpty()) {
+            //    var exception = new MessageHandlerNotFoundException(messageType);
+            //    LogManager.GetLogger("ThinkNet").Warn(exception.Message);
 
-                throw exception;
+            //    throw exception;
+            //}
+
+            if (messageType.IsDefined<OnlyoneHandlerAttribute>(true)) {
+                Exception exception = null;
+                
+                switch (messageHandlers.Count()) {
+                    case 0:
+                        exception = new MessageHandlerNotFoundException(messageType);
+                        break;
+                    case 1:
+                        break;
+                    default:
+                        exception = new MessageHandlerTooManyException(messageType);
+                        break;
+                }
+
+                if (exception != null) {
+                    LogManager.GetLogger("ThinkNet").Error(exception.Message);
+                    throw exception;
+                }
             }
 
-            if (messageType.IsDefined<JustHandleOnceAttribute>(true) && messageHandlers.Count() > 1) {
-                var exception = new MessageHandlerTooManyException(messageType);
-                LogManager.GetLogger("ThinkNet").Error(exception.Message);
-
-                throw exception;
-            }
-
+            List<Exception> innerExceptions = new List<Exception>();
             foreach (var handler in messageHandlers) {
-                ProcessHandler(messageType, message, handler);
+                try {
+                    ProcessHandler(messageType, message, handler);
+                }
+                catch (Exception ex) {
+                    innerExceptions.Add(ex);
+                }                
+            }
+
+            if (innerExceptions.Count > 0) {
+                throw new AggregateException(innerExceptions);
             }
         }
 

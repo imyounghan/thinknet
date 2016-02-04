@@ -5,7 +5,8 @@ namespace ThinkNet.Messaging
     /// <summary>
     /// 表示继承该接口的类型是一个命令。
     /// </summary>
-    [JustHandleOnce]
+    [OnlyoneHandler]
+    [RequireHandler]
     public interface ICommand : IMessage
     {
         /// <summary>

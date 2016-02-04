@@ -8,6 +8,7 @@ namespace ThinkNet.Infrastructure
     /// 实现 <see cref="IEntity"/> 的抽象类
     /// </summary>
     [DataContract]
+    [Serializable]
     public abstract class Entity<TIdentify> : IEntity
     {
         protected Entity()

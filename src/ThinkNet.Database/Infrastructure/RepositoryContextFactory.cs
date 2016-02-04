@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ThinkLib.Common;
 using ThinkLib.Logging;
+using ThinkLib.Serialization;
 using ThinkNet.Database;
 using ThinkNet.Kernel;
 using ThinkNet.Messaging;
@@ -21,14 +22,16 @@ namespace ThinkNet.Infrastructure
             private readonly IDataContext _context;
             private readonly IEventBus _eventBus;
             private readonly IMemoryCache _cache;
+            private readonly ITextSerializer _serializer;
             private readonly ConcurrentDictionary<Type, object> _repositories;
 
-            public RepositoryContext(IDataContext context, IMemoryCache cache, IEventBus eventBus)
+            public RepositoryContext(IDataContext context, IMemoryCache cache, IEventBus eventBus, ITextSerializer serializer)
             {
                 this._repositories = new ConcurrentDictionary<Type, object>();
                 this._context = context;
                 this._cache = cache;
                 this._eventBus = eventBus;
+                this._serializer = serializer;
             }
 
             public void Commit()
@@ -55,7 +58,9 @@ namespace ThinkNet.Infrastructure
                     _eventBus.Publish(new EventStream
                     {
                         CommandId = correlationId,
-                        Events = events
+                        Events = events.Select(item => new EventStream.Stream(item.GetType()) {
+                            Payload = _serializer.Serialize(item)
+                        }).ToArray()
                     });
                 }                
             }
@@ -119,14 +124,16 @@ namespace ThinkNet.Infrastructure
         private readonly IDataContextFactory _dbContextFactory;
         private readonly IEventBus _eventBus;
         private readonly IMemoryCache _cache;
+        private readonly ITextSerializer _serializer;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public RepositoryContextFactory(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache)
+        public RepositoryContextFactory(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache, ITextSerializer serializer)
         {
             this._dbContextFactory = dbContextFactory;
             this._eventBus = eventBus;
             this._cache = cache;
+            this._serializer = serializer;
         }
 
         /// <summary>
@@ -134,7 +141,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public IRepositoryContext CreateRepositoryContext()
         {
-            return new RepositoryContext(_dbContextFactory.CreateDataContext(), _cache, _eventBus);
+            return new RepositoryContext(_dbContextFactory.CreateDataContext(), _cache, _eventBus, _serializer);
         }
 
         /// <summary>
@@ -144,7 +151,7 @@ namespace ThinkNet.Infrastructure
         {
             var dbContext = _dbContextFactory.GetCurrentDataContext();
 
-            return new RepositoryContext(dbContext, _cache, _eventBus);
+            return new RepositoryContext(dbContext, _cache, _eventBus, _serializer);
         }
 
 

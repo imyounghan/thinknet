@@ -33,7 +33,7 @@ namespace ThinkNet.Messaging
         {
             return TypeHelper.IsCommand(type);
         }
-        public Task<CommandResult> SendAsync(ICommand command, CommandReplyType commandReplyType)
+        public Task<CommandResult> Send(ICommand command, CommandReplyType commandReplyType)
         {
             var task = commandResultManager.RegisterCommand(command, commandReplyType);
 
@@ -52,7 +52,7 @@ namespace ThinkNet.Messaging
             var messages = commands.Select(Map).AsEnumerable();
             messageSender.SendAsync(messages, () => {
                 if (logger.IsDebugEnabled) {
-                    logger.DebugFormat("command sended. commands:{0}", Serialize(commands));
+                    logger.DebugFormat("command sended. commands:{0}.", string.Join(",", commands));
                 }
             }, (ex) => {
             });        

@@ -1,10 +1,12 @@
 ﻿using System;
-using ThinkNet.Kernel;
+using System.Runtime.Serialization;
+using ThinkNet.Messaging;
 
 namespace UserRegistration.Events
 {
+    [DataContract]
     [Serializable]
-    public class UserLogined : Event<Guid>
+    public class UserLogined : Event
     {
         public UserLogined(string loginid, string clientIp)
         {
@@ -13,11 +15,11 @@ namespace UserRegistration.Events
             this.LoginTime = DateTime.Now;
         }
 
+        [DataMember]
         public string LoginId { get; private set; }
-
-
+        [DataMember]
         public string ClientIP { get; private set; }
-
+        [DataMember]
         public DateTime LoginTime { get; private set; }
     }
 }

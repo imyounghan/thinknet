@@ -42,16 +42,7 @@ namespace ThinkNet.Messaging
             var messages = events.Select(Map).AsEnumerable();
             messageSender.SendAsync(messages, () => {
                 if (logger.IsDebugEnabled) {
-                    var list = new List<IEvent>();
-                    events.ForEach(@event => {
-                        var stream = @event as EventStream;
-                        if (stream != null)
-                            list.AddRange(stream.Events);
-                        else
-                            list.Add(@event);
-                    });
-
-                    logger.DebugFormat("event published. events:{0}", Serialize(list));
+                    logger.DebugFormat("event published. events:{0}.", string.Join(",", events));
                 }
             }, (ex) => {
             });

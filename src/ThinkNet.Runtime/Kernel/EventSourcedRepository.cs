@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ThinkLib.Common;
 using ThinkLib.Logging;
+using ThinkLib.Serialization;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
@@ -23,7 +24,7 @@ namespace ThinkNet.Kernel
         private readonly IEventBus _eventBus;
         private readonly IAggregateRootFactory _aggregateFactory;
         private readonly IBinarySerializer _binarySerializer;
-        //private readonly ITextSerializer _textSerializer;
+        private readonly ITextSerializer _textSerializer;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -35,7 +36,8 @@ namespace ThinkNet.Kernel
             IMemoryCache cache,
             IEventBus eventBus,
             IAggregateRootFactory aggregateFactory,
-            IBinarySerializer binarySerializer)
+            IBinarySerializer binarySerializer,
+            ITextSerializer textSerializer)
         {
             this._eventStore = eventStore;
             this._snapshotStore = snapshotStore;
@@ -44,7 +46,7 @@ namespace ThinkNet.Kernel
             this._eventBus = eventBus;
             this._aggregateFactory = aggregateFactory;
             this._binarySerializer = binarySerializer;
-            //this._textSerializer = textSerializer;
+            this._textSerializer = textSerializer;
             this._logger = LogManager.GetLogger("ThinkNet");
         }
 
@@ -136,7 +138,9 @@ namespace ThinkNet.Kernel
                 CommandId = correlationId,
                 StartVersion = events.Min(item => item.Version),
                 EndVersion = events.Max(item => item.Version),
-                Events = events
+                Events = events.Select(item => new EventStream.Stream(item.GetType()) {
+                    Payload = _textSerializer.Serialize(item)
+                }).ToArray()
             };
         }
 

@@ -11,7 +11,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 异步发送命令并返回结果
         /// </summary>
-        Task<CommandResult> SendAsync(ICommand command, CommandReplyType commandReplyType);
+        Task<CommandResult> Send(ICommand command, CommandReplyType commandReplyType);
 
         /// <summary>
         /// 异步发送命令

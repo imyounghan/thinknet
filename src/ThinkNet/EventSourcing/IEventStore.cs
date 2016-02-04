@@ -58,7 +58,7 @@ namespace ThinkNet.EventSourcing
 
         public bool EventPersisted(SourceKey sourceKey, string correlationId)
         {
-            return this.FindAll(sourceKey, correlationId).IsEmpty();
+            return !this.FindAll(sourceKey, correlationId).IsEmpty();
         }
 
         public IEnumerable<Stream> FindAll(SourceKey sourceKey, string correlationId)

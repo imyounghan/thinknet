@@ -55,13 +55,13 @@
     <Compile Include="Configurations\ConfigurationSetting.cs" />
     <Compile Include="Infrastructure\IAggregateRootFactory.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
-    <Compile Include="Infrastructure\ITextSerializer.cs" />
     <Compile Include="Infrastructure\MessageBrokerFactory.cs" />
     <Compile Include="Messaging\AbstractBus.cs" />
     <Compile Include="Messaging\CommandBus.cs" />
     <Compile Include="Messaging\EventBus.cs" />
+    <Compile Include="Messaging\Handling\IInterceptorProvider.cs" />
+    <Compile Include="Messaging\Handling\IProxyInterceptor.cs" />
     <Compile Include="Messaging\ICommandResultManager.cs" />
-    <Compile Include="Infrastructure\IBinarySerializer.cs" />
     <Compile Include="Messaging\Handling\IMessageExecutor.cs" />
     <Compile Include="Messaging\Handling\MessageExecutor.cs" />
     <Compile Include="Messaging\IMessageReceiver.cs" />
@@ -70,7 +70,6 @@
     <Compile Include="Messaging\Handling\MessageProcessor.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Infrastructure\SerializerExtensions.cs" />
     <Compile Include="Kernel\EventSourcedRepository.cs" />
     <Compile Include="Kernel\VersionedEventStream.cs" />
     <Compile Include="Messaging\Handling\HandlerWrapper.cs" />

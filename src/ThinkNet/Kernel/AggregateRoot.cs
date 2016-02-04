@@ -14,6 +14,7 @@ namespace ThinkNet.Kernel
     /// 实现 <see cref="IAggregateRoot"/> 的抽象类
     /// </summary>
     [DataContract]
+    [Serializable]
     public abstract class AggregateRoot<TIdentify> : Entity<TIdentify>, IEventSourced, IEventPublisher, ICloneable
     {
         /// <summary>

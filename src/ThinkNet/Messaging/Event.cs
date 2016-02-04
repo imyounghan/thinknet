@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkLib.Utilities;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
@@ -8,6 +8,7 @@ namespace ThinkNet.Messaging
     /// 实现 <see cref="IEvent"/> 的抽象类
     /// </summary>
     [DataContract]
+    [Serializable]
     public abstract class Event : IEvent
     {
         /// <summary>
@@ -21,7 +22,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected Event(string id)
         {
-            this.Id = id.Safe(GuidUtil.NewSequentialId().ToString());
+            this.Id = id.Safe(ObjectId.GenerateNewStringId());
         }
 
         /// <summary>

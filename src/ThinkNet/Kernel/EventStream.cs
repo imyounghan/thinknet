@@ -12,9 +12,72 @@ namespace ThinkNet.Kernel
     /// 事件流
     /// </summary>
     [DataContract]
-    [JustHandleOnce]
+    [Serializable]
+    [OnlyoneHandler]
     public class EventStream : Event
     {
+        [DataContract]
+        [Serializable]
+        public class Stream
+        {
+            public Stream()
+            { }
+
+            public Stream(Type sourceType)
+                : this(sourceType.Namespace,
+                sourceType.Name,
+                Path.GetFileNameWithoutExtension(sourceType.Assembly.ManifestModule.FullyQualifiedName))
+            { }
+
+            public Stream(string sourceTypeName)
+                : this(string.Empty, sourceTypeName, string.Empty)
+            { }
+            public Stream(string sourceNamespace, string sourceTypeName)
+                : this(sourceNamespace, sourceTypeName, string.Empty)
+            { }
+
+            public Stream(string sourceNamespace, string sourceTypeName, string sourceAssemblyName)
+            {
+                this.Namespace = sourceNamespace;
+                this.TypeName = sourceTypeName;
+                this.AssemblyName = sourceAssemblyName;
+            }
+
+            /// <summary>
+            /// 程序集
+            /// </summary>
+            [DataMember]
+            public string AssemblyName { get; set; }
+            /// <summary>
+            /// 命名空间
+            /// </summary>
+            [DataMember]
+            public string Namespace { get; set; }
+            /// <summary>
+            /// 类型名称(不包含全名空间)
+            /// </summary>
+            [DataMember]
+            public string TypeName { get; set; }
+
+            /// <summary>
+            /// 流数据
+            /// </summary>
+            [DataMember]
+            public string Payload { get; set; }
+
+            public override string ToString()
+            {
+                return string.Concat(this.Namespace, ".", this.TypeName);
+            }
+
+            public Type GetSourceType()
+            {
+                string typeFullName = string.Concat(this.Namespace, ".", this.TypeName, ", ", this.AssemblyName);
+
+                return Type.GetType(typeFullName);
+            }
+        }
+
         /// <summary>
         /// Default Constructor.
         /// </summary>
@@ -69,7 +132,7 @@ namespace ThinkNet.Kernel
         /// 事件源
         /// </summary>
         [DataMember]
-        public IEnumerable<IEvent> Events { get; set; }
+        public IEnumerable<Stream> Events { get; set; }
 
         protected override string GetSourceStringId()
         {
@@ -82,15 +145,7 @@ namespace ThinkNet.Kernel
         /// </summary>
         public override string ToString()
         {
-            string events = string.Join("|", Events.Select(item => item.ToString()));
-
-            return string.Format("EventId={0},CommandId={1},AggregateRootId={2},AggregateRootType={3}.{4},Events={5}",
-                Id,
-                CommandId,
-                SourceId,
-                SourceNamespace,
-                SourceTypeName,
-                events);
+            return string.Concat(string.Join("&", this.Events) , "|", this.SourceId, ":", this.CommandId);
         }
     }
 }

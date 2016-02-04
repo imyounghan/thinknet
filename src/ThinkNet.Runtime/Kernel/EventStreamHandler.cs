@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using ThinkLib.Scheduling;
+using ThinkLib.Serialization;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
@@ -17,16 +19,19 @@ namespace ThinkNet.Kernel
         private readonly IMessageExecutor _executor;
         private readonly IEventPublishedVersionStore _eventPublishedVersionStore;
         private readonly ICommandResultManager _commandResultManager;
+        private readonly ITextSerializer _serializer;
 
         private readonly BlockingCollection<VersionedEventStream> queue;
         private readonly Worker worker;
 
         public EventStreamHandler(IMessageExecutor executor,
             IEventPublishedVersionStore eventPublishedVersionStore,
+            ITextSerializer serializer,
             ICommandResultManager commandResultManager)
         {
             this._executor = executor;
             this._eventPublishedVersionStore = eventPublishedVersionStore;
+            this._serializer = serializer;
             this._commandResultManager = commandResultManager;
 
             //this.worker = WorkerFactory.Create(Retry);
@@ -55,12 +60,18 @@ namespace ThinkNet.Kernel
             try {
                 this.Handle(stream as EventStream);
             }
-            catch (Exception) {
+            catch (Exception ex) {
+                _commandResultManager.NotifyCommandCompleted(stream.CommandId, CommandStatus.Failed, ex);
                 throw;
             }
             finally {
                 _eventPublishedVersionStore.AddOrUpdatePublishedVersion(sourceKey, stream.StartVersion, stream.EndVersion);
             }
+        }
+
+        private object Deserialize(EventStream.Stream stream)
+        {
+            return _serializer.Deserialize(stream.Payload, stream.GetSourceType());
         }
 
         public void Handle(EventStream stream)
@@ -70,21 +81,19 @@ namespace ThinkNet.Kernel
                 return;
             }
 
-            Exception exception = null;
-            stream.Events.ForEach(@event => {
+            List<Exception> exceptions = new List<Exception>();
+            stream.Events.Select(Deserialize).OfType<IEvent>().ForEach(@event => {
                 try {
                     _executor.Execute(@event);
                 }
                 catch (Exception ex) {
-                    if (exception == null) {
-                        exception = ex;
-                    }
+                    exceptions.Add(ex);
                 }
             });
 
             _commandResultManager.NotifyCommandCompleted(stream.CommandId,
-                exception != null ? CommandStatus.Failed : CommandStatus.Success,
-                exception);
+                exceptions.Count > 0 ? CommandStatus.Failed : CommandStatus.Success,
+                new AggregateException(exceptions));
 
 
             //try {

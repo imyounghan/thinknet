@@ -1,9 +1,10 @@
-﻿using ThinkNet.Infrastructure;
+﻿using System.Collections.Generic;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
 {
     /// <summary>
-    /// 消息处理器
+    /// 消息处理器的代理
     /// </summary>
     public interface IProxyHandler
     {
