@@ -13,7 +13,7 @@ namespace ThinkNet.Kernel
     /// </summary>
     [DataContract]
     [Serializable]
-    [OnlyoneHandler]
+    [RequireHandler]
     public class EventStream : Event
     {
         [DataContract]

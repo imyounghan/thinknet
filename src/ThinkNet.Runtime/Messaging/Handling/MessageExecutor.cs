@@ -91,9 +91,9 @@ namespace ThinkNet.Messaging.Handling
             //    throw exception;
             //}
 
-            if (messageType.IsDefined<OnlyoneHandlerAttribute>(true)) {
+            if (messageType.IsDefined<RequireHandlerAttribute>(true)) {
                 Exception exception = null;
-                
+
                 switch (messageHandlers.Count()) {
                     case 0:
                         exception = new MessageHandlerNotFoundException(messageType);
@@ -101,7 +101,8 @@ namespace ThinkNet.Messaging.Handling
                     case 1:
                         break;
                     default:
-                        exception = new MessageHandlerTooManyException(messageType);
+                        if (!messageType.GetAttribute<RequireHandlerAttribute>(true).AllowMultiple)
+                            exception = new MessageHandlerTooManyException(messageType);
                         break;
                 }
 
@@ -131,29 +132,32 @@ namespace ThinkNet.Messaging.Handling
 
         public IEnumerable<IProxyHandler> GetHandlers(Type type)
         {
-            List<object> handlerlist = new List<object>();
+            List<IHandler> handlerlist = new List<IHandler>();
 
-            var handlerType = typeof(IMessageHandler<>).MakeGenericType(type);
-            var handlers = ServiceLocator.Current.GetAllInstances(handlerType);
+            var handlerType = typeof(IHandler<>).MakeGenericType(type);
+            var handlers = ServiceLocator.Current.GetAllInstances(handlerType).Cast<IHandler>();
             handlerlist.AddRange(handlers);
 
             if (TypeHelper.IsCommand(type)) {
                 handlerType = typeof(ICommandHandler<>).MakeGenericType(type);
-                handlers = ServiceLocator.Current.GetAllInstances(handlerType);
+                handlers = ServiceLocator.Current.GetAllInstances(handlerType).Cast<IHandler>();
                 handlerlist.AddRange(handlers);
             }
 
             if (TypeHelper.IsEvent(type)) {
                 handlerType = typeof(IEventHandler<>).MakeGenericType(type);
-                handlers = ServiceLocator.Current.GetAllInstances(handlerType);
+                handlers = ServiceLocator.Current.GetAllInstances(handlerType).Cast<IHandler>();
                 handlerlist.AddRange(handlers);
             }
 
+            if (handlerlist.Count == 0)
+                return Enumerable.Empty<IProxyHandler>();
 
-            return handlerlist.Select(handler => {
-                var handlerWrapperType = typeof(HandlerWrapper<>).MakeGenericType(type);
-                return Activator.CreateInstance(handlerWrapperType, new[] { handler });
-            }).OfType<IProxyHandler>().AsEnumerable();
+            return handlerlist.Select(handler => new HandlerWrapper(handler)).OfType<IProxyHandler>().AsEnumerable();
+            //return handlerlist.Select(handler => {
+            //    var handlerWrapperType = typeof(HandlerWrapper<>).MakeGenericType(type);
+            //    return Activator.CreateInstance(handlerWrapperType, new[] { handler });
+            //}).OfType<IProxyHandler>().AsEnumerable();
         }
 
         #endregion

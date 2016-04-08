@@ -2,7 +2,7 @@
 
 namespace ThinkNet.EventSourcing
 {
-    [RequiredComponent(typeof(NoneSnapshotStore))]
+    [UnderlyingComponent(typeof(NoneSnapshotStore))]
     /// <summary>
     /// 存储快照
     /// </summary>

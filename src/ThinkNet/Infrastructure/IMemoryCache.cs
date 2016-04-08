@@ -12,7 +12,7 @@ namespace ThinkNet.Infrastructure
     /// <summary>
     /// 设置或获取聚合的缓存接口
     /// </summary>
-    [RequiredComponent(typeof(MemoryCache))]
+    [UnderlyingComponent(typeof(MemoryCache))]
     public interface IMemoryCache
     {
         /// <summary>

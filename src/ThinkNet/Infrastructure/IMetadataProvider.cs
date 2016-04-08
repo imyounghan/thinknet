@@ -3,7 +3,7 @@ using ThinkLib.Common;
 
 namespace ThinkNet.Infrastructure
 {
-    [RequiredComponent(typeof(StandardMetadataProvider))]
+    [UnderlyingComponent(typeof(StandardMetadataProvider))]
     /// <summary>
     /// Extracts metadata about a payload so that it's placed in the message envelope.
     /// </summary>

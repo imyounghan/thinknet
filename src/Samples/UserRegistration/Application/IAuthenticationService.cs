@@ -5,7 +5,7 @@ using UserRegistration.Events;
 using UserRegistration.ReadModel;
 namespace UserRegistration.Application
 {
-    [RequiredComponent(typeof(AuthenticationService))]
+    [UnderlyingComponent(typeof(AuthenticationService))]
     public interface IAuthenticationService
     {
         bool Authenticate(string loginid, string password, string ip);

@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ThinkLib.Common;
-using ThinkLib.Scheduling;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
-    [RequiredComponent(typeof(DefaultMessageSender))]
+    [UnderlyingComponent(typeof(DefaultMessageSender))]
     public interface IMessageSender
     {
         void Send(Message message);

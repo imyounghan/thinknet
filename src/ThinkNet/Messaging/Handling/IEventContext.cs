@@ -1,7 +1,7 @@
 ﻿
 namespace ThinkNet.Messaging.Handling
 {
-    public interface IEventHandlingContext
+    public interface IEventContext
     {
         void AddCommand(ICommand command);
     }

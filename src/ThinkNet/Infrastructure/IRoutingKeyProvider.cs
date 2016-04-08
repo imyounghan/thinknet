@@ -3,7 +3,7 @@ using ThinkNet.Messaging;
 
 namespace ThinkNet.Infrastructure
 {
-    [RequiredComponent(typeof(DefaultRoutingKeyProvider))]
+    [UnderlyingComponent(typeof(DefaultRoutingKeyProvider))]
     public interface IRoutingKeyProvider
     {
         string GetRoutingKey(object payload);

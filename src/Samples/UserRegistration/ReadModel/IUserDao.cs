@@ -6,7 +6,7 @@ using ThinkNet.Database;
 
 namespace UserRegistration.ReadModel
 {
-    [RequiredComponent(typeof(UserDao))]
+    [UnderlyingComponent(typeof(UserDao))]
     public interface IUserDao
     {
         UserModel Find(string loginid);

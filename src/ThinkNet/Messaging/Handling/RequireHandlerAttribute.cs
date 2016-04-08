@@ -8,5 +8,19 @@ namespace ThinkNet.Messaging.Handling
     [Serializable]
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class, AllowMultiple = false)]
     public sealed class RequireHandlerAttribute : Attribute
-    { }
+    {
+
+        public RequireHandlerAttribute()
+        { }
+
+        public RequireHandlerAttribute(bool allowMultiple)
+        {
+            this.AllowMultiple = allowMultiple;
+        }
+
+        /// <summary>
+        /// 是否允许多个Handler
+        /// </summary>
+        public bool AllowMultiple { get; private set; }
+    }
 }

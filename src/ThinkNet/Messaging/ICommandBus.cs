@@ -8,10 +8,10 @@ namespace ThinkNet.Messaging
     /// </summary>
     public interface ICommandBus
     {
-        /// <summary>
-        /// 异步发送命令并返回结果
-        /// </summary>
-        Task<CommandResult> Send(ICommand command, CommandReplyType commandReplyType);
+        ///// <summary>
+        ///// 异步发送命令并返回结果
+        ///// </summary>
+        //Task<CommandResult> Send(ICommand command, CommandReplyType commandReplyType);
 
         /// <summary>
         /// 异步发送命令

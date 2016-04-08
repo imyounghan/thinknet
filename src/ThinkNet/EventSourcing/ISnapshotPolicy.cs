@@ -5,7 +5,7 @@ namespace ThinkNet.EventSourcing
     /// <summary>
     /// 表示生成聚合快照策略的接口
     /// </summary>
-    [RequiredComponent(typeof(NoneSnapshotPolicy))]
+    [UnderlyingComponent(typeof(NoneSnapshotPolicy))]
     public interface ISnapshotPolicy
     {
         /// <summary>

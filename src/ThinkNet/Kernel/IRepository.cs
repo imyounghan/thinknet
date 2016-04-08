@@ -11,7 +11,7 @@ namespace ThinkNet.Kernel
     /// <summary>
     /// 表示继承该接口的是一个仓储。
     /// </summary>
-    [RequiredComponent(typeof(MemoryRepository))]
+    [UnderlyingComponent(typeof(MemoryRepository))]
     public interface IRepository
     {
         /// <summary>

@@ -13,12 +13,12 @@ using ThinkNet.Messaging.Handling;
 namespace ThinkNet.Kernel
 {
     public class EventStreamHandler : 
-        IMessageHandler<VersionedEventStream>,
-        IMessageHandler<EventStream>
+        IHandler<VersionedEventStream>,
+        IHandler<EventStream>
     {
         private readonly IMessageExecutor _executor;
         private readonly IEventPublishedVersionStore _eventPublishedVersionStore;
-        private readonly ICommandResultManager _commandResultManager;
+        //private readonly ICommandResultManager _commandResultManager;
         private readonly ITextSerializer _serializer;
 
         private readonly BlockingCollection<VersionedEventStream> queue;
@@ -26,13 +26,13 @@ namespace ThinkNet.Kernel
 
         public EventStreamHandler(IMessageExecutor executor,
             IEventPublishedVersionStore eventPublishedVersionStore,
-            ITextSerializer serializer,
-            ICommandResultManager commandResultManager)
+            ITextSerializer serializer/*,
+            ICommandResultManager commandResultManager*/)
         {
             this._executor = executor;
             this._eventPublishedVersionStore = eventPublishedVersionStore;
             this._serializer = serializer;
-            this._commandResultManager = commandResultManager;
+            //this._commandResultManager = commandResultManager;
 
             //this.worker = WorkerFactory.Create(Retry);
             //this.queue = new BlockingCollection<VersionedEventStream>();
@@ -52,8 +52,8 @@ namespace ThinkNet.Kernel
             if (version + 1 != stream.StartVersion) { //如果当前的消息版本不是要处理的情况
                 if (stream.StartVersion > version + 1) //如果该消息的版本大于要处理的版本则重新进队列等待下次处理
                     queue.TryAdd(stream, 5000, worker.CancellationToken);
-                else
-                    _commandResultManager.NotifyCommandCompleted(stream.CommandId, CommandStatus.Success);
+                //else
+                //    _commandResultManager.NotifyCommandCompleted(stream.CommandId, CommandStatus.Success);
                 return;
             }
 
@@ -61,7 +61,7 @@ namespace ThinkNet.Kernel
                 this.Handle(stream as EventStream);
             }
             catch (Exception ex) {
-                _commandResultManager.NotifyCommandCompleted(stream.CommandId, CommandStatus.Failed, ex);
+                //_commandResultManager.NotifyCommandCompleted(stream.CommandId, CommandStatus.Failed, ex);
                 throw;
             }
             finally {
@@ -77,7 +77,7 @@ namespace ThinkNet.Kernel
         public void Handle(EventStream stream)
         {
             if (stream.Events.IsEmpty()) {
-                _commandResultManager.NotifyCommandCompleted(stream.CommandId, CommandStatus.NothingChanged);
+                //_commandResultManager.NotifyCommandCompleted(stream.CommandId, CommandStatus.NothingChanged);
                 return;
             }
 
@@ -91,9 +91,9 @@ namespace ThinkNet.Kernel
                 }
             });
 
-            _commandResultManager.NotifyCommandCompleted(stream.CommandId,
-                exceptions.Count > 0 ? CommandStatus.Failed : CommandStatus.Success,
-                new AggregateException(exceptions));
+            //_commandResultManager.NotifyCommandCompleted(stream.CommandId,
+            //    exceptions.Count > 0 ? CommandStatus.Failed : CommandStatus.Success,
+            //    new AggregateException(exceptions));
 
 
             //try {

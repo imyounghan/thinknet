@@ -2,7 +2,7 @@
 
 namespace ThinkNet.Messaging.Handling
 {
-    [RequiredComponent(typeof(MessageExecutor))]
+    [UnderlyingComponent(typeof(MessageExecutor))]
     public interface IMessageExecutor
     {
         /// <summary>

@@ -9,8 +9,10 @@ using UserRegistration.ReadModel;
 
 namespace UserRegistration.Handlers
 {
-    public class UserHandler : IMessageHandler<RegisterUser>,
-        IMessageHandler<UserCreated>, IMessageHandler<UserLogined>
+    public class UserHandler : 
+        IHandler<RegisterUser>,
+        IHandler<UserCreated>, 
+        IHandler<UserLogined>
     {
         private readonly IEventSourcedRepository _repository;
         private readonly IDataContextFactory _contextFactory;

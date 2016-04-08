@@ -121,7 +121,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public static bool IsMessageHandlerInterfaceType(Type type)
         {
-            return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IMessageHandler<>);
+            return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IHandler<>);
         }
         /// <summary>
         /// Check whether a type is a handler.
@@ -132,20 +132,20 @@ namespace ThinkNet.Infrastructure
                 type.GetInterfaces().Any(IsMessageHandlerInterfaceType);
         }
 
-        /// <summary>
-        /// Check whether a type is a interceptor type.
-        /// </summary>
-        public static bool IsIInterceptorInterfaceType(Type type)
-        {
-            return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IInterceptor<>);
-        }
-        /// <summary>
-        /// Check whether a type is a interceptor.
-        /// </summary>
-        public static bool IsIInterceptorType(Type type)
-        {
-            return type.IsClass && !type.IsAbstract &&
-                type.GetInterfaces().Any(IsIInterceptorInterfaceType);
-        }
+        ///// <summary>
+        ///// Check whether a type is a interceptor type.
+        ///// </summary>
+        //public static bool IsIInterceptorInterfaceType(Type type)
+        //{
+        //    return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IInterceptor<>);
+        //}
+        ///// <summary>
+        ///// Check whether a type is a interceptor.
+        ///// </summary>
+        //public static bool IsIInterceptorType(Type type)
+        //{
+        //    return type.IsClass && !type.IsAbstract &&
+        //        type.GetInterfaces().Any(IsIInterceptorInterfaceType);
+        //}
     }
 }

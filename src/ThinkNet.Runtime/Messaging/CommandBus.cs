@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using ThinkLib.Common;
 using ThinkLib.Logging;
 using ThinkNet.Infrastructure;
@@ -12,18 +11,18 @@ namespace ThinkNet.Messaging
     public class CommandBus : AbstractBus, ICommandBus
     {
         private readonly IMessageSender messageSender;
-        private readonly ICommandResultManager commandResultManager;
+        //private readonly ICommandResultManager commandResultManager;
         private readonly IRoutingKeyProvider routingKeyProvider;
         private readonly IMetadataProvider metadataProvider;
         private readonly ILogger logger;
 
         public CommandBus(IMessageSender messageSender,
-            ICommandResultManager commandResultManager,
+            //ICommandResultManager commandResultManager,
             IRoutingKeyProvider routingKeyProvider,
             IMetadataProvider metadataProvider)
         {
             this.messageSender = messageSender;
-            this.commandResultManager = commandResultManager;
+            //this.commandResultManager = commandResultManager;
             this.routingKeyProvider = routingKeyProvider;
             this.metadataProvider = metadataProvider;
             this.logger = LogManager.GetLogger("ThinkNet");
@@ -33,14 +32,14 @@ namespace ThinkNet.Messaging
         {
             return TypeHelper.IsCommand(type);
         }
-        public Task<CommandResult> Send(ICommand command, CommandReplyType commandReplyType)
-        {
-            var task = commandResultManager.RegisterCommand(command, commandReplyType);
+        //public Task<CommandResult> Send(ICommand command, CommandReplyType commandReplyType)
+        //{
+        //    var task = commandResultManager.RegisterCommand(command, commandReplyType);
 
-            this.Send(command);
+        //    this.Send(command);
 
-            return task;
-        }
+        //    return task;
+        //}
 
         public void Send(ICommand command)
         {

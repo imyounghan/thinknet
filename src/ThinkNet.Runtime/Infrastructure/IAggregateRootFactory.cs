@@ -11,7 +11,7 @@ namespace ThinkNet.Infrastructure
     /// <summary>
     /// 表示创建聚合根的接口
     /// </summary>
-    [RequiredComponent(typeof(DefaultAggregateRootFactory))]
+    [UnderlyingComponent(typeof(DefaultAggregateRootFactory))]
     public interface IAggregateRootFactory
     {
         /// <summary>

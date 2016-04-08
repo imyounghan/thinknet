@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ThinkNet.EventSourcing
 {
@@ -10,6 +11,21 @@ namespace ThinkNet.EventSourcing
     [Serializable]
     public struct SourceKey : IEquatable<SourceKey>
     {
+        public static readonly SourceKey Empty = new SourceKey();
+
+        public SourceKey(string str)
+        {
+            var match = Regex.Match(str, @"^([\w-\.]+)\.([\w-]+),\s([\w-]+)@([\w-]+)$");
+            if (!match.Success) {
+                throw new FormatException(str);
+            }
+
+            this.@namespace = match.Groups[1].Value;
+            this.typeName = match.Groups[2].Value;
+            this.assemblyName = match.Groups[3].Value;
+            this.sourceId = match.Groups[4].Value;
+        }
+
         public SourceKey(object sourceId, Type sourceType)
             : this(sourceId.ToString(),
             sourceType.Namespace,
@@ -23,6 +39,11 @@ namespace ThinkNet.EventSourcing
 
         public SourceKey(string sourceId, string sourceNamespace, string sourceTypeName, string sourceAssemblyName)
         {
+            ThinkLib.Common.Ensure.NotNullOrWhiteSpace(sourceId, "sourceId");
+            ThinkLib.Common.Ensure.NotNullOrWhiteSpace(sourceNamespace, "sourceNamespace");
+            ThinkLib.Common.Ensure.NotNullOrWhiteSpace(sourceTypeName, "sourceTypeName");
+            ThinkLib.Common.Ensure.NotNullOrWhiteSpace(sourceAssemblyName, "sourceAssemblyName");
+
             this.sourceId = sourceId;
             this.@namespace = sourceNamespace;
             this.typeName = sourceTypeName;            
@@ -69,15 +90,15 @@ namespace ThinkNet.EventSourcing
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();            
+            StringBuilder sb = new StringBuilder();
             if (!string.IsNullOrWhiteSpace(this.Namespace))
                 sb.Append(this.Namespace).Append(".");
             if (!string.IsNullOrWhiteSpace(this.TypeName))
                 sb.Append(this.TypeName);
             if (!string.IsNullOrWhiteSpace(this.AssemblyName))
                 sb.Append(", ").Append(this.AssemblyName);
-
-            sb.Append("@").Append(this.SourceId);
+            if (!string.IsNullOrWhiteSpace(this.SourceId))
+                sb.Append("@").Append(this.SourceId);
 
             return sb.ToString();
         }
@@ -132,5 +153,22 @@ namespace ThinkNet.EventSourcing
         }
 
         #endregion
+
+
+        public static SourceKey Parse(string input)
+        {
+            return new SourceKey(input);
+        }
+
+        public static bool TryParse(string input, out SourceKey result)
+        {
+            if (!Regex.IsMatch(input, @"^([\w-\.]+)\.([\w-]+),\s([\w-]+)@([\w-]+)$")) {
+                result = Empty;
+                return false;
+            }
+
+            result = Parse(input);
+            return true;
+        }
     }
 }

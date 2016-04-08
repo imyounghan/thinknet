@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Practices.ServiceLocation;
 using ThinkLib.Common;
 using ThinkNet.Configurations;
@@ -19,6 +20,8 @@ namespace UserRegistration
     {
         static void Main(string[] args)
         {
+           
+            
             Bootstrapper.Current.StartThinkNet().DoneWithUnity();
 
             //Dictionary<string, string> dict = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
@@ -40,7 +43,9 @@ namespace UserRegistration
 
             var commandBus = ServiceLocator.Current.GetInstance<ICommandBus>();
 
-            commandBus.Send(userRegister, CommandReplyType.DomainEventHandled).Wait();
+            commandBus.Send(userRegister);
+
+
 
             var userDao = ServiceLocator.Current.GetInstance<IUserDao>();
 

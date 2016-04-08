@@ -5,7 +5,7 @@ using ThinkLib.Common;
 
 namespace ThinkNet.EventSourcing
 {
-    [RequiredComponent(typeof(MemoryEventStore))]
+    [UnderlyingComponent(typeof(MemoryEventStore))]
     /// <summary>
     /// 事件存储。
     /// </summary>

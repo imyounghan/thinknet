@@ -10,6 +10,7 @@ namespace ThinkNet.Messaging.Handling
     {
         private readonly HashSet<HandlerRecordData> _handlerInfoSet = new HashSet<HandlerRecordData>();
 
+
         /// <summary>
         /// 移除超出期限的信息
         /// </summary>

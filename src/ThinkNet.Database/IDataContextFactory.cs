@@ -6,7 +6,7 @@ namespace ThinkNet.Database
     /// <summary>
     /// 创建数据上下文的工厂
     /// </summary>
-    [RequiredComponent(typeof(MemoryContextFactory))]
+    [UnderlyingComponent(typeof(MemoryContextFactory))]
     public interface IDataContextFactory
     {
         /// <summary>

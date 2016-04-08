@@ -6,7 +6,7 @@ using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
-    [RequiredComponent(typeof(DefaultMessageReceiver))]
+    [UnderlyingComponent(typeof(DefaultMessageReceiver))]
     public interface IMessageReceiver
     {
         /// <summary>

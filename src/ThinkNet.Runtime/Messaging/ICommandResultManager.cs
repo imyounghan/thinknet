@@ -5,7 +5,7 @@ using ThinkLib.Common;
 
 namespace ThinkNet.Messaging
 {
-    [RequiredComponent(typeof(DefaultCommandResultManager))]
+    [UnderlyingComponent(typeof(DefaultCommandResultManager))]
     /// <summary>
     /// 表示命令结果管理器的接口
     /// </summary>
