@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Data;
 using System.Linq;
+
 using ThinkLib.Common;
 using ThinkLib.Contexts;
 
@@ -34,28 +35,30 @@ namespace ThinkNet.Database
 
         private void Validate(object entity)
         {
-            if (entity is IValidatable) {
-                (entity as IValidatable).Validate(this);
+            var validation = entity as IValidatable<IDataContext>;
+            if (validation != null) {
+                validation.Validate(this);
             }
         }
-        private LifecycleVeto Callback(object entity, Func<ILifecycle, IDataContext, LifecycleVeto> action)
+        private LifecycleVeto Callback(object entity, Func<ILifecycle<IDataContext>, IDataContext, LifecycleVeto> action)
         {
-            if (entity is ILifecycle) {
-                return action(entity as ILifecycle, this);
+            var lifecycle = entity as ILifecycle<IDataContext>;
+            if (lifecycle != null) {
+                return action(lifecycle, this);
             }
             return LifecycleVeto.Accept;
         }
-        private static LifecycleVeto OnSaving(ILifecycle entity, IDataContext context)
+        private static LifecycleVeto OnSaving(ILifecycle<IDataContext> entity, IDataContext context)
         {
-            return (entity as ILifecycle).OnSaving(context);
+            return (entity as ILifecycle<IDataContext>).OnSaving(context);
         }
-        private static LifecycleVeto OnUpdating(ILifecycle entity, IDataContext context)
+        private static LifecycleVeto OnUpdating(ILifecycle<IDataContext> entity, IDataContext context)
         {
-            return (entity as ILifecycle).OnUpdating(context);
+            return (entity as ILifecycle<IDataContext>).OnUpdating(context);
         }
-        private static LifecycleVeto OnDeleting(ILifecycle entity, IDataContext context)
+        private static LifecycleVeto OnDeleting(ILifecycle<IDataContext> entity, IDataContext context)
         {
-            return (entity as ILifecycle).OnDeleting(context);
+            return (entity as ILifecycle<IDataContext>).OnDeleting(context);
         }
        
 
@@ -166,8 +169,8 @@ namespace ThinkNet.Database
         object IDataContext.Find(Type type, object id)
         {
             var entity = this.Find(type, id);
-            if (entity != null && entity is ILifecycle) {
-                (entity as ILifecycle).OnLoaded(this);
+            if (entity != null && entity is ILifecycle<IDataContext>) {
+                (entity as ILifecycle<IDataContext>).OnLoaded(this);
             }
 
             return entity;
@@ -179,9 +182,9 @@ namespace ThinkNet.Database
         object IDataContext.Find(Type type, params object[] keyValues)
         {
             var entity = this.Find(type, keyValues);
-            if (entity != null && entity is ILifecycle)
+            if (entity != null && entity is ILifecycle<IDataContext>)
             {
-                (entity as ILifecycle).OnLoaded(this);
+                (entity as ILifecycle<IDataContext>).OnLoaded(this);
             }
 
             return entity;

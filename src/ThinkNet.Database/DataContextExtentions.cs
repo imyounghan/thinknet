@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ThinkNet.Infrastructure;
+using ThinkLib.Common;
 
 namespace ThinkNet.Database
 {

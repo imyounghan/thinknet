@@ -22,7 +22,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected Event(string id)
         {
-            this.Id = id.Safe(ObjectId.GenerateNewStringId());
+            this.Id = id.DefaultIfEmpty(ObjectId.GenerateNewStringId());
         }
 
         /// <summary>

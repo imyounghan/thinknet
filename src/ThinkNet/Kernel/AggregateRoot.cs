@@ -84,7 +84,7 @@ namespace ThinkNet.Kernel
                     throw new EventSourcedException(errorMessage);
                 }
 
-                var log = LogManager.GetLogger("ThinkNet");
+                var log = LogManager.GetLogger("ThinkZoo");
                 if (log.IsWarnEnabled)
                     log.Warn(errorMessage);
                 return;
@@ -95,7 +95,7 @@ namespace ThinkNet.Kernel
         private void CheckEvent(IVersionedEvent @event)
         {
             if (@event.Version == 1 && this.Id.Equals(default(TIdentify)))
-                this.Id = @event.SourceId.To<TIdentify>();
+                this.Id = @event.SourceId.Change<TIdentify>();
 
             if (@event.Version > 1 && this.Id.ToString() != @event.SourceId)
                 throw new EventSourcedException(@event.SourceId, this.Id.ToString());

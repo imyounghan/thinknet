@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using ThinkLib.Common;
-using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
+using ThinkLib.Common;
+using ThinkLib.Logging;
 
 
 namespace ThinkNet.Messaging.Handling
@@ -14,6 +14,7 @@ namespace ThinkNet.Messaging.Handling
         private readonly IMessageReceiver receiver;
         private readonly IMessageExecutor executor;
         private readonly MessageBroker broker;
+        private readonly ILogger _logger;
         
         private readonly object lockObject = new object();
         private bool started = false;
@@ -27,6 +28,7 @@ namespace ThinkNet.Messaging.Handling
             this.receiver = receiver;
             this.executor = executor;
             this.broker = MessageBrokerFactory.Instance.GetOrCreate("message");
+            this._logger = LogManager.GetLogger("ThinkZoo");
         }
 
         /// <summary>
@@ -89,6 +91,8 @@ namespace ThinkNet.Messaging.Handling
                 executor.Execute(message);
             }
             catch (Exception ex) {
+                _logger.Error("An exception happened while processing message through handler", ex);
+                _logger.Warn("Error will be ignored and message receiving will continue.");
                 //commandResultManager.NotifyCommandExecuted(command.Id, CommandStatus.Failed, ex);
                 // NOTE: we catch ANY exceptions as this is for local 
                 // development/debugging. The Windows Azure implementation 

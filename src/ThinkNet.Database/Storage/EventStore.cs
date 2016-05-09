@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkLib.Common;
 using ThinkNet.EventSourcing;
+using ThinkLib.Common;
 
 
 namespace ThinkNet.Database.Storage
@@ -26,7 +26,7 @@ namespace ThinkNet.Database.Storage
 
         public void Save(SourceKey sourceKey, string correlationId, IEnumerable<Stream> events)
         {
-            Ensure.NotNullOrWhiteSpace(correlationId, "correlationId");
+            correlationId.NotNullOrWhiteSpace("correlationId");
 
             var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
@@ -34,7 +34,7 @@ namespace ThinkNet.Database.Storage
             var datas = events.Select(item => new Event {
                 AggregateRootId = sourceKey.SourceId,
                 AggregateRootTypeCode = aggregateRootTypeCode,
-                AggregateRootTypeName = string.Concat(aggregateRootTypeName, ", ", sourceKey.AssemblyName),
+                AggregateRootTypeName = aggregateRootTypeName,//string.Concat(aggregateRootTypeName, ", ", sourceKey.AssemblyName),
                 Version = item.Version,
                 CorrelationId = correlationId,
                 Payload = item.Payload,
@@ -55,7 +55,7 @@ namespace ThinkNet.Database.Storage
 
         IEnumerable<Stream> IEventStore.FindAll(SourceKey sourceKey, string correlationId)
         {
-            Ensure.NotNullOrWhiteSpace(correlationId, "correlationId");
+            correlationId.NotNullOrWhiteSpace("correlationId");
 
             var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();

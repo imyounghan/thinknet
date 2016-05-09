@@ -1,6 +1,6 @@
-﻿using ThinkLib.Logging;
-using ThinkNet.Database;
+﻿using ThinkNet.Database;
 using ThinkNet.Kernel;
+using ThinkLib.Logging;
 
 namespace ThinkNet.Infrastructure
 {
@@ -32,7 +32,7 @@ namespace ThinkNet.Infrastructure
 
         private readonly IDataContext _context;
         private readonly IMemoryCache _cache;
-
+        private readonly ILogger _logger;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
@@ -47,6 +47,7 @@ namespace ThinkNet.Infrastructure
         {
             this._context = context;
             this._cache = cache;
+            this._logger = LogManager.GetLogger("ThinkZoo");
         }
 
         /// <summary>
@@ -80,7 +81,7 @@ namespace ThinkNet.Infrastructure
                 Cache.Set(aggregateRoot, aggregateRoot.Id);
             };
 
-            LogManager.GetLogger("ThinkNet").InfoFormat("the aggregate root {0} of id {1} is added the dbcontext.",
+            _logger.InfoFormat("the aggregate root {0} of id {1} is added the dbcontext.",
                     typeof(TAggregateRoot).FullName, aggregateRoot.Id);
         }
 
@@ -99,7 +100,7 @@ namespace ThinkNet.Infrastructure
                 Cache.Remove(typeof(TAggregateRoot), aggregateRoot.Id);
             };
 
-            LogManager.GetLogger("ThinkNet").InfoFormat("remove the aggregate root {0} of id {1} in dbcontext.",
+            _logger.InfoFormat("remove the aggregate root {0} of id {1} in dbcontext.",
                    typeof(TAggregateRoot).FullName, aggregateRoot.Id);
         }
 
@@ -117,13 +118,13 @@ namespace ThinkNet.Infrastructure
             if (aggregateRoot == null) {
                 aggregateRoot = this.Find(id);
 
-                LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root '{0}' of id '{1}' from storage.",
+                _logger.InfoFormat("find the aggregate root '{0}' of id '{1}' from storage.",
                     typeof(TAggregateRoot).FullName, id);
 
                 Cache.Set(aggregateRoot, aggregateRoot.Id);
             }
             else {
-                LogManager.GetLogger("ThinkNet").InfoFormat("find the aggregate root '{0}' of id '{1}' from cache.",
+                _logger.InfoFormat("find the aggregate root '{0}' of id '{1}' from cache.",
                         typeof(TAggregateRoot).FullName, id);
 
 

@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Web.Script.Serialization;
 using ThinkLib.Common;
-using ThinkLib.Serialization;
-using ThinkNet.Infrastructure;
 
 
 namespace ThinkNet.Messaging

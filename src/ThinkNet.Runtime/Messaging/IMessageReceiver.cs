@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ThinkNet.Infrastructure;
 using ThinkLib.Common;
 using ThinkLib.Scheduling;
-using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {

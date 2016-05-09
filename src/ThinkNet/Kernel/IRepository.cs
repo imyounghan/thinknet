@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ThinkNet.Messaging;
 using ThinkLib.Common;
 using ThinkLib.Logging;
 using ThinkLib.Serialization;
-using ThinkNet.Messaging;
 
 namespace ThinkNet.Kernel
 {
@@ -89,7 +89,7 @@ namespace ThinkNet.Kernel
                     }).ToArray()
                 });
             }
-            LogManager.GetLogger("ThinkNet").InfoFormat("publish all events. events: [{0}]", string.Join("|", 
+            LogManager.GetLogger("ThinkZoo").InfoFormat("publish all events. events: [{0}]", string.Join("|",
                 events.Select(@event => @event.ToString())));
         }
 

@@ -8,7 +8,7 @@ namespace ThinkNet.Database
     /// <summary>
     /// 查询表达式
     /// </summary>
-    public class Criteria<T> : ICriteria<T> 
+    public class Criteria<T> : ICriteria<T>
         where T : class
     {
         /// <summary>
@@ -16,7 +16,7 @@ namespace ThinkNet.Database
         /// </summary>
         public static Criteria<T> Eval(Expression<Func<T, bool>> expression)
         {
-            Ensure.NotNull(expression, "expression");
+            expression.NotNull("expression");
 
             return new Criteria<T>(expression);
         }
@@ -44,7 +44,7 @@ namespace ThinkNet.Database
         /// <returns></returns>
         public Criteria<T> And(Expression<Func<T, bool>> expression)
         {
-            Ensure.NotNull(expression, "expression");
+            expression.NotNull("expression");
 
             expressions = expressions.And(expression);
 
@@ -72,7 +72,7 @@ namespace ThinkNet.Database
         /// <returns></returns>
         public Criteria<T> AndNot(Expression<Func<T, bool>> expression)
         {
-            Ensure.NotNull(expression, "expression");
+            expression.NotNull("expression");
 
             expressions = expressions.And(expression.Not());
 
@@ -85,7 +85,7 @@ namespace ThinkNet.Database
         /// <returns></returns>
         public Criteria<T> Or(Expression<Func<T, bool>> expression)
         {
-            Ensure.NotNull(expression, "expression");
+            expression.NotNull("expression");
 
             expressions = expressions.Or(expression);
 
@@ -114,7 +114,7 @@ namespace ThinkNet.Database
 
         IQueryable<T> ICriteria<T>.Filtered(IQueryable<T> enumerable)
         {
-            if (expressions == null) 
+            if (expressions == null)
                 return enumerable;
 
             return enumerable.Where(expressions);

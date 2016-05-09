@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ThinkNet.Infrastructure;
 using ThinkLib.Common;
 using ThinkLib.Logging;
-using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
@@ -25,7 +25,7 @@ namespace ThinkNet.Messaging
             //this.commandResultManager = commandResultManager;
             this.routingKeyProvider = routingKeyProvider;
             this.metadataProvider = metadataProvider;
-            this.logger = LogManager.GetLogger("ThinkNet");
+            this.logger = LogManager.GetLogger("ThinkZoo");
         }
 
         protected override bool SearchMatchType(Type type)

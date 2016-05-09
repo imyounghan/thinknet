@@ -36,7 +36,7 @@ namespace ThinkNet.Database
         /// <param name="expression"></param>
         public static SortSet<T> OrderBy(Expression<Func<T, dynamic>> expression)
         {
-            Ensure.NotNull(expression, "expression");
+            expression.NotNull("expression");
 
             return new SortSet<T>().Add(new SortItem(expression, SortOrder.Ascending));
         }
@@ -46,7 +46,7 @@ namespace ThinkNet.Database
         /// <param name="expression">排序列</param>
         public static SortSet<T> OrderByDescending(Expression<Func<T, dynamic>> expression)
         {
-            Ensure.NotNull(expression, "expression");
+            expression.NotNull("expression");
 
             return new SortSet<T>().Add(new SortItem(expression, SortOrder.Descending));
         }
@@ -57,7 +57,7 @@ namespace ThinkNet.Database
         /// <param name="expression"></param>
         public SortSet<T> ThenBy(Expression<Func<T, dynamic>> expression)
         {
-            Ensure.NotNull(expression, "expression");
+            expression.NotNull("expression");
 
             return this.Add(new SortItem(expression, SortOrder.Ascending));
         }
@@ -67,7 +67,7 @@ namespace ThinkNet.Database
         /// <param name="expression">排序列</param>
         public SortSet<T> ThenByDescending(Expression<Func<T, dynamic>> expression)
         {
-            Ensure.NotNull(expression, "expression");
+            expression.NotNull("expression");
 
             return this.Add(new SortItem(expression, SortOrder.Descending));
         }

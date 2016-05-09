@@ -418,76 +418,6 @@
             表示该对象已释放的异常
             </summary>
         </member>
-        <member name="T:ThinkLib.Common.Ensure">
-            <summary>
-            参数约定
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.NotNull(System.Object,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的值不能是 null。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.NotEmpty(System.String,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的字符串不能 <see cref="F:System.String.Empty"/> 字符串。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.NotNullOrEmpty(System.String,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的字符串不能是 null 或 <see cref="F:System.String.Empty"/> 字符串。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.NotWhiteSpace(System.String,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的字符串不能是空白字符串。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.NotNullOrWhiteSpace(System.String,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的字符串不能是 null 或 空白字符串。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.Positive(System.Int32,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的数值必须是正整数。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.Positive(System.Int64,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的数值必须是正整数。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.Nonnegative(System.Int64,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的数值不能是负数。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.Nonnegative(System.Int32,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的数值不能是负数。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.NotEmptyGuid(System.Guid,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的标识符不能是均为零的标识。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.Equal(System.Int32,System.Int32,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的变量值 <paramref name="expected" /> 必须与 <paramref name="actual" /> 相等。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.Equal(System.Int64,System.Int64,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的变量值 <paramref name="expected" /> 必须与 <paramref name="actual" /> 相等。
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.Ensure.Equal(System.Boolean,System.Boolean,System.String)">
-            <summary>
-            参数名称为 <paramref name="variableName"/> 的变量值 <paramref name="expected" /> 必须与 <paramref name="actual" /> 相等。
-            </summary>
-        </member>
         <member name="T:ThinkLib.Common.IInitializer">
             <summary>
             应用程序初始化接口
@@ -556,6 +486,50 @@
         <member name="P:ThinkLib.Common.LifeCycleAttribute.Lifetime">
             <summary>
             返回生命周期类型(默认为Singleton)
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Common.PageResult`1">
+            <summary>
+            表示分页数据
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Common.PageResult`1.Empty">
+            <summary>
+            空数据
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Common.PageResult`1.#ctor(System.Int32,System.Int32,System.Int32,System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            构造实例
+            </summary>
+            <param name="totalRecords">总记录个数</param>
+            <param name="pageSize">每页显示记录</param>
+            <param name="pageIndex">当前页索引</param>
+            <param name="data">页面数据</param>
+        </member>
+        <member name="P:ThinkLib.Common.PageResult`1.TotalRecords">
+            <summary>
+            获取或设置总记录数。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.PageResult`1.TotalPages">
+            <summary>
+            获取或设置页数。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.PageResult`1.PageSize">
+            <summary>
+            获取或设置页面大小。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.PageResult`1.PageIndex">
+            <summary>
+            获取或设置页码。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Common.PageResult`1.Data">
+            <summary>
+            获取或设置页面数据
             </summary>
         </member>
         <member name="T:ThinkLib.Common.RegisterComponentAttribute">
@@ -663,7 +637,7 @@
             当前访问的上下文接口
             </summary>
         </member>
-        <member name="M:ThinkLib.Contexts.ICurrentContext.CurrentContext">
+        <member name="M:ThinkLib.Contexts.ICurrentContext.GetContext">
             <summary>
             获取当前的上下文
             </summary>
@@ -716,6 +690,56 @@
         <member name="P:ThinkLib.Contexts.IContext.ContextManager">
             <summary>
             获取当前的Manager
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Contexts.ILifecycle`1">
+            <summary>
+            对象生命周期调用
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Contexts.ILifecycle`1.OnSaving(`0)">
+            <summary>
+            Insert前回调
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Contexts.ILifecycle`1.OnUpdating(`0)">
+            <summary>
+            Update前回调
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Contexts.ILifecycle`1.OnDeleting(`0)">
+            <summary>
+            Delete前回调
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Contexts.ILifecycle`1.OnLoaded(`0)">
+            <summary>
+            Load后回调
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Contexts.IValidatable`1">
+            <summary>
+            实体验证接口
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Contexts.IValidatable`1.Validate(`0)">
+            <summary>
+            持久化之前验证
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Contexts.LifecycleVeto">
+            <summary>
+            生命周期状态
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Contexts.LifecycleVeto.Accept">
+            <summary>
+            接受
+            </summary>
+        </member>
+        <member name="F:ThinkLib.Contexts.LifecycleVeto.Veto">
+            <summary>
+            否决
             </summary>
         </member>
         <member name="T:System.Collections.Concurrent.ConcurrentDictionaryExtensions">
@@ -1052,6 +1076,66 @@
             对 基础类型 的扩展
             </summary>
         </member>
+        <member name="M:System.ObjectExtentions.NotNull(System.Object,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的值不能是 null。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.NotEmpty(System.String,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的字符串不能 <see cref="F:System.String.Empty"/> 字符串。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.NotNullOrEmpty(System.String,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的字符串不能是 null 或 <see cref="F:System.String.Empty"/> 字符串。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.NotWhiteSpace(System.String,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的字符串不能是空白字符串。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.NotNullOrWhiteSpace(System.String,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的字符串不能是 null 或 空白字符串。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.MustPositive(System.Int32,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值必须是正整数。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.MustPositive(System.Int64,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值必须是正整数。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.MustPositive(System.Decimal,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值必须是正整数。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.NonNegative(System.Int64,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值不能是负数。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.NonNegative(System.Int32,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值不能是负数。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.NonNegative(System.Decimal,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的数值不能是负数。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.NotEmptyGuid(System.Guid,System.String)">
+            <summary>
+            参数名称为 <paramref name="variableName"/> 的标识符不能是均为零的标识。
+            </summary>
+        </member>
         <member name="M:System.ObjectExtentions.IsNull(System.Object)">
             <summary>
             检查当前对象是否为 null
@@ -1087,19 +1171,24 @@
             返回 URL 字符串的解码结果
             </summary>
         </member>
-        <member name="M:System.ObjectExtentions.Safe(System.String,System.String)">
+        <member name="M:System.ObjectExtentions.DefaultIfEmpty(System.String,System.String)">
+            <summary>
+            如果当前的字符串为空，则返回安全值
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.DefaultIfEmpty(System.String,System.Func{System.String})">
             <summary>
             如果当前的字符串为空，则返回安全值
             </summary>
         </member>
         <member name="M:System.ObjectExtentions.BeforeContact(System.String,System.String)">
             <summary>
-            如果当前的字符串不为空，则返回安全值
+            如果当前的字符串不为空，则返回加前缀后的字符串
             </summary>
         </member>
         <member name="M:System.ObjectExtentions.AfterContact(System.String,System.String)">
             <summary>
-            如果当前的字符串不为空，则返回安全值
+            如果当前的字符串不为空，则返回加后缀后的字符串
             </summary>
         </member>
         <member name="M:System.ObjectExtentions.TrueLength(System.String,System.String)">
@@ -1112,7 +1201,7 @@
             返回字符串真实长度
             </summary>
         </member>
-        <member name="M:System.ObjectExtentions.Cutting(System.String,System.Int32,System.String)">
+        <member name="M:System.ObjectExtentions.Cut(System.String,System.Int32,System.String)">
             <summary>
             取指定长度的字符串，超过部分替代
             </summary>
@@ -1186,16 +1275,6 @@
             判断是否为IPv4地址
             </summary>
         </member>
-        <member name="M:System.ObjectExtentions.To``1(System.String,``0)">
-            <summary>
-            将字符串 <param name="str" /> 转换为 <typeparam name="T" /> 的值。如果转换失败则使用 <param name="default" />
-            </summary>
-        </member>
-        <member name="M:System.ObjectExtentions.TryParse(System.String,System.Type,System.Object@)">
-            <summary>
-            将字符串 <param name="str" /> 转换为 <param name="targetType" /> 的值。一个指示转换是否成功的返回值 <param name="result" />。
-            </summary>
-        </member>
         <member name="M:System.ObjectExtentions.InIPArray(System.String,System.String[])">
             <summary>
             返回指定IP是否在指定的IP数组所限定的范围内, IP数组内的IP地址可以使用*表示该IP段任意, 例如192.168.1.*
@@ -1204,18 +1283,44 @@
             <param name="iparray">IP地址范围</param>
             <returns>判断结果</returns>
         </member>
-        <member name="M:System.ObjectExtentions.MapTo``1(System.Object)">
+        <member name="M:System.ObjectExtentions.Change(System.Object,System.Type)">
+            <summary>
+            将 <param name="obj" /> 转换为 <param name="targetType" /> 的值。转换失败会抛异常
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.TryChange``1(System.Object,``0@)">
+            <summary>
+            将 <param name="obj" /> 转换为 <typeparam name="T" /> 的值。一个指示转换是否成功的返回值 <param name="result" />。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.Change``1(System.Object)">
+            <summary>
+            将 <param name="obj" /> 转换为 <typeparam name="T" /> 的值。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.Change``1(System.Object,``0)">
+            <summary>
+            将 <param name="obj" /> 转换为 <typeparam name="T" /> 的值。如果转换失败则使用 <param name="defaultValue" /> 的值。
+            </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.Map``1(System.Object)">
             <summary>
             Create an object from the source object.
             </summary>
         </member>
-        <member name="M:System.ObjectExtentions.MapTo``2(``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+        <member name="M:System.ObjectExtentions.Map``2(``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
             <summary>Create an object from the source object, assign the properties by the same name.
             </summary>
         </member>
-        <member name="M:System.ObjectExtentions.MapTo``2(``0,``1,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+        <member name="M:System.ObjectExtentions.Map``2(``0,``1,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
             <summary>Update the target object by the source object, assign the properties by the same name.
             </summary>
+        </member>
+        <member name="M:System.ObjectExtentions.FormatBytes(System.Int32)">
+            <summary>
+            格式化字节数字符串
+            </summary>
+            <param name="bytes">字节数</param>
         </member>
         <member name="T:System.Threading.ReaderWriterLockSlimExtensions">
             <summary>
@@ -2091,15 +2196,6 @@
             建立请求，以模拟远程HTTP的GET请求方式构造并获取处理结果
             </summary>
         </member>
-        <member name="T:ThinkLib.Utilities.LockUtil">
-            <summary>
-            A class provide the functionality to lock object by value object.
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Utilities.LockUtil.Lock(System.Object,System.Action)">
-            <summary>Lock an action by a given key value object.
-            </summary>
-        </member>
         <member name="T:ThinkLib.Utilities.RandomUtil">
             <summary>
             生成随机数工具类
@@ -2113,52 +2209,6 @@
         <member name="M:ThinkLib.Utilities.RandomUtil.GenerateNum(System.Int32)">
             <summary>
             随机数字
-            </summary>
-        </member>
-        <member name="T:ThinkLib.Common.TypeConverter">
-            <summary>
-            Types conversion.
-            A "smart" extension to System.Convert (at least that's what we hope)
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.TypeConverter.ToNumber(System.Object,System.Type)">
-            <summary>
-            Convert a value to a number
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.TypeConverter.ToEnum(System.Object,System.Type)">
-            <summary>
-            Converts a value to an enum
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.TypeConverter.ToBoolean(System.Object)">
-            <summary>
-            Converts a value to a boolean
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.TypeConverter.ToString(System.Object)">
-            <summary>
-            Converts a value to a string
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.TypeConverter.ToChar(System.Object)">
-            <summary>
-            Converts a value to a chars
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.TypeConverter.ToGuid(System.Object)">
-            <summary>
-            Converts a value to a guid
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.TypeConverter.To(System.Object,System.Type)">
-            <summary>
-            Converts a value to an object
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Common.TypeConverter.To``1(System.Object)">
-            <summary>
-            Converts a value to an object type of <typeparam name="T" />
             </summary>
         </member>
     </members>

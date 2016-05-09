@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Practices.ServiceLocation;
-using ThinkLib.Logging;
-using ThinkLib.Serialization;
 using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
+using ThinkLib.Logging;
+using ThinkLib.Serialization;
 
 
 namespace ThinkNet.Messaging.Handling
@@ -24,7 +24,7 @@ namespace ThinkNet.Messaging.Handling
         {
             this._handlerStore = handlerStore;
             this._serializer = serializer;
-            this._logger = LogManager.GetLogger("ThinkNet");
+            this._logger = LogManager.GetLogger("ThinkZoo");
         }
 
 

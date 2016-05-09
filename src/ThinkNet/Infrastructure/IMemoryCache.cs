@@ -40,7 +40,7 @@ namespace ThinkNet.Infrastructure
         public MemoryCache()
         {
             this._serializer = new BinaryFormatter();
-            this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].To(false);
+            this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].Change(false);
         }
 
         private byte[] Serialize(object obj)
@@ -66,17 +66,13 @@ namespace ThinkNet.Infrastructure
             if (!_enabled)
                 return null;
 
-            Ensure.NotNull(type, "type");
-            Ensure.NotNull(key, "key");
-
+            type.NotNull("type");
+            key.NotNull("key");
 
             string cacheRegion = GetCacheRegion(type);
             string cacheKey = BuildCacheKey(type, key);
 
-            object data = null;
-            lock (cacheKey) {
-                data = CacheManager.GetCache(cacheRegion).Get(cacheKey);
-            }
+            object data = CacheManager.GetCache(cacheRegion).Get(cacheKey);
             if (data == null)
                 return null;
 
@@ -90,8 +86,8 @@ namespace ThinkNet.Infrastructure
             if (!_enabled)
                 return;
 
-            Ensure.NotNull(entity, "entity");
-            Ensure.NotNull(key, "key");
+            entity.NotNull("entity");
+            key.NotNull("key");
 
             var type = entity.GetType();
 
@@ -99,10 +95,7 @@ namespace ThinkNet.Infrastructure
             string cacheKey = BuildCacheKey(type, key);
 
             var data = this.Serialize(entity);
-
-            lock (cacheKey) {
-                CacheManager.GetCache(cacheRegion).Put(cacheKey, data);
-            }
+            CacheManager.GetCache(cacheRegion).Put(cacheKey, data);
         }
         /// <summary>
         /// 从缓存中移除
@@ -112,15 +105,13 @@ namespace ThinkNet.Infrastructure
             if (!_enabled)
                 return;
 
-            Ensure.NotNull(type, "type");
-            Ensure.NotNull(key, "key");
+            type.NotNull("type");
+            key.NotNull("key");
 
             string cacheRegion = GetCacheRegion(type);
             string cacheKey = BuildCacheKey(type, key);
 
-            lock (cacheKey) {
-                CacheManager.GetCache(cacheRegion).Remove(cacheKey);
-            }
+            CacheManager.GetCache(cacheRegion).Remove(cacheKey);
         }
 
 

@@ -2,12 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkLib.Scheduling;
-using ThinkLib.Serialization;
 using ThinkNet.EventSourcing;
-using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
+using ThinkLib.Scheduling;
+using ThinkLib.Serialization;
 
 
 namespace ThinkNet.Kernel
@@ -60,7 +59,7 @@ namespace ThinkNet.Kernel
             try {
                 this.Handle(stream as EventStream);
             }
-            catch (Exception ex) {
+            catch (Exception) {
                 //_commandResultManager.NotifyCommandCompleted(stream.CommandId, CommandStatus.Failed, ex);
                 throw;
             }

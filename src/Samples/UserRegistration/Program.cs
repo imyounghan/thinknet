@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Practices.ServiceLocation;
-using ThinkLib.Common;
 using ThinkNet.Configurations;
-using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
+using ThinkLib.Common;
 using UserRegistration.Application;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
@@ -32,7 +28,7 @@ namespace UserRegistration
             //    dict.Add(id, id);
             //    Console.WriteLine(id);
             //}
-
+            System.Threading.Thread.Sleep(2000);
 
             var userRegister = new RegisterUser {
                 UserName = "老韩",
@@ -44,7 +40,6 @@ namespace UserRegistration
             var commandBus = ServiceLocator.Current.GetInstance<ICommandBus>();
 
             commandBus.Send(userRegister);
-
 
 
             var userDao = ServiceLocator.Current.GetInstance<IUserDao>();

@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using ThinkLib.Common;
-using ThinkLib.Logging;
-using ThinkLib.Serialization;
 using ThinkNet.Database;
 using ThinkNet.Kernel;
 using ThinkNet.Messaging;
+using ThinkLib.Common;
+using ThinkLib.Logging;
+using ThinkLib.Serialization;
 
 namespace ThinkNet.Infrastructure
 {
@@ -26,7 +26,7 @@ namespace ThinkNet.Infrastructure
             this._eventBus = eventBus;
             this._cache = cache;
             this._serializer = serializer;
-            this._logger = LogManager.GetLogger("ThinkNet");
+            this._logger = LogManager.GetLogger("ThinkZoo");
         }
 
         #region IRepository 成员

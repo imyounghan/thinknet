@@ -1,6 +1,6 @@
 ﻿
-using ThinkLib.Common;
 using ThinkNet.Messaging;
+using ThinkLib.Common;
 using UserRegistration.Events;
 using UserRegistration.ReadModel;
 namespace UserRegistration.Application

@@ -39,10 +39,10 @@ namespace ThinkNet.EventSourcing
 
         public SourceKey(string sourceId, string sourceNamespace, string sourceTypeName, string sourceAssemblyName)
         {
-            ThinkLib.Common.Ensure.NotNullOrWhiteSpace(sourceId, "sourceId");
-            ThinkLib.Common.Ensure.NotNullOrWhiteSpace(sourceNamespace, "sourceNamespace");
-            ThinkLib.Common.Ensure.NotNullOrWhiteSpace(sourceTypeName, "sourceTypeName");
-            ThinkLib.Common.Ensure.NotNullOrWhiteSpace(sourceAssemblyName, "sourceAssemblyName");
+            sourceId.NotNullOrWhiteSpace("sourceId");
+            sourceId.NotNullOrWhiteSpace("sourceNamespace");
+            sourceId.NotNullOrWhiteSpace("sourceTypeName");
+            sourceId.NotNullOrWhiteSpace("sourceAssemblyName");
 
             this.sourceId = sourceId;
             this.@namespace = sourceNamespace;

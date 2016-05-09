@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkLib.Common;
-using ThinkLib.Logging;
-using ThinkLib.Serialization;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
+using ThinkLib.Common;
+using ThinkLib.Logging;
+using ThinkLib.Serialization;
 
 
 namespace ThinkNet.Kernel
@@ -47,7 +47,7 @@ namespace ThinkNet.Kernel
             this._aggregateFactory = aggregateFactory;
             this._binarySerializer = binarySerializer;
             this._textSerializer = textSerializer;
-            this._logger = LogManager.GetLogger("ThinkNet");
+            this._logger = LogManager.GetLogger("ThinkZoo");
         }
 
         /// <summary>

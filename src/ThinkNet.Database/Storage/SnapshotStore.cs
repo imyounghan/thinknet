@@ -2,8 +2,8 @@
 using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkLib.Common;
 using ThinkNet.EventSourcing;
+using ThinkLib.Common;
 
 
 namespace ThinkNet.Database.Storage
@@ -24,7 +24,7 @@ namespace ThinkNet.Database.Storage
         {
             this._dbContextFactory = dbContextFactory;
 
-            this._persistent = ConfigurationManager.AppSettings["thinkcfg.snapshot_storage"].To(false);
+            this._persistent = ConfigurationManager.AppSettings["thinkcfg.snapshot_storage"].Change(false);
         }
 
         /// <summary>

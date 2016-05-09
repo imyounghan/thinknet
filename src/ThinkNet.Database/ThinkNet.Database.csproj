@@ -69,14 +69,10 @@
     <Compile Include="IDataContextFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="PageResult.cs" />
     <Compile Include="Storage\HandlerRecord.cs" />
     <Compile Include="Storage\HandlerRecordStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ILifecycle.cs" />
     <Compile Include="ISortSet.cs" />
-    <Compile Include="IValidatable.cs" />
-    <Compile Include="LifecycleVeto.cs" />
     <Compile Include="SortSet.cs" />
   </ItemGroup>
   <ItemGroup>

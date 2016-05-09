@@ -2,12 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkLib.Common;
-using ThinkLib.Logging;
-using ThinkLib.Serialization;
 using ThinkNet.Database;
 using ThinkNet.Kernel;
 using ThinkNet.Messaging;
+using ThinkLib.Common;
+using ThinkLib.Logging;
+using ThinkLib.Serialization;
 
 namespace ThinkNet.Infrastructure
 {
@@ -23,6 +23,7 @@ namespace ThinkNet.Infrastructure
             private readonly IEventBus _eventBus;
             private readonly IMemoryCache _cache;
             private readonly ITextSerializer _serializer;
+            private readonly ILogger _logger;
             private readonly ConcurrentDictionary<Type, object> _repositories;
 
             public RepositoryContext(IDataContext context, IMemoryCache cache, IEventBus eventBus, ITextSerializer serializer)
@@ -32,6 +33,7 @@ namespace ThinkNet.Infrastructure
                 this._cache = cache;
                 this._eventBus = eventBus;
                 this._serializer = serializer;
+                this._logger = LogManager.GetLogger("ThinkZoo");
             }
 
             public void Commit()
@@ -80,7 +82,7 @@ namespace ThinkNet.Infrastructure
                 }
 
                 string errorMessage = string.Format("Type '{0}' must have a constructor with the following signature: .ctor(IDbContext) or .ctor(IDbContext,IMemoryCache)", serviceType.FullName);
-                LogManager.GetLogger("ThinkNet").Error(errorMessage);
+                _logger.Error(errorMessage);
                 throw new InvalidCastException(errorMessage);
             }
 
@@ -92,7 +94,7 @@ namespace ThinkNet.Infrastructure
                     if (!TypeHelper.IsRepositoryInterfaceType(repositoryType))
                     {
                         string errorMessage = string.Format("The repository type '{0}' does not extend interface IRepository<>.", repositoryType.FullName);
-                        LogManager.GetLogger("ThinkNet").Error(errorMessage);
+                        _logger.Error(errorMessage);
                         throw new SystemException(errorMessage);
                     }
 

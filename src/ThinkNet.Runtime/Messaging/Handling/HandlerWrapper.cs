@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using System.Threading;
-using ThinkLib.Common;
 using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
+using ThinkLib.Common;
 
 
 namespace ThinkNet.Messaging.Handling
@@ -14,7 +13,7 @@ namespace ThinkNet.Messaging.Handling
         class CommandContext : ICommandContext
         {
 
-            private readonly Func<object, IAggregateRoot> provider;
+            //private readonly Func<object, IAggregateRoot> provider;
 
             #region ICommandContext 成员
 
@@ -41,6 +40,29 @@ namespace ThinkNet.Messaging.Handling
             #endregion
         }
 
+        class EventContext : IEventContext
+        {
+
+            #region IEventContext 成员
+
+            public ThinkLib.Contexts.IContext Context
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public T GetContext<T>()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void AddCommand(ICommand command)
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
+        }
+
         //class EmptyInterceptor : IInterceptor<T>
         //{
         //    public static readonly EmptyInterceptor Instance = new EmptyInterceptor();
@@ -55,8 +77,8 @@ namespace ThinkNet.Messaging.Handling
 
         private readonly IHandler _handler;
         private readonly Lifecycle _lifetime;
-        private readonly IEventSourcedRepository _repository;
-        private readonly IEventBus _eventBus;
+        //private readonly IEventSourcedRepository _repository;
+        //private readonly IEventBus _eventBus;
 
         private int retryTimes = 0;
         /// <summary>
