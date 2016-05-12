@@ -16,7 +16,6 @@ namespace UserRegistration
     {
         static void Main(string[] args)
         {
-           
             
             Bootstrapper.Current.StartThinkNet().DoneWithUnity();
 
@@ -28,7 +27,6 @@ namespace UserRegistration
             //    dict.Add(id, id);
             //    Console.WriteLine(id);
             //}
-            System.Threading.Thread.Sleep(2000);
 
             var userRegister = new RegisterUser {
                 UserName = "老韩",
@@ -37,9 +35,10 @@ namespace UserRegistration
                 Email = "19126332@qq.com"
             };
 
-            var commandBus = ServiceLocator.Current.GetInstance<ICommandBus>();
+            var task = ServiceLocator.Current.GetInstance<ICommandResultManager>()
+                .RegisterCommand(userRegister, CommandReplyType.DomainEventHandled);
+            task.Wait();
 
-            commandBus.Send(userRegister);
 
 
             var userDao = ServiceLocator.Current.GetInstance<IUserDao>();
