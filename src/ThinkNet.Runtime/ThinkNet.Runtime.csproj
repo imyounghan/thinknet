@@ -58,6 +58,8 @@
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
     <Compile Include="Infrastructure\IAggregateRootFactory.cs" />
+    <Compile Include="Messaging\Handling\ICommandContextFactory.cs" />
+    <Compile Include="Messaging\Handling\IEventContextFactory.cs" />
     <Compile Include="Messaging\Handling\Processor.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Infrastructure\MessageBrokerFactory.cs" />

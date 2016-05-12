@@ -12,20 +12,26 @@ namespace ThinkNet.Infrastructure
         /// Default constructor.
         /// </summary>
         public ThinkNetException()
-        { }
+        {
+            this.MessageCode = "-1";
+        }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
         public ThinkNetException(string message)
             : base(message)
-        { }
+        {
+            this.MessageCode = "-1";
+        }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
         public ThinkNetException(string message, Exception innerException)
             : base(message, innerException)
-        { }
+        {
+            this.MessageCode = "-1";
+        }
 
-        public virtual string MessageCode { get; set; }
+        public string MessageCode { get; set; }
     }
 }

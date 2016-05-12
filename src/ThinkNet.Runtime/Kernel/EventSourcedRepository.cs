@@ -56,6 +56,10 @@ namespace ThinkNet.Kernel
         public IEventSourced Find(Type aggregateRootType, object aggregateRootId)
         {
             if (!aggregateRootType.IsAssignableFrom(typeof(IEventSourced))) {
+                string errorMessage = string.Format("The type of '{0}' does not extend interface IEventSourced.", aggregateRootType.FullName);
+                if (_logger.IsErrorEnabled)
+                    _logger.Error(errorMessage);
+                throw new EventSourcedException(errorMessage);
             }
 
             var aggregateRoot = _cache.Get(aggregateRootType, aggregateRootId) as IEventSourced;
@@ -157,15 +161,15 @@ namespace ThinkNet.Kernel
             var aggregateRootType = aggregateRoot.GetType();
             var aggregateRootId = aggregateRoot.Id;
             var events = aggregateRoot.GetEvents();
-            var key = new SourceKey(aggregateRootId, aggregateRootType);            
+            var key = new SourceKey(aggregateRootId, aggregateRootType);
 
-            if (!_eventStore.EventPersisted(key, correlationId)) {
-                _eventStore.Save(key, correlationId, events.Select(Serialize));
-
+            if (_eventStore.Save(key, correlationId, () => events.Select(Serialize))) {
                 if (_logger.IsDebugEnabled)
                     _logger.DebugFormat("Domain events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}, events:[{3}].",
                         aggregateRootId, aggregateRootType.FullName, correlationId,
                         string.Join("|", events.Select(item => _textSerializer.Serialize(item)).ToArray()));
+
+                _cache.Set(aggregateRoot, aggregateRoot.Id);
             }
             else {
                 events = _eventStore.FindAll(key, correlationId).Select(Deserialize).OfType<IVersionedEvent>().OrderBy(p => p.Version);
@@ -185,13 +189,12 @@ namespace ThinkNet.Kernel
 
             var eventPublisher = aggregateRoot as IEventPublisher;
             if (eventPublisher != null) {
-                eventPublisher.Events.ForEach(item => {
-                    if (item is IVersionedEvent)
-                        return;
-                });
+                var otherEvents = eventPublisher.Events.Where(p => !(p is IVersionedEvent)).ToArray();
+                if (otherEvents.Length > 0) {
+                    _eventBus.Publish(otherEvents);
+                }
             }
-
-            _cache.Set(aggregateRoot, aggregateRoot.Id);
+            
 
             var snapshot = Serialize(key, aggregateRoot);
             if (!_snapshotPolicy.ShouldbeCreateSnapshot(snapshot))
@@ -210,25 +213,24 @@ namespace ThinkNet.Kernel
             }
         }
                 
-        /// <summary>
-        /// 删除该聚合根下的溯源事件
-        /// </summary>
-        public void Delete(IEventSourced aggregateRoot)
-        {
-            this.Delete(aggregateRoot.GetType(), aggregateRoot.Id);
-        }
+        ///// <summary>
+        ///// 删除该聚合根下的溯源事件
+        ///// </summary>
+        //public void Delete(IEventSourced aggregateRoot)
+        //{
+        //    this.Delete(aggregateRoot.GetType(), aggregateRoot.Id);
+        //}
 
         /// <summary>
         /// 删除该聚合根下的溯源事件
         /// </summary>
         public void Delete(Type aggregateRootType, object aggregateRootId)
         {
-            var key = new SourceKey(aggregateRootId, aggregateRootType);
-
-            _snapshotStore.Remove(key);
-            _eventStore.RemoveAll(key);
-
             _cache.Remove(aggregateRootType, aggregateRootId);
+
+            var key = new SourceKey(aggregateRootId, aggregateRootType);
+            _snapshotStore.Remove(key);
+            _eventStore.RemoveAll(key);            
         }
     }
 }

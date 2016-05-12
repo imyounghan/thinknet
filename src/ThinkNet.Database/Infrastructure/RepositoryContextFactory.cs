@@ -92,7 +92,7 @@ namespace ThinkNet.Infrastructure
                 if (_logger.IsErrorEnabled)
                     _logger.Error(errorMessage);
 
-                throw new InvalidCastException(errorMessage);
+                throw new ThinkNetException(errorMessage);
             }
 
             private Type GetRepositoryType(Type repositoryType)
@@ -101,10 +101,10 @@ namespace ThinkNet.Infrastructure
                 if (!repositoryMap.TryGetValue(repositoryType, out implementationType))
                 {
                     if (!TypeHelper.IsRepositoryInterfaceType(repositoryType)) {
-                        string errorMessage = string.Format("The repository type '{0}' does not extend interface IRepository<>.", repositoryType.FullName);
+                        string errorMessage = string.Format("The type of '{0}' does not extend interface IRepository<>.", repositoryType.FullName);
                         if (_logger.IsErrorEnabled)
                             _logger.Error(errorMessage);
-                        throw new SystemException(errorMessage);
+                        throw new ThinkNetException(errorMessage);
                     }
 
                     var aggregateRootType = repositoryType.GetGenericArguments().Single();

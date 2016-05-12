@@ -126,24 +126,27 @@ namespace ThinkNet.Kernel
             }
         }
 
-        public TRole ActAs<TRole>() where TRole : class
-        {
-            if (!typeof(TRole).IsInterface) {
-                throw new AggregateRootException(string.Format("'{0}' is not an interface type.", typeof(TRole).FullName));
-            }
+        //public TRole ActAs<TRole>() where TRole : class
+        //{
+        //    if (!typeof(TRole).IsInterface) {
+        //        throw new AggregateRootException(string.Format("'{0}' is not an interface type.", typeof(TRole).FullName));
+        //    }
 
-            var actor = this as TRole;
+        //    var actor = this as TRole;
 
-            if (actor == null) {
-                throw new AggregateRootException(string.Format("'{0}' cannot act as role '{1}'.", GetType().FullName, typeof(TRole).FullName));
-            }
+        //    if (actor == null) {
+        //        throw new AggregateRootException(string.Format("'{0}' cannot act as role '{1}'.", GetType().FullName, typeof(TRole).FullName));
+        //    }
 
-            return actor;
-        }
+        //    return actor;
+        //}
 
+        /// <summary>
+        /// 克隆对象
+        /// </summary>
         protected virtual object Clone()
         {
-            return null;
+            return this.Change(this.GetType());
         }
 
 

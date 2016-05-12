@@ -20,11 +20,6 @@ namespace ThinkNet.Kernel
         /// <summary>
         /// 删除聚合根。
         /// </summary>
-        void Delete(IEventSourced aggregateRoot);
-
-        /// <summary>
-        /// 删除聚合根。
-        /// </summary>
         void Delete(Type aggregateRootType, object id);
     }
 }

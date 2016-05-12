@@ -1,10 +1,11 @@
-﻿using ThinkNet.Kernel;
+﻿using ThinkLib.Common;
+using ThinkNet.Kernel;
 
 namespace ThinkNet.Messaging.Handling
 {
     /// <summary>Represents a command context for aggregate command handler handling command.
     /// </summary>
-    public interface ICommandContext
+    public interface ICommandContext : IUnitOfWork
     {
         /// <summary>Add a new aggregate into the current command context.
         /// </summary>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using ThinkLib.Common;
@@ -12,15 +13,14 @@ namespace ThinkNet.EventSourcing
     public interface IEventStore
     {
         /// <summary>
-        /// 保存溯源事件。
+        /// 保存溯源事件。如果该命令产生的事件已保存过则为false，否则为true
         /// </summary>
-        void Save(SourceKey sourceKey, string correlationId, IEnumerable<Stream> events);
-        //void Save(IEnumerable<Event> events);
+        bool Save(SourceKey sourceKey, string correlationId, Func<IEnumerable<Stream>> eventsFactory);
 
-        /// <summary>
-        /// 判断该命令下是否存在相关事件。
-        /// </summary>
-        bool EventPersisted(SourceKey sourceKey, string correlationId);
+        ///// <summary>
+        ///// 判断该命令下是否存在相关事件。
+        ///// </summary>
+        //bool EventPersisted(SourceKey sourceKey, string correlationId);
 
         /// <summary>
         /// 查询该命令下的事件。
@@ -49,11 +49,15 @@ namespace ThinkNet.EventSourcing
 
         #region IEventStore 成员
 
-        public void Save(SourceKey sourceKey, string correlationId, IEnumerable<Stream> events)
+        public bool Save(SourceKey sourceKey, string correlationId, Func<IEnumerable<Stream>> eventsFactory)
         {
-            var streams = collection.GetOrAdd(sourceKey, key => new Dictionary<Stream, string>());
+            if (!EventPersisted(sourceKey, correlationId)) {
+                var streams = collection.GetOrAdd(sourceKey, key => new Dictionary<Stream, string>());
+                eventsFactory().ForEach(item => streams.Add(item, correlationId));
+                return true;
+            }
 
-            events.ForEach(item => streams.Add(item, correlationId));
+            return false;
         }
 
         public bool EventPersisted(SourceKey sourceKey, string correlationId)

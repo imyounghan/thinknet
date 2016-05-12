@@ -23,18 +23,20 @@ namespace ThinkNet.Database.Storage
             this._dbContextFactory = dbContextFactory;
         }
 
-
-        public void Save(SourceKey sourceKey, string correlationId, IEnumerable<Stream> events)
+        private bool EventPersisted(IDataContext context, int aggregateRootTypeCode, string aggregateRootId, string correlationId)
         {
-            correlationId.NotNullOrWhiteSpace("correlationId");
+            return context.CreateQuery<Event>()
+                .Any(p => p.CorrelationId == correlationId &&
+                    p.AggregateRootId == aggregateRootId &&
+                    p.AggregateRootTypeCode == aggregateRootTypeCode);
+        }
 
-            var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
-            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
-
-            var datas = events.Select(item => new Event {
-                AggregateRootId = sourceKey.SourceId,
+        private void EventSaved(IDataContext context, string aggregateRootTypeName, int aggregateRootTypeCode, string aggregateRootId, string correlationId, IEnumerable<Stream> events)
+        {
+            events.Select(item => new Event {
+                AggregateRootId = aggregateRootId,
                 AggregateRootTypeCode = aggregateRootTypeCode,
-                AggregateRootTypeName = aggregateRootTypeName,//string.Concat(aggregateRootTypeName, ", ", sourceKey.AssemblyName),
+                AggregateRootTypeName = aggregateRootTypeName,
                 Version = item.Version,
                 CorrelationId = correlationId,
                 Payload = item.Payload,
@@ -43,17 +45,30 @@ namespace ThinkNet.Database.Storage
                 TypeName = item.Key.TypeName,
                 EventId = item.Key.SourceId,
                 Timestamp = DateTime.UtcNow
-            }).AsEnumerable();
-
-            Task.Factory.StartNew(() => {
-                using (var context = _dbContextFactory.CreateDataContext()) {
-                    datas.ForEach(context.Save);
-                    context.Commit();
-                }
-            }).Wait();
+            }).ForEach(context.Save);
+            context.Commit();
         }
 
-        IEnumerable<Stream> IEventStore.FindAll(SourceKey sourceKey, string correlationId)
+        public bool Save(SourceKey sourceKey, string correlationId, Func<IEnumerable<Stream>> eventsFactory)
+        {
+            correlationId.NotNullOrWhiteSpace("correlationId");
+
+            var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
+            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
+
+            return Task.Factory.StartNew(() => {
+                using (var context = _dbContextFactory.CreateDataContext()) {
+                    if (EventPersisted(context, aggregateRootTypeCode, sourceKey.SourceId, correlationId))
+                        return false;
+
+                    EventSaved(context, aggregateRootTypeName, aggregateRootTypeCode, sourceKey.SourceId, correlationId, eventsFactory());
+
+                    return true;
+                }
+            }).Result;
+        }
+
+        public IEnumerable<Stream> FindAll(SourceKey sourceKey, string correlationId)
         {
             correlationId.NotNullOrWhiteSpace("correlationId");
 
@@ -81,7 +96,7 @@ namespace ThinkNet.Database.Storage
             return task.Result;
         }
 
-        IEnumerable<Stream> IEventStore.FindAll(SourceKey sourceKey, int version)
+        public IEnumerable<Stream> FindAll(SourceKey sourceKey, int version)
         {
             var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
@@ -122,25 +137,6 @@ namespace ThinkNet.Database.Storage
                     context.Commit();
                 }
             }).Wait();
-        }
-
-
-        public bool EventPersisted(SourceKey sourceKey, string correlationId)
-        {
-            var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
-            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
-
-            var task = Task.Factory.StartNew(() => {
-                using (var context = _dbContextFactory.CreateDataContext()) {
-                    return context.CreateQuery<Event>()
-                        .Any(p => p.CorrelationId == correlationId &&
-                            p.AggregateRootId == sourceKey.SourceId &&
-                            p.AggregateRootTypeCode == aggregateRootTypeCode);
-                }
-            });
-            task.Wait();
-
-            return task.Result;
         }
     }
 }

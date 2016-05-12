@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
@@ -9,60 +10,6 @@ namespace ThinkNet.Messaging.Handling
 {
     public class HandlerWrapper : DisposableObject, IProxyHandler
     {
-
-        class CommandContext : ICommandContext
-        {
-
-            //private readonly Func<object, IAggregateRoot> provider;
-
-            #region ICommandContext 成员
-
-            public void Add(IAggregateRoot aggregateRoot)
-            {
-                throw new NotImplementedException();
-            }
-
-            public T Get<T>(object id) where T : class, IAggregateRoot
-            {
-                throw new NotImplementedException();
-            }
-
-            public T Find<T>(object id) where T : class, IAggregateRoot
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PendingEvent(IEvent @event)
-            {
-                throw new NotImplementedException();
-            }
-
-            #endregion
-        }
-
-        class EventContext : IEventContext
-        {
-
-            #region IEventContext 成员
-
-            public ThinkLib.Contexts.IContext Context
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public T GetContext<T>()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void AddCommand(ICommand command)
-            {
-                throw new NotImplementedException();
-            }
-
-            #endregion
-        }
-
         //class EmptyInterceptor : IInterceptor<T>
         //{
         //    public static readonly EmptyInterceptor Instance = new EmptyInterceptor();
@@ -75,11 +22,10 @@ namespace ThinkNet.Messaging.Handling
         //    { }
         //}
 
-        private IHandler _handler;
-        private Lifecycle _lifetime;
-        //private readonly IEventSourcedRepository _repository;
-        //private readonly IEventBus _eventBus;
-
+        private readonly IHandler _handler;
+        private readonly Lifecycle _lifetime;
+        private readonly ICommandContextFactory _commandContextFactory;
+        private readonly IEventContextFactory _eventContextFactory;
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
@@ -104,12 +50,16 @@ namespace ThinkNet.Messaging.Handling
 
             var handlerType = _handler.GetType();
             if (TypeHelper.IsCommandHandlerType(handlerType)) {
-                ((dynamic)_handler).Handle((dynamic)message);
+                var context = _commandContextFactory.CreateCommandContext();
+                ((dynamic)_handler).Handle(context, (dynamic)message);
+                context.Commit();
                 return;
             }
 
             if (TypeHelper.IsEventHandlerType(handlerType)) {
-                ((dynamic)_handler).Handle((dynamic)message);
+                var context = _eventContextFactory.CreateEventContext();
+                ((dynamic)_handler).Handle(context, (dynamic)message);
+                context.Commit();
                 return;
             }
 
@@ -119,24 +69,6 @@ namespace ThinkNet.Messaging.Handling
 
             //interceptor.OnHandled(null, message);
         }
-
-        //private void RetryHandle(T message)
-        //{
-        //    try {
-        //        this.Handle(message);
-        //        return;
-        //    }
-        //    catch (ThinkNetException) {
-        //        throw;
-        //    }
-        //    catch (Exception) {
-        //        if (retryTimes < 3) {
-        //            Thread.Sleep(1000);
-        //            RetryHandle(message);
-        //        }
-        //        throw;
-        //    }
-        //}
 
         /// <summary>
         /// dispose
@@ -148,8 +80,6 @@ namespace ThinkNet.Messaging.Handling
                     // Dispose handler if it's disposable.
                 }
             }
-
-            _handler = null;
         }
 
         void IProxyHandler.Handle(IMessage message)
