@@ -58,6 +58,7 @@
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
     <Compile Include="Infrastructure\IAggregateRootFactory.cs" />
+    <Compile Include="Messaging\Handling\Processor.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Infrastructure\MessageBrokerFactory.cs" />
     <Compile Include="Messaging\AbstractBus.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Messaging\Handling\IProxyInterceptor.cs" />
     <Compile Include="Messaging\Handling\IMessageExecutor.cs" />
     <Compile Include="Messaging\Handling\MessageExecutor.cs" />
+    <Compile Include="Messaging\IMessageNotification.cs" />
     <Compile Include="Messaging\IMessageReceiver.cs" />
     <Compile Include="Messaging\IMessageSender.cs" />
     <Compile Include="Infrastructure\Message.cs" />

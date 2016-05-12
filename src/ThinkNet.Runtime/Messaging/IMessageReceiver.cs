@@ -28,13 +28,13 @@ namespace ThinkNet.Messaging
     internal class DefaultMessageReceiver : IMessageReceiver
     {
         private readonly Worker worker;
-        private readonly MessageBroker broker;
+        //private readonly MessageBroker broker;
         private readonly object lockObject;
 
         public DefaultMessageReceiver()
         {
             this.lockObject = new object();
-            this.broker = MessageBrokerFactory.Instance.GetOrCreate("message");
+            var broker = MessageBrokerFactory.Instance.GetOrCreate("message");
             this.worker = WorkerFactory.Create<Message>(broker.Take, Processing, broker.Complete);
         }
 

@@ -12,6 +12,11 @@ namespace ThinkNet.Infrastructure
             this._brokers = new ConcurrentDictionary<string, MessageBroker>();
         }
 
+        public MessageBroker this[string catalog]
+        {
+            get { return _brokers.GetOrAdd(catalog, _ => new MessageBroker()); }
+        }
+
         public MessageBroker GetOrCreate(string catalog)
         {
             return _brokers.GetOrAdd(catalog, _ => new MessageBroker());

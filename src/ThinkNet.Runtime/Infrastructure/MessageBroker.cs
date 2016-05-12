@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using ThinkNet.Configurations;
 
 namespace ThinkNet.Infrastructure
 {
@@ -86,7 +87,7 @@ namespace ThinkNet.Infrastructure
 
         public MessageBroker()
         {
-            this.queues = MessageQueue.CreateGroup(4);
+            this.queues = MessageQueue.CreateGroup(ConfigurationSetting.Current.QueueCount);
             this.waiter = new AutoResetEvent(false);
             this.offsetDict = new ConcurrentDictionary<long, int>();
             this.lastQueueIndex = -1;

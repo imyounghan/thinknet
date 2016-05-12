@@ -2,28 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Microsoft.Practices.ServiceLocation;
-using ThinkNet.Infrastructure;
-using ThinkNet.Kernel;
+using ThinkLib.Common;
 using ThinkLib.Logging;
 using ThinkLib.Serialization;
+using ThinkNet.Configurations;
+using ThinkNet.Infrastructure;
+using ThinkNet.Kernel;
 
 
 namespace ThinkNet.Messaging.Handling
 {
-    public class MessageExecutor : IMessageExecutor, IHandlerProvider
+    public class MessageExecutor : IMessageExecutor, IHandlerProvider, IInitializer
     {
         private readonly IHandlerRecordStore _handlerStore;
-        private readonly ITextSerializer _serializer;
+        //private readonly ITextSerializer _serializer;
         private readonly ILogger _logger;
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public MessageExecutor(IHandlerRecordStore handlerStore, ITextSerializer serializer)
+        public MessageExecutor(IHandlerRecordStore handlerStore)
         {
             this._handlerStore = handlerStore;
-            this._serializer = serializer;
+            //this._serializer = serializer;
             this._logger = LogManager.GetLogger("ThinkZoo");
         }
 
@@ -39,22 +42,22 @@ namespace ThinkNet.Messaging.Handling
                 return;
             }
 
-            if (_logger.IsDebugEnabled)
-                _logger.DebugFormat("executing a message. data:{0}", _serializer.Serialize(message));
+            //if (_logger.IsDebugEnabled)
+            //    _logger.DebugFormat("Executing a message. messageType:{0}, messageId:{1}", messageType.FullName, message.Id);
 
             var messageHandlerType = messageHandler.GetInnerHandler().GetType();
             try {
                 if (_handlerStore.IsHandlerInfoExist(message.Id, messageType, messageHandlerType)) {
-                    if (_logger.IsInfoEnabled)
-                        _logger.InfoFormat("The message has been handled. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
-                            messageHandlerType.FullName, messageType.FullName, message.Id);
+                    if (_logger.IsDebugEnabled)
+                        _logger.DebugFormat("The message has been handled. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
+                             messageHandlerType.FullName, messageType.FullName, message.Id);
                     return;
                 }
 
                 messageHandler.Handle(message);
 
-                if (_logger.IsInfoEnabled)
-                    _logger.InfoFormat("Handle message success. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
+                if (_logger.IsDebugEnabled)
+                    _logger.DebugFormat("Handle message success. messageHandlerType:{0}, messageType:{1}, messageId:{2}",
                         messageHandlerType.FullName, messageType.FullName, message.Id);
             }
             catch (Exception ex) {
@@ -71,8 +74,8 @@ namespace ThinkNet.Messaging.Handling
                 using (messageHandler as IDisposable) {
                 }
 
-                if (_logger.IsDebugEnabled)
-                    _logger.DebugFormat("message executed. messageId:{0}", message.Id);
+                //if (_logger.IsDebugEnabled)
+                //    _logger.DebugFormat("Message executed. messageType:{0}, messageId:{1}", messageType.FullName, message.Id);
             }
         }
 
@@ -83,13 +86,6 @@ namespace ThinkNet.Messaging.Handling
         {
             var messageType = message.GetType();
             var messageHandlers = this.GetHandlers(messageType);
-
-            //if (messageHandlers.IsEmpty()) {
-            //    var exception = new MessageHandlerNotFoundException(messageType);
-            //    LogManager.GetLogger("ThinkNet").Warn(exception.Message);
-
-            //    throw exception;
-            //}
 
             if (messageType.IsDefined<RequireHandlerAttribute>(true)) {
                 Exception exception = null;
@@ -107,10 +103,13 @@ namespace ThinkNet.Messaging.Handling
                 }
 
                 if (exception != null) {
-                    LogManager.GetLogger("ThinkNet").Error(exception.Message);
+                    _logger.Error(exception.Message);
                     throw exception;
                 }
             }
+
+            if (messageHandlers.IsEmpty())
+                return;
 
             List<Exception> innerExceptions = new List<Exception>();
             foreach (var handler in messageHandlers) {
@@ -122,8 +121,13 @@ namespace ThinkNet.Messaging.Handling
                 }                
             }
 
-            if (innerExceptions.Count > 0) {
-                throw new AggregateException(innerExceptions);
+            switch (innerExceptions.Count) {
+                case 0:
+                    break;
+                case 1:
+                    throw innerExceptions[0];
+                default:
+                    throw new AggregateException(innerExceptions);
             }
         }
 
@@ -160,6 +164,53 @@ namespace ThinkNet.Messaging.Handling
             //}).OfType<IProxyHandler>().AsEnumerable();
         }
 
+        #endregion
+
+        #region IMessageExecutor 成员
+
+        void IMessageExecutor.Execute(IMessage message)
+        {
+            int count = 0;
+            int retryTimes = message is EventStream ? 1 : ConfigurationSetting.Current.HandleRetrytimes;
+            while (count++ < retryTimes) {
+                try {
+                    this.Execute(message);
+                    break;
+                }
+                catch (ThinkNetException) {
+                    throw;
+                }
+                catch (Exception) {
+                    if (count == retryTimes)
+                        throw;
+                    else
+                        Thread.Sleep(ConfigurationSetting.Current.HandleRetryInterval);
+                }
+            }
+        }
+
+        #endregion
+
+        #region IInitializer 成员
+
+        public void Initialize(IEnumerable<Type> types)
+        {
+            AggregateRootInnerHandlerProvider.Initialize(types);
+            types.Where(TypeHelper.IsHandlerType).ForEach(RegisterHandler);
+
+        }
+
+        private static void RegisterHandler(Type type)
+        {
+            var interfaceTypes = type.GetInterfaces().Where(p => TypeHelper.IsCommandHandlerInterfaceType(p) ||
+                TypeHelper.IsEventHandlerInterfaceType(p) || TypeHelper.IsMessageHandlerInterfaceType(p));
+
+            var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
+
+            foreach (var interfaceType in interfaceTypes) {
+                Bootstrapper.Current.RegisterType(interfaceType, type, lifecycle, type.FullName);
+            }
+        }
         #endregion
     }
 }

@@ -75,12 +75,11 @@ namespace ThinkNet.Messaging.Handling
         //    { }
         //}
 
-        private readonly IHandler _handler;
-        private readonly Lifecycle _lifetime;
+        private IHandler _handler;
+        private Lifecycle _lifetime;
         //private readonly IEventSourcedRepository _repository;
         //private readonly IEventBus _eventBus;
 
-        private int retryTimes = 0;
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
@@ -149,6 +148,8 @@ namespace ThinkNet.Messaging.Handling
                     // Dispose handler if it's disposable.
                 }
             }
+
+            _handler = null;
         }
 
         void IProxyHandler.Handle(IMessage message)

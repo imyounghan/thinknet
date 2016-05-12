@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ThinkNet.Infrastructure;
+﻿using ThinkNet.Infrastructure;
 using ThinkLib.Common;
+using ThinkNet.Messaging.Handling;
 
 
 namespace ThinkNet.Configurations
@@ -13,28 +11,34 @@ namespace ThinkNet.Configurations
     public static class BootstrapperExtentions
     {
 
-        private static void RegisterHandlers(object sender, EventArgs<IEnumerable<Type>> args)
-        {
-            foreach (var type in args.Data.Where(TypeHelper.IsHandlerType)) {
-                 RegisterHandler((Bootstrapper)sender, type);
-            }
-        }
+        //private static void RegisterHandlers(object sender, EventArgs<IEnumerable<Type>> args)
+        //{
+        //    Bootstrapper bootstrapper  = (Bootstrapper)sender;
 
-        private static void RegisterHandler(Bootstrapper bootstrapper, Type type)
-        {
-            var interfaceTypes = type.GetInterfaces().Where(p => TypeHelper.IsCommandHandlerInterfaceType(p) ||
-                TypeHelper.IsEventHandlerInterfaceType(p) || TypeHelper.IsMessageHandlerInterfaceType(p));
+        //    foreach (var type in args.Data.Where(TypeHelper.IsHandlerType)) {
+        //        RegisterHandler(bootstrapper, type);
+        //    }
 
-            var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
+            
+        //}
 
-            foreach (var interfaceType in interfaceTypes) {
-                bootstrapper.RegisterType(interfaceType, type, lifecycle, type.FullName);
-            }
-        }
+        //private static void RegisterHandler(Bootstrapper bootstrapper, Type type)
+        //{
+        //    var interfaceTypes = type.GetInterfaces().Where(p => TypeHelper.IsCommandHandlerInterfaceType(p) ||
+        //        TypeHelper.IsEventHandlerInterfaceType(p) || TypeHelper.IsMessageHandlerInterfaceType(p));
+
+        //    var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
+
+        //    foreach (var interfaceType in interfaceTypes) {
+        //        bootstrapper.RegisterType(interfaceType, type, lifecycle, type.FullName);
+        //    }
+        //}
 
         public static Bootstrapper StartThinkNet(this Bootstrapper that)
         {
-            that.TypesLoaded += RegisterHandlers;
+            //that.TypesLoaded += RegisterHandlers;
+            //that.RegisterInstance(DefaultMessageNotification.Instance, typeof(IMessageNotification), typeof(ICommandResultManager));
+            that.RegisterType(typeof(IProcessor), typeof(MessageProcessor));
 
             return that;
         }
