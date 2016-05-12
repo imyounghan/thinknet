@@ -85,6 +85,10 @@
     <Compile Include="Infrastructure\Entity.cs" />
     <Compile Include="Infrastructure\EntityExtensions.cs" />
     <Compile Include="Infrastructure\IEntity.cs" />
+    <Compile Include="Messaging\CommandReplyType.cs" />
+    <Compile Include="Messaging\CommandResult.cs" />
+    <Compile Include="Messaging\CommandResultManager.cs" />
+    <Compile Include="Messaging\CommandStatus.cs" />
     <Compile Include="Messaging\Handling\ICommandContext.cs" />
     <Compile Include="Messaging\Handling\IEventContext.cs" />
     <Compile Include="Messaging\Handling\IHandler.cs" />
@@ -99,6 +103,7 @@
     <Compile Include="Messaging\ICommand.cs" />
     <Compile Include="Messaging\ICommandBus.cs" />
     <Compile Include="Messaging\Handling\ICommandHandler.cs" />
+    <Compile Include="Messaging\ICommandResultManager.cs" />
     <Compile Include="Messaging\IEvent.cs" />
     <Compile Include="Messaging\IEventBus.cs" />
     <Compile Include="Messaging\Handling\IEventHandler.cs" />
