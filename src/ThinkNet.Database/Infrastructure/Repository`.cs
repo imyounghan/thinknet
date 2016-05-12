@@ -81,7 +81,8 @@ namespace ThinkNet.Infrastructure
                 Cache.Set(aggregateRoot, aggregateRoot.Id);
             };
 
-            _logger.InfoFormat("the aggregate root {0} of id {1} is added the dbcontext.",
+            if(_logger.IsDebugEnabled)
+                _logger.DebugFormat("The aggregate root {0} of id {1} is added the dbcontext.",
                     typeof(TAggregateRoot).FullName, aggregateRoot.Id);
         }
 
@@ -100,8 +101,9 @@ namespace ThinkNet.Infrastructure
                 Cache.Remove(typeof(TAggregateRoot), aggregateRoot.Id);
             };
 
-            _logger.InfoFormat("remove the aggregate root {0} of id {1} in dbcontext.",
-                   typeof(TAggregateRoot).FullName, aggregateRoot.Id);
+            if (_logger.IsDebugEnabled)
+                _logger.DebugFormat("remove the aggregate root {0} of id {1} in dbcontext.",
+                    typeof(TAggregateRoot).FullName, aggregateRoot.Id);
         }
 
         /// <summary>
@@ -118,13 +120,15 @@ namespace ThinkNet.Infrastructure
             if (aggregateRoot == null) {
                 aggregateRoot = this.Find(id);
 
-                _logger.InfoFormat("find the aggregate root '{0}' of id '{1}' from storage.",
-                    typeof(TAggregateRoot).FullName, id);
+                if (_logger.IsDebugEnabled)
+                    _logger.DebugFormat("find the aggregate root '{0}' of id '{1}' from storage.",
+                        typeof(TAggregateRoot).FullName, id);
 
                 Cache.Set(aggregateRoot, aggregateRoot.Id);
             }
             else {
-                _logger.InfoFormat("find the aggregate root '{0}' of id '{1}' from cache.",
+                if (_logger.IsDebugEnabled)
+                    _logger.DebugFormat("find the aggregate root '{0}' of id '{1}' from cache.",
                         typeof(TAggregateRoot).FullName, id);
 
 

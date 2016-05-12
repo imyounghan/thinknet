@@ -39,14 +39,14 @@ namespace ThinkNet.Infrastructure
             if (aggregateRoot == null) {
                 aggregateRoot = this.LoadFromStorage<TAggregateRoot>(key);
 
-                if (aggregateRoot != null && _logger.IsInfoEnabled) {
-                    _logger.InfoFormat("find the aggregate root '{0}' of id '{1}' from storage.",
+                if (aggregateRoot != null && _logger.IsDebugEnabled) {
+                    _logger.DebugFormat("find the aggregate root '{0}' of id '{1}' from storage.",
                         aggregateRootType.FullName, key);
                 }
             }
             else {
-                if (_logger.IsInfoEnabled)
-                    _logger.InfoFormat("find the aggregate root '{0}' of id '{1}' from cache.",
+                if (_logger.IsDebugEnabled)
+                    _logger.DebugFormat("find the aggregate root '{0}' of id '{1}' from cache.",
                         aggregateRootType.FullName, key);
             }
 
@@ -76,15 +76,21 @@ namespace ThinkNet.Infrastructure
                 using (var context = _dbContextFactory.CreateDataContext()) {
                     context.SaveOrUpdate(aggregateRoot);
                     context.Commit();
-                }
+                }               
 
                 _cache.Set(aggregateRoot, aggregateRoot.Id);
             }).Wait();
             
 
             var eventPublisher = aggregateRoot as IEventPublisher;
-            if (eventPublisher == null)
+            if (eventPublisher == null) {
+                if (_logger.IsDebugEnabled)
+                    _logger.DebugFormat("The aggregate root {0} of id {1} is saved.",
+                        typeof(TAggregateRoot).FullName, aggregateRoot.Id);
+                
                 return;
+            }
+            
 
             var events = eventPublisher.Events;
             if (string.IsNullOrWhiteSpace(correlationId)) {
@@ -98,6 +104,11 @@ namespace ThinkNet.Infrastructure
                     }).ToArray()
                 });
             }
+
+            if (_logger.IsDebugEnabled)
+                _logger.DebugFormat("The aggregate root {0} of id {1} is saved then publish all events [{2}].",
+                    typeof(TAggregateRoot).FullName, aggregateRoot.Id,
+                    string.Join("|", events.Select(item => _serializer.Serialize(item)).ToArray()));
         }
 
         public void Delete<TAggregateRoot>(TAggregateRoot aggregateRoot) where TAggregateRoot : class, IAggregateRoot
@@ -107,6 +118,10 @@ namespace ThinkNet.Infrastructure
                     context.Delete(aggregateRoot);
                     context.Commit();
                 }
+
+                if (_logger.IsDebugEnabled)
+                    _logger.DebugFormat("The aggregate root {0} of id {1} is deleted.",
+                        typeof(TAggregateRoot).FullName, aggregateRoot.Id);
 
                 _cache.Remove(typeof(TAggregateRoot), aggregateRoot.Id);
             }).Wait();
@@ -122,6 +137,10 @@ namespace ThinkNet.Infrastructure
                         context.Commit();
                     }
                 }
+
+                if (_logger.IsDebugEnabled)
+                    _logger.DebugFormat("The aggregate root {0} of id {1} is deleted.",
+                        typeof(TAggregateRoot).FullName, key);
 
                 _cache.Remove(typeof(TAggregateRoot), key);
             }).Wait();

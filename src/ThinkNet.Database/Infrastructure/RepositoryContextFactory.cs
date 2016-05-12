@@ -48,8 +48,11 @@ namespace ThinkNet.Infrastructure
                 var events = _context.TrackingObjects.OfType<IEventPublisher>()
                     .SelectMany(item => item.Events).ToList();
 
-                if (events.Count == 0)
+                if (events.Count == 0) {
+                    if (_logger.IsDebugEnabled)
+                        _logger.DebugFormat("commit all aggregateRoots. count:{0}.", _context.TrackingObjects.Count);
                     return;
+                }
 
                 if (string.IsNullOrWhiteSpace(correlationId))
                 {
@@ -64,25 +67,31 @@ namespace ThinkNet.Infrastructure
                             Payload = _serializer.Serialize(item)
                         }).ToArray()
                     });
-                }                
+                }
+
+                if (_logger.IsDebugEnabled)
+                    _logger.DebugFormat("commit all aggregateRoots then publish all events. count:{0}, data:[{1}].",
+                        _context.TrackingObjects.Count,
+                        string.Join("|", events.Select(item => _serializer.Serialize(item)).ToArray()));
             }
 
             private object CreateRepository(Type repositoryType)
             {
                 var serviceType = GetRepositoryType(repositoryType);
                 var constructor = serviceType.GetConstructor(new[] { typeof(IDataContext), typeof(IMemoryCache) });
-                if (constructor != null)
-                {
+                if (constructor != null) {
                     return constructor.Invoke(new object[] { _context, _cache });
                 }
                 constructor = serviceType.GetConstructor(new[] { typeof(IDataContext) });
-                if (constructor != null)
-                {
+                if (constructor != null) {
                     return constructor.Invoke(new object[] { _context });
                 }
 
+
                 string errorMessage = string.Format("Type '{0}' must have a constructor with the following signature: .ctor(IDbContext) or .ctor(IDbContext,IMemoryCache)", serviceType.FullName);
-                _logger.Error(errorMessage);
+                if (_logger.IsErrorEnabled)
+                    _logger.Error(errorMessage);
+
                 throw new InvalidCastException(errorMessage);
             }
 
@@ -91,10 +100,10 @@ namespace ThinkNet.Infrastructure
                 Type implementationType = null;
                 if (!repositoryMap.TryGetValue(repositoryType, out implementationType))
                 {
-                    if (!TypeHelper.IsRepositoryInterfaceType(repositoryType))
-                    {
+                    if (!TypeHelper.IsRepositoryInterfaceType(repositoryType)) {
                         string errorMessage = string.Format("The repository type '{0}' does not extend interface IRepository<>.", repositoryType.FullName);
-                        _logger.Error(errorMessage);
+                        if (_logger.IsErrorEnabled)
+                            _logger.Error(errorMessage);
                         throw new SystemException(errorMessage);
                     }
 
