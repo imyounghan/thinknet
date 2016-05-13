@@ -91,13 +91,14 @@
     <Compile Include="Messaging\CommandStatus.cs" />
     <Compile Include="Messaging\Handling\ICommandContext.cs" />
     <Compile Include="Messaging\Handling\IEventContext.cs" />
-    <Compile Include="Messaging\Handling\IHandlerFilter.cs" />
+    <Compile Include="Messaging\Handling\IMessageInterception.cs" />
+    <Compile Include="Messaging\Handling\IInterception.cs" />
     <Compile Include="Messaging\Handling\IHandler.cs" />
     <Compile Include="Infrastructure\ValueObject.cs" />
     <Compile Include="Infrastructure\TypeHelper.cs" />
     <Compile Include="Messaging\Command.cs" />
     <Compile Include="Messaging\Event.cs" />
-    <Compile Include="Messaging\Handling\IHandler`.cs" />
+    <Compile Include="Messaging\Handling\IMessageHandler.cs" />
     <Compile Include="Messaging\Handling\HandlerRecordInMemory.cs" />
     <Compile Include="Messaging\Handling\IHandlerRecordStore.cs" />
     <Compile Include="Messaging\Handling\RequireHandlerAttribute.cs" />

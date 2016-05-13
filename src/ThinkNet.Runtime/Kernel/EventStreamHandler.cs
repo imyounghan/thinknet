@@ -13,8 +13,8 @@ using ThinkNet.Messaging.Handling;
 namespace ThinkNet.Kernel
 {
     public class EventStreamHandler : IInitializer,
-        IHandler<VersionedEventStream>,
-        IHandler<EventStream>
+        IMessageHandler<VersionedEventStream>,
+        IMessageHandler<EventStream>
     {
         private readonly IMessageExecutor _executor;
         private readonly IEventPublishedVersionStore _eventPublishedVersionStore;

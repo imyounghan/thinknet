@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ThinkNet.Messaging.Handling
 {
-    public interface IProxyInterceptor
+    public interface IInterceptionProvider
     {
+        IEnumerable<IProxyInterception> GetInterceptors(Type type);
     }
 }

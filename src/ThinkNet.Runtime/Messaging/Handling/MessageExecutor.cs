@@ -6,7 +6,6 @@ using System.Threading;
 using Microsoft.Practices.ServiceLocation;
 using ThinkLib.Common;
 using ThinkLib.Logging;
-using ThinkLib.Serialization;
 using ThinkNet.Configurations;
 using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
@@ -14,20 +13,27 @@ using ThinkNet.Kernel;
 
 namespace ThinkNet.Messaging.Handling
 {
-    public class MessageExecutor : IMessageExecutor, IHandlerProvider, IInitializer
+    public class MessageExecutor : IMessageExecutor, IHandlerProvider, IInterceptionProvider, IInitializer
     {
         private readonly IHandlerRecordStore _handlerStore;
         //private readonly ITextSerializer _serializer;
         private readonly ILogger _logger;
+        private readonly ICommandContextFactory _commandContextFactory;
+        private readonly IEventContextFactory _eventContextFactory;
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public MessageExecutor(IHandlerRecordStore handlerStore)
+        public MessageExecutor(IHandlerRecordStore handlerStore, 
+            ICommandContextFactory commandContextFactory, 
+            IEventContextFactory eventContextFactory)
         {
             this._handlerStore = handlerStore;
             //this._serializer = serializer;
             this._logger = LogManager.GetLogger("ThinkZoo");
+
+            this._commandContextFactory = commandContextFactory;
+            this._eventContextFactory = eventContextFactory;
         }
 
 
@@ -136,32 +142,52 @@ namespace ThinkNet.Messaging.Handling
 
         public IEnumerable<IProxyHandler> GetHandlers(Type type)
         {
-            List<IHandler> handlerlist = new List<IHandler>();
+            List<IProxyHandler> handlerlist = new List<IProxyHandler>();
 
-            var handlerType = typeof(IHandler<>).MakeGenericType(type);
-            var handlers = ServiceLocator.Current.GetAllInstances(handlerType).Cast<IHandler>();
+            var handlerType = typeof(IMessageHandler<>).MakeGenericType(type);
+            var handlerWrapperType = typeof(MessageHandlerWrapper<>).MakeGenericType(type);
+            var handlers = ServiceLocator.Current.GetAllInstances(handlerType)
+                .Select(handler => Activator.CreateInstance(handlerWrapperType, new[] { handler }))
+                .Cast<IProxyHandler>()
+                .AsEnumerable();
             handlerlist.AddRange(handlers);
 
             if (TypeHelper.IsCommand(type)) {
                 handlerType = typeof(ICommandHandler<>).MakeGenericType(type);
-                handlers = ServiceLocator.Current.GetAllInstances(handlerType).Cast<IHandler>();
+                handlerWrapperType = typeof(CommandHandlerWrapper<>).MakeGenericType(type);
+                handlers = ServiceLocator.Current.GetAllInstances(handlerType)
+                    .Select(handler => Activator.CreateInstance(handlerWrapperType, new[] { handler, _commandContextFactory }))
+                    .Cast<IProxyHandler>()
+                    .AsEnumerable();
                 handlerlist.AddRange(handlers);
             }
 
             if (TypeHelper.IsEvent(type)) {
                 handlerType = typeof(IEventHandler<>).MakeGenericType(type);
-                handlers = ServiceLocator.Current.GetAllInstances(handlerType).Cast<IHandler>();
+                handlerWrapperType = typeof(EventHandlerWrapper<>).MakeGenericType(type);
+                handlers = ServiceLocator.Current.GetAllInstances(handlerType)
+                    .Select(handler => Activator.CreateInstance(handlerWrapperType, new[] { handler, _eventContextFactory }))
+                    .Cast<IProxyHandler>()
+                    .AsEnumerable();
                 handlerlist.AddRange(handlers);
             }
 
-            if (handlerlist.Count == 0)
-                return Enumerable.Empty<IProxyHandler>();
+            return handlerlist;
+        }
 
-            return handlerlist.Select(handler => new HandlerWrapper(handler)).OfType<IProxyHandler>().AsEnumerable();
-            //return handlerlist.Select(handler => {
-            //    var handlerWrapperType = typeof(HandlerWrapper<>).MakeGenericType(type);
-            //    return Activator.CreateInstance(handlerWrapperType, new[] { handler });
-            //}).OfType<IProxyHandler>().AsEnumerable();
+        #endregion
+
+        #region IInterceptionProvider 成员
+
+        public IEnumerable<IProxyInterception> GetInterceptors(Type type)
+        {
+            var interceptionType = typeof(IMessageInterception<>).MakeGenericType(type);
+            var interceptionWrapperType = typeof(HandlerInterceptionWrapper<>).MakeGenericType(type);
+            
+            return ServiceLocator.Current.GetAllInstances(interceptionType)
+                .Select(filter => Activator.CreateInstance(interceptionWrapperType, new[] { filter }))
+                .Cast<IProxyInterception>()
+                .AsEnumerable();
         }
 
         #endregion
@@ -197,7 +223,7 @@ namespace ThinkNet.Messaging.Handling
         {
             AggregateRootInnerHandlerProvider.Initialize(types);
             types.Where(TypeHelper.IsHandlerType).ForEach(RegisterHandler);
-
+            types.Where(TypeHelper.IsInterceptionType).ForEach(RegisterInterceptor);
         }
 
         private static void RegisterHandler(Type type)
@@ -211,6 +237,19 @@ namespace ThinkNet.Messaging.Handling
                 Bootstrapper.Current.RegisterType(interfaceType, type, lifecycle, type.FullName);
             }
         }
+
+        private static void RegisterInterceptor(Type type)
+        {
+            var interfaceTypes = type.GetInterfaces().Where(TypeHelper.IsMessageInterceptionInterfaceType);
+
+            var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
+
+            foreach (var interfaceType in interfaceTypes) {
+                Bootstrapper.Current.RegisterType(interfaceType, type, lifecycle, type.FullName);
+            }
+        }
         #endregion
+
+        
     }
 }

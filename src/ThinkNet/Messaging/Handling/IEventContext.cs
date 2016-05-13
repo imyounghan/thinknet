@@ -7,7 +7,7 @@ namespace ThinkNet.Messaging.Handling
     {
         IContext Context { get; }
 
-        T GetContext<T>();
+        T GetContext<T>() where T : class;
 
         void AddCommand(ICommand command);
     }

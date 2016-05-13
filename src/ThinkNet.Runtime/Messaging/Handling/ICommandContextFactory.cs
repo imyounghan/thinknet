@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ThinkLib.Common;
 using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
 
 namespace ThinkNet.Messaging.Handling
 {
+    /// <summary>
+    /// 表示创建命令上下文的工厂接口
+    /// </summary>
+    [UnderlyingComponent(typeof(DefaultCommandContextFactory))]
     public interface ICommandContextFactory
     {
         ICommandContext CreateCommandContext();
@@ -24,8 +27,11 @@ namespace ThinkNet.Messaging.Handling
             private readonly Dictionary<string, IAggregateRoot> dict;
             private readonly IList<IEvent> pendingEvents;
 
-            public CommandContext()
+            public CommandContext(Func<Type, object, IAggregateRoot> factory, Action<IAggregateRoot> store)
             {
+                this.aggregateRootFactory = factory;
+                this.aggregateRootStore = store;
+
                 this.dict = new Dictionary<string, IAggregateRoot>();
                 this.pendingEvents = new List<IEvent>();
             }
@@ -77,7 +83,8 @@ namespace ThinkNet.Messaging.Handling
 
             public void Commit()
             {
-                dict.Values.OfType<IEventSourced>();
+                //dict.Values.OfType<IEventSourced>();
+                throw new NotImplementedException();
             }
 
             #endregion
@@ -103,11 +110,16 @@ namespace ThinkNet.Messaging.Handling
                 return null;
         }
 
+        private void Save(IAggregateRoot aggregateRoot)
+        {
+            
+        }
+
         #region ICommandContextFactory 成员
 
         public ICommandContext CreateCommandContext()
         {
-            return new CommandContext();
+            return new CommandContext(Find, Save);
         }
 
         #endregion
