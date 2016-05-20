@@ -32,6 +32,10 @@ namespace ThinkNet.Database
         /// </summary>
         void Attach(object entity);
         /// <summary>
+        /// 从数据库中刷新(触发sql-select)
+        /// </summary>
+        void Refresh(object entity);
+        /// <summary>
         /// 自动保存或更新
         /// </summary>
         void SaveOrUpdate(object entity);
@@ -57,9 +61,10 @@ namespace ThinkNet.Database
         /// <returns></returns>
         object Find(Type type, params object[] keyValues);
         /// <summary>
-        /// 从数据库中刷新(触发sql-select)
+        /// 加载数据
         /// </summary>
-        void Refresh(object entity);
+        void Load(object entity);
+        
 
         ///// <summary>
         ///// 提交所有更改的实体。

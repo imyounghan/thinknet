@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
@@ -8,6 +9,8 @@ namespace ThinkNet.Messaging.Handling
     /// </summary>
     public interface IProxyHandler
     {
+        //Type MessageType { get; }
+
         /// <summary>
         /// 处理消息。
         /// </summary>

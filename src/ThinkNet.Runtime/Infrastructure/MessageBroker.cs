@@ -24,6 +24,11 @@ namespace ThinkNet.Infrastructure
             /// 队列id
             /// </summary>
             public int QueueId { get; internal set; }
+
+            public override string ToString()
+            {
+                return string.Concat(Body, "(", QueueId, "-", Offset, ")");
+            }
         }
         class MessageQueue
         {
@@ -76,22 +81,23 @@ namespace ThinkNet.Infrastructure
             }
         }
 
-
         private readonly EventWaitHandle waiter;
         private readonly MessageQueue[] queues;
         private readonly ConcurrentDictionary<long, int> offsetDict;
 
-        private int lastQueueIndex;
         private long consumeOffset;
         private long produceOffset;
+        private long totalCount;
 
         public MessageBroker()
         {
             this.queues = MessageQueue.CreateGroup(ConfigurationSetting.Current.QueueCount);
             this.waiter = new AutoResetEvent(false);
             this.offsetDict = new ConcurrentDictionary<long, int>();
-            this.lastQueueIndex = -1;
+
             this.produceOffset = -1;
+            //this.consumeOffset = -1;
+            //System.IO.File.Delete("log.txt");
         }
 
         public bool TryAdd(Message message)
@@ -121,36 +127,30 @@ namespace ThinkNet.Infrastructure
                 return false;
             }
             queue.Enqueue(queueMsg);
+            Interlocked.Increment(ref totalCount);
 
             return true;
         }
 
         public bool TryTake(out Message message)
         {
-            int queueIndex;
-            if (!offsetDict.TryGetValue(consumeOffset, out queueIndex) || lastQueueIndex == queueIndex) {
-                message = null;
-                return false;
-            }
-
-            if (offsetDict.TryRemove(consumeOffset, out queueIndex)) {
-                //while (true) {
-                //    var queueMsg = queues[queueIndex].Dequeue();
-                //    if (queueMsg.Offset == consumeOffset) {
-                //        message = queueMsg as Message;
-                //        break;
-                //    }
-                //    else {
-                //        queues[queueIndex].Enqueue(queueMsg);
-                //    }
-                //}
-                message = queues[queueIndex].Dequeue();
-
-                Interlocked.Exchange(ref lastQueueIndex, queueIndex);
-                Interlocked.Increment(ref consumeOffset);
+            int currentQueueIndex;
+            int previousQueueIndex;
+            if (offsetDict.TryGetValue(consumeOffset, out currentQueueIndex) &&
+                (!offsetDict.TryGetValue(consumeOffset - 1, out previousQueueIndex) || currentQueueIndex != previousQueueIndex)) {
                 
-                return true;
-            }            
+                message = queues[currentQueueIndex].Dequeue();
+
+                var valid = !message.IsNull();
+
+                if (valid) {
+                    Interlocked.Increment(ref consumeOffset);
+                    Interlocked.Decrement(ref totalCount);
+                }
+
+                return valid;
+            }
+                     
 
             message = null;
             return false;
@@ -160,28 +160,22 @@ namespace ThinkNet.Infrastructure
         {
             Message message;
             while (!this.TryTake(out message)) {
-                waiter.WaitOne();
+                waiter.WaitOne(100);
             }
+            
 
             return message;
         }
 
-        public void Complete(Message message = null)
+        public void Complete(Message message)
         {
-            var queueMsg = message as QueueMessage;
-
-            bool release;
-            if (queueMsg != null) {
-                int completeQueueIndex = queueMsg.QueueId;
-                release = Interlocked.CompareExchange(ref lastQueueIndex, -1, completeQueueIndex) == completeQueueIndex;
-            }
-            else {
-                release = lastQueueIndex == -1;
+            var queueMessage = message as QueueMessage;
+            if (message.IsNull() || queueMessage.IsNull()) {
+                return;
             }
 
-            if (release) {
-                waiter.Set();
-            }
+            offsetDict.Remove(queueMessage.Offset);
+            waiter.Set();
         }
     }
 }

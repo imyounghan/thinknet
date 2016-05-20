@@ -1,4 +1,6 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+
 namespace ThinkNet.Configurations
 {
     public class ConfigurationSetting

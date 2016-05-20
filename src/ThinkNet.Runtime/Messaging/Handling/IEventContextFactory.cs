@@ -10,21 +10,37 @@ namespace ThinkNet.Messaging.Handling
     /// <summary>
     /// 表示创建事件上下文的工厂接口
     /// </summary>
-    [UnderlyingComponent(typeof(DefaultEventContextFactory))]
-    public interface IEventContextFactory
+    [UnderlyingComponent(typeof(EventContextFactory))]
+    public interface IEventContextFactory : IContextManager
     {
         IEventContext CreateEventContext();
+
+        /// <summary>
+        /// 当前上下文
+        /// </summary>
+        IEventContext GetCurrentEventContext();
     }
 
-    internal class DefaultEventContextFactory : IEventContextFactory
+    public class EventContextFactory : ContextManager, IEventContextFactory
     {
-        class EventContext : IEventContext
+        class EventContext : DisposableObject, IContext, IEventContext
         {
+            private readonly IContextManager _contextManager;
+            private readonly object _context;
+            /// <summary>
+            /// Parameterized constructor.
+            /// </summary>
+            public EventContext(IContextManager contextManager, object context)
+            {
+                this._contextManager = contextManager;
+                this._context = context;
+            }
+
             #region IEventContext 成员
 
-            public IContext Context
+            public object Context
             {
-                get { throw new NotImplementedException(); }
+                get { return this._context; }
             }
 
             public T GetContext<T>() where T : class
@@ -41,21 +57,39 @@ namespace ThinkNet.Messaging.Handling
 
             #endregion
 
-            #region IUnitOfWork 成员
 
-            public void Commit()
+            protected override void Dispose(bool disposing)
             {
-                throw new NotImplementedException();
+                using (_context as IDisposable) { }
             }
 
-            #endregion
+            IContextManager IContext.ContextManager
+            {
+                get { return this._contextManager; }
+            }    
+        }
+        
+        public EventContextFactory()
+            : base("thread")
+        {
+        }
+
+        protected virtual object CreateDbContext()
+        {
+            return null;
         }
 
         #region IEventContextFactory 成员
 
         public IEventContext CreateEventContext()
         {
-            throw new NotImplementedException();
+            return new EventContext(this, CreateDbContext());
+        }
+
+
+        public IEventContext GetCurrentEventContext()
+        {
+            return base.CurrentContext.GetContext() as IEventContext;
         }
 
         #endregion

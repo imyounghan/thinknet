@@ -2,7 +2,7 @@
 namespace ThinkNet.Messaging.Handling
 {
     public class EventHandlerWrapper<TEvent> : MessageHandlerWrapper<TEvent>
-        where TEvent : class, IEvent
+        where TEvent : class, IVersionedEvent
     {
         private readonly IEventContextFactory _eventContextFactory;
 
@@ -18,9 +18,8 @@ namespace ThinkNet.Messaging.Handling
             if (eventHandler == null)
                 return;
 
-            var context = _eventContextFactory.CreateEventContext();
+            var context = _eventContextFactory.GetCurrentEventContext();
             eventHandler.Handle(context, @event);
-            context.Commit();
         }
     }
 }

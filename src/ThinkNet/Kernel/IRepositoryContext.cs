@@ -9,11 +9,6 @@ namespace ThinkNet.Kernel
     public interface IRepositoryContext : IUnitOfWork, IDisposable
     {
         /// <summary>
-        /// 提交事务
-        /// </summary>
-        void Commit(string correlationId);
-
-        /// <summary>
         /// 获取仓储
         /// </summary>
         TRepository GetRepository<TRepository>()

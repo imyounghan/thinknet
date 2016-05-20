@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Application\IAuthenticationService.cs" />
+    <Compile Include="Handlers\CommandInterception.cs" />
     <Compile Include="ReadModel\IUserDao.cs" />
     <Compile Include="ReadModel\UserModel.cs" />
     <Compile Include="Commands\RegisterUser.cs" />

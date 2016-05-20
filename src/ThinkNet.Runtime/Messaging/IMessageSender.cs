@@ -52,7 +52,7 @@ namespace ThinkNet.Messaging
                 failCallback(ex);
             }
             finally {
-                broker.Complete();
+                broker.Complete(null);
             }
         }
     }

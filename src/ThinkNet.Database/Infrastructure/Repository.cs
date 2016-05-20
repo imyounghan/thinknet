@@ -1,12 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using ThinkLib.Common;
+using ThinkLib.Logging;
 using ThinkNet.Database;
 using ThinkNet.Kernel;
 using ThinkNet.Messaging;
-using ThinkLib.Common;
-using ThinkLib.Logging;
-using ThinkLib.Serialization;
-using System;
 
 namespace ThinkNet.Infrastructure
 {
@@ -16,17 +16,15 @@ namespace ThinkNet.Infrastructure
         private readonly IDataContextFactory _dbContextFactory;
         private readonly IEventBus _eventBus;
         private readonly IMemoryCache _cache;
-        private readonly ITextSerializer _serializer;
         private readonly ILogger _logger;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public Repository(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache, ITextSerializer serializer)
+        public Repository(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache)
         {
             this._dbContextFactory = dbContextFactory;
             this._eventBus = eventBus;
             this._cache = cache;
-            this._serializer = serializer;
             this._logger = LogManager.GetLogger("ThinkZoo");
         }
 
@@ -82,7 +80,7 @@ namespace ThinkNet.Infrastructure
         //    return task.Result;
         //}
 
-        public void Save(IAggregateRoot aggregateRoot, string correlationId)
+        public void Save(IAggregateRoot aggregateRoot)
         {
             Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
@@ -106,22 +104,15 @@ namespace ThinkNet.Infrastructure
             
 
             var events = eventPublisher.Events;
-            if (string.IsNullOrWhiteSpace(correlationId)) {
-                _eventBus.Publish(events);
-            }
-            else {
-                _eventBus.Publish(new EventStream(aggregateRoot.Id, aggregateRootType) {
-                    CommandId = correlationId,
-                    Events = events.Select(item => new EventStream.Stream(item.GetType()) {
-                        Payload = _serializer.Serialize(item)
-                    }).ToArray()
-                });
-            }
+            if (events.IsEmpty())
+                return;
+
+            _eventBus.Publish(events);
 
             if (_logger.IsDebugEnabled)
                 _logger.DebugFormat("The aggregate root {0} of id {1} is saved then publish all events [{2}].",
                     aggregateRootType.FullName, aggregateRoot.Id,
-                    string.Join("|", events.Select(item => _serializer.Serialize(item)).ToArray()));
+                    string.Join("|", events.Select(item => item.ToString())));
         }
 
         public void Delete(IAggregateRoot aggregateRoot)
@@ -133,12 +124,12 @@ namespace ThinkNet.Infrastructure
                 using (var context = _dbContextFactory.CreateDataContext()) {
                     context.Delete(aggregateRoot);
                     context.Commit();
-                }
-
-                if (_logger.IsDebugEnabled)
-                    _logger.DebugFormat("The aggregate root {0} of id {1} is deleted.",
-                        aggregateRootType, aggregateRoot.Id);
+                }                
             }).Wait();
+
+            if (_logger.IsDebugEnabled)
+                _logger.DebugFormat("The aggregate root {0} of id {1} is deleted.",
+                    aggregateRootType, aggregateRoot.Id);
         }
 
         #endregion

@@ -165,29 +165,23 @@ namespace ThinkNet.Database
         /// </summary>
         public abstract object Find(Type type, object id);
 
-
-        object IDataContext.Find(Type type, object id)
-        {
-            var entity = this.Find(type, id);
-            if (entity != null && entity is ILifecycle<IDataContext>) {
-                (entity as ILifecycle<IDataContext>).OnLoaded(this);
-            }
-
-            return entity;
-        }
         /// <summary>
         /// 获取实例信息
         /// </summary>
         public abstract object Find(Type type, params object[] keyValues);
-        object IDataContext.Find(Type type, params object[] keyValues)
+
+        /// <summary>
+        /// 加载实例信息
+        /// </summary>
+        public abstract void Load(object entity);
+        void IDataContext.Load(object entity)
         {
-            var entity = this.Find(type, keyValues);
-            if (entity != null && entity is ILifecycle<IDataContext>)
-            {
+            entity.NotNull("entity");
+
+            this.Load(entity);
+            if (entity is ILifecycle<IDataContext>) {
                 (entity as ILifecycle<IDataContext>).OnLoaded(this);
             }
-
-            return entity;
         }
 
         /// <summary>

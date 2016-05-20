@@ -64,8 +64,8 @@ namespace ThinkNet.EventSourcing
 
         void IEventPublishedVersionStore.AddOrUpdatePublishedVersion(SourceKey sourceKey, int startVersion, int endVersion)
         {
-            this.AddOrUpdatePublishedVersion(sourceKey, startVersion, endVersion);
             this.AddOrUpdatePublishedVersionToMemory(sourceKey, startVersion, endVersion);
+            this.AddOrUpdatePublishedVersion(sourceKey, startVersion, endVersion);            
         }
 
         int IEventPublishedVersionStore.GetPublishedVersion(SourceKey sourceKey)

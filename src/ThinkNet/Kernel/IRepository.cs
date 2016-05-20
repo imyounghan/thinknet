@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ThinkLib.Common;
 using ThinkLib.Logging;
-using ThinkLib.Serialization;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Kernel
@@ -23,7 +22,7 @@ namespace ThinkNet.Kernel
         /// <summary>
         /// 保存聚合根。
         /// </summary>
-        void Save(IAggregateRoot aggregateRoot, string correlationId);
+        void Save(IAggregateRoot aggregateRoot);
 
         /// <summary>
         /// 删除聚合根。
@@ -60,14 +59,12 @@ namespace ThinkNet.Kernel
     {
         private readonly Dictionary<int, ISet<IAggregateRoot>> dictionary;
         private readonly IEventBus eventBus;
-        private readonly ITextSerializer serializer;
         private readonly ILogger _logger;
 
-        public MemoryRepository(IEventBus eventBus, ITextSerializer serializer)
+        public MemoryRepository(IEventBus eventBus)
         {
             this.dictionary = new Dictionary<int, ISet<IAggregateRoot>>();
             this.eventBus = eventBus;
-            this.serializer = serializer;
             this._logger = LogManager.GetLogger("ThinkZoo");
         }
 
@@ -91,7 +88,7 @@ namespace ThinkNet.Kernel
             return set.Where(p => p.Id.GetHashCode() == id.GetHashCode()).FirstOrDefault();
         }
 
-        public void Save(IAggregateRoot aggregateRoot, string correlationId)
+        public void Save(IAggregateRoot aggregateRoot)
         {
             var type = aggregateRoot.GetType();
             var typeCode = type.FullName.GetHashCode();
@@ -104,17 +101,11 @@ namespace ThinkNet.Kernel
                 return;
 
             var events = eventPublisher.Events;
-            if (string.IsNullOrWhiteSpace(correlationId)) {
-                eventBus.Publish(events);
-            }
-            else {
-                eventBus.Publish(new EventStream(aggregateRoot.Id, type) {
-                    CommandId = correlationId,
-                    Events = events.Select(item => new EventStream.Stream(item.GetType()) {
-                        Payload = serializer.Serialize(item)
-                    }).ToArray()
-                });
-            }
+
+            if (events.IsEmpty())
+                return;
+
+            eventBus.Publish(events);
             _logger.InfoFormat("publish all events. events: [{0}]", string.Join("|",
                 events.Select(@event => @event.ToString())));
         }

@@ -34,7 +34,7 @@ namespace ThinkNet.Kernel
         /// </summary>
         public override string ToString()
         {
-            return string.Concat(this.GetType().FullName, "|", this.SourceId);
+            return string.Concat(this.GetType().FullName, "@", this.SourceId, "&", this.Id);
         }
 
         /// <summary>

@@ -27,23 +27,22 @@ namespace ThinkNet.Messaging
 
     internal class DefaultMessageReceiver : IMessageReceiver
     {
-        private readonly Worker worker;
+        private readonly BaseWorker worker;
         //private readonly MessageBroker broker;
-        private readonly object lockObject;
+        //private readonly object lockObject;
 
         public DefaultMessageReceiver()
         {
-            this.lockObject = new object();
+            //this.lockObject = new object();
             var broker = MessageBrokerFactory.Instance.GetOrCreate("message");
-            this.worker = WorkerFactory.Create<Message>(broker.Take, Processing, broker.Complete);
+            this.worker = new ParallelWorker<Message>(broker.Take, Processing, broker.Complete, null);
         }
 
-        private void Processing(Message message)
-        {
-            if (message.IsNull())
-                return;
 
-            Task.Factory
+
+        private Task Processing(Message message)
+        {
+            return Task.Factory
                 .StartNew((state) => {
                     this.MessageReceived(state, new EventArgs<Message>(message));
                 }, this, TaskCreationOptions.PreferFairness);

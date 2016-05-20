@@ -7,7 +7,6 @@ using ThinkNet.Kernel;
 using ThinkNet.Messaging;
 using ThinkLib.Common;
 using ThinkLib.Logging;
-using ThinkLib.Serialization;
 
 namespace ThinkNet.Infrastructure
 {
@@ -22,26 +21,19 @@ namespace ThinkNet.Infrastructure
             private readonly IDataContext _context;
             private readonly IEventBus _eventBus;
             private readonly IMemoryCache _cache;
-            private readonly ITextSerializer _serializer;
             private readonly ILogger _logger;
             private readonly ConcurrentDictionary<Type, object> _repositories;
 
-            public RepositoryContext(IDataContext context, IMemoryCache cache, IEventBus eventBus, ITextSerializer serializer)
+            public RepositoryContext(IDataContext context, IMemoryCache cache, IEventBus eventBus)
             {
                 this._repositories = new ConcurrentDictionary<Type, object>();
                 this._context = context;
                 this._cache = cache;
                 this._eventBus = eventBus;
-                this._serializer = serializer;
                 this._logger = LogManager.GetLogger("ThinkZoo");
             }
 
             public void Commit()
-            {
-                this.Commit(string.Empty);
-            }
-
-            public void Commit(string correlationId)
             {
                 _context.Commit();
 
@@ -54,25 +46,12 @@ namespace ThinkNet.Infrastructure
                     return;
                 }
 
-                if (string.IsNullOrWhiteSpace(correlationId))
-                {
-                    _eventBus.Publish(events);
-                }
-                else
-                {
-                    _eventBus.Publish(new EventStream
-                    {
-                        CommandId = correlationId,
-                        Events = events.Select(item => new EventStream.Stream(item.GetType()) {
-                            Payload = _serializer.Serialize(item)
-                        }).ToArray()
-                    });
-                }
+                _eventBus.Publish(events);
 
                 if (_logger.IsDebugEnabled)
                     _logger.DebugFormat("commit all aggregateRoots then publish all events. count:{0}, data:[{1}].",
                         _context.TrackingObjects.Count,
-                        string.Join("|", events.Select(item => _serializer.Serialize(item)).ToArray()));
+                        string.Join("|", events.Select(item => item.ToString())));
             }
 
             private object CreateRepository(Type repositoryType)
@@ -135,16 +114,14 @@ namespace ThinkNet.Infrastructure
         private readonly IDataContextFactory _dbContextFactory;
         private readonly IEventBus _eventBus;
         private readonly IMemoryCache _cache;
-        private readonly ITextSerializer _serializer;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public RepositoryContextFactory(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache, ITextSerializer serializer)
+        public RepositoryContextFactory(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache)
         {
             this._dbContextFactory = dbContextFactory;
             this._eventBus = eventBus;
             this._cache = cache;
-            this._serializer = serializer;
         }
 
         /// <summary>
@@ -152,7 +129,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public IRepositoryContext CreateRepositoryContext()
         {
-            return new RepositoryContext(_dbContextFactory.CreateDataContext(), _cache, _eventBus, _serializer);
+            return new RepositoryContext(_dbContextFactory.CreateDataContext(), _cache, _eventBus);
         }
 
         /// <summary>
@@ -162,7 +139,7 @@ namespace ThinkNet.Infrastructure
         {
             var dbContext = _dbContextFactory.GetCurrentDataContext();
 
-            return new RepositoryContext(dbContext, _cache, _eventBus, _serializer);
+            return new RepositoryContext(dbContext, _cache, _eventBus);
         }
 
 

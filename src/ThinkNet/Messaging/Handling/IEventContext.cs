@@ -1,11 +1,9 @@
-﻿using ThinkLib.Common;
-using ThinkLib.Contexts;
-
+﻿
 namespace ThinkNet.Messaging.Handling
 {
-    public interface IEventContext : IUnitOfWork
+    public interface IEventContext
     {
-        IContext Context { get; }
+        object Context { get; }
 
         T GetContext<T>() where T : class;
 

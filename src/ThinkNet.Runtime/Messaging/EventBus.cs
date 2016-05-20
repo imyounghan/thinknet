@@ -41,7 +41,7 @@ namespace ThinkNet.Messaging
             var messages = events.Select(Map).AsEnumerable();
             messageSender.SendAsync(messages, () => {
                 if (logger.IsDebugEnabled) {
-                    logger.DebugFormat("event published. events:{0}.", string.Join(",", events));
+                    logger.DebugFormat("event published. events:[{0}].", string.Join(",", events));
                 }
             }, (ex) => {
             });

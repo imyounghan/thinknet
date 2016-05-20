@@ -42,7 +42,7 @@ namespace ThinkNet.Database.Storage
                     }
                     context.Commit();
                 }
-            }).Wait();
+            });
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace ThinkNet.Database.Storage
             var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
 
-            var task = Task.Factory.StartNew(() => {
+            return Task.Factory.StartNew(() => {
                 using (var context = _contextFactory.CreateDataContext()) {
                     var data = context.Find<EventPublishedVersion>(aggregateRootTypeCode, sourceKey.SourceId);
                     if (data != null) {
@@ -61,10 +61,7 @@ namespace ThinkNet.Database.Storage
                     }
                     return 0;
                 }
-            });
-            task.Wait();
-
-            return task.Result;
+            }).Result;
         }        
     }
 }

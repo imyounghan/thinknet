@@ -22,7 +22,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected Event(string id)
         {
-            this.Id = id.DefaultIfEmpty(ObjectId.GenerateNewStringId());
+            this.Id = id.DefaultIfEmpty(ObjectId.GenerateNewStringId);
         }
 
         /// <summary>
@@ -42,7 +42,6 @@ namespace ThinkNet.Messaging
         public override string ToString()
         {
             return string.Concat(this.GetType().FullName, "@", this.Id);
-            //return this.GetSourceStringId().Safe(this.Id);
         }
 
         [IgnoreDataMember]

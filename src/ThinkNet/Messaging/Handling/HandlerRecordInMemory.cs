@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ThinkNet.Messaging.Handling
 {
@@ -16,7 +17,7 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         protected void RemoveHandleInfo()
         {
-            _handlerInfoSet.RemoveWhere(item => item.Timestamp.AddHours(1) < DateTime.Now);
+            _handlerInfoSet.RemoveWhere(item => item.Timestamp.AddHours(1) < DateTime.UtcNow);
         }
 
         /// <summary>
@@ -27,45 +28,77 @@ namespace ThinkNet.Messaging.Handling
             var messageTypeCode = messageType.FullName.GetHashCode();
             var handlerTypeCode = handlerType.FullName.GetHashCode();
 
-            this.AddHandlerInfoToMemory(messageId, messageTypeCode, handlerTypeCode);
-        }
+        //    this.AddHandlerInfoToMemory(messageId, messageTypeCode, handlerTypeCode);
+        //}
 
 
-        private void AddHandlerInfoToMemory(string messageId, int messageTypeCode, int handlerTypeCode)
-        {
+        //private void AddHandlerInfoToMemory(string messageId, int messageTypeCode, int handlerTypeCode)
+        //{
             _handlerInfoSet.Add(new HandlerRecordData(messageId, messageTypeCode, handlerTypeCode));
         }
 
-        
-
-        /// <summary>
-        /// 检查该处理程序信息是否存在
-        /// </summary>
-        public bool IsHandlerInfoExist(string messageId, Type messageType, Type handlerType)
+        public bool HandlerIsExecuted(string messageId, Type messageType, Type handlerType)
         {
             var messageTypeCode = messageType.FullName.GetHashCode();
             var handlerTypeCode = handlerType.FullName.GetHashCode();
 
-            if (_handlerInfoSet.Contains(new HandlerRecordData(messageId, messageTypeCode, handlerTypeCode))) {
-                return true;
-            }
-
-            var existence = this.CheckHandlerInfoExist(messageId, messageType, handlerType);
-            if (existence) {
-                this.AddHandlerInfoToMemory(messageId, messageTypeCode, handlerTypeCode);
-            }
-
-            return existence;
+            return _handlerInfoSet.Contains(new HandlerRecordData(messageId, messageTypeCode, handlerTypeCode));
         }
 
-        /// <summary>
-        /// 检查该处理程序信息是否存在
-        /// </summary>
-        /// <returns></returns>
-        protected virtual bool CheckHandlerInfoExist(string messageId, Type messageType, Type handlerType)
+        public virtual bool HandlerHasExecuted(string messageId, Type messageType, params Type[] handlerTypes)
         {
-            return false;
+
+            return handlerTypes.Any(handlerType => HandlerIsExecuted(messageId, messageType, handlerType));
+
+            //bool result = false;
+
+            //var messageTypeCode = messageType.FullName.GetHashCode();
+            //foreach (var handlerType in handlerTypes) {
+            //    var handlerTypeCode = handlerType.FullName.GetHashCode();
+            //    if (!_handlerInfoSet.Contains(new HandlerRecordData(messageId, messageTypeCode, handlerTypeCode))) {
+            //        var existence = this.CheckHandlerInfoExist(messageId, messageType, handlerType);
+            //        if (existence) {
+            //            this.AddHandlerInfoToMemory(messageId, messageTypeCode, handlerTypeCode);
+            //            result = true;
+            //        }
+            //    }
+            //    else {
+            //        result = true;
+            //    }
+            //}
+
+
+            //return result;
         }
+        
+
+        ///// <summary>
+        ///// 检查该处理程序信息是否存在
+        ///// </summary>
+        //public bool IsHandlerInfoExist(string messageId, Type messageType, Type handlerType)
+        //{
+        //    var messageTypeCode = messageType.FullName.GetHashCode();
+        //    var handlerTypeCode = handlerType.FullName.GetHashCode();
+        //    if (_handlerInfoSet.Contains(new HandlerRecordData(messageId, messageTypeCode, handlerTypeCode))) {
+        //        return true;
+        //    }
+
+        //    var existence = this.CheckHandlerInfoExist(messageId, messageType, handlerType);
+        //    if (existence) {
+        //        this.AddHandlerInfoToMemory(messageId, messageTypeCode, handlerTypeCode);
+        //    }
+
+        //    return existence;
+        //}
+
+        ///// <summary>
+        ///// 检查该处理程序信息是否存在
+        ///// </summary>
+        ///// <returns></returns>
+        //protected virtual bool CheckHandlerInfoExist(string messageId, Type messageType, Type handlerType)
+        //{
+        //    return false;
+        //}
 
         class HandlerRecordData
         {
@@ -92,6 +125,8 @@ namespace ThinkNet.Messaging.Handling
             /// 处理器类型编码
             /// </summary>
             public int HandlerTypeCode { get; set; }
+
+            public bool Finished { get; set; }
 
             /// <summary>
             /// 创建时间

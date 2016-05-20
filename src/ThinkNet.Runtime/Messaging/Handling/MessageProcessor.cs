@@ -28,9 +28,12 @@ namespace ThinkNet.Messaging.Handling
             try {
                 _executor.Execute(message);
             }
+            catch (HandlerRecordStoreException) {
+                throw;
+            }
             catch (Exception ex) {
                 exception = ex;
-                throw;
+                throw ex;
             }
             finally {
                 Notify(message, exception);
@@ -39,21 +42,21 @@ namespace ThinkNet.Messaging.Handling
 
         private void Notify(IMessage message, Exception exception)
         {
-            var command = message as ICommand;
-            if (command != null) {
-                _notification.NotifyMessageHandled(command.Id, exception);
+            //var command = message as ICommand;
+            if (message is ICommand) {
+                _notification.NotifyMessageHandled(message.Id, exception);
                 return;
             }
 
-            var @event = message as EventStream;
-            if (@event != null) {
-                if (@event.Events.IsEmpty()) {
-                    _notification.NotifyMessageUntreated(@event.CommandId);
-                    return;
-                }
-                _notification.NotifyMessageCompleted(@event.CommandId, exception);
-                return;
-            }
+            //var @event = message as EventStream;
+            //if (@event != null) {
+            //    if (@event.Events.IsEmpty()) {
+            //        _notification.NotifyMessageUntreated(@event.CommandId);
+            //        return;
+            //    }
+            //    _notification.NotifyMessageCompleted(@event.CommandId, exception);
+            //    return;
+            //}
         }
                 
 

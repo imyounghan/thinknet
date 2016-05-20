@@ -8,7 +8,7 @@ namespace ThinkNet.Messaging.Handling
     public abstract class Processor : DisposableObject, IProcessor
     {
         private readonly IMessageReceiver receiver;
-        private readonly ILogger _logger;
+        private readonly ILogger logger;
         
         private readonly object lockObject = new object();
         private bool started = false;
@@ -19,7 +19,7 @@ namespace ThinkNet.Messaging.Handling
         public Processor(IMessageReceiver receiver)
         {
             this.receiver = receiver;
-            this._logger = LogManager.GetLogger("ThinkZoo");
+            this.logger = LogManager.GetLogger("ThinkZoo");
         }
 
         /// <summary>
@@ -73,17 +73,17 @@ namespace ThinkNet.Messaging.Handling
         private void OnMessageReceived(object sender, EventArgs<Message> args)
         {
             var message = args.Data.Body as IMessage;
-            if (message == null) {
-                _logger.Warn("Error will be ignored and message receiving will continue.");
+            if (message.IsNull()) {
+                Console.WriteLine("empty message.");
                 return;
             }
 
             try {
                 this.Process(message);
             }
-            catch (Exception) {
-                //_logger.Error("An exception happened while processing message through handler", ex);
-                _logger.Warn("Error will be ignored and message receiving will continue.");
+            catch (Exception ex) {
+                logger.Error("An exception happened while processing message through handler", ex);
+                logger.Warn("Error will be ignored and message receiving will continue.");
             }
         }
     }

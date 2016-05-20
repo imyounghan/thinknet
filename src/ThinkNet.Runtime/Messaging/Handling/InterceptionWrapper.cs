@@ -35,7 +35,7 @@ namespace ThinkNet.Messaging.Handling
 
             var filter = _interception as IMessageInterception<T>;
             if (filter != null)
-                filter.OnHandlerExecuted(message, exception);
+                filter.OnHandlerExecuted(message, exception is HandlerRecordStoreException ? null : exception);
         }
 
         protected override void Dispose(bool disposing)

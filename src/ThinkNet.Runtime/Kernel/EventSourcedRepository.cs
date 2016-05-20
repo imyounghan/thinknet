@@ -113,6 +113,11 @@ namespace ThinkNet.Kernel
             return _binarySerializer.Deserialize(stream.Payload, stream.GetSourceType());
         }
 
+        private string SerializeToString(IVersionedEvent @event)
+        {
+            return _textSerializer.Serialize(@event);
+        }
+
         private Stream Serialize(IVersionedEvent @event)
         {
             return new Stream() {
@@ -132,9 +137,9 @@ namespace ThinkNet.Kernel
         }
 
 
-        private VersionedEventStream Convert(SourceKey source, string correlationId, IEnumerable<IVersionedEvent> events)
+        private EventStream Convert(SourceKey source, string correlationId, IEnumerable<IVersionedEvent> events)
         {
-            return new VersionedEventStream {
+            return new EventStream {
                 SourceAssemblyName = source.AssemblyName,
                 SourceNamespace = source.Namespace,
                 SourceTypeName = source.TypeName,
@@ -165,9 +170,8 @@ namespace ThinkNet.Kernel
 
             if (_eventStore.Save(key, correlationId, () => events.Select(Serialize))) {
                 if (_logger.IsDebugEnabled)
-                    _logger.DebugFormat("Domain events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}, events:[{3}].",
-                        aggregateRootId, aggregateRootType.FullName, correlationId,
-                        string.Join("|", events.Select(item => _textSerializer.Serialize(item)).ToArray()));
+                    _logger.DebugFormat("Domain events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}.",
+                        aggregateRootId, aggregateRootType.FullName, correlationId);
 
                 _cache.Set(aggregateRoot, aggregateRoot.Id);
             }
@@ -175,25 +179,24 @@ namespace ThinkNet.Kernel
                 events = _eventStore.FindAll(key, correlationId).Select(Deserialize).OfType<IVersionedEvent>().OrderBy(p => p.Version);
 
                 if (_logger.IsDebugEnabled)
-                    _logger.DebugFormat("The command generates events have been saved, load from storage. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}, events:[{3}].",
-                        aggregateRootId, aggregateRootType.FullName, correlationId,
-                        string.Join("|", events.Select(item => _textSerializer.Serialize(item)).ToArray()));
+                    _logger.DebugFormat("The command generates events have been saved, load from storage. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}.",
+                        aggregateRootId, aggregateRootType.FullName, correlationId);
             }
 
+            List<IEvent> pendingEvents = new List<IEvent>();
             if (string.IsNullOrWhiteSpace(correlationId)) {
-                _eventBus.Publish(events);
+                pendingEvents.AddRange(events);
             }
             else {
-                _eventBus.Publish(Convert(key, correlationId, events));
+                pendingEvents.Add(Convert(key, correlationId, events));
             }
 
             var eventPublisher = aggregateRoot as IEventPublisher;
             if (eventPublisher != null) {
-                var otherEvents = eventPublisher.Events.Where(p => !(p is IVersionedEvent)).ToArray();
-                if (otherEvents.Length > 0) {
-                    _eventBus.Publish(otherEvents);
-                }
+                var otherEvents = eventPublisher.Events.Where(p => !(p is IVersionedEvent));
+                pendingEvents.AddRange(otherEvents);
             }
+            _eventBus.Publish(pendingEvents);
             
 
             var snapshot = Serialize(key, aggregateRoot);

@@ -1680,74 +1680,74 @@
             获取logger
             </summary>
         </member>
-        <member name="T:ThinkLib.Scheduling.Worker`1">
+        <member name="T:ThinkLib.Scheduling.BaseWorker">
             <summary>
-            后台循环执行一个特定的方法的工作器
+            工作器的基类
             </summary>
         </member>
-        <member name="T:ThinkLib.Scheduling.Worker">
-            <summary>
-            后台循环执行一个特定的方法的工作器
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.Worker.#ctor">
-            <summary>
-            default 
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Scheduling.Worker.#ctor(System.Action,System.Action,System.Action{System.Exception})">
+        <member name="M:ThinkLib.Scheduling.BaseWorker.#ctor(System.Action,System.Action{System.Exception})">
             <summary>Initialize a new Worker for the specified method to run.
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.Working">
+        <member name="M:ThinkLib.Scheduling.BaseWorker.Working">
             <summary>
-            表示一个持续工作的方法
+            表示一个持续工作的内容
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.SetInterval(System.Int32)">
+        <member name="M:ThinkLib.Scheduling.BaseWorker.SetInterval(System.Int32)">
             <summary>
             等待下一个任务的间隔时间
             </summary>
             <param name="interval">毫秒</param>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.Start">
+        <member name="M:ThinkLib.Scheduling.BaseWorker.Start">
             <summary>
             Start the worker.
             </summary>
         </member>
-        <member name="M:ThinkLib.Scheduling.Worker.Stop">
+        <member name="M:ThinkLib.Scheduling.BaseWorker.Stop">
             <summary>
             Stop the worker.
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.Interval">
+        <member name="P:ThinkLib.Scheduling.BaseWorker.Interval">
             <summary>
             间隔时间(毫秒数)
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.Action">
-            <summary>
-            要执行的函数。
-            </summary>
-        </member>
-        <member name="P:ThinkLib.Scheduling.Worker.SuccessCallback">
+        <member name="P:ThinkLib.Scheduling.BaseWorker.SuccessCallback">
             <summary>
             成功调用的函数
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.ExceptionCallback">
+        <member name="P:ThinkLib.Scheduling.BaseWorker.ExceptionCallback">
             <summary>
             失败调用的函数
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker.CancellationToken">
+        <member name="P:ThinkLib.Scheduling.BaseWorker.CancellationToken">
             <summary>
             获取取消操作的通知
             </summary>
         </member>
+        <member name="T:ThinkLib.Scheduling.ParallelWorker`1">
+            <summary>
+            表示一个并行的多任务的工作器。
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Scheduling.Worker`1">
+            <summary>
+            后台循环执行一个特定的方法的工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker`1.#ctor(System.Func{`0},System.Action{`0},System.Action{`0,System.Exception})">
+            <summary>
+            constructor.
+            </summary>
+        </member>
         <member name="M:ThinkLib.Scheduling.Worker`1.#ctor(System.Func{`0},System.Action{`0},System.Action{`0},System.Action{`0,System.Exception})">
             <summary>
-            default constructor.
+            constructor.
             </summary>
         </member>
         <member name="M:ThinkLib.Scheduling.Worker`1.Working">
@@ -1760,7 +1760,7 @@
             获取该 <typeparamref name="T"/> 实例的工厂。
             </summary>
         </member>
-        <member name="P:ThinkLib.Scheduling.Worker`1.Action">
+        <member name="P:ThinkLib.Scheduling.Worker`1.Processor">
             <summary>
             要执行的函数。
             </summary>
@@ -1773,6 +1773,21 @@
         <member name="P:ThinkLib.Scheduling.Worker`1.ExceptionCallback">
             <summary>
             失败调用的函数
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.ParallelWorker`1.#ctor(System.Func{`0},System.Func{`0,System.Threading.Tasks.Task},System.Action{`0},System.Action{`0,System.Exception})">
+            <summary>
+            constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.ParallelWorker`1.Working">
+            <summary>
+            表示一个持续工作的方法
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.ParallelWorker`1.Processor">
+            <summary>
+            要执行的任务。
             </summary>
         </member>
         <member name="T:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler">
@@ -1825,6 +1840,25 @@
         <member name="P:ThinkLib.Scheduling.LimitedConcurrencyLevelTaskScheduler.MaximumConcurrencyLevel">
             <summary>Gets the maximum concurrency level supported by this scheduler.</summary>
         </member>
+        <member name="T:ThinkLib.Scheduling.Worker">
+            <summary>
+            后台循环执行一个特定的方法的工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.#ctor(System.Action,System.Action,System.Action{System.Exception})">
+            <summary>Initialize a new Worker for the specified method to run.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Working">
+            <summary>
+            表示一个持续工作的方法
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.Processor">
+            <summary>
+            要执行的函数。
+            </summary>
+        </member>
         <member name="T:ThinkLib.Scheduling.WorkerFactory">
             <summary>
             创建后台线程工作器工厂类
@@ -1855,7 +1889,17 @@
             创建一个后台线程工作器
             </summary>
         </member>
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Func{``0,System.Threading.Tasks.Task})">
+            <summary>
+            创建一个后台线程工作器
+            </summary>
+        </member>
         <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Action{``0},System.Action{``0})">
+            <summary>
+            创建一个后台线程工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Func{``0,System.Threading.Tasks.Task},System.Action{``0})">
             <summary>
             创建一个后台线程工作器
             </summary>
@@ -1865,7 +1909,17 @@
             创建一个后台线程工作器
             </summary>
         </member>
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Func{``0,System.Threading.Tasks.Task},System.Action{``0,System.Exception})">
+            <summary>
+            创建一个后台线程工作器
+            </summary>
+        </member>
         <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Action{``0},System.Action{``0},System.Action{``0,System.Exception})">
+            <summary>
+            创建一个后台线程工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.WorkerFactory.Create``1(System.Func{``0},System.Func{``0,System.Threading.Tasks.Task},System.Action{``0},System.Action{``0,System.Exception})">
             <summary>
             创建一个后台线程工作器
             </summary>

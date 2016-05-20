@@ -22,9 +22,9 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         public virtual void Handle(T message)
         {
-            var filter = _handler as IMessageHandler<T>;
-            if (filter != null) {
-                filter.Handle(message);
+            var handler = _handler as IMessageHandler<T>;
+            if (handler != null) {
+                handler.Handle(message);
             }
         }
 

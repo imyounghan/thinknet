@@ -80,7 +80,7 @@ namespace ThinkNet.Kernel
             if (handler == null) {
                 string errorMessage = string.Format("Event handler not found on {0} for {1}.",
                     aggregateRootType.FullName, eventType.FullName);
-                if (@event is VersionedEvent<TIdentify>) {
+                if (@event is IVersionedEvent) {
                     throw new EventSourcedException(errorMessage);
                 }
 
@@ -126,20 +126,6 @@ namespace ThinkNet.Kernel
             }
         }
 
-        //public TRole ActAs<TRole>() where TRole : class
-        //{
-        //    if (!typeof(TRole).IsInterface) {
-        //        throw new AggregateRootException(string.Format("'{0}' is not an interface type.", typeof(TRole).FullName));
-        //    }
-
-        //    var actor = this as TRole;
-
-        //    if (actor == null) {
-        //        throw new AggregateRootException(string.Format("'{0}' cannot act as role '{1}'.", GetType().FullName, typeof(TRole).FullName));
-        //    }
-
-        //    return actor;
-        //}
 
         /// <summary>
         /// 克隆对象

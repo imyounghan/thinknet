@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ThinkNet.Database;
 using ThinkLib.Common;
+using ThinkNet.Database;
 
 
 namespace UserRegistration.ReadModel
@@ -31,6 +31,7 @@ namespace UserRegistration.ReadModel
 
         public IEnumerable<UserModel> GetAll()
         {
+            //return Enumerable.Empty<UserModel>();
             return contextFactory.CreateDataContext().CreateQuery<UserModel>();
         }
 

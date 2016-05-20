@@ -1,6 +1,5 @@
-﻿using ThinkNet.Messaging;
-
-namespace ThinkNet.Kernel
+﻿
+namespace ThinkNet.Messaging
 {
     /// <summary>
     /// 表示继承该接口的类型是一个有序事件。

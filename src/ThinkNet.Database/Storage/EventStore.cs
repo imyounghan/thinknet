@@ -49,6 +49,7 @@ namespace ThinkNet.Database.Storage
             context.Commit();
         }
 
+
         public bool Save(SourceKey sourceKey, string correlationId, Func<IEnumerable<Stream>> eventsFactory)
         {
             correlationId.NotNullOrWhiteSpace("correlationId");
@@ -75,25 +76,24 @@ namespace ThinkNet.Database.Storage
             var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
 
-            var task = Task.Factory.StartNew(() => {
+            var events = Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
-                    var events = context.CreateQuery<Event>()
+                    return context.CreateQuery<Event>()
                         .Where(p => p.CorrelationId == correlationId &&
                             p.AggregateRootId == sourceKey.SourceId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode)
                         .OrderBy(p => p.Version)
                         .ToList();
 
-                    return events.Select(item => new Stream {
-                        Key = new SourceKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
-                        Version = item.Version,
-                        Payload = item.Payload
-                    }).AsEnumerable();
+                    
                 }
-            });
-            task.Wait();
+            }).Result;
 
-            return task.Result;
+            return events.Select(item => new Stream {
+                Key = new SourceKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
+                Version = item.Version,
+                Payload = item.Payload
+            }).AsEnumerable();
         }
 
         public IEnumerable<Stream> FindAll(SourceKey sourceKey, int version)
@@ -101,25 +101,22 @@ namespace ThinkNet.Database.Storage
             var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
 
-            var task = Task.Factory.StartNew(() => {
+            var events = Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
-                    var events = context.CreateQuery<Event>()
+                    return context.CreateQuery<Event>()
                         .Where(p => p.AggregateRootId == sourceKey.SourceId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode &&
                             p.Version > version)
                         .OrderBy(p => p.Version)
                         .ToList();
-
-                    return events.Select(item => new Stream {
-                        Key = new SourceKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
-                        Version = item.Version,
-                        Payload = item.Payload
-                    }).AsEnumerable();
                 }
-            });
-            task.Wait();
+            }).Result;
 
-            return task.Result;
+            return events.Select(item => new Stream {
+                Key = new SourceKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
+                Version = item.Version,
+                Payload = item.Payload
+            }).AsEnumerable();
         }
 
         public void RemoveAll(SourceKey sourceKey)

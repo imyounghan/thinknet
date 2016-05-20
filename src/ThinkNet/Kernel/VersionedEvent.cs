@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using ThinkNet.Messaging;
 
 namespace ThinkNet.Kernel
 {
@@ -21,7 +22,7 @@ namespace ThinkNet.Kernel
         /// </summary>
         public override string ToString()
         {
-            return string.Concat(this.GetType().FullName, "@", this.SourceId, ":", this.Version);
+            return string.Concat(this.GetType().FullName, "@", this.SourceId, "&", this.Id, ":", this.Version);
         }
     }
 }

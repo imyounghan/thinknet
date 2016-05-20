@@ -14,8 +14,12 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         void AddHandlerInfo(string messageId, Type messageType, Type handlerType);
         /// <summary>
-        /// 检查该处理程序信息是否存在
+        /// 返回一个值表示当前的处理程序是否被执行。
         /// </summary>
-        bool IsHandlerInfoExist(string messageId, Type messageType, Type handlerType);
+        bool HandlerIsExecuted(string messageId, Type messageType, Type handlerType);
+        /// <summary>
+        /// 返回一个值表示当前的处理程序是否存在被执行过的。
+        /// </summary>
+        bool HandlerHasExecuted(string messageId, Type messageType, params Type[] handlerTypes);
     }
 }

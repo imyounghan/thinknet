@@ -25,7 +25,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected Command(string id)
         {
-            this.Id = id.DefaultIfEmpty(ObjectId.GenerateNewStringId());
+            this.Id = id.DefaultIfEmpty(ObjectId.GenerateNewStringId);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Concat(this.GetType().FullName, "|", this.AggregateRootId);
+            return string.Concat(this.GetType().FullName, "@", this.AggregateRootId, "&", this.Id);
         }
     }
 }

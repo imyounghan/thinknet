@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ThinkNet.Messaging;
 
 
 namespace ThinkNet.Kernel

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using ThinkNet.Messaging;
-using ThinkNet.Messaging.Handling;
 
 namespace ThinkNet.Kernel
 {
@@ -13,8 +11,7 @@ namespace ThinkNet.Kernel
     /// </summary>
     [DataContract]
     [Serializable]
-    [RequireHandler]
-    public class EventStream : Event
+    internal class EventStream : Event
     {
         [DataContract]
         [Serializable]
@@ -67,7 +64,7 @@ namespace ThinkNet.Kernel
 
             public override string ToString()
             {
-                return string.Concat(this.Namespace, ".", this.TypeName);
+                return string.Concat(this.Namespace, ".", this.TypeName, "@", this.Payload);
             }
 
             public Type GetSourceType()
@@ -129,6 +126,16 @@ namespace ThinkNet.Kernel
         [DataMember]
         public string CommandId { get; set; }
         /// <summary>
+        /// 起始版本号
+        /// </summary>
+        [DataMember]
+        public int StartVersion { get; set; }
+        /// <summary>
+        /// 结束版本号
+        /// </summary>
+        [DataMember]
+        public int EndVersion { get; set; }
+        /// <summary>
         /// 事件源
         /// </summary>
         [DataMember]
@@ -145,7 +152,7 @@ namespace ThinkNet.Kernel
         /// </summary>
         public override string ToString()
         {
-            return string.Concat(string.Join("&", this.Events) , "|", this.SourceId, ":", this.CommandId);
+            return string.Concat("[", string.Join("^", this.Events), "]", "#", this.CommandId);
         }
     }
 }

@@ -57,6 +57,7 @@
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
     <Compile Include="Infrastructure\IAggregateRootFactory.cs" />
+    <Compile Include="Kernel\EventStream.cs" />
     <Compile Include="Messaging\Handling\CommandHandlerWrapper.cs" />
     <Compile Include="Messaging\Handling\EventHandlerWrapper.cs" />
     <Compile Include="Messaging\Handling\ICommandContextFactory.cs" />
@@ -69,7 +70,6 @@
     <Compile Include="Messaging\AbstractBus.cs" />
     <Compile Include="Messaging\CommandBus.cs" />
     <Compile Include="Messaging\EventBus.cs" />
-    <Compile Include="Messaging\Handling\IInterceptionProvider.cs" />
     <Compile Include="Messaging\Handling\IProxyInterception.cs" />
     <Compile Include="Messaging\Handling\IMessageExecutor.cs" />
     <Compile Include="Messaging\Handling\MessageExecutor.cs" />
@@ -81,8 +81,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Kernel\EventSourcedRepository.cs" />
-    <Compile Include="Kernel\VersionedEventStream.cs" />
-    <Compile Include="Messaging\Handling\IHandlerProvider.cs" />
     <Compile Include="Messaging\Handling\IProxyHandler.cs" />
     <Compile Include="Infrastructure\MessageBroker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
