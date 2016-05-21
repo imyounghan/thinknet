@@ -1,8 +1,8 @@
-﻿
+﻿using ThinkNet.Configurations;
 using ThinkNet.Messaging;
-using ThinkLib.Common;
 using UserRegistration.Events;
 using UserRegistration.ReadModel;
+
 namespace UserRegistration.Application
 {
     [UnderlyingComponent(typeof(AuthenticationService))]

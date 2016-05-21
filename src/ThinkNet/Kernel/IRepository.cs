@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkLib.Common;
 using ThinkLib.Logging;
+using ThinkNet.Configurations;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Kernel
@@ -65,7 +65,7 @@ namespace ThinkNet.Kernel
         {
             this.dictionary = new Dictionary<int, ISet<IAggregateRoot>>();
             this.eventBus = eventBus;
-            this._logger = LogManager.GetLogger("ThinkZoo");
+            this._logger = LogManager.GetLogger("ThinkNet");
         }
 
 

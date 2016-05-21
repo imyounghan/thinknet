@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ThinkLib.Common;
+using ThinkNet.Configurations;
 
 namespace ThinkNet.Messaging
 {

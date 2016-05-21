@@ -27,7 +27,7 @@ namespace ThinkNet.Database.EntityFramework
 
         public IDataContext GetCurrentDataContext()
         {
-            return base.CurrentContext.CurrentContext() as IDataContext;
+            return base.CurrentContext.GetContext() as IDataContext;
         }
 
         public IDataContext CreateDataContext()

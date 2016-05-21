@@ -27,7 +27,7 @@ namespace ThinkNet.Messaging.Handling
             IEventContextFactory eventContextFactory*/)
         {
             this._handlerStore = handlerStore;
-            this._logger = LogManager.GetLogger("ThinkZoo");
+            this._logger = LogManager.GetLogger("ThinkNet");
 
             this._commandContextFactory = commandContextFactory;
             //this._eventContextFactory = eventContextFactory;

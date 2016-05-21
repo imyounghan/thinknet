@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using ThinkNet.Infrastructure;
-using ThinkLib.Common;
 using ThinkLib.Logging;
+using ThinkNet.Configurations;
 
 namespace ThinkNet.Messaging
 {
@@ -22,7 +22,7 @@ namespace ThinkNet.Messaging
             this.messageSender = messageSender;
             this.routingKeyProvider = routingKeyProvider;
             this.metadataProvider = metadataProvider;
-            this.logger = LogManager.GetLogger("ThinkZoo");
+            this.logger = LogManager.GetLogger("ThinkNet");
         }
 
         protected override bool SearchMatchType(Type type)

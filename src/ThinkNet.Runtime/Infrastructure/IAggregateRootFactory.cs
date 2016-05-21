@@ -2,8 +2,8 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ThinkNet.Configurations;
 using ThinkNet.Kernel;
-using ThinkLib.Common;
 
 
 namespace ThinkNet.Infrastructure

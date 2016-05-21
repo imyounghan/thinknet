@@ -1,4 +1,4 @@
-﻿using ThinkLib.Common;
+﻿using ThinkNet.Configurations;
 
 namespace ThinkNet.EventSourcing
 {

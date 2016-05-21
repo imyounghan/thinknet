@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkLib.Common;
 using ThinkLib.Logging;
+using ThinkNet.Configurations;
 using ThinkNet.Database;
 using ThinkNet.Kernel;
 using ThinkNet.Messaging;
@@ -25,7 +25,7 @@ namespace ThinkNet.Infrastructure
             this._dbContextFactory = dbContextFactory;
             this._eventBus = eventBus;
             this._cache = cache;
-            this._logger = LogManager.GetLogger("ThinkZoo");
+            this._logger = LogManager.GetLogger("ThinkNet");
         }
 
         #region IRepository 成员

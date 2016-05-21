@@ -6,8 +6,8 @@ using Microsoft.Practices.ServiceLocation;
 using ThinkLib.Common;
 using ThinkLib.Contexts;
 using ThinkLib.Scheduling;
-using ThinkLib.Serialization;
 using ThinkNet.EventSourcing;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 

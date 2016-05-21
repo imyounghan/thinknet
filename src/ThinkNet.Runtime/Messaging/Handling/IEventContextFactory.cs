@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ThinkLib.Common;
 using ThinkLib.Contexts;
+using ThinkNet.Configurations;
 
 namespace ThinkNet.Messaging.Handling
 {

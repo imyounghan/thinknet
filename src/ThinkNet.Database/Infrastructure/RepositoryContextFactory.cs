@@ -7,6 +7,7 @@ using ThinkNet.Kernel;
 using ThinkNet.Messaging;
 using ThinkLib.Common;
 using ThinkLib.Logging;
+using ThinkNet.Configurations;
 
 namespace ThinkNet.Infrastructure
 {
@@ -30,7 +31,7 @@ namespace ThinkNet.Infrastructure
                 this._context = context;
                 this._cache = cache;
                 this._eventBus = eventBus;
-                this._logger = LogManager.GetLogger("ThinkZoo");
+                this._logger = LogManager.GetLogger("ThinkNet");
             }
 
             public void Commit()

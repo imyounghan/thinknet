@@ -19,7 +19,7 @@ namespace ThinkNet.Messaging.Handling
         public Processor(IMessageReceiver receiver)
         {
             this.receiver = receiver;
-            this.logger = LogManager.GetLogger("ThinkZoo");
+            this.logger = LogManager.GetLogger("ThinkNet");
         }
 
         /// <summary>

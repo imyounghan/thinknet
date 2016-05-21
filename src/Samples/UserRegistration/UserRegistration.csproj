@@ -67,9 +67,6 @@
     <Reference Include="ThinkLib">
       <HintPath>..\..\Dependency\ThinkLib.dll</HintPath>
     </Reference>
-    <Reference Include="ThinkLib.Unity">
-      <HintPath>..\..\Dependency\ThinkLib.Unity.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Application\IAuthenticationService.cs" />
@@ -85,6 +82,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Extensions\ThinkNet.Runtime.Unity\ThinkNet.Runtime.Unity.csproj">
+      <Project>{7f73c3d8-27f3-4791-b781-9714fbf8df8d}</Project>
+      <Name>ThinkNet.Runtime.Unity</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ThinkNet.Database\ThinkNet.Database.csproj">
       <Project>{1f193073-7698-455a-9516-3d6f4358ed35}</Project>
       <Name>ThinkNet.Database</Name>

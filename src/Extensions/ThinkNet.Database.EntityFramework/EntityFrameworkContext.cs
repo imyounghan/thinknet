@@ -40,25 +40,25 @@ namespace ThinkNet.Database.EntityFramework
 
         public override bool Contains(object entity)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull("entity");
             return _efContext.Entry(entity).State != EntityState.Detached;
         }
 
         public override void Detach(object entity)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull("entity");
             _efContext.Entry(entity).State = EntityState.Detached;
         }
 
         public override void Attach(object entity)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull("entity");
             _efContext.Entry(entity).State = EntityState.Unchanged;
         }
 
         protected override void Delete(object entity, Func<object, bool> beforeDelete)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull("entity");
 
             if (beforeDelete(entity))
                 _efContext.Entry(entity).State = EntityState.Deleted;
@@ -66,7 +66,7 @@ namespace ThinkNet.Database.EntityFramework
 
         protected override void Save(object entity, Func<object, bool> beforeSave)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull("entity");
 
             if (beforeSave(entity))
                 _efContext.Entry(entity).State = EntityState.Added;
@@ -74,7 +74,7 @@ namespace ThinkNet.Database.EntityFramework
 
         protected override void Update(object entity, Func<object, bool> beforeUpdate)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull("entity");
 
             if (beforeUpdate(entity))
                 _efContext.Entry(entity).State = EntityState.Modified;
@@ -82,7 +82,7 @@ namespace ThinkNet.Database.EntityFramework
 
         public override void Refresh(object entity)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull( "entity");
             _efContext.Entry(entity).Reload();
         }
 
@@ -94,6 +94,11 @@ namespace ThinkNet.Database.EntityFramework
         public override object Find(Type type, params object[] keyValues)
         {
             return _efContext.Set(type).Find(keyValues);
+        }
+
+        public override void Load(object entity)
+        {
+            this.Refresh(entity);
         }
 
         protected override void DoCommit()

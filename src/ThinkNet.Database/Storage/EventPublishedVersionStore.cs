@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using ThinkLib.Common;
+using ThinkNet.Configurations;
 using ThinkNet.EventSourcing;
 
 namespace ThinkNet.Database.Storage

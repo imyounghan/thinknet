@@ -84,7 +84,7 @@ namespace ThinkNet.Kernel
                     throw new EventSourcedException(errorMessage);
                 }
 
-                var log = LogManager.GetLogger("ThinkZoo");
+                var log = LogManager.GetLogger("ThinkNet");
                 if (log.IsWarnEnabled)
                     log.Warn(errorMessage);
                 return;

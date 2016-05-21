@@ -3,7 +3,7 @@ using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using ThinkNet.EventSourcing;
-using ThinkLib.Common;
+using ThinkNet.Configurations;
 
 
 namespace ThinkNet.Database.Storage

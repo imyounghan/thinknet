@@ -54,7 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configurations\BootstrapperExtentions.cs" />
+    <Compile Include="Configurations\Bootstrapper.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
     <Compile Include="Infrastructure\IAggregateRootFactory.cs" />
     <Compile Include="Kernel\EventStream.cs" />

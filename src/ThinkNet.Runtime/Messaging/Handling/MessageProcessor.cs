@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using ThinkLib.Common;
+using ThinkNet.Configurations;
+using ThinkNet.Infrastructure;
 using ThinkNet.Kernel;
 
 
 namespace ThinkNet.Messaging.Handling
 {
-    //[RegisterComponent(typeof(IProcessor), "MessageProcessor")]
+    [RegisterComponent(typeof(IProcessor), "MessageProcessor")]
     public class MessageProcessor : Processor, IInitializer
     {
         private readonly IMessageExecutor _executor;

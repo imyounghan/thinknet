@@ -18,45 +18,10 @@ namespace UserRegistration
         {
             int counter = 0;
 
-            //var broker = MessageBrokerFactory.Instance.GetOrCreate("message");
-            //var worker = WorkerFactory.Create<Message>(broker.Take, (msg) => {
-            //    //if (msg.IsNull())
-            //    //    return;
-            //    //Console.WriteLine(msg);
-            //}, broker.Complete);
-            //worker.Start();
-
-            //while (counter++ < 1000) {
-            //    var userRegister = new RegisterUser {
-            //        UserName = "老韩",
-            //        Password = "hanyang",
-            //        LoginId = "young.han",
-            //        Email = "19126332@qq.com"
-            //    };
-
-            //    broker.TryAdd(new Message {
-            //        Body = userRegister,
-            //        MetadataInfo = null,
-            //        RoutingKey = string.Empty,
-            //        CreatedTime = DateTime.UtcNow
-            //    });
-            //    //task.Wait();
-            //}
-            //Console.WriteLine("over");
-
-            //Console.ReadKey();
+            
             //ConfigurationSetting.Current.QueueCount = 1;
 
-            Bootstrapper.Current.StartThinkNet().DoneWithUnity();
-
-            //Dictionary<string, string> dict = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-
-            counter = 0;
-            //while (counter++ < 1000) {
-            //    var id = ObjectId.GenerateNewId().ToString();
-            //    dict.Add(id, id);
-            //    Console.WriteLine(id);
-            //}
+            Bootstrapper.Current.DoneWithUnity();
 
 
             var manager = ServiceLocator.Current.GetInstance<ICommandResultManager>();
@@ -71,14 +36,13 @@ namespace UserRegistration
                     Email = "19126332@qq.com"
                 };
 
-                tasks[counter++] = manager.RegisterCommand(userRegister, CommandReplyType.CommandExecuted);
-                //task.Wait();
+                tasks[counter++] = manager.RegisterCommand(userRegister, CommandReplyType.DomainEventHandled);
             }
             System.Threading.Tasks.Task.WaitAll(tasks, TimeSpan.FromSeconds(30));
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
 
-            Console.WriteLine(tasks.Where(p => p.IsCompleted).Count()); 
+            //Console.WriteLine(tasks.Where(p => p.IsCompleted).Count()); 
 
             var userDao = ServiceLocator.Current.GetInstance<IUserDao>();
 

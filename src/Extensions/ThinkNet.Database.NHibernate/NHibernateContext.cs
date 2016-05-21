@@ -69,12 +69,13 @@ namespace ThinkNet.Database.NHibernate
 
         public override bool Contains(object entity)
         {
+            entity.NotNull("entity");
             return Session.Contains(entity);
         }
 
         protected override void Delete(object entity, Func<object, bool> beforeDelete)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull("entity");
 
             if (beforeDelete(entity))
                 Session.Delete(entity);
@@ -82,17 +83,19 @@ namespace ThinkNet.Database.NHibernate
 
         public override void Detach(object entity)
         {
+            entity.NotNull("entity");
             Session.Evict(entity);
         }
 
         public override void Attach(object entity)
         {
+            entity.NotNull("entity");
             Session.Merge(entity);
         }
 
         protected override void Save(object entity, Func<object, bool> beforeSave)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull("entity");
 
             if (beforeSave(entity))
                 Session.Save(entity);
@@ -100,7 +103,7 @@ namespace ThinkNet.Database.NHibernate
 
         protected override void Update(object entity, Func<object, bool> beforeUpdate)
         {
-            Ensure.NotNull(entity, "entity");
+            entity.NotNull("entity");
 
             if (beforeUpdate(entity))
                 Session.Update(entity);
@@ -108,13 +111,13 @@ namespace ThinkNet.Database.NHibernate
 
         protected override void SaveOrUpdate(object entity, Func<object, bool> beforeSave, Func<object, bool> beforeUpdate)
         {
-            Ensure.NotNull(entity, "entity");
-
+            entity.NotNull("entity");
             Session.SaveOrUpdate(entity);
         }
 
         public override void Refresh(object entity)
         {
+            entity.NotNull("entity");
             Session.Refresh(entity);
         }
 
@@ -130,6 +133,13 @@ namespace ThinkNet.Database.NHibernate
 
             var id = Activator.CreateInstance(type, keyValues);
             return Session.Get(type, id);
+        }
+
+        public override void Load(object entity)
+        {
+            entity.NotNull("entity");
+
+            Session.Load(entity, entity);
         }
 
         protected override void Dispose(bool disposing)

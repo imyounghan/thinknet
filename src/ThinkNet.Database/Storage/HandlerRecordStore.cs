@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkLib.Common;
+using ThinkNet.Configurations;
 using ThinkNet.Messaging.Handling;
 
 namespace ThinkNet.Database.Storage

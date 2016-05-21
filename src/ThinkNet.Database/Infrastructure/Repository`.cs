@@ -47,7 +47,7 @@ namespace ThinkNet.Infrastructure
         {
             this._context = context;
             this._cache = cache;
-            this._logger = LogManager.GetLogger("ThinkZoo");
+            this._logger = LogManager.GetLogger("ThinkNet");
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
 ﻿using System.Data.Common;
-using ThinkLib.Common;
+using ThinkNet.Configurations;
 
 namespace ThinkNet.Database
 {

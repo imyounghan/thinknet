@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using ThinkLib.Caching;
 using ThinkLib.Common;
+using ThinkNet.Configurations;
 
 
 namespace ThinkNet.Infrastructure
