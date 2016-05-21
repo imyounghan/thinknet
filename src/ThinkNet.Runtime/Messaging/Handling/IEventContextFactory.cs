@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ThinkLib.Common;
 using ThinkLib.Contexts;
 using ThinkNet.Configurations;
@@ -25,6 +26,7 @@ namespace ThinkNet.Messaging.Handling
         {
             private readonly IContextManager _contextManager;
             private readonly object _context;
+            private readonly IList<IEvent> pendingEvents;
             /// <summary>
             /// Parameterized constructor.
             /// </summary>
@@ -66,7 +68,8 @@ namespace ThinkNet.Messaging.Handling
                 get { return this._contextManager; }
             }    
         }
-        
+
+        private readonly ICommandBus _commandBus;
         public EventContextFactory()
             : base("thread")
         {

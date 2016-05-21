@@ -20,7 +20,7 @@ namespace ThinkNet.Messaging.Handling
 
             var context = _commandContextFactory.CreateCommandContext();
             commandHandler.Handle(context, command);
-            context.Commit();
+            context.Commit(command.Id);
         }
     }
 }

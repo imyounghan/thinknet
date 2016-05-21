@@ -5,7 +5,7 @@ namespace ThinkNet.Messaging.Handling
 {
     /// <summary>Represents a command context for aggregate command handler handling command.
     /// </summary>
-    public interface ICommandContext : IUnitOfWork
+    public interface ICommandContext// : IUnitOfWork
     {
         /// <summary>Add a new aggregate into the current command context.
         /// </summary>
@@ -18,5 +18,7 @@ namespace ThinkNet.Messaging.Handling
         T Find<T>(object id) where T : class, IAggregateRoot;
 
         void PendingEvent(IEvent @event);
+
+        void Commit(string commandId);
     }
 }
