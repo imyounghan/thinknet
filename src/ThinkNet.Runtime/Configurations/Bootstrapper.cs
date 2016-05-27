@@ -1,11 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
+using System.ComponentModel.Composition.Registration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Practices.ServiceLocation;
 using ThinkLib.Common;
 using ThinkLib.Logging;
 using ThinkLib.Utilities;
+using ThinkNet.EventSourcing;
+using ThinkNet.Infrastructure;
+using ThinkNet.Kernel;
+using ThinkNet.Messaging;
+using ThinkNet.Messaging.Handling;
+using ThinkNet.Runtime;
 
 namespace ThinkNet.Configurations
 {
@@ -17,75 +28,80 @@ namespace ThinkNet.Configurations
         /// <summary>
         /// 注册类型
         /// </summary>
-        public class TypeRegistration
+        public class Component
         {
+            ///// <summary>
+            ///// Parameterized constructor.
+            ///// </summary>
+            //public Component(Type type, object instance, string name)
+            //    : this(type, name)
+            //{
+            //    this.Instance = instance;
+            //}
+            ///// <summary>
+            ///// Parameterized constructor.
+            ///// </summary>
+            //public Component(Type type, string name)
+            //    : this(type, name, Lifecycle.Singleton)
+            //{ }
             /// <summary>
             /// Parameterized constructor.
             /// </summary>
-            public TypeRegistration(Type type, object instance, string name)
-                : this(type, name)
+            public Component(Type type, string name, Lifecycle lifecycle)
             {
-                this.Instance = instance;
-            }
-            /// <summary>
-            /// Parameterized constructor.
-            /// </summary>
-            public TypeRegistration(Type type, string name)
-                : this(type, name, Lifecycle.Singleton)
-            { }
-            /// <summary>
-            /// Parameterized constructor.
-            /// </summary>
-            public TypeRegistration(Type type, string name, Lifecycle lifecycle)
-            {
-                this.RegisterType = type;
-                this.Name = name ?? string.Empty;
+                this.ForType = type;
+                this.ContractName = name ?? string.Empty;
                 this.Lifecycle = lifecycle;
             }
             /// <summary>
             /// Parameterized constructor.
             /// </summary>
-            public TypeRegistration(Type from, Type to, string name, Lifecycle lifecycle)
-                : this(from, name, lifecycle)
+            public Component(Type from, Type to, string name, Lifecycle lifecycle)
+                : this(to, name, lifecycle)
             {
-                this.ImplementationType = to;
+                this.ContractType = from;
             }
 
             /// <summary>
             /// 要注册的名称
             /// </summary>
-            public string Name { get; set; }
+            public string ContractName { get; set; }
             /// <summary>
             /// 要注册的类型
             /// </summary>
-            public Type RegisterType { get; private set; }
-            /// <summary>
-            /// 要注册类型的实例
-            /// </summary>
-            public object Instance { get; private set; }
+            public Type ContractType { get; private set; }
+            ///// <summary>
+            ///// 要注册类型的实例
+            ///// </summary>
+            //public object Instance { get; private set; }
             /// <summary>
             /// 要注册类型的实现类型
             /// </summary>
-            public Type ImplementationType { get; private set; }
+            public Type ForType { get; private set; }
             /// <summary>
             /// 生命周期
             /// </summary>
             public Lifecycle Lifecycle { get; private set; }
+
+            private Type GetServiceType()
+            {
+                return this.ContractType ?? this.ForType;
+            }
 
             /// <summary>
             /// 返回一个值，该值指示此实例是否与指定的对象相等。
             /// </summary>
             public override bool Equals(object obj)
             {
-                var other = obj as TypeRegistration;
+                var other = obj as Component;
 
                 if (other == null)
                     return false;
 
-                if (this.RegisterType != other.RegisterType)
+                if (this.GetServiceType() != other.GetServiceType())
                     return false;
 
-                if (!String.Equals(this.Name, other.Name))
+                if (!String.Equals(this.ContractName, other.ContractName))
                     return false;
 
                 return true;
@@ -95,19 +111,16 @@ namespace ThinkNet.Configurations
             /// </summary>
             public override int GetHashCode()
             {
-                return String.Concat(this.RegisterType.FullName, "|", this.Name).GetHashCode();
+                return String.Concat(this.GetServiceType().FullName, "|", this.ContractName).GetHashCode();
             }
 
             internal int GetUniqueCode()
             {
-                if (IsInitializer(this.Instance))
-                    return this.Instance.GetHashCode();
+                if (IsInitializeType(this.ForType))
+                    return this.ForType.GetHashCode();
 
-                if (IsInitializeType(this.ImplementationType))
-                    return this.ImplementationType.GetHashCode();
-
-                if (IsInitializeType(this.RegisterType))
-                    return this.RegisterType.GetHashCode();
+                if (IsInitializeType(this.ContractType))
+                    return this.ContractType.GetHashCode();
 
 
                 return this.GetHashCode();
@@ -115,12 +128,119 @@ namespace ThinkNet.Configurations
 
             internal bool NeedInitialize()
             {
-                return IsInitializer(this.Instance) || IsInitializeType(this.RegisterType) || IsInitializeType(this.ImplementationType);
+                return IsInitializeType(this.ContractType) || IsInitializeType(this.ForType);
             }
 
-            internal object GetInstance(Func<Type, string, object> resolve)
+            internal static object GetInstance(Component component)
             {
-                return this.Instance ?? resolve(this.RegisterType, this.Name);
+                var serviceType = component.GetServiceType();
+                var key = component.ContractName;
+                return string.IsNullOrWhiteSpace(key) ?
+                    ServiceLocator.Current.GetInstance(serviceType) :
+                    ServiceLocator.Current.GetInstance(serviceType, key);
+            }
+        }
+
+        class ObjectContainer : ServiceLocatorImplBase
+        {
+            public readonly static ObjectContainer Instance = new ObjectContainer();
+
+
+            private readonly CompositionContainer container;
+            private readonly AggregateCatalog catalog;
+            Dictionary<Assembly, RegistrationBuilder> dict;
+            private ObjectContainer()
+            {
+                this.catalog = new AggregateCatalog();
+                this.container = new CompositionContainer(catalog);
+                this.dict = new Dictionary<Assembly, RegistrationBuilder>();
+            }
+            public void Register(Component component)
+            {
+                var builder = dict.GetOrAdd(component.ForType.Assembly, _ => new RegistrationBuilder());
+                var partBuilder = builder.ForType(component.ForType);
+
+                if (!component.ContractType.IsNull()) {
+                    partBuilder = partBuilder.Export(p => p.AsContractType(component.ContractType));
+                }
+                else {
+                    partBuilder = partBuilder.Export();
+                }
+
+                if (!string.IsNullOrEmpty(component.ContractName)) {
+                    partBuilder = partBuilder.Export(p => p.AsContractName(component.ContractName));
+                }
+
+                switch (component.Lifecycle) {
+                    case Lifecycle.Singleton:
+                        partBuilder.SetCreationPolicy(CreationPolicy.Shared);
+                        break;
+                    case Lifecycle.Transient:
+                        partBuilder.SetCreationPolicy(CreationPolicy.NonShared);
+                        break;
+                }
+            }
+
+            public void Compose()
+            {
+                dict.ForEach(item => {
+                    catalog.Catalogs.Add(new AssemblyCatalog(item.Key, item.Value));
+                });
+                container.ComposeParts();
+            }
+
+            public void Release()
+            {
+                this.dict.Clear();
+                this.dict = null;
+            }
+
+            protected override IEnumerable<object> DoGetAllInstances(Type serviceType)
+            {
+                var instances = container.GetExportedValues<object>(serviceType.FullName);
+                return instances;
+            }
+
+            protected override object DoGetInstance(Type serviceType, string key)
+            {
+                if (string.IsNullOrEmpty(key)) {
+                    var contractName = AttributedModelServices.GetContractName(serviceType);
+                    var instance = container.GetExportedValueOrDefault<object>(contractName);
+                    return instance;
+                }
+                else {
+                    return container.GetExportedValueOrDefault<object>(key);
+                }
+            }
+
+            public override IEnumerable<object> GetAllInstances(Type serviceType)
+            {
+                return this.DoGetAllInstances(serviceType);
+            }
+
+            public override IEnumerable<TService> GetAllInstances<TService>()
+            {
+                return container.GetExportedValues<TService>();
+            }
+
+            public override TService GetInstance<TService>(string key)
+            {
+                return container.GetExportedValueOrDefault<TService>(key);
+            }
+
+            public override TService GetInstance<TService>()
+            {
+                return container.GetExportedValueOrDefault<TService>();
+            }
+
+            public override object GetInstance(Type serviceType)
+            {
+                return this.DoGetInstance(serviceType, null);
+            }
+
+            public override object GetInstance(Type serviceType, string key)
+            {
+                return this.DoGetInstance(serviceType, null);
             }
         }
 
@@ -131,14 +251,14 @@ namespace ThinkNet.Configurations
         public static readonly Bootstrapper Current = new Bootstrapper();
 
 
-        private readonly List<Assembly> _assemblies;
-        private readonly List<TypeRegistration> _registerComponents;
-        private readonly HashSet<int> _registeredObjects;
-        private readonly HashSet<int> _initializedObjects;
+        private List<Assembly> _assemblies;
+        private List<Component> _registerComponents;
+        private HashSet<int> _registeredObjects;
+        private HashSet<int> _initializedObjects;
         private Bootstrapper()
         {
             this._assemblies = new List<Assembly>();
-            this._registerComponents = new List<TypeRegistration>();
+            this._registerComponents = new List<Component>();
             this._registeredObjects = new HashSet<int>();
             this._initializedObjects = new HashSet<int>();
         }
@@ -161,13 +281,16 @@ namespace ThinkNet.Configurations
         /// </summary>
         public Bootstrapper LoadAssemblies()
         {
-            string applicationAssemblyDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Bin");
-            if (!FileUtils.DirectoryExists(applicationAssemblyDirectory)) {
-                applicationAssemblyDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            }
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string relativeSearchPath = AppDomain.CurrentDomain.RelativeSearchPath;
+            string binPath = string.IsNullOrEmpty(relativeSearchPath) ? baseDir : Path.Combine(baseDir, relativeSearchPath);
+            //string applicationAssemblyDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Bin");
+            //if (!FileUtils.DirectoryExists(applicationAssemblyDirectory)) {
+            //    applicationAssemblyDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            //}
 
 
-            var assemblies = Directory.GetFiles(applicationAssemblyDirectory)
+            var assemblies = Directory.GetFiles(binPath)
                 .Where(file => {
                     var ext = Path.GetExtension(file).ToLower();
                     return ext.EndsWith(".dll") || ext.EndsWith(".exe");
@@ -179,12 +302,25 @@ namespace ThinkNet.Configurations
         }
 
 
-
         private bool _running = false;
+
+        public void Done()
+        {
+            ServiceLocator.SetLocatorProvider(() => ObjectContainer.Instance);
+            this.Done(ObjectContainer.Instance.Register, ObjectContainer.Instance.Compose);
+            
+            ObjectContainer.Instance.Release();
+        }
+
         /// <summary>
         /// 配置完成。
         /// </summary>
-        public void Done(Action<TypeRegistration> typeRegistry, Func<Type, string, object> typeResolve)
+        public void Done(Action<Component> registry)
+        {
+            this.Done(registry, null);
+        }
+
+        private void Done(Action<Component> registry, Action initialization)
         {
             if (_running)
                 return;
@@ -193,74 +329,80 @@ namespace ThinkNet.Configurations
             if (_assemblies.Count == 0) {
                 this.LoadAssemblies();
 
-                LogManager.GetLogger("ThinkNet").InfoFormat("load assemblies[{0}] completed.",
-                    string.Join(" | ", _assemblies.Select(item => item.FullName)));
+                LogManager.GetLogger("ThinkNet").InfoFormat("load assemblies completed.\r\n{0}",
+                    string.Join("\r\n", _assemblies.Select(item => item.FullName)));
             }
 
 
             var allTypes = _assemblies.SelectMany(assembly => assembly.GetTypes()).ToArray();
 
-            foreach (var type in allTypes) {
-                type.GetAttributes<ComponentAttribute>(false)
-                    .ForEach(attribute => attribute.Register(type, RegisterComponent));
-            }            
+            this.RegisterComponents(allTypes);
+            this.RegisterFrameworkComponents();
+            this.RegisterHandlers(allTypes);
+            this.RegisterInterceptor(allTypes);
 
             while (_registerComponents.Count > 0) {
-                _registerComponents.ForEach(typeRegistry);
-                
-                var initializers = _registerComponents.Where(item => item.NeedInitialize() && _initializedObjects.Add(item.GetUniqueCode())).ToArray();
+                _registerComponents.ForEach(registry);
+                if (initialization != null) {
+                    initialization.Invoke();
+                }
+
+                var initializers = _registerComponents.Where(InitComponent).ToArray();
                 _registerComponents.Clear();
 
-                initializers.Select(item => item.GetInstance(typeResolve)).Cast<IInitializer>().ForEach(item => item.Initialize(allTypes));             
-            }
-
+                initializers.Select(Component.GetInstance).Cast<IInitializer>().ForEach(item => item.Initialize(allTypes));
+            }            
 
             _initializedObjects.Clear();
             _registeredObjects.Clear();
             _assemblies.Clear();
 
+            _registerComponents = null;
+            _initializedObjects = null;
+            _registeredObjects = null;
+            _assemblies = null;
 
             _running = true;
 
             LogManager.GetLogger("ThinkNet").Info("system is running.");
         }
 
-        /// <summary>
-        /// 注册实例
-        /// </summary>
-        public Bootstrapper RegisterInstance(object instance, params Type[] types)
-        {
-            types.NotNull("types");
+        ///// <summary>
+        ///// 注册实例
+        ///// </summary>
+        //public Bootstrapper RegisterInstance(object instance, params Type[] types)
+        //{
+        //    types.NotNull("types");
 
-            foreach (var type in types) {
-                this.RegisterInstance(type, instance);
-            }
+        //    foreach (var type in types) {
+        //        this.RegisterInstance(type, instance);
+        //    }
 
-            return this;
-        }
+        //    return this;
+        //}
 
-        /// <summary>
-        /// 注册实例
-        /// </summary>
-        public Bootstrapper RegisterInstance(Type type, object instance, string name = null)
-        {
-            if (_running) {
-                throw new ApplicationException("system is running, can not register instance, please execute before 'done' method.");
-            }
+        ///// <summary>
+        ///// 注册实例
+        ///// </summary>
+        //public Bootstrapper RegisterInstance(Type type, object instance, string name = null)
+        //{
+        //    if (_running) {
+        //        throw new ApplicationException("system is running, can not register instance, please execute before 'done' method.");
+        //    }
 
-            type.NotNull("type");
-            instance.NotNull("instance");
+        //    type.NotNull("type");
+        //    instance.NotNull("instance");
 
-            AddComponent(new TypeRegistration(type, instance, name));
+        //    AddComponent(new Component(type, instance, name));
 
 
-            return this;
-        }
+        //    return this;
+        //}
 
         /// <summary>
         /// 注册类型
         /// </summary>
-        public Bootstrapper RegisterType(Type type, Lifecycle lifecycle = Lifecycle.Singleton, string name = null)
+        public void RegisterType(Type type, Lifecycle lifecycle, string name)
         {
             if (_running) {
                 throw new ApplicationException("system is running, can not register type, please execute before 'done' method.");
@@ -271,15 +413,13 @@ namespace ThinkNet.Configurations
             }
 
 
-            AddComponent(new TypeRegistration(type, name, lifecycle));
-
-            return this;
+            AddComponent(new Component(type, name, lifecycle));
         }
 
         /// <summary>
         /// 注册类型
         /// </summary>
-        public Bootstrapper RegisterType(Type from, Type to, Lifecycle lifecycle = Lifecycle.Singleton, string name = null)
+        public void RegisterType(Type from, Type to, Lifecycle lifecycle, string name)
         {
             if (_running) {
                 throw new ApplicationException("system is running, can not register type, please execute before 'done' method.");
@@ -290,46 +430,87 @@ namespace ThinkNet.Configurations
                 throw new ApplicationException(string.Format("the type of '{0}' must be a class and cannot be abstract.", to.FullName));
             }
 
-            AddComponent(new TypeRegistration(from, to, name, lifecycle));
-
-            return this;
+            AddComponent(new Component(from, to, name, lifecycle));
         }
 
-        private void RegisterComponent(ComponentAttribute component)
+        private void RegisterComponents(IEnumerable<Type> types)
         {
-            Type registerType = component.RegisterType ?? component.ImplementType;
-            Type implementType = component.ImplementType ?? component.RegisterType;
-            var registerName = component.RegisterTypeName ? implementType.FullName : component.RegisterName;
-            var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(implementType);
-            if (lifecycle == Lifecycle.Singleton) { //如果是单例，先考虑搜索当前类的静态实例
-                var member = implementType.GetMember("Instance", MemberTypes.Field | MemberTypes.Property,
-                    BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase).FirstOrDefault();
+            var registionTypes = types.Where(p => p.IsClass && !p.IsAbstract && p.IsDefined<RegisterAttribute>(false));
 
-                if (member != null && registerType.IsAssignableFrom(member.DeclaringType)) {
-                    this.RegisterInstance(registerType, member.GetMemberValue(null), registerName);
-                    return;
+            foreach (var type in registionTypes) {
+                var attribute = type.GetAttribute<RegisterAttribute>(false);
+                var contractType = attribute.ContractType;
+                var contractName = attribute.ContractName;
+                var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
+                if (attribute.ContractType.IsNull()) {
+                    this.RegisterType(type, lifecycle, contractName);
                 }
-
-                if (component.CreateInstance) {
-                    var instance = component.ConstructorParameters.IsEmpty() ?
-                        Activator.CreateInstance(implementType) : Activator.CreateInstance(implementType, component.ConstructorParameters);
-                    this.RegisterInstance(registerType, instance, registerName);
-                    return;
+                else {
+                    this.RegisterType(attribute.ContractType, type, lifecycle, contractName);
+                }
+            }           
+        }
+        private void RegisterHandlers(IEnumerable<Type> types)
+        {
+            var handlerTypes = types.Where(TypeHelper.IsHandlerType);
+            foreach (var type in handlerTypes) {
+                var interfaceTypes = type.GetInterfaces().Where(TypeHelper.IsHandlerInterfaceType);
+                var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
+                foreach (var interfaceType in interfaceTypes) {
+                    this.RegisterType(interfaceType, type, lifecycle, type.FullName);
                 }
             }
 
-            if (component.RegisterType != null && component.ImplementType != null) {
-                this.RegisterType(component.RegisterType, component.ImplementType, lifecycle, registerName);
-            }
-            else {
-                this.RegisterType(component.RegisterType, lifecycle, registerName);
+            AggregateRootInnerHandlerProvider.Initialize(types);
+        }
+        private void RegisterInterceptor(IEnumerable<Type> types)
+        {
+            var interceptorTypes=types.Where(TypeHelper.IsInterceptionType);
+            foreach (var type in interceptorTypes) {
+                var interfaceTypes = type.GetInterfaces().Where(TypeHelper.IsInterceptionInterfaceType);
+                var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
+                foreach (var interfaceType in interfaceTypes) {
+                    this.RegisterType(interfaceType, type, lifecycle, type.FullName);
+                }
             }
         }
-
-        private void AddComponent(TypeRegistration registration)
+        private void RegisterFrameworkComponents()
         {
-            if (_registeredObjects.Add(registration.GetHashCode()))
-                _registerComponents.Add(registration);
+            this.RegisterType<IEventPublishedVersionStore, EventPublishedVersionInMemory>();
+            this.RegisterType<IEventStore, MemoryEventStore>();
+            this.RegisterType<ISnapshotPolicy, NoneSnapshotPolicy>();
+            this.RegisterType<ISnapshotStore, NoneSnapshotStore>();
+            this.RegisterType<IBinarySerializer, DefaultBinarySerializer>();
+            this.RegisterType<ITextSerializer, DefaultTextSerializer>();
+            this.RegisterType<IMemoryCache, DefaultMemoryCache>();            
+            this.RegisterType<IRoutingKeyProvider, DefaultRoutingKeyProvider>();
+            this.RegisterType<IMetadataProvider, StandardMetadataProvider>();
+            this.RegisterType<IEventSourcedRepository, EventSourcedRepository>();
+            this.RegisterType<IRepository, MemoryRepository>();
+            this.RegisterType<ICommandBus, DefaultCommandBus>();
+            this.RegisterType<ICommandResultManager, DefaultMessageNotification>();
+            this.RegisterType<IEventBus, DefaultEventBus>();
+            this.RegisterType<ICommandContextFactory, DefaultCommandContextFactory>();
+            this.RegisterType<IEventContextFactory, EventContextFactory>();
+            this.RegisterType<IHandlerRecordStore, HandlerRecordInMemory>();
+            this.RegisterType<IAggregateRootFactory, DefaultAggregateRootFactory>();
+            this.RegisterType<IMessageBroker, DefaultMessageBroker>();
+            this.RegisterType<IMessageNotification, DefaultMessageNotification>();
+            this.RegisterType<IMessageSender, DefaultMessageSender>();
+            this.RegisterType<IMessageReceiver, DefaultMessageReceiver>();
+            this.RegisterType<IMessageExecutor, DefaultMessageExecutor>();
+            this.RegisterType<IProcessor, MessageProcessor>("Message");
+        }
+
+        private bool InitComponent(Component component)
+        {
+            return component.NeedInitialize() && _initializedObjects.Add(component.GetUniqueCode());
+        }
+
+        private void AddComponent(Component component)
+        {
+            if (_registeredObjects.Add(component.GetHashCode()))
+                _registerComponents.Add(component);
         }
 
         private static bool IsInitializeType(Type type)

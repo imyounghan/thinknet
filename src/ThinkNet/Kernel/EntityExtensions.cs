@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Kernel
 {
     /// <summary>
     /// <see cref="IEntity"/> 的扩展类。

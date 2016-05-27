@@ -24,5 +24,15 @@ namespace ThinkNet.Kernel
         {
             return string.Concat(this.GetType().FullName, "@", this.SourceId, "&", this.Id, ":", this.Version);
         }
+
+        #region IVersionedEvent 成员
+
+        [IgnoreDataMember]
+        string IVersionedEvent.SourceId
+        {
+            get { return base.GetSourceStringId(); }
+        }
+
+        #endregion
     }
 }

@@ -26,9 +26,12 @@ namespace ThinkNet.Database.Storage
         /// </summary>
         public override void AddHandlerInfo(string messageId, Type messageType, Type handlerType)
         {
-            base.AddHandlerInfo(messageId, messageType, handlerType);
+            var messageTypeName = messageType.FullName;
+            var handlerTypeName = handlerType.FullName;
 
-            var handlerRecord = new HandlerRecord(messageId, messageType.FullName, handlerType.FullName);
+            base.AddHandlerInfo(messageId, messageTypeName, handlerTypeName);
+
+            var handlerRecord = new HandlerRecord(messageId, messageTypeName, handlerTypeName);
             Task.Factory.StartNew(() => {
                 using (var context = _contextFactory.CreateDataContext()) {
                     var executed = context.CreateQuery<HandlerRecord>()
@@ -44,52 +47,17 @@ namespace ThinkNet.Database.Storage
             });
         }
 
-        public override bool HandlerHasExecuted(string messageId, Type messageType, params Type[] handlerTypes)
+        protected override void Initialize()
         {
-            var allExecuted = handlerTypes.All(handlerType => HandlerIsExecuted(messageId, messageType, handlerType));
-            if (!allExecuted) {
-                Task.Factory.StartNew(() => {
-                    using (var context = _contextFactory.CreateDataContext()) {
-                        var query =context.CreateQuery<HandlerRecord>();
+            Task.Factory.StartNew(() => {
+                using (var context = _contextFactory.CreateDataContext()) {
+                    var query = context.CreateQuery<HandlerRecord>();
 
-                        foreach (var handlerType in handlerTypes) {
-                            var executed = query.Any(p => p.MessageId == messageId &&
-                                    p.MessageTypeCode == messageType.FullName.GetHashCode() &&
-                                    p.HandlerTypeCode == handlerType.FullName.GetHashCode());
-
-                            if (executed)
-                                base.AddHandlerInfo(messageId, messageType, handlerType);
-                        }
-                    }
-                }).Wait();
-            }
-
-
-            return base.HandlerHasExecuted(messageId, messageType, handlerTypes);
+                    return query.Take(1000).OrderByDescending(p => p.Timestamp).ToList();
+                }
+            }).Result.ForEach(record => {
+                base.AddHandlerInfo(record.MessageId, record.MessageType, record.HandlerType);
+            });
         }
-
-        //private static bool IsHandlerInfoExist(IDataContext context, HandlerRecord handlerRecord)
-        //{
-        //    if (handlerRecord == null)
-        //        return false;
-
-        //    return context.CreateQuery<HandlerRecord>()
-        //        .Any(p => p.MessageId == handlerRecord.MessageId &&
-        //            p.MessageTypeCode == handlerRecord.MessageTypeCode &&
-        //            p.HandlerTypeCode == handlerRecord.HandlerTypeCode);
-        //}
-
-        ///// <summary>
-        ///// 检查该处理程序信息是否存在
-        ///// </summary>
-        //protected override bool CheckHandlerInfoExist(string messageId, Type messageType, Type handlerType)
-        //{
-        //    var handlerRecord = new HandlerRecord(messageId, messageType.FullName, handlerType.FullName);
-        //    return Task.Factory.StartNew(() => {
-        //        using (var context = _contextFactory.CreateDataContext()) {
-        //            return IsHandlerInfoExist(context, handlerRecord);
-        //        }
-        //    }).Result;
-        //} 
     }
 }

@@ -1,4 +1,5 @@
-﻿
+﻿using ThinkNet.Infrastructure;
+
 namespace ThinkNet.Messaging
 {
     /// <summary>
@@ -6,9 +7,9 @@ namespace ThinkNet.Messaging
     /// </summary>
     public interface IEvent : IMessage
     {
-        /// <summary>
-        /// 领域事件的来源id
-        /// </summary>
-        string SourceId { get; }
+        ///// <summary>
+        ///// 获取事件ID
+        ///// </summary>
+        //string Id { get; }
     }
 }

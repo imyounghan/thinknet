@@ -34,7 +34,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 获取源标识的字符串形式
         /// </summary>
-        protected virtual string GetSourceStringId()
+        public virtual string GetSourceStringId()
         {
             return string.Empty;
         }
@@ -43,11 +43,5 @@ namespace ThinkNet.Messaging
         {
             return string.Concat(this.GetType().FullName, "@", this.Id);
         }
-
-        [IgnoreDataMember]
-        string IEvent.SourceId
-        {
-            get { return this.GetSourceStringId(); }
-        }     
     }    
 }

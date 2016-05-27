@@ -5,16 +5,16 @@ using ThinkLib.Logging;
 using ThinkNet.Configurations;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
+using ThinkNet.Kernel;
 using ThinkNet.Messaging;
 
 
-namespace ThinkNet.Kernel
+namespace ThinkNet.Runtime
 {
     /// <summary>
     /// <see cref="IRepository"/> 的实现
     /// </summary>
-    [RegisterComponent(typeof(IEventSourcedRepository))]
-    public class EventSourcedRepository : IEventSourcedRepository
+    internal class EventSourcedRepository : IEventSourcedRepository
     {
         private readonly IEventStore _eventStore;
         private readonly ISnapshotStore _snapshotStore;

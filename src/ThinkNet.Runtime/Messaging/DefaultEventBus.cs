@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkNet.Infrastructure;
 using ThinkLib.Logging;
-using ThinkNet.Configurations;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
-    [RegisterComponent(typeof(IEventBus))]
-    public class EventBus : AbstractBus, IEventBus
+    public class DefaultEventBus : AbstractBus, IEventBus
     {
         private readonly IMessageSender messageSender;
         private readonly IRoutingKeyProvider routingKeyProvider;
         private readonly IMetadataProvider metadataProvider;
         private readonly ILogger logger;
 
-        public EventBus(IMessageSender messageSender,
+        public DefaultEventBus(IMessageSender messageSender,
             IRoutingKeyProvider routingKeyProvider,
             IMetadataProvider metadataProvider)
         {
@@ -25,7 +23,7 @@ namespace ThinkNet.Messaging
             this.logger = LogManager.GetLogger("ThinkNet");
         }
 
-        protected override bool SearchMatchType(Type type)
+        protected override bool MatchType(Type type)
         {
             return TypeHelper.IsEvent(type);
         }

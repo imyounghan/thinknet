@@ -5,7 +5,7 @@ using UserRegistration.Events;
 namespace UserRegistration
 {
     [Serializable]
-    public class User : AggregateRoot<Guid>
+    public class User : EventSourced<Guid>
     {
         public User(Guid id)
             : base(id)

@@ -2,17 +2,42 @@
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using Metrics;
 using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.Configuration;
 using Microsoft.Practices.Unity.InterceptionExtension;
 using ThinkLib.Common;
+using ThinkNet.Infrastructure;
+using ThinkNet.Runtime.Unity;
 
 
 namespace ThinkNet.Configurations
 {
     public static class BootstrapperExtentions
     {
+        [Flags]
+        public enum MetricReportMode
+        {
+            Console,
+            TextFile,
+            CSV,
+            Elastic
+        }
+
+        public static void EnableMetric(MetricReportMode reportMode)
+        {
+            var metric = Metric.Config.WithAllCounters();
+
+            if ((reportMode & MetricReportMode.Console) == MetricReportMode.Console)
+                metric.WithReporting(report => report.WithConsoleReport(TimeSpan.FromMinutes(1)));
+            //metric.WithReporting(report => report.WithTextFileReport("MetricReport.txt", TimeSpan.FromMinutes(1)));
+            //metric.WithReporting(report => report.WithCSVReports("", TimeSpan.FromMinutes(1)));
+            //metric.WithReporting(report => report.WithElasticSearch("", 9200, "", TimeSpan.FromMinutes(1)));
+
+            InterceptionBehaviorMap.Instance.Mapping(typeof(IMessageBroker), typeof(MessageBrokerMetrics));
+        }
+
         private static LifetimeManager GetLifetimeManager(Lifecycle lifecycle)
         {
             switch (lifecycle) {

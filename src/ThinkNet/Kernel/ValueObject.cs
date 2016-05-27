@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Kernel
 {
     /// <summary>
     /// 表示继承该抽象类的类型是一个值对象

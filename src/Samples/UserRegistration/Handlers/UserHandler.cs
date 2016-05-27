@@ -1,5 +1,4 @@
 ﻿using System;
-using ThinkNet.Database;
 using ThinkNet.Kernel;
 using ThinkNet.Messaging.Handling;
 using UserRegistration.Commands;
@@ -10,16 +9,17 @@ using UserRegistration.ReadModel;
 namespace UserRegistration.Handlers
 {
     public class UserHandler : 
-        IMessageHandler<RegisterUser>,
+        IHandler<RegisterUser>,
+        ICommandHandler<RegisterUser>,
         IEventHandler<UserCreated>,
-        IMessageHandler<UserLogined>
+        IHandler<UserLogined>
     {
         private readonly IEventSourcedRepository _repository;
-        private readonly IDataContextFactory _contextFactory;
-        public UserHandler(IEventSourcedRepository repository, IDataContextFactory contextFactory)
+        private readonly IUserDao _dao;
+        public UserHandler(IEventSourcedRepository repository, IUserDao dao)
         {
             this._repository = repository;
-            this._contextFactory = contextFactory;
+            this._dao = dao;
         }
 
         public void Handle(RegisterUser command)
@@ -32,15 +32,12 @@ namespace UserRegistration.Handlers
 
         public void Handle(IEventContext context, UserCreated @event)
         {
-            using (var dbcontext = _contextFactory.CreateDataContext()) {
-                dbcontext.Save(new UserModel {
-                    UserID = @event.SourceId,
-                    LoginId = @event.LoginId,
-                    Password = @event.Password,
-                    UserName = @event.UserName
-                });
-                dbcontext.Commit();
-            }
+            _dao.Save(new UserModel {
+                UserID = @event.SourceId,
+                LoginId = @event.LoginId,
+                Password = @event.Password,
+                UserName = @event.UserName
+            });
 
             //Console.WriteLine("同步到Q端数据库");
         }
@@ -50,5 +47,14 @@ namespace UserRegistration.Handlers
             Console.WriteLine("记录登录日志");
         }
 
+
+        #region ICommandHandler<RegisterUser> 成员
+
+        public void Handle(ICommandContext context, RegisterUser command)
+        {
+            this.Handle(command);
+        }
+
+        #endregion
     }
 }

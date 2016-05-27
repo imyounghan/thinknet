@@ -1,5 +1,4 @@
-﻿using ThinkLib.Common;
-using ThinkNet.Kernel;
+﻿using ThinkNet.Kernel;
 
 namespace ThinkNet.Messaging.Handling
 {

@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using ThinkNet.Configurations;
 
 namespace ThinkNet.Infrastructure
 {
-    [UnderlyingComponent(typeof(StandardMetadataProvider))]
+    //[UnderlyingComponent(typeof(StandardMetadataProvider))]
     /// <summary>
     /// Extracts metadata about a payload so that it's placed in the message envelope.
     /// </summary>

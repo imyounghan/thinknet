@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
 {
@@ -16,6 +17,6 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// Get the inner interception.
         /// </summary>
-        IInterception GetInnerInterception();
+        IInterceptor GetInnerInterception();
     }
 }

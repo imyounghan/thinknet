@@ -3,10 +3,11 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using ThinkNet.Configurations;
+using ThinkNet.Infrastructure;
 
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Runtime
 {
-    public class MessageBroker
+    internal class DefaultMessageBroker : IMessageBroker
     {
         class QueueMessage : Message
         {
@@ -87,9 +88,9 @@ namespace ThinkNet.Infrastructure
 
         private long consumeOffset;
         private long produceOffset;
-        private long totalCount;
+        private int totalCount;
 
-        public MessageBroker()
+        public DefaultMessageBroker()
         {
             this.queues = MessageQueue.CreateGroup(ConfigurationSetting.Current.QueueCount);
             this.waiter = new AutoResetEvent(false);
@@ -97,7 +98,13 @@ namespace ThinkNet.Infrastructure
 
             this.produceOffset = -1;
             //this.consumeOffset = -1;
-            //System.IO.File.Delete("log.txt");
+        }
+
+        public int Count { get { return this.totalCount; } }
+
+        public void Add(Message message)
+        {
+
         }
 
         public bool TryAdd(Message message)
@@ -169,8 +176,11 @@ namespace ThinkNet.Infrastructure
 
         public void Complete(Message message)
         {
+            if (message.IsNull()) {
+                return;
+            }
             var queueMessage = message as QueueMessage;
-            if (message.IsNull() || queueMessage.IsNull()) {
+            if (queueMessage.IsNull()) {
                 return;
             }
 

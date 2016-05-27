@@ -28,15 +28,21 @@ namespace ThinkNet.Infrastructure
             var e = payload as IEvent;
             if (e != null) {
                 metadata[StandardMetadata.UniqueId] = e.Id;
-                metadata[StandardMetadata.SourceId] = e.SourceId;
                 metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
+            }
+            var @event = payload as Event;
+            if (@event != null) {
+                metadata[StandardMetadata.SourceId] = @event.GetSourceStringId();
             }
 
             var c = payload as ICommand;
             if (c != null) {
                 metadata[StandardMetadata.UniqueId] = c.Id;
-                metadata[StandardMetadata.SourceId] = c.AggregateRootId;
                 metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
+            }
+            var command = payload as Command;
+            if (c != null) {
+                metadata[StandardMetadata.SourceId] = command.GetAggregateRootStringId();
             }
 
             return metadata;

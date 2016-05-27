@@ -1,16 +1,17 @@
-﻿using ThinkNet.Configurations;
+﻿using ThinkLib.Common;
+using ThinkNet.Configurations;
 using ThinkNet.Messaging;
 using UserRegistration.Events;
 using UserRegistration.ReadModel;
 
 namespace UserRegistration.Application
 {
-    [UnderlyingComponent(typeof(AuthenticationService))]
     public interface IAuthenticationService
     {
         bool Authenticate(string loginid, string password, string ip);
     }
 
+    [Register(typeof(IAuthenticationService))]
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IUserDao userDao;

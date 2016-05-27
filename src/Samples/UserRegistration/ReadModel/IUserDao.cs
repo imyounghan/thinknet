@@ -1,28 +1,32 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ThinkLib.Common;
 using ThinkNet.Configurations;
-using ThinkNet.Database;
+
 
 
 namespace UserRegistration.ReadModel
 {
-    [UnderlyingComponent(typeof(UserDao))]
     public interface IUserDao
     {
+        void Save(UserModel user);
+
         UserModel Find(string loginid);
 
         IEnumerable<UserModel> GetAll();
     }
 
+    [Register(typeof(IUserDao))]
     public class UserDao : IUserDao
     {
-        private readonly IDataContextFactory contextFactory;
-        public UserDao(IDataContextFactory contextFactory)
-        {
-            this.contextFactory = contextFactory;
-        }
+        private readonly HashSet<UserModel> cache = new HashSet<UserModel>();
 
         #region IUserDao 成员
+        public void Save(UserModel user)
+        {
+            cache.Add(user);
+        }
+
 
         public UserModel Find(string loginid)
         {
@@ -32,7 +36,7 @@ namespace UserRegistration.ReadModel
         public IEnumerable<UserModel> GetAll()
         {
             //return Enumerable.Empty<UserModel>();
-            return contextFactory.CreateDataContext().CreateQuery<UserModel>();
+            return cache;
         }
 
         #endregion

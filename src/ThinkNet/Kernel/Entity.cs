@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Kernel
 {
     /// <summary>
     /// 实现 <see cref="IEntity"/> 的抽象类

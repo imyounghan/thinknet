@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Runtime.Serialization;
-using ThinkLib.Logging;
-using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 
 
@@ -15,7 +11,7 @@ namespace ThinkNet.Kernel
     /// </summary>
     [DataContract]
     [Serializable]
-    public abstract class AggregateRoot<TIdentify> : Entity<TIdentify>, IEventSourced, IEventPublisher, ICloneable
+    public abstract class AggregateRoot<TIdentify> : Entity<TIdentify>, IAggregateRoot, IEventPublisher, ICloneable
     {
         /// <summary>
         /// Default constructor.
@@ -30,12 +26,6 @@ namespace ThinkNet.Kernel
             : base(id)
         { }
 
-        /// <summary>
-        /// 版本号
-        /// </summary>
-        [DataMember]
-        public int Version { get; private set; }
-
 
         [NonSerialized]
         private ICollection<IEvent> pendingEvents;
@@ -43,65 +33,14 @@ namespace ThinkNet.Kernel
         /// 引发事件并将其加入到待发布事件列表
         /// </summary>
         protected void RaiseEvent<TEvent>(TEvent @event)
-            where TEvent : IEvent
+            where TEvent : Event<TIdentify>
         {
-            if (@event is VersionedEvent<TIdentify>)
-                HandleVersionedEvent(@event as VersionedEvent<TIdentify>);
-            else if (@event is Event<TIdentify>)
-                HandleDomainEvent(@event as Event<TIdentify>);
-            else
-                HandleEvent(@event);
-
+            @event.SourceId = this.Id;
 
             if (pendingEvents == null) {
                 pendingEvents = new List<IEvent>();
             }
             pendingEvents.Add(@event);
-        }
-
-        private void HandleDomainEvent(Event<TIdentify> @event)
-        {
-            @event.SourceId = this.Id;
-            this.HandleEvent(@event);
-        }
-
-        private void HandleVersionedEvent(VersionedEvent<TIdentify> @event)
-        {
-            @event.Version = this.Version + 1;
-            this.HandleDomainEvent(@event);
-            this.Version = @event.Version;
-        }
-
-        private void HandleEvent(IEvent @event)
-        {
-            var eventType = @event.GetType();
-            var aggregateRootType = this.GetType();
-            var handler = AggregateRootInnerHandlerProvider.GetEventHandler(aggregateRootType, eventType);
-            if (handler == null) {
-                string errorMessage = string.Format("Event handler not found on {0} for {1}.",
-                    aggregateRootType.FullName, eventType.FullName);
-                if (@event is IVersionedEvent) {
-                    throw new EventSourcedException(errorMessage);
-                }
-
-                var log = LogManager.GetLogger("ThinkNet");
-                if (log.IsWarnEnabled)
-                    log.Warn(errorMessage);
-                return;
-            }
-            handler(this, @event);
-        }
-
-        private void CheckEvent(IVersionedEvent @event)
-        {
-            if (@event.Version == 1 && this.Id.Equals(default(TIdentify)))
-                this.Id = @event.SourceId.Change<TIdentify>();
-
-            if (@event.Version > 1 && this.Id.ToString() != @event.SourceId)
-                throw new EventSourcedException(@event.SourceId, this.Id.ToString());
-
-            if (@event.Version != this.Version + 1)
-                throw new EventSourcedException(@event.Version, this.Version);
         }
 
         /// <summary>
@@ -135,26 +74,6 @@ namespace ThinkNet.Kernel
             return this.Change(this.GetType());
         }
 
-
-
-        #region IEventSourced 成员
-
-        IEnumerable<IVersionedEvent> IEventSourced.GetEvents()
-        {
-            return this.GetPendingEvents().OfType<IVersionedEvent>();
-        }
-      
-
-        void IEventSourced.LoadFrom(IEnumerable<IVersionedEvent> events)
-        {
-            foreach (var @event in events) {
-                this.CheckEvent(@event);
-                this.HandleEvent(@event);
-                this.Version = @event.Version;
-            }
-        }
-
-        #endregion
 
         #region IAggregateRoot 成员
 

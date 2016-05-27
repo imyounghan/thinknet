@@ -1,8 +1,6 @@
-﻿using ThinkNet.Configurations;
-
+﻿
 namespace ThinkNet.EventSourcing
 {
-    [UnderlyingComponent(typeof(NoneSnapshotStore))]
     /// <summary>
     /// 存储快照
     /// </summary>
@@ -20,24 +18,5 @@ namespace ThinkNet.EventSourcing
         /// 从存储中删除快照。
         /// </summary>
         bool Remove(SourceKey sourceKey);
-    }
-
-
-    internal class NoneSnapshotStore : ISnapshotStore
-    {
-        public Stream GetLastest(SourceKey sourceKey)
-        {
-            return null;
-        }
-
-        public bool Save(Stream snapshot)
-        {
-            return false;
-        }
-
-        public bool Remove(SourceKey sourceKey)
-        {
-            return false;
-        }
-    }
+    }    
 }

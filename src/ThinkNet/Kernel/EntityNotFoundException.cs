@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Kernel
 {
     /// <summary>
     /// Represents an exception when tring to get a not existing entity.

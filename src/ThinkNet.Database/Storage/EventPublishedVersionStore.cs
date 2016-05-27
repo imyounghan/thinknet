@@ -62,6 +62,6 @@ namespace ThinkNet.Database.Storage
                     return 0;
                 }
             }).Result;
-        }        
+        }
     }
 }

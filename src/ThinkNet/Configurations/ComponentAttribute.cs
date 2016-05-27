@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Composition.Hosting;
 
 namespace ThinkNet.Configurations
 {
@@ -77,6 +78,9 @@ namespace ThinkNet.Configurations
         /// </summary>
         public virtual void Register(Type sourceType, Action<ComponentAttribute> action)
         {
+            new CompositionContainer();
+            
+
             action(this);
         }
         ///// <summary>

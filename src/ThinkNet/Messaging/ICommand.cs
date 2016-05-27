@@ -1,4 +1,5 @@
-﻿
+﻿using ThinkNet.Infrastructure;
+
 namespace ThinkNet.Messaging
 {
     /// <summary>
@@ -6,9 +7,9 @@ namespace ThinkNet.Messaging
     /// </summary>
     public interface ICommand : IMessage
     {
-        /// <summary>
-        /// 获取聚合根标识
-        /// </summary>
-        string AggregateRootId { get; }
+        ///// <summary>
+        ///// 获取命令ID
+        ///// </summary>
+        //string Id { get; }
     }
 }

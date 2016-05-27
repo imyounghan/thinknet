@@ -40,7 +40,7 @@ namespace ThinkNet.Kernel
         /// <summary>
         /// 获取源标识的字符串形式
         /// </summary>
-        protected override string GetSourceStringId()
+        public override string GetSourceStringId()
         {
             return this.SourceId.ToString();
         }

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Practices.ServiceLocation;
 using ThinkLib.Common;
-using ThinkLib.Contexts;
 using ThinkLib.Scheduling;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
@@ -12,10 +11,9 @@ using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 
 
-namespace ThinkNet.Kernel
+namespace ThinkNet.Runtime
 {
-    internal class EventStreamHandler : IInitializer,
-        IMessageHandler<EventStream>
+    internal class EventStreamHandler : IInitializer, IHandler<EventStream>
     {
         enum SynchronizeStatus
         {
@@ -24,22 +22,22 @@ namespace ThinkNet.Kernel
             Retry
         }
 
-        private readonly IMessageExecutor _executor;
         private readonly IEventContextFactory _eventContextFactory; 
         private readonly IEventPublishedVersionStore _eventPublishedVersionStore;
         private readonly ITextSerializer _serializer;
         private readonly IMessageNotification _notification;
+        private readonly IMessageBroker _broker;
+        private readonly IRoutingKeyProvider _routingKeyProvider;
+        private readonly IMetadataProvider _metadataProvider;
 
         private readonly BlockingCollection<EventStream> queue;
         private readonly Worker worker;
 
-        public EventStreamHandler(IMessageExecutor executor,
-            IEventPublishedVersionStore eventPublishedVersionStore,
+        public EventStreamHandler(IEventPublishedVersionStore eventPublishedVersionStore,
             ITextSerializer serializer,
             IEventContextFactory eventContextFactory,
             IMessageNotification notification)
         {
-            this._executor = executor;
             this._eventPublishedVersionStore = eventPublishedVersionStore;
             this._serializer = serializer;
             this._eventContextFactory = eventContextFactory;
@@ -72,27 +70,27 @@ namespace ThinkNet.Kernel
                     case SynchronizeStatus.Retry:
                         return;
                 }
+
+                //events.Select(SerializeToMessage).ForEach(_broker.Add);                
             }
             catch (Exception ex) {
                 _notification.NotifyMessageCompleted(stream.CommandId, ex);
                 throw;
             }
+        }
 
-
-            try {
-                ExecuteAll(events);
-            }
-            catch (Exception) {
-                throw;
-            }
+        private Message SerializeToMessage(IVersionedEvent @event)
+        {
+            return new Message {
+                Body = @event,
+                MetadataInfo = _metadataProvider.GetMetadata(@event),
+                RoutingKey = _routingKeyProvider.GetRoutingKey(@event),
+                CreatedTime = DateTime.UtcNow
+            };
         }
 
         private SynchronizeStatus Synchronize(EventStream stream, IEnumerable<IVersionedEvent> events)
         {
-            var actions = events.Select(GetEventHandleInfo).Where(p => !p.IsNull());
-            if (actions.IsEmpty())
-                return SynchronizeStatus.Pass;
-
             var sourceKey = new SourceKey(stream.SourceId, stream.SourceNamespace, stream.SourceTypeName, stream.SourceAssemblyName);
             var version = _eventPublishedVersionStore.GetPublishedVersion(sourceKey);
 
@@ -102,69 +100,35 @@ namespace ThinkNet.Kernel
                 return SynchronizeStatus.Retry;
             }
 
-            CurrentContext.Bind(_eventContextFactory.CreateEventContext() as IContext);
-            actions.ForEach(p => p.Item1.Handle(p.Item2));
-            using (CurrentContext.Unbind(_eventContextFactory) as IDisposable) { }
+            using (var context = _eventContextFactory.CreateEventContext()) {
+                ExecuteAll(context, events);
+                context.Commit();
+            }            
 
             _eventPublishedVersionStore.AddOrUpdatePublishedVersion(sourceKey, stream.StartVersion, stream.EndVersion);
 
 
             return SynchronizeStatus.Complete;
         }
-
-        private Tuple<IProxyHandler, IVersionedEvent> GetEventHandleInfo(IVersionedEvent @event)
-        {
-            var eventType = @event.GetType();
-            var eventHandlers = GetHandlers(eventType);
-
-            switch (eventHandlers.Count()) {
-                case 0:
-                    return null;
-                case 1:
-                    return new Tuple<IProxyHandler, IVersionedEvent>(eventHandlers.First(), @event);
-                default:
-                    throw new MessageHandlerTooManyException(eventType);
-            }
-        }
-
+        
         private object Deserialize(EventStream.Stream stream)
         {
             return _serializer.Deserialize(stream.Payload, stream.GetSourceType());
         }
 
-        private void ExecuteAll(IEnumerable<IVersionedEvent> events)
+        private void ExecuteAll(IEventContext context, IEnumerable<IVersionedEvent> events)
         {
-            List<Exception> innerExceptions = new List<Exception>();
-
             foreach (var @event in events) {
-                try {
-                    _executor.Execute(@event);
-                }
-                catch (Exception ex) {
-                    innerExceptions.Add(ex);
-                }
-            }
+                var eventType = @event.GetType();
+                var handlerType = typeof(IEventHandler<>).MakeGenericType(eventType);
+                var handler = ServiceLocator.Current.GetInstance(handlerType);
+                if (handler.IsNull())
+                    throw new MessageHandlerNotFoundException(eventType);
 
-            switch (innerExceptions.Count) {
-                case 0:
-                    break;
-                case 1:
-                    throw innerExceptions[0];
-                default:
-                    throw new AggregateException(innerExceptions);
+                ((dynamic)handler).Handle(context, (dynamic)@event);
             }
         }
 
-
-        private IEnumerable<IProxyHandler> GetHandlers(Type type)
-        {
-            var    handlerType = typeof(IEventHandler<>).MakeGenericType(type);
-            var    handlerWrapperType = typeof(EventHandlerWrapper<>).MakeGenericType(type);
-            return ServiceLocator.Current.GetAllInstances(handlerType)
-                .Select(handler => Activator.CreateInstance(handlerWrapperType, new[] { handler, _eventContextFactory }))
-                .Cast<IProxyHandler>()
-                .AsEnumerable();
-        }
 
         #region IInitializer 成员
 

@@ -9,6 +9,7 @@ using UserRegistration.Commands;
 using UserRegistration.ReadModel;
 using ThinkNet.Infrastructure;
 using ThinkLib.Scheduling;
+using ThinkNet.Messaging.Handling;
 
 namespace UserRegistration
 {
@@ -21,26 +22,34 @@ namespace UserRegistration
             
             //ConfigurationSetting.Current.QueueCount = 1;
 
-            Bootstrapper.Current.DoneWithUnity();
+            Bootstrapper.Current.Done();
 
 
             var manager = ServiceLocator.Current.GetInstance<ICommandResultManager>();
-            var tasks = new System.Threading.Tasks.Task[1000];
-            var sw =new System.Diagnostics.Stopwatch();
-            sw.Start();
-            while (counter < 1000) {
-                var userRegister = new RegisterUser {
-                    UserName = "老韩",
-                    Password = "hanyang",
-                    LoginId = "young.han",
-                    Email = "19126332@qq.com"
-                };
+            var instances = ServiceLocator.Current.GetAllInstances<ICommandHandler<RegisterUser>>();
+            var userRegister = new RegisterUser {
+                UserName = "老韩",
+                Password = "hanyang",
+                LoginId = "young.han",
+                Email = "19126332@qq.com"
+            };
+            manager.RegisterCommand(userRegister, CommandReplyType.DomainEventHandled).Wait();
+            //var tasks = new System.Threading.Tasks.Task[1000];
+            //var sw =new System.Diagnostics.Stopwatch();
+            //sw.Start();
+            //while (counter < 1) {
+            //    var userRegister = new RegisterUser {
+            //        UserName = "老韩",
+            //        Password = "hanyang",
+            //        LoginId = "young.han",
+            //        Email = "19126332@qq.com"
+            //    };
 
-                tasks[counter++] = manager.RegisterCommand(userRegister, CommandReplyType.DomainEventHandled);
-            }
-            System.Threading.Tasks.Task.WaitAll(tasks, TimeSpan.FromSeconds(30));
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedMilliseconds);
+            //    tasks[counter++] = manager.RegisterCommand(userRegister, CommandReplyType.DomainEventHandled);
+            //}
+            //System.Threading.Tasks.Task.WaitAll(tasks, TimeSpan.FromSeconds(30));
+            //sw.Stop();
+            //Console.WriteLine(sw.ElapsedMilliseconds);
 
             //Console.WriteLine(tasks.Where(p => p.IsCompleted).Count()); 
 

@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using ThinkLib.Logging;
-using ThinkNet.Configurations;
 using ThinkNet.Infrastructure;
+using ThinkNet.Messaging;
 
 namespace ThinkNet.Messaging
 {
-    [RegisterComponent(typeof(ICommandBus))]
-    public class CommandBus : AbstractBus, ICommandBus
+    public class DefaultCommandBus : AbstractBus, ICommandBus
     {
         private readonly IMessageSender messageSender;
         //private readonly ICommandResultManager commandResultManager;
@@ -16,7 +15,7 @@ namespace ThinkNet.Messaging
         private readonly IMetadataProvider metadataProvider;
         private readonly ILogger logger;
 
-        public CommandBus(IMessageSender messageSender,
+        public DefaultCommandBus(IMessageSender messageSender,
             //ICommandResultManager commandResultManager,
             IRoutingKeyProvider routingKeyProvider,
             IMetadataProvider metadataProvider)
@@ -28,7 +27,7 @@ namespace ThinkNet.Messaging
             this.logger = LogManager.GetLogger("ThinkNet");
         }
 
-        protected override bool SearchMatchType(Type type)
+        protected override bool MatchType(Type type)
         {
             return TypeHelper.IsCommand(type);
         }

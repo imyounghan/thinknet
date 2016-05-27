@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using ThinkNet.Messaging;
 
-namespace ThinkNet.Kernel
+namespace ThinkNet.Runtime
 {
     /// <summary>
     /// 事件流
@@ -141,7 +141,7 @@ namespace ThinkNet.Kernel
         [DataMember]
         public IEnumerable<Stream> Events { get; set; }
 
-        protected override string GetSourceStringId()
+        public override string GetSourceStringId()
         {
             return this.SourceId;
         }

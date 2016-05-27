@@ -11,7 +11,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 检索匹配的类型
         /// </summary>
-        protected abstract bool SearchMatchType(Type type);
+        protected abstract bool MatchType(Type type);
 
         /// <summary>
         /// 初始化操作
@@ -22,7 +22,7 @@ namespace ThinkNet.Messaging
         void IInitializer.Initialize(IEnumerable<Type> types)
         {
             //var types = assemblies.SelectMany(assembly => assembly.GetTypes());
-            types.Where(SearchMatchType).ForEach(type => {
+            types.Where(MatchType).ForEach(type => {
                 if (!type.IsSerializable) {
                     string message = string.Format("{0} should be marked as serializable.", type.FullName);
                     throw new ApplicationException(message);

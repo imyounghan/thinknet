@@ -1,17 +1,18 @@
 ﻿using System;
 using ThinkLib.Common;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
 {
     public class HandlerInterceptionWrapper<T> : DisposableObject, IProxyInterception
         where T : class, IMessage
     {
-        private readonly IInterception _interception;
+        private readonly IInterceptor _interception;
         private readonly Lifecycle _lifetime;
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public HandlerInterceptionWrapper(IInterception interception)
+        public HandlerInterceptionWrapper(IInterceptor interception)
         {
             this._interception = interception;
             this._lifetime = LifeCycleAttribute.GetLifecycle(interception.GetType());
@@ -23,7 +24,7 @@ namespace ThinkNet.Messaging.Handling
             if (message.IsNull())
                 return;
 
-            var filter = _interception as IMessageInterception<T>;
+            var filter = _interception as IInterceptor<T>;
             if (filter != null)
                 filter.OnHandlerExecuting(message);
         }
@@ -33,7 +34,7 @@ namespace ThinkNet.Messaging.Handling
             if (message.IsNull())
                 return;
 
-            var filter = _interception as IMessageInterception<T>;
+            var filter = _interception as IInterceptor<T>;
             if (filter != null)
                 filter.OnHandlerExecuted(message, exception is HandlerRecordStoreException ? null : exception);
         }
@@ -47,7 +48,7 @@ namespace ThinkNet.Messaging.Handling
             }
         }
 
-        public IInterception GetInnerInterception()
+        public IInterceptor GetInnerInterception()
         {
             return this._interception;
         }

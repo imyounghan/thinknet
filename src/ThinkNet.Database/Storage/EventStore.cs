@@ -31,7 +31,12 @@ namespace ThinkNet.Database.Storage
                     p.AggregateRootTypeCode == aggregateRootTypeCode);
         }
 
-        private void EventSaved(IDataContext context, string aggregateRootTypeName, int aggregateRootTypeCode, string aggregateRootId, string correlationId, IEnumerable<Stream> events)
+        private void EventSaved(IDataContext context, 
+            string aggregateRootTypeName, 
+            int aggregateRootTypeCode, 
+            string aggregateRootId, 
+            string correlationId, 
+            IEnumerable<Stream> events)
         {
             events.Select(item => new Event {
                 AggregateRootId = aggregateRootId,

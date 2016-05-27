@@ -7,6 +7,11 @@ namespace ThinkNet.Messaging
     public interface IVersionedEvent : IEvent
     {
         /// <summary>
+        /// 领域事件的来源id
+        /// </summary>
+        string SourceId { get; }
+
+        /// <summary>
         /// 版本号
         /// </summary>
         int Version { get; }

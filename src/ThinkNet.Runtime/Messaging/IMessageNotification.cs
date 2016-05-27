@@ -8,7 +8,6 @@ namespace ThinkNet.Messaging
     /// <summary>
     /// 表示消息的通知接口
     /// </summary>
-    [UnderlyingComponent(typeof(DefaultMessageNotification))]
     public interface IMessageNotification
     {
         /// <summary>
@@ -28,7 +27,7 @@ namespace ThinkNet.Messaging
     }
 
 
-    internal class DefaultMessageNotification : CommandResultManager, IMessageNotification, IInitializer
+    internal class DefaultMessageNotification : CommandResultManager, IMessageNotification
     {
         //public readonly static DefaultMessageNotification Instance = new DefaultMessageNotification();
         public DefaultMessageNotification(ICommandBus commandBus)
@@ -54,15 +53,6 @@ namespace ThinkNet.Messaging
         public void NotifyMessageUntreated(string messageId)
         {
             this.NotifyCommandCompleted(messageId, CommandStatus.NothingChanged, null);
-        }
-
-        #endregion
-
-        #region IInitializer 成员
-
-        public void Initialize(IEnumerable<Type> types)
-        {
-            Bootstrapper.Current.RegisterInstance(typeof(ICommandResultManager), this);
         }
 
         #endregion

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using ThinkLib.Common;
-using ThinkNet.Configurations;
 using ThinkNet.Infrastructure;
-using ThinkNet.Kernel;
+using ThinkNet.Messaging;
+using ThinkNet.Messaging.Handling;
 
 
-namespace ThinkNet.Messaging.Handling
+namespace ThinkNet.Runtime
 {
-    [RegisterComponent(typeof(IProcessor), "MessageProcessor")]
     public class MessageProcessor : Processor, IInitializer
     {
         private readonly IMessageExecutor _executor;
@@ -60,7 +59,8 @@ namespace ThinkNet.Messaging.Handling
             //    return;
             //}
         }
-                
+
+
 
         #region IInitializer 成员
         public void Initialize(IEnumerable<Type> types)

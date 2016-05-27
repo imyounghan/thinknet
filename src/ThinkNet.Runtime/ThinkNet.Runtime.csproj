@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ThinkNet</RootNamespace>
     <AssemblyName>ThinkNet.Runtime</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -39,11 +39,16 @@
     <AssemblyOriginatorKeyFile>..\thinknet.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Practices.ServiceLocation">
       <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.Composition.Registration" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Reflection.Context" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
@@ -55,36 +60,46 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configurations\Bootstrapper.cs" />
+    <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
+    <Compile Include="Runtime\DefaultAggregateRootFactory.cs" />
+    <Compile Include="Runtime\DefaultBinarySerializer.cs" />
+    <Compile Include="Runtime\DefaultCommandContextFactory.cs" />
+    <Compile Include="Messaging\Handling\EventContextFactory.cs" />
+    <Compile Include="Runtime\DefaultMemoryCache.cs" />
+    <Compile Include="Runtime\DefaultMessageReceiver.cs" />
+    <Compile Include="Runtime\DefaultMessageSender.cs" />
+    <Compile Include="Runtime\DefaultRoutingKeyProvider.cs" />
+    <Compile Include="Runtime\DefaultTextSerializer.cs" />
     <Compile Include="Infrastructure\IAggregateRootFactory.cs" />
-    <Compile Include="Kernel\EventStream.cs" />
-    <Compile Include="Messaging\Handling\CommandHandlerWrapper.cs" />
-    <Compile Include="Messaging\Handling\EventHandlerWrapper.cs" />
+    <Compile Include="Infrastructure\IMessageBroker.cs" />
+    <Compile Include="Runtime\EventStream.cs" />
+    <Compile Include="Runtime\MemoryEventStore.cs" />
+    <Compile Include="Runtime\MemoryRepository.cs" />
     <Compile Include="Messaging\Handling\ICommandContextFactory.cs" />
     <Compile Include="Messaging\Handling\IEventContextFactory.cs" />
     <Compile Include="Messaging\Handling\InterceptionWrapper.cs" />
-    <Compile Include="Messaging\Handling\MessageHandlerWrapper.cs" />
     <Compile Include="Messaging\Handling\Processor.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
-    <Compile Include="Infrastructure\MessageBrokerFactory.cs" />
     <Compile Include="Messaging\AbstractBus.cs" />
-    <Compile Include="Messaging\CommandBus.cs" />
-    <Compile Include="Messaging\EventBus.cs" />
+    <Compile Include="Messaging\DefaultCommandBus.cs" />
+    <Compile Include="Messaging\DefaultEventBus.cs" />
     <Compile Include="Messaging\Handling\IProxyInterception.cs" />
     <Compile Include="Messaging\Handling\IMessageExecutor.cs" />
-    <Compile Include="Messaging\Handling\MessageExecutor.cs" />
+    <Compile Include="Runtime\DefaultMessageExecutor.cs" />
     <Compile Include="Messaging\IMessageNotification.cs" />
     <Compile Include="Messaging\IMessageReceiver.cs" />
     <Compile Include="Messaging\IMessageSender.cs" />
     <Compile Include="Infrastructure\Message.cs" />
-    <Compile Include="Messaging\Handling\MessageProcessor.cs">
+    <Compile Include="Runtime\MessageProcessor.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Kernel\EventSourcedRepository.cs" />
-    <Compile Include="Messaging\Handling\IProxyHandler.cs" />
-    <Compile Include="Infrastructure\MessageBroker.cs" />
+    <Compile Include="Runtime\EventSourcedRepository.cs" />
+    <Compile Include="Runtime\DefaultMessageBroker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Kernel\EventStreamHandler.cs" />
+    <Compile Include="Runtime\EventStreamHandler.cs" />
+    <Compile Include="Runtime\NoneSnapshotPolicy.cs" />
+    <Compile Include="Runtime\NoneSnapshotStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
