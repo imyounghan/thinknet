@@ -12,6 +12,7 @@ namespace ThinkNet.Configurations
             this.HandleRetrytimes = 5;
             this.HandleRetryInterval = 1000;
             this.QueueCount = 4;
+            this.QueueCapacity = 1000;
         }
 
         /// <summary>
@@ -31,5 +32,11 @@ namespace ThinkNet.Configurations
         /// 默认为4
         /// </summary>
         public int QueueCount { get; set; }
+
+        /// <summary>
+        /// 每个消息队列的容量
+        /// 默认为1000
+        /// </summary>
+        public int QueueCapacity { get; set; }
     }
 }

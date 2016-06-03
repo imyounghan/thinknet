@@ -39,7 +39,7 @@ namespace ThinkNet.Kernel
         new protected void RaiseEvent<TEvent>(TEvent @event)
             where TEvent : VersionedEvent<TIdentify>
         {
-            @event.NotNull("@event");
+            //@event.NotNull("@event");
 
             @event.Version = this.Version + 1;
             base.RaiseEvent(@event);
@@ -64,6 +64,7 @@ namespace ThinkNet.Kernel
         {
             if (@event.Version == 1 && this.Id.Equals(default(TIdentify)))
                 this.Id = @event.SourceId.Change<TIdentify>();
+                //this.Id = (TIdentify)Convert.ChangeType(@event.SourceId, typeof(TIdentify));
 
             if (@event.Version > 1 && this.Id.ToString() != @event.SourceId)
                 throw new EventSourcedException(@event.SourceId, this.Id.ToString());

@@ -3,12 +3,17 @@ using System.Collections.Generic;
 
 namespace ThinkNet.Infrastructure
 {
-    public class Message
+    public class Message<T>
     {
-        /// <summary>
-        /// 元数据信息
-        /// </summary>
-        public IDictionary<string, string> MetadataInfo { get; set; }
+        public Message()
+        {
+            this.CreatedTime = DateTime.UtcNow;
+        }
+
+        ///// <summary>
+        ///// 元数据信息
+        ///// </summary>
+        //public IDictionary<string, string> MetadataInfo { get; set; }
 
         /// <summary>
         /// 用于路由的值
@@ -17,6 +22,8 @@ namespace ThinkNet.Infrastructure
         
         public DateTime CreatedTime { get; set; }
 
-        public object Body { get; set; }
+        public TimeSpan TimeForWait { get; set; }
+
+        public T Body { get; set; }
     }
 }

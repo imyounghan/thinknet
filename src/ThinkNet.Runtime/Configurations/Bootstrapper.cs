@@ -134,7 +134,7 @@ namespace ThinkNet.Configurations
             internal static object GetInstance(Component component)
             {
                 var serviceType = component.GetServiceType();
-                var key = component.ContractName;
+                var key = /*TypeHelper.IsHandlerInterfaceType(serviceType) ? string.Empty : */component.ContractName;
                 return string.IsNullOrWhiteSpace(key) ?
                     ServiceLocator.Current.GetInstance(serviceType) :
                     ServiceLocator.Current.GetInstance(serviceType, key);
@@ -167,7 +167,7 @@ namespace ThinkNet.Configurations
                     partBuilder = partBuilder.Export();
                 }
 
-                if (!string.IsNullOrEmpty(component.ContractName)) {
+                if (!string.IsNullOrEmpty(component.ContractName) && !TypeHelper.IsHandlerInterfaceType(component.ContractType)) {
                     partBuilder = partBuilder.Export(p => p.AsContractName(component.ContractName));
                 }
 
@@ -197,50 +197,20 @@ namespace ThinkNet.Configurations
 
             protected override IEnumerable<object> DoGetAllInstances(Type serviceType)
             {
-                var instances = container.GetExportedValues<object>(serviceType.FullName);
-                return instances;
+                var contractName = AttributedModelServices.GetContractName(serviceType);
+
+                return container.GetExportedValues<object>(contractName);
             }
 
             protected override object DoGetInstance(Type serviceType, string key)
             {
                 if (string.IsNullOrEmpty(key)) {
                     var contractName = AttributedModelServices.GetContractName(serviceType);
-                    var instance = container.GetExportedValueOrDefault<object>(contractName);
-                    return instance;
+                    return container.GetExportedValueOrDefault<object>(contractName);
                 }
                 else {
                     return container.GetExportedValueOrDefault<object>(key);
                 }
-            }
-
-            public override IEnumerable<object> GetAllInstances(Type serviceType)
-            {
-                return this.DoGetAllInstances(serviceType);
-            }
-
-            public override IEnumerable<TService> GetAllInstances<TService>()
-            {
-                return container.GetExportedValues<TService>();
-            }
-
-            public override TService GetInstance<TService>(string key)
-            {
-                return container.GetExportedValueOrDefault<TService>(key);
-            }
-
-            public override TService GetInstance<TService>()
-            {
-                return container.GetExportedValueOrDefault<TService>();
-            }
-
-            public override object GetInstance(Type serviceType)
-            {
-                return this.DoGetInstance(serviceType, null);
-            }
-
-            public override object GetInstance(Type serviceType, string key)
-            {
-                return this.DoGetInstance(serviceType, null);
             }
         }
 
@@ -339,7 +309,7 @@ namespace ThinkNet.Configurations
             this.RegisterComponents(allTypes);
             this.RegisterFrameworkComponents();
             this.RegisterHandlers(allTypes);
-            this.RegisterInterceptor(allTypes);
+            //this.RegisterInterceptor(allTypes);
 
             while (_registerComponents.Count > 0) {
                 _registerComponents.ForEach(registry);
@@ -463,17 +433,17 @@ namespace ThinkNet.Configurations
 
             AggregateRootInnerHandlerProvider.Initialize(types);
         }
-        private void RegisterInterceptor(IEnumerable<Type> types)
-        {
-            var interceptorTypes=types.Where(TypeHelper.IsInterceptionType);
-            foreach (var type in interceptorTypes) {
-                var interfaceTypes = type.GetInterfaces().Where(TypeHelper.IsInterceptionInterfaceType);
-                var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
-                foreach (var interfaceType in interfaceTypes) {
-                    this.RegisterType(interfaceType, type, lifecycle, type.FullName);
-                }
-            }
-        }
+        //private void RegisterInterceptor(IEnumerable<Type> types)
+        //{
+        //    var interceptorTypes=types.Where(TypeHelper.IsInterceptionType);
+        //    foreach (var type in interceptorTypes) {
+        //        var interfaceTypes = type.GetInterfaces().Where(TypeHelper.IsInterceptionInterfaceType);
+        //        var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
+        //        foreach (var interfaceType in interfaceTypes) {
+        //            this.RegisterType(interfaceType, type, lifecycle, type.FullName);
+        //        }
+        //    }
+        //}
         private void RegisterFrameworkComponents()
         {
             this.RegisterType<IEventPublishedVersionStore, EventPublishedVersionInMemory>();
@@ -484,22 +454,22 @@ namespace ThinkNet.Configurations
             this.RegisterType<ITextSerializer, DefaultTextSerializer>();
             this.RegisterType<IMemoryCache, DefaultMemoryCache>();            
             this.RegisterType<IRoutingKeyProvider, DefaultRoutingKeyProvider>();
-            this.RegisterType<IMetadataProvider, StandardMetadataProvider>();
+            //this.RegisterType<IMetadataProvider, StandardMetadataProvider>();
             this.RegisterType<IEventSourcedRepository, EventSourcedRepository>();
             this.RegisterType<IRepository, MemoryRepository>();
             this.RegisterType<ICommandBus, DefaultCommandBus>();
             this.RegisterType<ICommandResultManager, DefaultMessageNotification>();
             this.RegisterType<IEventBus, DefaultEventBus>();
-            this.RegisterType<ICommandContextFactory, DefaultCommandContextFactory>();
+            this.RegisterType<ICommandContextFactory, CommandContextFactory>();
             this.RegisterType<IEventContextFactory, EventContextFactory>();
             this.RegisterType<IHandlerRecordStore, HandlerRecordInMemory>();
             this.RegisterType<IAggregateRootFactory, DefaultAggregateRootFactory>();
-            this.RegisterType<IMessageBroker, DefaultMessageBroker>();
             this.RegisterType<IMessageNotification, DefaultMessageNotification>();
-            this.RegisterType<IMessageSender, DefaultMessageSender>();
-            this.RegisterType<IMessageReceiver, DefaultMessageReceiver>();
-            this.RegisterType<IMessageExecutor, DefaultMessageExecutor>();
-            this.RegisterType<IProcessor, MessageProcessor>("Message");
+            //this.RegisterType<IMessageSender, DefaultMessageSender>();
+            //this.RegisterType<IMessageReceiver, DefaultMessageReceiver>();
+            this.RegisterType<IHandlerProvider, DefaultHandlerProvider>();
+            this.RegisterType<IProcessor, CommandProcessor>("CommandProcessor");
+            this.RegisterType<IProcessor, EventProcessor>("EventProcessor");
         }
 
         private bool InitComponent(Component component)

@@ -33,9 +33,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Metrics">
-      <HintPath>..\..\packages\Metrics.NET.0.3.5\lib\net45\Metrics.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
       <Private>True</Private>
@@ -75,8 +72,6 @@
     <Compile Include="CachingBehavior.cs" />
     <Compile Include="ExceptionLoggingBehavior.cs" />
     <Compile Include="InterceptionBehaviorMap.cs" />
-    <Compile Include="MessageBrokerMetrics.cs" />
-    <Compile Include="MessageHandlerMetrics.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

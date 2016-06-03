@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using ThinkNet.Kernel;
-using ThinkNet.Messaging;
-using ThinkNet.Messaging.Handling;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Messaging.Handling
 {
-    internal class DefaultCommandContextFactory : ICommandContextFactory
+    public class CommandContextFactory : ICommandContextFactory
     {
-        class CommandContext : ICommandContext
+        public class CommandContext : ICommandContext
         {
 
             private readonly Func<Type, object, IAggregateRoot> aggregateRootFactory;
@@ -139,7 +137,7 @@ namespace ThinkNet.Runtime
         private readonly IEventSourcedRepository _eventSourcedRepository;
         private readonly IEventBus _eventBus;
 
-        public DefaultCommandContextFactory(IRepository repository,
+        public CommandContextFactory(IRepository repository,
             IEventSourcedRepository eventSourcedRepository, IEventBus eventBus)
         {
             this._repository = repository;

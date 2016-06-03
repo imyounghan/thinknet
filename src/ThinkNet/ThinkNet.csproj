@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\ThinkNet.XML</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -54,6 +56,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Infrastructure\DefaultBinarySerializer.cs" />
+    <Compile Include="Infrastructure\DefaultMemoryCache.cs" />
+    <Compile Include="Infrastructure\DefaultTextSerializer.cs" />
     <Compile Include="Infrastructure\IBinarySerializer.cs" />
     <Compile Include="Infrastructure\IMemoryCache.cs">
       <SubType>Code</SubType>
@@ -65,13 +70,9 @@
     <Compile Include="EventSourcing\ISnapshotStore.cs" />
     <Compile Include="EventSourcing\SourceKey.cs" />
     <Compile Include="EventSourcing\Stream.cs" />
-    <Compile Include="Infrastructure\IMetadataProvider.cs" />
-    <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
     <Compile Include="Infrastructure\ITextSerializer.cs" />
     <Compile Include="Infrastructure\ObjectId.cs" />
     <Compile Include="Infrastructure\SerializerExtensions.cs" />
-    <Compile Include="Infrastructure\StandardMetadata.cs" />
-    <Compile Include="Infrastructure\StandardMetadataProvider.cs" />
     <Compile Include="Kernel\AggregateRoot.cs" />
     <Compile Include="Kernel\AggregateRootException.cs" />
     <Compile Include="Kernel\AggregateRootExtensions.cs" />
@@ -89,8 +90,7 @@
     <Compile Include="Kernel\IEventSourcedRepository.cs" />
     <Compile Include="Messaging\Handling\HandlerRecordStoreException.cs" />
     <Compile Include="Messaging\Handling\IHandler.cs" />
-    <Compile Include="Messaging\Handling\IInterceptor.cs" />
-    <Compile Include="Messaging\IVersionedEvent.cs" />
+    <Compile Include="Kernel\IVersionedEvent.cs" />
     <Compile Include="Kernel\VersionedEvent.cs" />
     <Compile Include="Kernel\EntityNotFoundException.cs" />
     <Compile Include="Kernel\Entity.cs" />
@@ -103,7 +103,8 @@
     <Compile Include="Messaging\Handling\ICommandContext.cs" />
     <Compile Include="Messaging\Handling\IEventContext.cs" />
     <Compile Include="Kernel\ValueObject.cs" />
-    <Compile Include="TypeHelper.cs" />
+    <Compile Include="Messaging\Message.cs" />
+    <Compile Include="Infrastructure\TypeHelper.cs" />
     <Compile Include="Messaging\Command.cs" />
     <Compile Include="Messaging\Event.cs" />
     <Compile Include="Messaging\Handling\HandlerRecordInMemory.cs" />
@@ -118,7 +119,7 @@
     <Compile Include="Messaging\IEventPublisher.cs" />
     <Compile Include="Messaging\Handling\MessageHandlerNotFoundException.cs" />
     <Compile Include="Messaging\Handling\MessageHandlerTooManyException.cs" />
-    <Compile Include="Infrastructure\IMessage.cs">
+    <Compile Include="Messaging\IMessage.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />

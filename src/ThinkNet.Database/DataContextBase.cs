@@ -198,7 +198,7 @@ namespace ThinkNet.Database
         IContextManager IContext.ContextManager
         {
             get { return this._contextManager; }
-        }        
+        }
 
     }
 }

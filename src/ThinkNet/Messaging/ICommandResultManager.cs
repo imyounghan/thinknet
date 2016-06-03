@@ -6,7 +6,6 @@ namespace ThinkNet.Messaging
     /// <summary>
     /// 表示命令结果管理器的接口
     /// </summary>
-    //[UnderlyingComponent(typeof(DefaultCommandResultManager))]
     public interface ICommandResultManager
     {
         /// <summary>

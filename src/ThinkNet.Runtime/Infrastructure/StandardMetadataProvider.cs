@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using ThinkNet.Messaging;
 
 namespace ThinkNet.Infrastructure
 {
@@ -25,25 +24,25 @@ namespace ThinkNet.Infrastructure
             metadata[StandardMetadata.TypeName] = type.Name;
 
 
-            var e = payload as IEvent;
-            if (e != null) {
-                metadata[StandardMetadata.UniqueId] = e.Id;
-                metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
-            }
-            var @event = payload as Event;
-            if (@event != null) {
-                metadata[StandardMetadata.SourceId] = @event.GetSourceStringId();
-            }
+            //var e = payload as IEvent;
+            //if (e != null) {
+            //    metadata[StandardMetadata.UniqueId] = e.Id;
+            //    metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
+            //}
+            //var @event = payload as Event;
+            //if (@event != null) {
+            //    metadata[StandardMetadata.SourceId] = @event.GetSourceStringId();
+            //}
 
-            var c = payload as ICommand;
-            if (c != null) {
-                metadata[StandardMetadata.UniqueId] = c.Id;
-                metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
-            }
-            var command = payload as Command;
-            if (c != null) {
-                metadata[StandardMetadata.SourceId] = command.GetAggregateRootStringId();
-            }
+            //var c = payload as ICommand;
+            //if (c != null) {
+            //    metadata[StandardMetadata.UniqueId] = c.Id;
+            //    metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
+            //}
+            //var command = payload as Command;
+            //if (c != null) {
+            //    metadata[StandardMetadata.SourceId] = command.GetAggregateRootStringId();
+            //}
 
             return metadata;
         }

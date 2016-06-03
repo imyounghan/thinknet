@@ -5,11 +5,10 @@ using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using ThinkLib.Caching;
 using ThinkLib.Common;
-using ThinkNet.Infrastructure;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Infrastructure
 {
-    internal class DefaultMemoryCache : IMemoryCache
+    public class DefaultMemoryCache : IMemoryCache
     {
         private readonly BinaryFormatter _serializer;
         private readonly bool _enabled;

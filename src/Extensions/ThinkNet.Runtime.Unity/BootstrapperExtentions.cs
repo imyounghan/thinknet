@@ -2,42 +2,18 @@
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
-using Metrics;
 using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.Configuration;
 using Microsoft.Practices.Unity.InterceptionExtension;
 using ThinkLib.Common;
 using ThinkNet.Infrastructure;
-using ThinkNet.Runtime.Unity;
 
 
 namespace ThinkNet.Configurations
 {
     public static class BootstrapperExtentions
     {
-        [Flags]
-        public enum MetricReportMode
-        {
-            Console,
-            TextFile,
-            CSV,
-            Elastic
-        }
-
-        public static void EnableMetric(MetricReportMode reportMode)
-        {
-            var metric = Metric.Config.WithAllCounters();
-
-            if ((reportMode & MetricReportMode.Console) == MetricReportMode.Console)
-                metric.WithReporting(report => report.WithConsoleReport(TimeSpan.FromMinutes(1)));
-            //metric.WithReporting(report => report.WithTextFileReport("MetricReport.txt", TimeSpan.FromMinutes(1)));
-            //metric.WithReporting(report => report.WithCSVReports("", TimeSpan.FromMinutes(1)));
-            //metric.WithReporting(report => report.WithElasticSearch("", 9200, "", TimeSpan.FromMinutes(1)));
-
-            InterceptionBehaviorMap.Instance.Mapping(typeof(IMessageBroker), typeof(MessageBrokerMetrics));
-        }
-
         private static LifetimeManager GetLifetimeManager(Lifecycle lifecycle)
         {
             switch (lifecycle) {
@@ -67,6 +43,46 @@ namespace ThinkNet.Configurations
                 container.RegisterInstance(type, name, instance, lifetime);
             }
         }
+
+        private static void RegisterType(Type type, string name, Lifecycle lifecycle)
+        {
+            if (string.IsNullOrWhiteSpace(name) && container.IsRegistered(type)) {
+                return;
+            }
+            if (!string.IsNullOrWhiteSpace(name) && container.IsRegistered(type, name)) {
+                return;
+            }
+
+
+            var lifetime = GetLifetimeManager(lifecycle);
+
+            var injectionMembers = InterceptionBehaviorMap.Instance.GetBehaviorTypes(type)
+                .Select(behaviorType => new InterceptionBehavior(behaviorType))
+                .Cast<InterceptionMember>().ToList();
+
+            if (injectionMembers.Count > 0) {
+                if (type.IsSubclassOf(typeof(MarshalByRefObject))) {
+                    injectionMembers.Insert(0, new Interceptor<TransparentProxyInterceptor>());
+                }
+                else {
+                    injectionMembers.Insert(0, new Interceptor<VirtualMethodInterceptor>());
+                }
+            }
+
+            if (type.IsDefined<HandlerAttribute>(false) ||
+                type.GetMembers().Any(item => item.IsDefined<HandlerAttribute>(false))) {
+                int position = injectionMembers.Count > 0 ? 1 : 0;
+                injectionMembers.Insert(position, new InterceptionBehavior<PolicyInjectionBehavior>());
+            }
+
+            if (string.IsNullOrWhiteSpace(name)) {
+                container.RegisterType(type, lifetime, injectionMembers.ToArray());
+            }
+            else {
+                container.RegisterType(type, name, lifetime, injectionMembers.ToArray());
+            }
+        }
+
 
         private static void RegisterType(Type from, Type to, string name, Lifecycle lifecycle)
         {
@@ -113,20 +129,23 @@ namespace ThinkNet.Configurations
             }
         }
 
-        private static void Register(Bootstrapper.TypeRegistration registration)
+        private static void Register(Bootstrapper.Component registration)
         {
-            if (registration.RegisterType == null)
+            if (registration.ForType == null)
                 return;
 
 
-            if (registration.Instance != null) {
-                RegisterInstance(registration.RegisterType, registration.Instance, registration.Name);
+            //if (registration.Instance != null) {
+            //    RegisterInstance(registration.RegisterType, registration.Instance, registration.Name);
+            //    return;
+            //}
+
+            if (registration.ContractType == null) {
+                RegisterType(registration.ForType, registration.ContractName, registration.Lifecycle);
                 return;
             }
 
-            if (registration.ImplementationType != null) {
-                RegisterType(registration.RegisterType, registration.ImplementationType, registration.Name, registration.Lifecycle);
-            }            
+            RegisterType(registration.ContractType, registration.ForType, registration.ContractName, registration.Lifecycle);
         }
 
         private static object Resolve(Type type, string name)
@@ -154,7 +173,7 @@ namespace ThinkNet.Configurations
             container = unityContainer;
             ServiceLocator.SetLocatorProvider(() => new UnityServiceLocator(unityContainer));
 
-            that.Done(Register, Resolve);
+            that.Done(Register);
         }
 
         public static void DoneWithUnityByConfig(this Bootstrapper that, string sectionName)

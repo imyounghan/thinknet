@@ -1,23 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using ThinkLib.Common;
+using System.Threading;
 
 namespace ThinkNet.Messaging.Handling
 {
     /// <summary>
     /// 将已完成的处理程序信息记录在内存中。
     /// </summary>
-    public class HandlerRecordInMemory : IHandlerRecordStore, IInitializer
+    public class HandlerRecordInMemory : IHandlerRecordStore
     {
-        private readonly HashSet<HandlerRecordData> _handlerInfoSet = new HashSet<HandlerRecordData>();
+        private readonly HashSet<HandlerRecordData> _handlerInfoSet;
+        private readonly Timer timer;
 
+        public HandlerRecordInMemory()
+        {
+            timer = new Timer(RemoveHandleInfo, null, 5000, 2000);
+            _handlerInfoSet = new HashSet<HandlerRecordData>();
+        }
 
         /// <summary>
         /// 移除超出期限的信息
         /// </summary>
-        protected void RemoveHandleInfo()
+        protected void RemoveHandleInfo(object state)
         {
-            _handlerInfoSet.RemoveWhere(item => item.Timestamp.AddHours(1) < DateTime.UtcNow);
+            _handlerInfoSet.RemoveWhere(item => item.Timestamp.AddMinutes(1) < DateTime.UtcNow);
         }
 
         /// <summary>
@@ -117,18 +123,5 @@ namespace ThinkNet.Messaging.Handling
                 return string.Format("{0}_{1}_{2}", MessageId, MessageTypeCode, HandlerTypeCode);
             }
         }
-
-        #region IInitializer 成员
-
-        protected virtual void Initialize()
-        {        }
-
-
-        void IInitializer.Initialize(IEnumerable<Type> types)
-        {
-            this.Initialize();
-        }
-
-        #endregion
     }
 }

@@ -10,6 +10,7 @@ using UserRegistration.ReadModel;
 using ThinkNet.Infrastructure;
 using ThinkLib.Scheduling;
 using ThinkNet.Messaging.Handling;
+using UserRegistration.Events;
 
 namespace UserRegistration
 {
@@ -17,27 +18,21 @@ namespace UserRegistration
     {
         static void Main(string[] args)
         {
-            int counter = 0;
-
-            
-            //ConfigurationSetting.Current.QueueCount = 1;
 
             Bootstrapper.Current.Done();
 
-
             var manager = ServiceLocator.Current.GetInstance<ICommandResultManager>();
-            var instances = ServiceLocator.Current.GetAllInstances<ICommandHandler<RegisterUser>>();
-            var userRegister = new RegisterUser {
+            manager.RegisterCommand(new RegisterUser {
                 UserName = "老韩",
                 Password = "hanyang",
                 LoginId = "young.han",
                 Email = "19126332@qq.com"
-            };
-            manager.RegisterCommand(userRegister, CommandReplyType.DomainEventHandled).Wait();
-            //var tasks = new System.Threading.Tasks.Task[1000];
-            //var sw =new System.Diagnostics.Stopwatch();
+            }, CommandReplyType.DomainEventHandled).Wait();
+            //int counter = 0;
+            //var tasks = new System.Threading.Tasks.Task[5000];
+            //var sw = new System.Diagnostics.Stopwatch();
             //sw.Start();
-            //while (counter < 1) {
+            //while (counter < 5000) {
             //    var userRegister = new RegisterUser {
             //        UserName = "老韩",
             //        Password = "hanyang",
@@ -51,7 +46,7 @@ namespace UserRegistration
             //sw.Stop();
             //Console.WriteLine(sw.ElapsedMilliseconds);
 
-            //Console.WriteLine(tasks.Where(p => p.IsCompleted).Count()); 
+            //Console.WriteLine(tasks.Where(p => p.IsCompleted).Count());
 
             var userDao = ServiceLocator.Current.GetInstance<IUserDao>();
 

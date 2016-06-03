@@ -5,7 +5,7 @@ using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 
 
-namespace ThinkNet
+namespace ThinkNet.Infrastructure
 {
     /// <summary>
     /// A utility class provides type related methods.
@@ -80,6 +80,13 @@ namespace ThinkNet
         /// <summary>
         /// Check whether a type is a event type.
         /// </summary>
+        public static bool IsVersionedEvent(Type type)
+        {
+            return type.IsClass && !type.IsAbstract && typeof(IVersionedEvent).IsAssignableFrom(type);
+        }
+        /// <summary>
+        /// Check whether a type is a event type.
+        /// </summary>
         public static bool IsEvent(Type type)
         {
             return type.IsClass && !type.IsAbstract && typeof(IEvent).IsAssignableFrom(type);
@@ -119,33 +126,33 @@ namespace ThinkNet
         /// <summary>
         /// Check whether a type is a message handler type.
         /// </summary>
-        private static bool IsMessageHandlerInterfaceType(Type type)
+        public static bool IsMessageHandlerInterfaceType(Type type)
         {
             return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IHandler<>);
         }
         /// <summary>
         /// Check whether a type is a message handler.
         /// </summary>
-        private static bool IsMessageHandlerType(Type type)
+        public static bool IsMessageHandlerType(Type type)
         {
             return type.IsClass && !type.IsAbstract &&
                 type.GetInterfaces().Any(IsMessageHandlerInterfaceType);
         }
 
-        /// <summary>
-        /// Check whether a type is a handler interceptor type.
-        /// </summary>
-        public static bool IsInterceptionInterfaceType(Type type)
-        {
-            return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IInterceptor<>);
-        }
-        /// <summary>
-        /// Check whether a type is a handler interceptor.
-        /// </summary>
-        public static bool IsInterceptionType(Type type)
-        {
-            return type.IsClass && !type.IsAbstract &&
-                type.GetInterfaces().Any(IsInterceptionInterfaceType);
-        }
+        ///// <summary>
+        ///// Check whether a type is a handler interceptor type.
+        ///// </summary>
+        //public static bool IsInterceptionInterfaceType(Type type)
+        //{
+        //    return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IInterceptor<>);
+        //}
+        ///// <summary>
+        ///// Check whether a type is a handler interceptor.
+        ///// </summary>
+        //public static bool IsInterceptionType(Type type)
+        //{
+        //    return type.IsClass && !type.IsAbstract &&
+        //        type.GetInterfaces().Any(IsInterceptionInterfaceType);
+        //}
     }
 }

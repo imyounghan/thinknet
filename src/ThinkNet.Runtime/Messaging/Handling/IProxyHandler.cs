@@ -1,24 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using ThinkNet.Infrastructure;
+﻿
+using System;
 
 namespace ThinkNet.Messaging.Handling
 {
-    /// <summary>
-    /// 消息处理器的代理
-    /// </summary>
     public interface IProxyHandler
     {
+        void Handle(object message);
+        //string MessageId { get; }
+
         //Type MessageType { get; }
 
-        /// <summary>
-        /// 处理消息。
-        /// </summary>
-        void Handle(IMessage message);
+        Type HanderType { get; }
 
-        /// <summary>
-        /// Get the inner handler.
-        /// </summary>
-        IHandler GetInnerHandler();
+        //IMessage GetInnerMessage();
+
+        //IHandler GetInnerHandler();
     }
 }

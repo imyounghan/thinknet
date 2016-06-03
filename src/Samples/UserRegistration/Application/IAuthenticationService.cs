@@ -1,5 +1,4 @@
-﻿using ThinkLib.Common;
-using ThinkNet.Configurations;
+﻿using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using UserRegistration.Events;
 using UserRegistration.ReadModel;

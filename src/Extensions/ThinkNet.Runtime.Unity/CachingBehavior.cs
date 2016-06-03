@@ -4,6 +4,7 @@ using System.Text;
 using System.Reflection;
 using Microsoft.Practices.Unity.InterceptionExtension;
 using ThinkLib.Caching;
+using ThinkLib.Common;
 
 namespace ThinkNet.Configurations
 {

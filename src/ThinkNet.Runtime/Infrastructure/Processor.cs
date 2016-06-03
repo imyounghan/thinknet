@@ -1,14 +1,13 @@
 ﻿using System;
 using ThinkLib.Common;
 using ThinkLib.Logging;
-using ThinkNet.Infrastructure;
 
-namespace ThinkNet.Messaging.Handling
+namespace ThinkNet.Infrastructure
 {
-    public abstract class Processor : DisposableObject, IProcessor
+    public abstract class Processor<T> : DisposableObject, IProcessor
     {
-        private readonly IMessageReceiver receiver;
-        private readonly ILogger logger;
+        protected readonly ILogger logger;
+
         
         private readonly object lockObject = new object();
         private bool started = false;
@@ -16,9 +15,8 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public Processor(IMessageReceiver receiver)
+        protected Processor()
         {
-            this.receiver = receiver;
             this.logger = LogManager.GetLogger("ThinkNet");
         }
 
@@ -30,8 +28,8 @@ namespace ThinkNet.Messaging.Handling
             ThrowIfDisposed();
             lock (this.lockObject) {
                 if (!this.started) {
-                    this.receiver.MessageReceived += OnMessageReceived;
-                    this.receiver.Start();
+                    MessageCenter<T>.Instance.MessageHandling += OnMessageHandling;
+                    MessageCenter<T>.Instance.Start();
                     this.started = true;
                 }
             }
@@ -44,8 +42,8 @@ namespace ThinkNet.Messaging.Handling
         {
             lock (this.lockObject) {
                 if (this.started) {
-                    this.receiver.Stop();
-                    this.receiver.MessageReceived -= OnMessageReceived;
+                    MessageCenter<T>.Instance.Stop();
+                    MessageCenter<T>.Instance.MessageHandling -= OnMessageHandling;
                     this.started = false;
                 }
             }
@@ -61,18 +59,15 @@ namespace ThinkNet.Messaging.Handling
 
             if (disposing) {
                 this.Stop();
-
-                using (this.receiver as IDisposable) {
-                    // Dispose receiver if it's disposable.
-                }
             }
         }
 
-        protected abstract void Process(IMessage message);
+        protected abstract void Process(T message);
         
-        private void OnMessageReceived(object sender, EventArgs<Message> args)
+
+        private void OnMessageHandling(object sender, Message<T> args)
         {
-            var message = args.Data.Body as IMessage;
+            var message = (T)args.Body;
             if (message.IsNull()) {
                 Console.WriteLine("empty message.");
                 return;

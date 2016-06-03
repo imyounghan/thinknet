@@ -42,20 +42,17 @@ namespace ThinkNet.Kernel
             return eventHandlerDic;
         }
 
-        private static void Scan(Type type)
-        {
-            if (!type.IsSerializable) {
-                string message = string.Format("{0} should be marked as serializable.", type.FullName);
-                throw new ApplicationException(message);
-            }
-
-            var handlers = FindInnerHandlers(type);
-            _innerHandlers.TryAdd(type, handlers);
-        }
-
         public static void Initialize(IEnumerable<Type> types)
         {
-            types.Where(TypeHelper.IsAggregateRoot).ForEach(Scan);
+            foreach (var type in types.Where(TypeHelper.IsAggregateRoot)) {
+                if (!type.IsSerializable) {
+                    string message = string.Format("{0} should be marked as serializable.", type.FullName);
+                    throw new ApplicationException(message);
+                }
+
+                var handlers = FindInnerHandlers(type);
+                _innerHandlers.TryAdd(type, handlers);
+            }
         }
 
         /// <summary>

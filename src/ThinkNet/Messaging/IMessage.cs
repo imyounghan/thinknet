@@ -1,5 +1,5 @@
 ﻿
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Messaging
 {
     /// <summary>
     /// 表示继承该接口的类型是一个消息。

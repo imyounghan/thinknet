@@ -105,7 +105,7 @@ namespace ThinkNet.EventSourcing
 
         public override bool Equals(object obj)
         {
-            if (obj.IsNull() || obj.GetType() != typeof(SourceKey))
+            if (obj == null || obj.GetType() != typeof(SourceKey))
                 return false;
 
             SourceKey other = (SourceKey)obj;

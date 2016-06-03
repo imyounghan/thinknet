@@ -1,20 +1,20 @@
 ﻿using System;
 using ThinkLib.Common;
+using ThinkLib.Contexts;
 
 namespace ThinkNet.Messaging.Handling
 {
-    public class EventContextFactory : IEventContextFactory
+    public class EventContextFactory : ContextManager, IEventContextFactory
     {
-        class EventContext : DisposableObject, IEventContext
+        class EventContext : DisposableObject, IEventContext, IContext
         {
+
+            private readonly IContextManager _contextManager;
             private readonly object _context;
-            //private readonly IList<IEvent> pendingEvents;
-            /// <summary>
-            /// Parameterized constructor.
-            /// </summary>
-            public EventContext(object context)
+            public EventContext(object context, IContextManager contextManager)
             {
                 this._context = context;
+                this._contextManager = contextManager;
             }
 
 
@@ -32,7 +32,7 @@ namespace ThinkNet.Messaging.Handling
 
             public void AddCommand(ICommand command)
             {
-                throw new NotImplementedException();
+                
             }
 
             protected override void Dispose(bool disposing)
@@ -45,9 +45,24 @@ namespace ThinkNet.Messaging.Handling
             {
                 
             }
+
+            IContextManager IContext.ContextManager
+            {
+                get { return this._contextManager; }
+            }
         }
 
         private readonly ICommandBus _commandBus;
+
+        public EventContextFactory(ICommandBus commandBus)
+            : this(commandBus, "thread")
+        { }
+
+        protected EventContextFactory(ICommandBus commandBus, string contextType)
+            : base(contextType)
+        {
+            this._commandBus = commandBus;
+        }
 
         protected virtual object CreateDbContext()
         {
@@ -58,8 +73,15 @@ namespace ThinkNet.Messaging.Handling
 
         public IEventContext CreateEventContext()
         {
-            return new EventContext(CreateDbContext());
+            return new EventContext(CreateDbContext(), this);
         }
+
+
+        public IEventContext GetEventContext()
+        {
+            return base.CurrentContext.GetContext() as IEventContext;
+        }
+
         #endregion
     }
 }

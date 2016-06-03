@@ -7,23 +7,22 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Web.Script.Serialization;
-using ThinkNet.Infrastructure;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Infrastructure
 {
     /// <summary>
     /// <see cref="ITextSerializer"/> 的默认实现。
     /// </summary>
-    internal class DefaultTextSerializer : ITextSerializer
+    public class DefaultTextSerializer : ITextSerializer
     {
-        /// <summary>
-        /// <see cref="ITextSerializer"/> 的一个实例。
-        /// </summary>
-        public static readonly ITextSerializer Instance = new DefaultTextSerializer();
+        ///// <summary>
+        ///// <see cref="ITextSerializer"/> 的一个实例。
+        ///// </summary>
+        //public static readonly ITextSerializer Instance = new DefaultTextSerializer();
 
         private readonly JavaScriptSerializer _jsonSerializer;
 
-        private DefaultTextSerializer()
+        public DefaultTextSerializer()
         {
             this._jsonSerializer = new JavaScriptSerializer(new CustomTypeResolver());
             this._jsonSerializer.RegisterConverters(new JavaScriptConverter[] { new CustomJavaScriptConverter() });

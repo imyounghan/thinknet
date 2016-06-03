@@ -11,28 +11,21 @@ namespace ThinkNet.Messaging
     /// </summary>
     [DataContract]
     [Serializable]
-    public abstract class Command : ICommand
+    public abstract class Command : Message, ICommand
     {
 
         /// <summary>
         /// Default Constructor.
         /// </summary>
         protected Command()
-            : this(null)
+            : base()
         { }
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
         protected Command(string id)
-        {
-            this.Id = id.DefaultIfEmpty(ObjectId.GenerateNewStringId);
-        }
-
-        /// <summary>
-        /// 命令标识
-        /// </summary>
-        [DataMember]
-        public string Id { get; private set; }
+            : base(id)
+        { }
 
         /// <summary>
         /// 获取聚合根标识的字符串形式
@@ -40,12 +33,7 @@ namespace ThinkNet.Messaging
         public virtual string GetAggregateRootStringId()
         {
             return string.Empty;
-        }
-
-        public override string ToString()
-        {
-            return string.Concat(this.GetType().FullName, "@", this.Id);
-        }        
+        }     
     }
 
     /// <summary>

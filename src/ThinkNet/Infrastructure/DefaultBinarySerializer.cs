@@ -2,26 +2,25 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization.Json;
-using ThinkNet.Infrastructure;
 
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Infrastructure
 {
-    internal class DefaultBinarySerializer : IBinarySerializer
+    public class DefaultBinarySerializer : IBinarySerializer
     {
-        /// <summary>
-        /// <see cref="IBinarySerializer"/> 的一个实例。
-        /// </summary>
-        public static readonly IBinarySerializer Instance = new DefaultBinarySerializer();
-
-        private readonly BinaryFormatter _binaryFormatter = new BinaryFormatter();
         ///// <summary>
-        ///// Default Constructor.
+        ///// <see cref="IBinarySerializer"/> 的一个实例。
         ///// </summary>
-        //public DefaultBinarySerializer()
-        //{
-        //    this._binaryFormatter = new BinaryFormatter();
-        //}
+        //public static readonly IBinarySerializer Instance = new DefaultBinarySerializer();
+
+        private readonly BinaryFormatter _binaryFormatter;
+        /// <summary>
+        /// Default Constructor.
+        /// </summary>
+        public DefaultBinarySerializer()
+        {
+            this._binaryFormatter = new BinaryFormatter();
+        }
 
         #region IBinarySerializer 成员
         /// <summary>

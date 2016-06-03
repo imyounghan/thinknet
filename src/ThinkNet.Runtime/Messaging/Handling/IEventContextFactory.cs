@@ -8,5 +8,7 @@ namespace ThinkNet.Messaging.Handling
     public interface IEventContextFactory
     {
         IEventContext CreateEventContext();
+
+        IEventContext GetEventContext();
     }
 }

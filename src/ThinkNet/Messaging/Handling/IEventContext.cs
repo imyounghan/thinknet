@@ -1,7 +1,10 @@
-﻿
+﻿using System;
+using ThinkLib.Common;
+using ThinkLib.Contexts;
+
 namespace ThinkNet.Messaging.Handling
 {
-    public interface IEventContext : ThinkLib.Common.IUnitOfWork, System.IDisposable
+    public interface IEventContext : IUnitOfWork, IContext, IDisposable
     {
         object Context { get; }
 

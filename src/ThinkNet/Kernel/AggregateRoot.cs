@@ -76,7 +76,6 @@ namespace ThinkNet.Kernel
 
 
         #region IAggregateRoot 成员
-
         [IgnoreDataMember]
         object IAggregateRoot.Id
         {
