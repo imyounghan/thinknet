@@ -1,48 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Common
 {
-    ///// <summary>
-    ///// Static factory class for <see cref="Envelope{T}"/>.
-    ///// </summary>
-    //public abstract class Envelope
-    //{
-    //    //public interface IMetadata
-    //    //{
-    //    //    string Topic { get; }
-
-    //    //    long Offset { get; }
-
-    //    //    int QueueId { get; }
-
-    //    //    /////// <summary>
-    //    //    /////// Gets the correlation id.
-    //    //    /////// </summary>
-    //    //    ////string CorrelationId { get; }
-
-    //    //    /// <summary>
-    //    //    /// Gets the correlation id.
-    //    //    /// </summary>
-    //    //    string MessageId { get; }
-    //    //}
-
-    //    /// <summary>
-    //    /// Creates an envelope for the given body.
-    //    /// </summary>
-    //    public static Envelope<T> Create<T>(T body)
-    //    {
-    //        return new Envelope<T>(body);
-    //    }
-    //}
-
     /// <summary>
-    /// Provides the envelope for an object that will be sent to a bus.
+    /// Provides the envelope for an object that will be sent to a buffer.
     /// </summary>
-    public class Envelope<T>// : Envelope//, Envelope.IMetadata
+    public class Envelope<T>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Envelope{T}"/> class.
@@ -55,7 +18,7 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// Gets the body.
         /// </summary>
-        public T Body { get; private set; }
+        public T Body { get; set; }
 
         /// <summary>
         /// 从入队到出队的时间

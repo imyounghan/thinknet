@@ -48,9 +48,10 @@
     <Compile Include="CommandBus.cs" />
     <Compile Include="CommandReply.cs" />
     <Compile Include="CommandNotification.cs" />
-    <Compile Include="CommandResultProcessor.cs" />
+    <Compile Include="CommandReplyProcessor.cs" />
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="DefaultTopicProvider.cs" />
+    <Compile Include="EnvelopeDelivery.cs" />
     <Compile Include="EventBus.cs" />
     <Compile Include="ITopicProvider.cs" />
     <Compile Include="KafkaClient.cs" />

@@ -16,7 +16,12 @@ namespace ThinkNet.Messaging
         public DefaultEventBus()
         {
             this.queue = new BlockingCollection<IEvent>();
-            this.worker = WorkerFactory.Create<IEvent>(queue.Take, Transfer);
+            this.worker = WorkerFactory.Create<IEvent>(queue.Take, Transform);
+        }
+
+        protected override void Initialize(IEnumerable<Type> types)
+        {
+            worker.Start();
         }
 
         protected override bool MatchType(Type type)
@@ -32,13 +37,10 @@ namespace ThinkNet.Messaging
 
         public void Publish(IEnumerable<IEvent> events)
         {
-            if (queue.Count + events.Count() >= ConfigurationSetting.Current.QueueCapacity * 5)
-                throw new Exception("server is busy.");
-
             events.ForEach(queue.Add);
         }
 
-        private void Transfer(IEvent @event)
+        private void Transform(IEvent @event)
         {
             var stream = @event as EventStream;
             if (stream == null) {

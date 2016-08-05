@@ -59,6 +59,19 @@ namespace ThinkNet.Messaging.Handling
             }
         }
 
+        class EmptyUnitOfWork : IUnitOfWork
+        {
+            public readonly static EmptyUnitOfWork Instance = new EmptyUnitOfWork();
+            private EmptyUnitOfWork()
+            { }
+
+            public void Commit()
+            { }
+
+            public void Rollback()
+            { }
+        }
+
         private readonly ICommandBus _commandBus;
 
         public EventContextFactory(ICommandBus commandBus)
@@ -70,7 +83,7 @@ namespace ThinkNet.Messaging.Handling
 
         protected virtual IUnitOfWork CreateUnitOfWork()
         {
-            return null;
+            return EmptyUnitOfWork.Instance;
         }
 
 

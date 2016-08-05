@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using ThinkNet.Common;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Handling;
 
@@ -28,7 +29,9 @@ namespace ThinkNet.Messaging.Processing
             IEventBus eventBus,
             IEventPublishedVersionStore eventPublishedVersionStore,
             ITextSerializer serializer,
-            IEventContextFactory eventContextFactory)
+            IEventContextFactory eventContextFactory,
+            IEnvelopeDelivery envelopeDelivery)
+            : base(envelopeDelivery)
         {
             this._notification = notification;
             this._handlerProvider = handlerProvider;

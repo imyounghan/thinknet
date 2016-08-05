@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinkNet.Common;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Handling;
 
@@ -15,7 +16,9 @@ namespace ThinkNet.Messaging.Processing
         /// </summary>
         public CommandProcessor(ICommandNotification notification,
             IHandlerProvider handlerProvider,
-            IRoutingKeyProvider routingKeyProvider)
+            IRoutingKeyProvider routingKeyProvider, 
+            IEnvelopeDelivery envelopeDelivery)
+            : base(envelopeDelivery)
         {
             this._notification = notification;
             this._handlerProvider = handlerProvider;

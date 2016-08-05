@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Practices.ServiceLocation;
-
+using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
@@ -100,6 +100,9 @@ namespace ThinkNet.Messaging.Handling
 
         public void Initialize(IEnumerable<Type> types)
         {
+            EventSourcedInnerHandlerProvider.Initialize(types);
+
+
             foreach (var type in types) {
                 if (TypeHelper.IsCommand(type)) {
                     singleHandlerDict[type] = this.GetCommandHandler(type);

@@ -1,14 +1,14 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using ThinkNet.Common;
 using ThinkNet.Configurations;
 
 namespace ThinkNet.Infrastructure
 {
-    public abstract class Processor<T> : DisposableObject, IProcessor
+    public abstract class Processor : DisposableObject, IProcessor
     {
-        private readonly BlockingCollection<T>[] brokers;
-        //private readonly Worker[] works;
-        private readonly IRoutingKeyProvider routingKeyProvider;
-        
+        private readonly IList<Worker> workers;
         private readonly object lockObject;
         private bool started;
 
@@ -18,16 +18,20 @@ namespace ThinkNet.Infrastructure
         protected Processor()
         {
             this.lockObject = new object();
+            this.workers = new List<Worker>();
+        }
 
-            var count = ConfigurationSetting.Current.ProcessorCount;
-            this.brokers = new BlockingCollection<T>[count];
-            //this.works = new Worker[count + 1];
 
-            //works[0] = WorkerFactory.Create<T>(EnvelopeBuffer<T>.Instance.Dequeue(), Process);
-            for (int i = 0; i < count; i++) {
-                brokers[i] = new BlockingCollection<T>();
-                //works[i + 1] = WorkerFactory.Create<T>(brokers[i].Take, Process);
-            }
+        protected void BuildWorker<TMessage>(Func<TMessage> factory, Action<TMessage> action)
+        {
+            var worker = WorkerFactory.Create<TMessage>(factory, action);
+            workers.Add(worker);
+        }
+
+        protected void BuildWorker(Action action)
+        {
+            var worker = WorkerFactory.Create(action);
+            workers.Add(worker);
         }
 
         /// <summary>
@@ -38,18 +42,12 @@ namespace ThinkNet.Infrastructure
             ThrowIfDisposed();
             lock (this.lockObject) {
                 if (!this.started) {
-                    //MessageCenter<T>.Instance.MessageHandling += OnMessageHandling;
-                    //MessageCenter<T>.Instance.Start();
-                    //works.ForEach(StartWorker);
+                    workers.ForEach(worker => worker.Start());
                     this.started = true;
                 }
             }
         }
 
-        //private static void StartWorker(Worker worker)
-        //{
-        //    worker.Start();
-        //}
 
         /// <summary>
         /// Stops the listener.
@@ -58,20 +56,13 @@ namespace ThinkNet.Infrastructure
         {
             lock (this.lockObject) {
                 if (this.started) {
-                    //MessageCenter<T>.Instance.Stop();
-                    //MessageCenter<T>.Instance.MessageHandling -= OnMessageHandling;
-                    //works.ForEach(StopWorker);
+                    workers.ForEach(worker => worker.Stop());
                     this.started = false;
                 }
             }
         }
 
-        //private static void StopWorker(Worker worker)
-        //{
-        //    worker.Stop();
-        //}
-               
-        
+       
         /// <summary>
         /// Disposes the resources used by the processor.
         /// </summary>
@@ -83,27 +74,5 @@ namespace ThinkNet.Infrastructure
                 this.Stop();
             }
         }
-
-        protected abstract void Process(T message);
-        
-
-        //private void OnMessageHandling(object sender, Message<T> arg)
-        //{
-        //    var message = arg.Body;
-        //    if (message.IsNull()) {
-        //        Console.WriteLine("empty message.");
-        //        return;
-        //    }
-
-        //    //arg.TimeForWait = DateTime.UtcNow - arg.CreatedTime;
-
-        //    try {
-        //        this.Process(message);
-        //    }
-        //    catch (Exception ex) {
-        //        logger.Error("An exception happened while processing message through handler", ex);
-        //        logger.Warn("Error will be ignored and message receiving will continue.");
-        //    }
-        //}
     }
 }

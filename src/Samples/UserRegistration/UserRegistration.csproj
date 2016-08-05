@@ -59,6 +59,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Extensions\ThinkNet.Runtime.Kafka\ThinkNet.Runtime.Kafka.csproj">
+      <Project>{facea926-7587-4d44-a013-050b2eef3572}</Project>
+      <Name>ThinkNet.Runtime.Kafka</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ThinkNet.Runtime\ThinkNet.Runtime.csproj">
       <Project>{7dd719e0-5aaa-4878-b259-5d8648d585fd}</Project>
       <Name>ThinkNet.Runtime</Name>

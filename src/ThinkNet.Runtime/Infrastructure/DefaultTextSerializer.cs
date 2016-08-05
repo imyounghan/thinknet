@@ -25,7 +25,7 @@ namespace ThinkNet.Infrastructure
         public DefaultTextSerializer()
         {
             this._jsonSerializer = new JavaScriptSerializer(new CustomTypeResolver());
-            this._jsonSerializer.RegisterConverters(new JavaScriptConverter[] { new CustomJavaScriptConverter() });
+            //this._jsonSerializer.RegisterConverters(new JavaScriptConverter[] { new CustomJavaScriptConverter() });
         }
 
         #region ITextSerializer 成员

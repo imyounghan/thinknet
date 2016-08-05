@@ -1,4 +1,6 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
+using System.Linq;
 
 namespace ThinkNet.Configurations
 {
@@ -12,13 +14,15 @@ namespace ThinkNet.Configurations
             this.EnsureTopicRetryInterval = 1000;
             this.EnableKafkaProcessor = true;
 
-            this.KafkaUris = (ConfigurationManager.AppSettings["thinkcfg.kafka_uri"] ?? string.Empty).Split(',');
-            this.ProducerTopics = (ConfigurationManager.AppSettings["thinkcfg.kafka_topic_producer"] ?? string.Empty).Split(',');
-            this.ConsumerTopics = (ConfigurationManager.AppSettings["thinkcfg.kafka_topic_consumer"] ?? string.Empty).Split(',');
+            this.KafkaUris = (ConfigurationManager.AppSettings["thinkcfg.kafka_uri"] ?? string.Empty).Split(',').Select(str => new Uri(string.Concat("tcp://", str))).ToArray();
+            this.ProducerTopics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic_producer"]
+                .IfEmpty(ConfigurationManager.AppSettings["thinkcfg.kafka_topic"]).IfEmpty(string.Empty).Split(',');
+            this.ConsumerTopics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic_consumer"]
+                .IfEmpty(ConfigurationManager.AppSettings["thinkcfg.kafka_topic"]).IfEmpty(string.Empty).Split(',');
         }
 
 
-        public string[] KafkaUris { get; set; }
+        public Uri[] KafkaUris { get; set; }
 
         public string[] ProducerTopics { get; set; }
 

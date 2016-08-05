@@ -13,7 +13,7 @@ namespace UserRegistration
     {
         static void Main(string[] args)
         {
-            Bootstrapper.Current.Done();
+            Bootstrapper.Current.UsingKafka().Done();
 
             var manager = ServiceLocator.Current.GetInstance<ICommandResultManager>();
             manager.RegisterCommand(new RegisterUser {

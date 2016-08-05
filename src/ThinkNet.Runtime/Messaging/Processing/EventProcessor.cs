@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ThinkNet.Common;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Handling;
 
@@ -16,7 +17,9 @@ namespace ThinkNet.Messaging.Processing
         /// Parameterized Constructor.
         /// </summary>
         public EventProcessor(IHandlerRecordStore handlerStore,
-            IHandlerProvider handlerProvider)
+            IHandlerProvider handlerProvider,
+            IEnvelopeDelivery envelopeDelivery)
+            : base(envelopeDelivery)
         {
             this._handlerProvider = handlerProvider;
             this._handlerStore = handlerStore;

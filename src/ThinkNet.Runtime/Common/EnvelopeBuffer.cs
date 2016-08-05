@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using ThinkNet.Configurations;
 
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Common
 {
     public class EnvelopeBuffer<T> //where T : IMessage
     {

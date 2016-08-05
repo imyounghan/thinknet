@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Practices.ServiceLocation;
+using ThinkNet.Common;
 using ThinkNet.Database;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
@@ -135,6 +136,15 @@ namespace ThinkNet.Configurations
                     ServiceLocator.Current.GetInstance(serviceType) :
                     ServiceLocator.Current.GetInstance(serviceType, key);
             }
+        }
+
+        /// <summary>
+        /// 服务状态
+        /// </summary>
+        public enum Status
+        {
+            Running,
+            Stopped
         }
 
         class ObjectContainer : ServiceLocatorImplBase
@@ -267,8 +277,28 @@ namespace ThinkNet.Configurations
             return this.LoadAssemblies(assemblies);
         }
 
+
+        public void Start()
+        {
+            if (!_running)
+                return;
+
+            ServiceLocator.Current.GetAllInstances<IProcessor>().ForEach(p => p.Start());
+        }
+
+        public void Stop()
+        {
+            if (!_running)
+                return;
+
+            ServiceLocator.Current.GetAllInstances<IProcessor>().ForEach(p => p.Stop());
+        }
+
         private bool _running = false;
 
+        /// <summary>
+        /// 配置完成。
+        /// </summary>
         public void Done()
         {
             ServiceLocator.SetLocatorProvider(() => ObjectContainer.Instance);
@@ -294,7 +324,7 @@ namespace ThinkNet.Configurations
             if (_assemblies.Count == 0) {
                 this.LoadAssemblies();
 
-                LogManager.GetLogger("ThinkNet").InfoFormat("load assemblies completed.\r\n{0}",
+                LogManager.Default.InfoFormat("load assemblies completed.\r\n{0}",
                     string.Join("\r\n", _assemblies.Select(item => item.FullName)));
             }
 
@@ -329,40 +359,10 @@ namespace ThinkNet.Configurations
 
             _running = true;
 
-            LogManager.GetLogger("ThinkNet").Info("system is running.");
+            this.Start();
+
+            LogManager.Default.Info("system is running.");
         }
-
-        ///// <summary>
-        ///// 注册实例
-        ///// </summary>
-        //public Bootstrapper RegisterInstance(object instance, params Type[] types)
-        //{
-        //    types.NotNull("types");
-
-        //    foreach (var type in types) {
-        //        this.RegisterInstance(type, instance);
-        //    }
-
-        //    return this;
-        //}
-
-        ///// <summary>
-        ///// 注册实例
-        ///// </summary>
-        //public Bootstrapper RegisterInstance(Type type, object instance, string name = null)
-        //{
-        //    if (_running) {
-        //        throw new ApplicationException("system is running, can not register instance, please execute before 'done' method.");
-        //    }
-
-        //    type.NotNull("type");
-        //    instance.NotNull("instance");
-
-        //    AddComponent(new Component(type, instance, name));
-
-
-        //    return this;
-        //}
 
         /// <summary>
         /// 注册类型
@@ -425,8 +425,6 @@ namespace ThinkNet.Configurations
                     this.RegisterType(interfaceType, type, lifecycle, type.FullName);
                 }
             }
-
-            //AggregateRootInnerHandlerProvider.Initialize(types);
         }
         //private void RegisterInterceptor(IEnumerable<Type> types)
         //{
@@ -461,9 +459,8 @@ namespace ThinkNet.Configurations
             this.RegisterType<IEventContextFactory, EventContextFactory>();
             this.RegisterType<IHandlerRecordStore, HandlerRecordInMemory>();
             this.RegisterType<ICommandNotification, DefaultCommandNotification>();
-            //this.RegisterType<IMessageSender, DefaultMessageSender>();
-            //this.RegisterType<IMessageReceiver, DefaultMessageReceiver>();
             this.RegisterType<IHandlerProvider, DefaultHandlerProvider>();
+            this.RegisterType<IEnvelopeDelivery, DefaultEnvelopeDelivery>();
 
             if (ConfigurationSetting.Current.EnableCommandProcessor)
                 this.RegisterType<IProcessor, CommandProcessor>("CommandProcessor");

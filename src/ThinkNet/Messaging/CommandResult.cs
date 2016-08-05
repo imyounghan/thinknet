@@ -29,6 +29,10 @@ namespace ThinkNet.Messaging
         /// </summary>
         public string ErrorMessage { get; private set; }
         /// <summary>
+        /// 错误编码
+        /// </summary>
+        public string ErrorCode { get; private set; }
+        /// <summary>
         /// 设置或获取一个提供用户定义的其他异常信息的键/值对的集合。
         /// </summary>
         public IDictionary ErrorData { get; private set; }
@@ -85,6 +89,12 @@ namespace ThinkNet.Messaging
                 Path.GetFileNameWithoutExtension(exceptionType.Assembly.ManifestModule.FullyQualifiedName));
             this.ErrorMessage = exception.Message;
             this.ErrorData = exception.Data;
+
+            var thinkNetException = exception as ThinkNetException;
+            if (thinkNetException == null)
+                this.ErrorCode = "-1";
+            else
+                this.ErrorCode = thinkNetException.MessageCode;
         }
 
         /// <summary>
@@ -112,8 +122,14 @@ namespace ThinkNet.Messaging
 
                 if (exception != null && this.ErrorData != null && this.ErrorData.Count > 0) {
                     foreach (DictionaryEntry entry in this.ErrorData) {
-                        exception.Data.Add(entry.Key, entry.Value);
+                        exception.Data[entry.Key] = entry.Value;
                     }
+                }
+
+                var thinkNetException = exception as ThinkNetException;
+                if (thinkNetException != null) {
+                    thinkNetException.MessageCode = this.ErrorCode;
+                    return thinkNetException;
                 }
 
                 return exception;

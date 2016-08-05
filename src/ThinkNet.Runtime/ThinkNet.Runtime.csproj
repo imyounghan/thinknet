@@ -56,6 +56,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\IEnvelopeDelivery.cs" />
+    <Compile Include="Common\DefaultEnvelopeDelivery.cs" />
     <Compile Include="Common\Worker.cs" />
     <Compile Include="Common\WorkerFactory.cs" />
     <Compile Include="Common\Worker`1.cs" />
@@ -71,6 +73,7 @@
     <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
     <Compile Include="Infrastructure\ITextSerializer.cs" />
+    <Compile Include="Infrastructure\Processor.cs" />
     <Compile Include="Infrastructure\SerializerExtensions.cs" />
     <Compile Include="Infrastructure\StandardMetadata.cs" />
     <Compile Include="Infrastructure\StandardMetadataProvider.cs" />

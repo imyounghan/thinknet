@@ -15,36 +15,105 @@ using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Runtime
 {
-    public class KafkaClient
+    public class KafkaClient : DisposableObject
     {
+        class KafkaConsumer : IDisposable
+        {
+
+            private readonly Consumer _consumer;
+
+            public KafkaConsumer(Consumer consumer, string topic)
+            {
+                this._consumer = consumer;
+                this.Topic = topic;
+                this.Metadatas = new ConcurrentDictionary<string, MessageMetadata>();
+            }
+
+            public string Topic { get; private set; }
+
+            public IEnumerable Consume()
+            {
+                return _consumer.Consume().Aggregate(new ArrayList(), (list, item) => {
+                    list.Add(Deserialize(item));
+                    return list;
+                });
+            }
+
+            private object Deserialize(Message message)
+            {
+                var serialized = message.Value.ToUtf8String();
+                var metadata = serializer.Deserialize<IDictionary<string, string>>(serialized);
+
+                var typeFullName = string.Format("{0}.{1}, {2}",
+                    metadata[StandardMetadata.Namespace],
+                    metadata[StandardMetadata.TypeName],
+                    metadata[StandardMetadata.AssemblyName]);
+                var type = Type.GetType(typeFullName);
+
+                Metadatas.TryAdd(metadata[StandardMetadata.UniqueId], message.Meta);
+
+                return serializer.Deserialize(metadata["Playload"], type);
+            }
+
+
+            public ConcurrentDictionary<string, MessageMetadata> Metadatas { get; private set; }
+
+            #region IDisposable 成员
+
+            public void Dispose()
+            {
+                _consumer.Dispose();
+            }
+
+            #endregion
+        }
+
+
         public readonly static KafkaClient Instance = new KafkaClient();
 
 
-        private readonly ITextSerializer serializer;
-        private readonly IMetadataProvider metadataProvider;
-        private readonly ITopicProvider topicProvider;
+        private readonly static ITextSerializer serializer;
+        private readonly static IMetadataProvider metadataProvider;
+        private readonly static ITopicProvider topicProvider;
 
         private readonly IBrokerRouter router;
         private readonly Lazy<Producer> producer;
-        private readonly ConcurrentDictionary<string, Consumer> consumers;
+        private readonly ConcurrentDictionary<string, KafkaConsumer> consumers;
+        private readonly ConcurrentDictionary<string, MessageMetadata> metadatas;
+
+        static KafkaClient()
+        {
+            serializer = ServiceLocator.Current.GetInstance<ITextSerializer>();
+            metadataProvider = ServiceLocator.Current.GetInstance<IMetadataProvider>();
+            topicProvider = ServiceLocator.Current.GetInstance<ITopicProvider>();
+        }
 
         private KafkaClient()
             : this(KafkaSettings.Current.KafkaUris)
         { }
 
-        public KafkaClient(params string[] kafkaUrls)
+        public KafkaClient(params Uri[] kafkaUris)
         {
-            this.serializer = ServiceLocator.Current.GetInstance<ITextSerializer>();
-            this.metadataProvider = ServiceLocator.Current.GetInstance<IMetadataProvider>();
-            this.topicProvider = ServiceLocator.Current.GetInstance<ITopicProvider>();
-
-
-            var uris = kafkaUrls.Select(url => new Uri(url)).ToArray();
-            var option = new KafkaOptions(uris);
+            var option = new KafkaOptions(kafkaUris);
             this.router = new BrokerRouter(option);
 
             this.producer = new Lazy<Producer>(() => new Producer(router), true);
-            this.consumers = new ConcurrentDictionary<string, Consumer>();
+            this.consumers = new ConcurrentDictionary<string, KafkaConsumer>();
+            this.metadatas = new ConcurrentDictionary<string, MessageMetadata>();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            ThrowIfDisposed();
+            if (disposing) {
+                if (producer.IsValueCreated)
+                    producer.Value.Dispose();
+
+                foreach (var kvp in consumers) {
+                    kvp.Value.Dispose();
+                }
+                consumers.Clear();
+            }
         }
 
         public void EnsureProducerTopic(params string[] topics)
@@ -70,13 +139,17 @@ namespace ThinkNet.Runtime
         {
             foreach (var topic in topics) {
                 int count = -1;
-                var consumer = consumers.GetOrAdd(topic, key => new Consumer(new ConsumerOptions(key, router)));
+                var consumer = new Consumer(new ConsumerOptions(topic, router));
                 while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
                     try {
                         Topic result = consumer.GetTopic(topic);
                         if (result.ErrorCode == (short)ErrorResponseCode.NoError) {
+                            consumers.TryAdd(topic, new KafkaConsumer(consumer, topic));
                             break;
                         }
+
+                        if (LogManager.Default.IsDebugEnabled)
+                            LogManager.Default.DebugFormat("get the topic('{0}') of status is {1}", topic, (ErrorResponseCode)result.ErrorCode);
 
                         Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
                     }
@@ -94,13 +167,14 @@ namespace ThinkNet.Runtime
             for (IEnumerator item = messages.GetEnumerator(); item.MoveNext(); ) {
                 var topic = topicProvider.GetTopic(item.Current);
 
-                //dict.GetOrAdd(topic)
-                IList<Message> list;
-                if (!dict.TryGetValue(topic, out list)) {
-                    list = new List<Message>();
-                    dict.Add(topic, list);
-                }
-                list.Add(Serialize(item.Current));
+                var message = this.Serialize(item.Current);
+                dict.GetOrAdd(topic, () => new List<Message>()).Add(message);
+                //IList<Message> list;
+                //if (!dict.TryGetValue(topic, out list)) {
+                //    list = new List<Message>();
+                //    dict.Add(topic, list);
+                //}
+                //list.Add(Serialize(item.Current));
             }
 
             var tasks = dict.Select(item => producer.Value.SendMessageAsync(item.Key, item.Value)).ToArray();
@@ -109,46 +183,34 @@ namespace ThinkNet.Runtime
 
         public IEnumerable Pull(string topic)
         {
-            return consumers[topic].Consume().Select(Deserialize).ToArray();
+            return consumers[topic].Consume();
         }
 
         private object Deserialize(Message message)
         {
             var serialized = message.Value.ToUtf8String();
-            var kafkaMsg = serializer.Deserialize<KafkaMessage>(serialized);
+            var metadata = serializer.Deserialize<IDictionary<string, string>>(serialized, true);
 
-            return Deserialize(kafkaMsg);
-        }
-
-        private object Deserialize(KafkaMessage message)
-        {
             var typeFullName = string.Format("{0}.{1}, {2}",
-                message.MetadataInfo[StandardMetadata.Namespace], 
-                message.MetadataInfo[StandardMetadata.TypeName],
-                message.MetadataInfo[StandardMetadata.AssemblyName]);
+                metadata[StandardMetadata.Namespace],
+                metadata[StandardMetadata.TypeName],
+                metadata[StandardMetadata.AssemblyName]);
             var type = Type.GetType(typeFullName);
 
-            return serializer.Deserialize(message.Body, type);
+            return serializer.Deserialize(metadata["Playload"], type);
         }
 
         private Message Serialize(object message)
         {
-            var kafkaMsg = new KafkaMessage {
-                MetadataInfo = metadataProvider.GetMetadata(message),
-                Body = serializer.Serialize(message)
-            };
+            var metadata = metadataProvider.GetMetadata(message);
+            metadata["Playload"] = serializer.Serialize(message);
 
-            return new Message(serializer.Serialize(kafkaMsg));
+            return new Message(serializer.Serialize(metadata, true));
         }
 
-        class KafkaMessage
+        public void ConsumerComplete(string topic, string messageId)
         {
-            /// <summary>
-            /// 元数据信息
-            /// </summary>
-            public IDictionary<string, string> MetadataInfo { get; set; }
-
-            public string Body { get; set; }
+            consumers[topic].Metadatas.Remove(messageId);
         }
     }
 }

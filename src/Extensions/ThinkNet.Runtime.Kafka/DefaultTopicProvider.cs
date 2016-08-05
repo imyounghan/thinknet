@@ -12,6 +12,10 @@ namespace ThinkNet.Runtime
             if (payload is ICommand) {
                 return "Commands";
             }
+
+            if (payload is EventStream) {
+                return "EventStreams";
+            }
             
             if (payload is IEvent) {
                 return "Events";
@@ -21,7 +25,7 @@ namespace ThinkNet.Runtime
                 return "CommandResults";
             }
 
-            throw new Exception();
+            throw new ThinkNetException();
         }
 
         #endregion

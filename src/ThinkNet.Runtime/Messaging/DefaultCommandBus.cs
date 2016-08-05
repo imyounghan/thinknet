@@ -16,7 +16,7 @@ namespace ThinkNet.Messaging
         public DefaultCommandBus()
         {
             this.queue = new BlockingCollection<ICommand>();
-            this.worker = WorkerFactory.Create<ICommand>(queue.Take, Transfer);
+            this.worker = WorkerFactory.Create<ICommand>(queue.Take, Transform);
         }
 
         protected override void Initialize(IEnumerable<Type> types)
@@ -36,16 +36,16 @@ namespace ThinkNet.Messaging
 
         public void Send(IEnumerable<ICommand> commands)
         {
+            if (commands.IsEmpty())
+                return;
+
             if (queue.Count + commands.Count() >= ConfigurationSetting.Current.QueueCapacity * 5)
                 throw new Exception("server is busy.");
 
             commands.ForEach(queue.Add);
-
-            //queue.TryAdd()
-            //commands.Select(Serialize).ForEach(EnvelopeBuffer<ICommand>.Instance.Enqueue);
         }
 
-        private void Transfer(ICommand command)
+        private void Transform(ICommand command)
         {
             var item = new Envelope<ICommand>(command) {
                 CorrelationId = command.Id
