@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
-using ThinkNet.Kernel;
+using ThinkNet.Database;
+using ThinkNet.EventSourcing;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 
@@ -14,17 +15,16 @@ namespace ThinkNet.Infrastructure
     {
         /// <summary>Check whether a type is an aggregate root type.
         /// </summary>
-        public static bool IsAggregateRoot(Type type)
-        {
-            return type.IsClass && !type.IsAbstract && typeof(IAggregateRoot).IsAssignableFrom(type);
-        }
-
-        /// <summary>
-        /// Check whether a type is a eventsouced aggregate root type.
-        /// </summary>
         public static bool IsEventSourced(Type type)
         {
             return type.IsClass && !type.IsAbstract && typeof(IEventSourced).IsAssignableFrom(type);
+        }
+
+        /// <summary>Check whether a type is an aggregate root type.
+        /// </summary>
+        public static bool IsAggregateRoot(Type type)
+        {
+            return type.IsClass && !type.IsAbstract && typeof(IAggregateRoot).IsAssignableFrom(type);
         }
 
         /// <summary>Check whether a type is a repository type.
@@ -77,13 +77,6 @@ namespace ThinkNet.Infrastructure
                 type.GetInterfaces().Any(IsCommandHandlerInterfaceType);
         }
 
-        /// <summary>
-        /// Check whether a type is a event type.
-        /// </summary>
-        public static bool IsVersionedEvent(Type type)
-        {
-            return type.IsClass && !type.IsAbstract && typeof(IVersionedEvent).IsAssignableFrom(type);
-        }
         /// <summary>
         /// Check whether a type is a event type.
         /// </summary>

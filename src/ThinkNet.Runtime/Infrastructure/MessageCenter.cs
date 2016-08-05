@@ -1,29 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Threading;
+using Microsoft.Practices.ServiceLocation;
 using ThinkLib.Scheduling;
 using ThinkNet.Configurations;
 
 namespace ThinkNet.Infrastructure
 {
-    //public class MessageCenter
-    //{
-    //    private static ConcurrentDictionary<Type, object> dict = new ConcurrentDictionary<Type, object>();
-
-    //    public static MessageCenter<T> Get<T>()
-    //    {
-    //        return dict.GetOrAdd(typeof(T), (key) => new MessageCenter<T>()) as MessageCenter<T>;
-    //    }
-
-    //    internal readonly Worker[] works;
-
-    //    protected MessageCenter(int workerCount)
-    //    {
-    //        works = new Worker[workerCount];
-    //    }
-    //}
-
 
     public class MessageCenter<T> 
     {
@@ -33,13 +16,15 @@ namespace ThinkNet.Infrastructure
 
         private readonly BlockingCollection<Message<T>>[] brokers;
         private readonly Worker[] works;
+        private readonly IRoutingKeyProvider routingKeyProvider;
 
         private MessageCenter()
-            : base()
         {
+            this.routingKeyProvider = ServiceLocator.Current.GetInstance<IRoutingKeyProvider>();
+
             var count = ConfigurationSetting.Current.QueueCount;
-            brokers = new BlockingCollection<Message<T>>[count];
-            works = new Worker[count];
+            this.brokers = new BlockingCollection<Message<T>>[count];
+            this.works = new Worker[count];
 
             for (int i = 0; i < count; i++) {
                 brokers[i] = new BlockingCollection<Message<T>>(ConfigurationSetting.Current.QueueCapacity);
@@ -49,7 +34,8 @@ namespace ThinkNet.Infrastructure
 
         public void Add(Message<T> message)
         {
-            this.GetBroker(message.RoutingKey).Add(message);
+            var routingKey = routingKeyProvider.GetRoutingKey(message.Body);
+            this.GetBroker(routingKey).Add(message);
         }
 
         private BlockingCollection<Message<T>> GetBroker(string routingKey)
@@ -68,7 +54,8 @@ namespace ThinkNet.Infrastructure
 
         public bool TryAdd(Message<T> message)
         {
-            return this.GetBroker(message.RoutingKey).TryAdd(message);
+            var routingKey = routingKeyProvider.GetRoutingKey(message.Body);
+            return this.GetBroker(routingKey).TryAdd(message);
         }
 
         public Message<T> Take()
@@ -90,8 +77,6 @@ namespace ThinkNet.Infrastructure
         }
 
         public event EventHandler<Message<T>> MessageHandling = (sender, arg) => { };
-
-        //public event EventHandler<Message<T>> MessageHandled = (sender, arg) => { };
 
         public void Start()
         {

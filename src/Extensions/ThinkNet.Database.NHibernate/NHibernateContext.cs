@@ -7,8 +7,6 @@ using System.Linq;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Mapping;
-using ThinkLib.Common;
-using ThinkLib.Contexts;
 
 
 namespace ThinkNet.Database.NHibernate
@@ -17,11 +15,6 @@ namespace ThinkNet.Database.NHibernate
     {
         private readonly ISession _session;
         public NHibernateContext(ISession session)
-            : this(session, null)
-        { }
-
-        internal NHibernateContext(ISession session, IContextManager contextManager)
-            : base(contextManager)
         {
             this._session = session;            
         }

@@ -2,21 +2,17 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition.Primitives;
 using System.ComponentModel.Composition.Registration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Practices.ServiceLocation;
-using ThinkLib.Common;
-using ThinkLib.Logging;
-using ThinkLib.Utilities;
+using ThinkNet.Database;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
-using ThinkNet.Kernel;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
-using ThinkNet.Runtime;
+using ThinkNet.Messaging.Processing;
 
 namespace ThinkNet.Configurations
 {
@@ -157,10 +153,10 @@ namespace ThinkNet.Configurations
             }
             public void Register(Component component)
             {
-                var builder = dict.GetOrAdd(component.ForType.Assembly, _ => new RegistrationBuilder());
+                var builder = dict.GetOrAdd(component.ForType.Assembly, () => new RegistrationBuilder());
                 var partBuilder = builder.ForType(component.ForType);
 
-                if (!component.ContractType.IsNull()) {
+                if (component.ContractType != null) {
                     partBuilder = partBuilder.Export(p => p.AsContractType(component.ContractType));
                 }
                 else {
@@ -270,7 +266,6 @@ namespace ThinkNet.Configurations
 
             return this.LoadAssemblies(assemblies);
         }
-
 
         private bool _running = false;
 
@@ -405,14 +400,14 @@ namespace ThinkNet.Configurations
 
         private void RegisterComponents(IEnumerable<Type> types)
         {
-            var registionTypes = types.Where(p => p.IsClass && !p.IsAbstract && p.IsDefined<RegisterAttribute>(false));
+            var registionTypes = types.Where(p => p.IsClass && !p.IsAbstract && p.IsDefined(typeof(RegisterAttribute), false));
 
             foreach (var type in registionTypes) {
                 var attribute = type.GetAttribute<RegisterAttribute>(false);
                 var contractType = attribute.ContractType;
                 var contractName = attribute.ContractName;
                 var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
-                if (attribute.ContractType.IsNull()) {
+                if (attribute.ContractType == null) {
                     this.RegisterType(type, lifecycle, contractName);
                 }
                 else {
@@ -431,7 +426,7 @@ namespace ThinkNet.Configurations
                 }
             }
 
-            AggregateRootInnerHandlerProvider.Initialize(types);
+            //AggregateRootInnerHandlerProvider.Initialize(types);
         }
         //private void RegisterInterceptor(IEnumerable<Type> types)
         //{
@@ -444,6 +439,8 @@ namespace ThinkNet.Configurations
         //        }
         //    }
         //}
+
+
         private void RegisterFrameworkComponents()
         {
             this.RegisterType<IEventPublishedVersionStore, EventPublishedVersionInMemory>();
@@ -452,24 +449,28 @@ namespace ThinkNet.Configurations
             this.RegisterType<ISnapshotStore, NoneSnapshotStore>();
             this.RegisterType<IBinarySerializer, DefaultBinarySerializer>();
             this.RegisterType<ITextSerializer, DefaultTextSerializer>();
-            this.RegisterType<IMemoryCache, DefaultMemoryCache>();            
+            this.RegisterType<ICache, DefaultMemoryCache>();            
             this.RegisterType<IRoutingKeyProvider, DefaultRoutingKeyProvider>();
-            //this.RegisterType<IMetadataProvider, StandardMetadataProvider>();
+            this.RegisterType<IMetadataProvider, StandardMetadataProvider>();
             this.RegisterType<IEventSourcedRepository, EventSourcedRepository>();
             this.RegisterType<IRepository, MemoryRepository>();
             this.RegisterType<ICommandBus, DefaultCommandBus>();
-            this.RegisterType<ICommandResultManager, DefaultMessageNotification>();
+            this.RegisterType<ICommandResultManager, DefaultCommandNotification>();
             this.RegisterType<IEventBus, DefaultEventBus>();
             this.RegisterType<ICommandContextFactory, CommandContextFactory>();
             this.RegisterType<IEventContextFactory, EventContextFactory>();
             this.RegisterType<IHandlerRecordStore, HandlerRecordInMemory>();
-            this.RegisterType<IAggregateRootFactory, DefaultAggregateRootFactory>();
-            this.RegisterType<IMessageNotification, DefaultMessageNotification>();
+            this.RegisterType<ICommandNotification, DefaultCommandNotification>();
             //this.RegisterType<IMessageSender, DefaultMessageSender>();
             //this.RegisterType<IMessageReceiver, DefaultMessageReceiver>();
             this.RegisterType<IHandlerProvider, DefaultHandlerProvider>();
-            this.RegisterType<IProcessor, CommandProcessor>("CommandProcessor");
-            this.RegisterType<IProcessor, EventProcessor>("EventProcessor");
+
+            if (ConfigurationSetting.Current.EnableCommandProcessor)
+                this.RegisterType<IProcessor, CommandProcessor>("CommandProcessor");
+            if (ConfigurationSetting.Current.EnableSynchronousProcessor)
+                this.RegisterType<IProcessor, SynchronousProcessor>("SynchronousProcessor");
+            if (ConfigurationSetting.Current.EnableEventProcessor)
+                this.RegisterType<IProcessor, EventProcessor>("EventProcessor");
         }
 
         private bool InitComponent(Component component)
@@ -485,12 +486,7 @@ namespace ThinkNet.Configurations
 
         private static bool IsInitializeType(Type type)
         {
-            return !type.IsNull() && type.IsClass && !type.IsAbstract && typeof(IInitializer).IsAssignableFrom(type);
-        }
-
-        private static bool IsInitializer(object instance)
-        {
-            return !instance.IsNull() && instance is IInitializer;
+            return type!=null && type.IsClass && !type.IsAbstract && typeof(IInitializer).IsAssignableFrom(type);
         }
     }
 }

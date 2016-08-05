@@ -3,17 +3,21 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 
 
-namespace ThinkNet.Database.Storage
+namespace ThinkNet.Infrastructure
 {
     public class ThinkNetDbContext : DbContext
     {
+        public ThinkNetDbContext()
+        {
+            this.Configuration.AutoDetectChangesEnabled = true;
+            this.Configuration.LazyLoadingEnabled = true;
+        }
         public ThinkNetDbContext(string nameOrConnectionString)
             : base(nameOrConnectionString)
         {
             this.Configuration.AutoDetectChangesEnabled = true;
             this.Configuration.LazyLoadingEnabled = true;
         }
-
         public ThinkNetDbContext(DbConnection dbConnection)
             : base(dbConnection, false)
         {

@@ -1,4 +1,5 @@
-﻿using ThinkNet.Infrastructure;
+﻿using ThinkNet;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using UserRegistration.Events;
 using UserRegistration.ReadModel;

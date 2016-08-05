@@ -1,26 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace ThinkNet.Infrastructure
 {
-    public class Message<T>
+    public class Message<T>// : IMessageMetadata
     {
-        public Message()
-        {
-            this.CreatedTime = DateTime.UtcNow;
-        }
-
         ///// <summary>
-        ///// 元数据信息
+        ///// 用于路由的值
         ///// </summary>
-        //public IDictionary<string, string> MetadataInfo { get; set; }
+        //public string RoutingKey { get; set; }
 
-        /// <summary>
-        /// 用于路由的值
-        /// </summary>
-        public string RoutingKey { get; set; }
+        public long Offset { get; set; }
+
+        public int QueueId { get; set; }
         
-        public DateTime CreatedTime { get; set; }
+        //public DateTime CreatedTime { get; set; }
 
         public TimeSpan TimeForWait { get; set; }
 

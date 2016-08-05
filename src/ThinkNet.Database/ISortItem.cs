@@ -2,7 +2,7 @@
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 
-namespace ThinkNet
+namespace ThinkNet.Database
 {
     /// <summary>
     /// 排序元素接口

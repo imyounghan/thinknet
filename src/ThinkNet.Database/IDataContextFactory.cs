@@ -1,18 +1,16 @@
 ﻿using System.Data.Common;
-using ThinkNet.Configurations;
 
 namespace ThinkNet.Database
 {
     /// <summary>
     /// 创建数据上下文的工厂
     /// </summary>
-    [UnderlyingComponent(typeof(MemoryContextFactory))]
     public interface IDataContextFactory
     {
-        /// <summary>
-        /// 当前上下文的数据操作
-        /// </summary>
-        IDataContext GetCurrentDataContext();
+        ///// <summary>
+        ///// 当前上下文的数据操作
+        ///// </summary>
+        //IDataContext GetCurrentDataContext();
 
         /// <summary>
         /// 创建一个数据上下文

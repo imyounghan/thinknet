@@ -3,16 +3,13 @@ using System.Collections;
 using System.Data;
 using System.Linq;
 
-using ThinkNet.Infrastructure;
-using ThinkLib.Common;
-
 
 namespace ThinkNet.Database
 {
     /// <summary>
     /// 数据上下文
     /// </summary>
-    public interface IDataContext : IUnitOfWork, IDisposable
+    public interface IDataContext : IDisposable
     {
         /// <summary>
         /// 获取跟踪的对象集合
@@ -64,12 +61,12 @@ namespace ThinkNet.Database
         /// 加载数据
         /// </summary>
         void Load(object entity);
-        
 
-        ///// <summary>
-        ///// 提交所有更改的实体。
-        ///// </summary>
-        //void Commit();
+
+        /// <summary>
+        /// 提交所有更改的实体。
+        /// </summary>
+        void Commit();
 
 
         /// <summary>

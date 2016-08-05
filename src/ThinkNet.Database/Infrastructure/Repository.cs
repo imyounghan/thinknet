@@ -1,31 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkLib.Logging;
-using ThinkNet.Configurations;
 using ThinkNet.Database;
-using ThinkNet.Kernel;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Infrastructure
 {
-    [RegisterComponent(typeof(IRepository))]
+    [Register(typeof(IRepository))]
     public sealed class Repository : IRepository
     {
         private readonly IDataContextFactory _dbContextFactory;
         private readonly IEventBus _eventBus;
-        private readonly IMemoryCache _cache;
-        private readonly ILogger _logger;
+        private readonly ICache _cache;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public Repository(IDataContextFactory dbContextFactory, IEventBus eventBus, IMemoryCache cache)
+        public Repository(IDataContextFactory dbContextFactory, IEventBus eventBus, ICache cache)
         {
             this._dbContextFactory = dbContextFactory;
             this._eventBus = eventBus;
             this._cache = cache;
-            this._logger = LogManager.GetLogger("ThinkNet");
         }
 
         #region IRepository 成员
@@ -40,14 +34,14 @@ namespace ThinkNet.Infrastructure
                     _cache.Set(aggregateRoot, id);
                 }
 
-                if (aggregateRoot != null && _logger.IsDebugEnabled) {
-                    _logger.DebugFormat("find the aggregate root '{0}' of id '{1}' from storage.",
+                if (aggregateRoot != null && LogManager.Default.IsDebugEnabled) {
+                    LogManager.Default.DebugFormat("find the aggregate root '{0}' of id '{1}' from storage.",
                         aggregateRootType.FullName, id);
                 }
             }
             else {
-                if (_logger.IsDebugEnabled)
-                    _logger.DebugFormat("find the aggregate root '{0}' of id '{1}' from cache.",
+                if (LogManager.Default.IsDebugEnabled)
+                    LogManager.Default.DebugFormat("find the aggregate root '{0}' of id '{1}' from cache.",
                         aggregateRootType.FullName, id);
             }
 
@@ -95,8 +89,8 @@ namespace ThinkNet.Infrastructure
             var aggregateRootType = aggregateRoot.GetType();
             var eventPublisher = aggregateRoot as IEventPublisher;
             if (eventPublisher == null) {
-                if (_logger.IsDebugEnabled)
-                    _logger.DebugFormat("The aggregate root {0} of id {1} is saved.",
+                if (LogManager.Default.IsDebugEnabled)
+                    LogManager.Default.DebugFormat("The aggregate root {0} of id {1} is saved.",
                         aggregateRootType.FullName, aggregateRoot.Id);
                 
                 return;
@@ -109,8 +103,8 @@ namespace ThinkNet.Infrastructure
 
             _eventBus.Publish(events);
 
-            if (_logger.IsDebugEnabled)
-                _logger.DebugFormat("The aggregate root {0} of id {1} is saved then publish all events [{2}].",
+            if (LogManager.Default.IsDebugEnabled)
+                LogManager.Default.DebugFormat("The aggregate root {0} of id {1} is saved then publish all events [{2}].",
                     aggregateRootType.FullName, aggregateRoot.Id,
                     string.Join("|", events.Select(item => item.ToString())));
         }
@@ -127,8 +121,8 @@ namespace ThinkNet.Infrastructure
                 }                
             }).Wait();
 
-            if (_logger.IsDebugEnabled)
-                _logger.DebugFormat("The aggregate root {0} of id {1} is deleted.",
+            if (LogManager.Default.IsDebugEnabled)
+                LogManager.Default.DebugFormat("The aggregate root {0} of id {1} is deleted.",
                     aggregateRootType, aggregateRoot.Id);
         }
 

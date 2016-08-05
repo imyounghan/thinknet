@@ -54,56 +54,52 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThinkLib">
-      <HintPath>..\Dependency\ThinkLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Worker.cs" />
+    <Compile Include="Common\WorkerFactory.cs" />
+    <Compile Include="Common\Worker`1.cs" />
     <Compile Include="Configurations\Bootstrapper.cs" />
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
-    <Compile Include="Infrastructure\IAggregateRootFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Infrastructure\IInitializer.cs" />
+    <Compile Include="Infrastructure\DefaultBinarySerializer.cs" />
+    <Compile Include="Infrastructure\DefaultTextSerializer.cs" />
+    <Compile Include="Common\Envelope.cs" />
+    <Compile Include="Common\EnvelopeBuffer.cs" />
+    <Compile Include="Infrastructure\IBinarySerializer.cs" />
     <Compile Include="Infrastructure\IMetadataProvider.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
-    <Compile Include="Infrastructure\ITopicProvider.cs" />
-    <Compile Include="Infrastructure\Lifecycle.cs" />
-    <Compile Include="Infrastructure\LifeCycleAttribute.cs" />
-    <Compile Include="Infrastructure\Message.cs" />
-    <Compile Include="Infrastructure\MessageCenter.cs" />
-    <Compile Include="Infrastructure\Processor.cs" />
-    <Compile Include="Infrastructure\RegisterAttribute.cs" />
+    <Compile Include="Infrastructure\ITextSerializer.cs" />
+    <Compile Include="Infrastructure\SerializerExtensions.cs" />
     <Compile Include="Infrastructure\StandardMetadata.cs" />
     <Compile Include="Infrastructure\StandardMetadataProvider.cs" />
     <Compile Include="Messaging\Handling\IHandlerProvider.cs" />
     <Compile Include="Messaging\Handling\IProxyHandler.cs" />
-    <Compile Include="Runtime\CommandProcessor.cs" />
-    <Compile Include="Runtime\DefaultAggregateRootFactory.cs" />
+    <Compile Include="Messaging\Processing\CommandProcessor.cs" />
     <Compile Include="Messaging\Handling\CommandContextFactory.cs" />
     <Compile Include="Messaging\Handling\EventContextFactory.cs" />
-    <Compile Include="Runtime\DefaultHandlerProvider.cs" />
-    <Compile Include="Runtime\DefaultRoutingKeyProvider.cs" />
-    <Compile Include="Runtime\EventProcessor.cs" />
-    <Compile Include="Runtime\EventStream.cs" />
-    <Compile Include="Runtime\EventStreamHandler.cs" />
-    <Compile Include="Runtime\MemoryEventStore.cs" />
-    <Compile Include="Runtime\MemoryRepository.cs" />
+    <Compile Include="Messaging\Handling\DefaultHandlerProvider.cs" />
+    <Compile Include="Messaging\DefaultCommandNotification.cs" />
+    <Compile Include="Infrastructure\DefaultRoutingKeyProvider.cs" />
+    <Compile Include="Messaging\Processing\EventProcessor.cs" />
+    <Compile Include="Messaging\Processing\SynchronousProcessor.cs" />
+    <Compile Include="Messaging\EventStream.cs" />
+    <Compile Include="Infrastructure\MemoryEventStore.cs" />
+    <Compile Include="Infrastructure\MemoryRepository.cs" />
     <Compile Include="Messaging\Handling\ICommandContextFactory.cs" />
     <Compile Include="Messaging\Handling\IEventContextFactory.cs" />
     <Compile Include="Messaging\AbstractBus.cs" />
-    <Compile Include="Runtime\DefaultCommandBus.cs" />
-    <Compile Include="Runtime\DefaultEventBus.cs" />
-    <Compile Include="Messaging\IMessageNotification.cs" />
-    <Compile Include="Runtime\EventSourcedRepository.cs" />
+    <Compile Include="Messaging\DefaultCommandBus.cs" />
+    <Compile Include="Messaging\DefaultEventBus.cs" />
+    <Compile Include="Messaging\ICommandNotification.cs" />
+    <Compile Include="Infrastructure\EventSourcedRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Runtime\MessageProcessor.cs">
+    <Compile Include="Messaging\Processing\MessageProcessor.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Runtime\NoneSnapshotPolicy.cs" />
-    <Compile Include="Runtime\NoneSnapshotStore.cs" />
+    <Compile Include="Infrastructure\NoneSnapshotPolicy.cs" />
+    <Compile Include="Infrastructure\NoneSnapshotStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -114,6 +110,7 @@
       <Name>ThinkNet</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

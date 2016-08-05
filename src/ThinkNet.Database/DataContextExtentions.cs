@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using ThinkNet.Infrastructure;
-using ThinkLib.Common;
 
 namespace ThinkNet.Database
 {
@@ -168,62 +165,42 @@ namespace ThinkNet.Database
         /// </summary>
         public static IEnumerable<TEntity> FindAll<TEntity>(this IDataContext dataContext, int limit, ICriteria<TEntity> criteria, ISortSet<TEntity> sortset) where TEntity : class
         {
-            return Query(dataContext.CreateQuery<TEntity>(), criteria, sortset, -1, limit).Data;
-        }
-        /// <summary>
-        /// 获得符合条件的所有实体
-        /// </summary>
-        public static PageResult<TEntity> FindAll<TEntity>(this IDataContext dataContext, ISortSet<TEntity> sorts, int pageIndex, int pageSize) where TEntity : class
-        {
-            return dataContext.FindAll<TEntity>(null, sorts, pageIndex, pageSize);
-        }
-        /// <summary>
-        /// 获得符合条件的所有实体
-        /// </summary>
-        public static PageResult<TEntity> FindAll<TEntity>(this IDataContext dataContext, ICriteria<TEntity> criteria, ISortSet<TEntity> sortset, int pageIndex, int pageSize) where TEntity : class
-        {
-            if (sortset == null || !sortset.OrderItems.Any()) {
-                throw new InvalidOperationException("无效的排序。");
-            }
-            if(pageIndex < 0) {
-                throw new InvalidOperationException("页索引数不能小于零");
-            }
-            if(pageSize <= 0) {
-                throw new InvalidOperationException("页显示数必须大于零");
-            }
-
-
-            return Query(dataContext.CreateQuery<TEntity>(), criteria, sortset, pageIndex, pageSize);
-        }
-
-        private static PageResult<TEntity> Query<TEntity>(IQueryable<TEntity> query, ICriteria<TEntity> criteria, ISortSet<TEntity> sortset, int pageIndex, int pageSize)
-             where TEntity : class
-        {
-            //IQueryable<TEntity> query = db.CreateQuery<TEntity>();
+            IQueryable<TEntity> query = dataContext.CreateQuery<TEntity>();
 
             query = (criteria ?? Criteria<TEntity>.Empty).Filtered(query);
 
-            int total = 0;
-            if(pageIndex >= 0 && pageSize > 0) {
-                total = query.Count();
+            query = (sortset ?? SortSet<TEntity>.Empty).Arranged(query);
+
+            if (limit > 0) {
+                query = query.Take(limit);
             }
+
+
+            return query.ToList();
+        }
+
+        /// <summary>
+        /// 获得符合条件的所有实体
+        /// </summary>
+        public static IEnumerable<TEntity> FindAll<TEntity>(this IDataContext dataContext, ICriteria<TEntity> criteria, ISortSet<TEntity> sortset, int pageIndex, int pageSize, out long total) where TEntity : class
+        {
+            IQueryable<TEntity> query = dataContext.CreateQuery<TEntity>();
+
+            query = (criteria ?? Criteria<TEntity>.Empty).Filtered(query);
 
             query = (sortset ?? SortSet<TEntity>.Empty).Arranged(query);
 
-            if(pageSize > 0) {
-                if(pageIndex > 0) {
+            total = query.LongCount();
+
+            if (pageSize > 0) {
+                if (pageIndex > 0) {
                     query = query.Skip(pageIndex * pageSize);
                 }
                 query = query.Take(pageSize);
             }
 
 
-            IEnumerable<TEntity> result = query.ToList();
-
-            if(pageSize <= 0)
-                pageSize = 10;
-
-            return new PageResult<TEntity>(total, pageSize, pageIndex, result);
+            return query.ToList();
         }
     }
 }

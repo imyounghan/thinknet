@@ -3,8 +3,6 @@ using System.Collections;
 using System.Data;
 using System.Linq;
 
-using ThinkLib.Common;
-using ThinkLib.Contexts;
 
 
 namespace ThinkNet.Database
@@ -12,21 +10,14 @@ namespace ThinkNet.Database
     /// <summary>
     /// 实现 <see cref="IDataContext"/> 的抽象类
     /// </summary>
-    public abstract class DataContextBase : DisposableObject, IDataContext, IContext
+    public abstract class DataContextBase : DisposableObject, IDataContext
     {
         /// <summary>
         /// Default constructor.
         /// </summary>
         protected DataContextBase()
         { }
-        private readonly IContextManager _contextManager;
-        /// <summary>
-        /// Parameterized constructor.
-        /// </summary>
-        protected DataContextBase(IContextManager contextManager)
-        {
-            this._contextManager = contextManager;
-        }
+        
 
         /// <summary>
         /// 当前的数据连接
@@ -35,30 +26,30 @@ namespace ThinkNet.Database
 
         private void Validate(object entity)
         {
-            var validation = entity as IValidatable<IDataContext>;
+            var validation = entity as IValidatable;
             if (validation != null) {
                 validation.Validate(this);
             }
         }
-        private LifecycleVeto Callback(object entity, Func<ILifecycle<IDataContext>, IDataContext, LifecycleVeto> action)
+        private LifecycleVeto Callback(object entity, Func<ILifecycle, IDataContext, LifecycleVeto> action)
         {
-            var lifecycle = entity as ILifecycle<IDataContext>;
+            var lifecycle = entity as ILifecycle;
             if (lifecycle != null) {
                 return action(lifecycle, this);
             }
             return LifecycleVeto.Accept;
         }
-        private static LifecycleVeto OnSaving(ILifecycle<IDataContext> entity, IDataContext context)
+        private static LifecycleVeto OnSaving(ILifecycle entity, IDataContext context)
         {
-            return (entity as ILifecycle<IDataContext>).OnSaving(context);
+            return (entity as ILifecycle).OnSaving(context);
         }
-        private static LifecycleVeto OnUpdating(ILifecycle<IDataContext> entity, IDataContext context)
+        private static LifecycleVeto OnUpdating(ILifecycle entity, IDataContext context)
         {
-            return (entity as ILifecycle<IDataContext>).OnUpdating(context);
+            return (entity as ILifecycle).OnUpdating(context);
         }
-        private static LifecycleVeto OnDeleting(ILifecycle<IDataContext> entity, IDataContext context)
+        private static LifecycleVeto OnDeleting(ILifecycle entity, IDataContext context)
         {
-            return (entity as ILifecycle<IDataContext>).OnDeleting(context);
+            return (entity as ILifecycle).OnDeleting(context);
         }
        
 
@@ -179,8 +170,8 @@ namespace ThinkNet.Database
             entity.NotNull("entity");
 
             this.Load(entity);
-            if (entity is ILifecycle<IDataContext>) {
-                (entity as ILifecycle<IDataContext>).OnLoaded(this);
+            if (entity is ILifecycle) {
+                (entity as ILifecycle).OnLoaded(this);
             }
         }
 
@@ -194,11 +185,5 @@ namespace ThinkNet.Database
         /// 在数据提交成功后执行
         /// </summary>
         public event EventHandler DataCommitted = (sender, args) => { };
-
-        IContextManager IContext.ContextManager
-        {
-            get { return this._contextManager; }
-        }
-
     }
 }

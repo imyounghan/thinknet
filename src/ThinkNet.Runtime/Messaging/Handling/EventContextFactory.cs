@@ -1,87 +1,102 @@
 ﻿using System;
-using ThinkLib.Common;
-using ThinkLib.Contexts;
+using System.Collections.Generic;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
 {
-    public class EventContextFactory : ContextManager, IEventContextFactory
+    public class EventContextFactory : IEventContextFactory
     {
-        class EventContext : DisposableObject, IEventContext, IContext
+        class EventContext : DisposableObject, IEventContext
         {
-
-            private readonly IContextManager _contextManager;
-            private readonly object _context;
-            public EventContext(object context, IContextManager contextManager)
+            private readonly List<ICommand> _commands;
+            private readonly IUnitOfWork _unitOfWork;
+            private readonly ICommandBus _commandBus;
+            public EventContext(IUnitOfWork unitOfWork, ICommandBus commandBus)
             {
-                this._context = context;
-                this._contextManager = contextManager;
-            }
-
-
-            public object Context
-            {
-                get { return this._context; }
-            }
-
-            public T GetContext<T>() where T : class
-            {
-                var context = this.Context as T;
-
-                return context;
-            }
-
-            public void AddCommand(ICommand command)
-            {
-                
+                this._unitOfWork = unitOfWork;
+                this._commandBus = commandBus;
+                this._commands = new List<ICommand>();
             }
 
             protected override void Dispose(bool disposing)
             {
-                using (_context as IDisposable) { }
+                if (disposing)
+                    using (_unitOfWork as IDisposable) { }
             }
 
+            public IUnitOfWork UnitOfWork
+            {
+                get { return this._unitOfWork; }
+            }
+
+            public T GetDbContext<T>() where T : class
+            {
+                return _unitOfWork as T;
+            }
+
+            public void AddCommand(ICommand command)
+            {
+                _commands.Add(command);
+            }
+            
 
             public void Commit()
             {
-                
+                try {
+                    _unitOfWork.Commit();
+                }
+                catch (Exception) {
+                    _unitOfWork.Rollback();
+                    throw;
+                }
+                _commandBus.Send(_commands);
+                _commands.Clear();
             }
 
-            IContextManager IContext.ContextManager
+            public void Rollback()
             {
-                get { return this._contextManager; }
+                _unitOfWork.Rollback();
             }
         }
 
         private readonly ICommandBus _commandBus;
 
         public EventContextFactory(ICommandBus commandBus)
-            : this(commandBus, "thread")
-        { }
-
-        protected EventContextFactory(ICommandBus commandBus, string contextType)
-            : base(contextType)
         {
             this._commandBus = commandBus;
         }
 
-        protected virtual object CreateDbContext()
+
+
+        protected virtual IUnitOfWork CreateUnitOfWork()
         {
             return null;
         }
 
-        #region IEventContextFactory 成员
 
-        public IEventContext CreateEventContext()
-        {
-            return new EventContext(CreateDbContext(), this);
-        }
-
-
+        [ThreadStatic]
+        private static EventContext currentContext;
         public IEventContext GetEventContext()
         {
-            return base.CurrentContext.GetContext() as IEventContext;
+            return currentContext;
+        }
+        
+        public void Bind()
+        {
+            currentContext = new EventContext(CreateUnitOfWork(), _commandBus);
         }
 
-        #endregion
+        public void Unbind(bool success)
+        {
+            if (success)
+                currentContext.Commit();
+            else
+                currentContext.Rollback();
+
+
+            using (currentContext) {
+                currentContext = null;
+            }
+        }
     }
 }

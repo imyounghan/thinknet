@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkNet.Kernel;
+using ThinkNet.Messaging;
 
 namespace UserRegistration.Events
 {
     [DataContract]
     [Serializable]
-    public class UserCreated : VersionedEvent<Guid>
+    public class UserCreated : Event<Guid>
     {
         public UserCreated()
         { }
@@ -17,8 +17,6 @@ namespace UserRegistration.Events
             this.Password = password;
             this.UserName = userName;
             this.Email = email;
-
-            this.CreateTime = DateTime.Now;
         }
 
         [DataMember]
@@ -29,8 +27,5 @@ namespace UserRegistration.Events
         public string UserName { get; private set; }
         [DataMember]
         public string Email { get; private set; }
-
-        [DataMember]
-        public DateTime CreateTime { get; private set; }
     }
 }

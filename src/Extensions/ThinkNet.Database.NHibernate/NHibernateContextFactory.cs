@@ -1,23 +1,14 @@
 ﻿using System.Data.Common;
-using ThinkLib.Contexts;
 
 namespace ThinkNet.Database.NHibernate
 {
-    public class NHibernateContextFactory : ContextManager, IDataContextFactory
+    [Register(typeof(IDataContextFactory))]
+    public class NHibernateContextFactory : IDataContextFactory
     {
-        public NHibernateContextFactory(string contextType)
-            : base(contextType)
-        { }
-
         public IDataContext CreateDataContext()
         {
-            var session = NHibernateFactory.Instance.OpenSession();
-            return new NHibernateContext(session, this);
-        }
-
-        public IDataContext GetCurrentDataContext()
-        {
-            return base.CurrentContext.CurrentContext() as IDataContext;
+            var session = NHibernateSessionBuilder.Instance.OpenSession();
+            return new NHibernateContext(session);
         }
 
         public IDataContext CreateDataContext(string nameOrConnectionString)
@@ -27,8 +18,8 @@ namespace ThinkNet.Database.NHibernate
 
         public IDataContext CreateDataContext(DbConnection connection)
         {
-            var session = NHibernateFactory.Instance.OpenSession(connection);
-            return new NHibernateContext(session, this);
+            var session = NHibernateSessionBuilder.Instance.OpenSession(connection);
+            return new NHibernateContext(session);
         }
     }
 }

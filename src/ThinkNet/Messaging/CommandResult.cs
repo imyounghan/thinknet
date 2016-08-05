@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 
 namespace ThinkNet.Messaging
@@ -39,6 +40,11 @@ namespace ThinkNet.Messaging
 
         /// <summary>Parameterized constructor.
         /// </summary>
+        public CommandResult(CommandStatus status, string commandId)
+            : this(status, commandId, string.Empty, string.Empty, new Dictionary<string, string>())
+        { }
+        /// <summary>Parameterized constructor.
+        /// </summary>
         public CommandResult(CommandStatus status, string commandId, string exceptionTypeName, string errorMessage)
             : this(status, commandId, exceptionTypeName, errorMessage, new Dictionary<string, string>())
         { }
@@ -57,6 +63,12 @@ namespace ThinkNet.Messaging
         private readonly Exception _exception = null;
         /// <summary>Parameterized constructor.
         /// </summary>
+        public CommandResult(string commandId, Exception exception)
+            : this(exception == null ? CommandStatus.Success : CommandStatus.Failed, commandId, exception)
+        { }
+
+        /// <summary>Parameterized constructor.
+        /// </summary>
         public CommandResult(CommandStatus status, string commandId, Exception exception)
         {
             this.Status = status;
@@ -66,7 +78,11 @@ namespace ThinkNet.Messaging
             if (exception == null)
                 return;
 
-            this.ExceptionTypeName = string.Concat(exception.GetType().FullName, ", ", exception.GetType().Assembly.GetName().Name);// ex.GetType().FullName;
+            var exceptionType = exception.GetType();
+
+            this.ExceptionTypeName = string.Format("{0}, {1}",
+                exceptionType.FullName,
+                Path.GetFileNameWithoutExtension(exceptionType.Assembly.ManifestModule.FullyQualifiedName));
             this.ErrorMessage = exception.Message;
             this.ErrorData = exception.Data;
         }

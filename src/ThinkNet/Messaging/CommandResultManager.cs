@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
+
 namespace ThinkNet.Messaging
 {
     /// <summary>
@@ -15,7 +16,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// default constructor.
         /// </summary>
-        protected CommandResultManager()
+        public CommandResultManager()
         {
             this._commandTaskDict = new ConcurrentDictionary<string, CommandTaskCompletionSource>();
         }
@@ -29,7 +30,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 注册一个命令
         /// </summary>
-        public Task<CommandResult> RegisterCommand(ICommand command, CommandReplyType commandReplyType)
+        public Task<CommandResult> RegisterCommand(ICommand command, CommandResultType commandReplyType)
         {
             return this.RegisterCommand(command, commandReplyType, _commandBus.Send);
         }
@@ -37,7 +38,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 注册一个命令
         /// </summary>
-        public Task<CommandResult> RegisterCommand(ICommand command, CommandReplyType commandReplyType, Action<ICommand> commandAction)
+        public Task<CommandResult> RegisterCommand(ICommand command, CommandResultType commandReplyType, Action<ICommand> commandAction)
         {
             var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, key => new CommandTaskCompletionSource(commandReplyType));
 
@@ -51,19 +52,20 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected void NotifyCommandCompleted(string commandId, CommandStatus status, Exception exception)
         {
+            var commandResult = new CommandResult(status, commandId, exception);
+            this.NotifyCommandCompleted(commandResult);
+        }
+
+        /// <summary>
+        /// 通知命令处理完成
+        /// </summary>
+        protected void NotifyCommandCompleted(CommandResult commandResult)
+        {
             if (_commandTaskDict.Count == 0)
                 return;
 
             CommandTaskCompletionSource commandTaskCompletionSource;
-            if(_commandTaskDict.TryRemove(commandId, out commandTaskCompletionSource)) {
-
-                CommandResult commandResult;
-                if(exception == null) {
-                    commandResult = new CommandResult(status, commandId, string.Empty, string.Empty);
-                }
-                else {
-                    commandResult = new CommandResult(status, commandId, exception);
-                }
+            if (_commandTaskDict.TryRemove(commandResult.CommandId, out commandTaskCompletionSource)) {
                 commandTaskCompletionSource.TaskCompletionSource.TrySetResult(commandResult);
             }
         }
@@ -73,38 +75,44 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected void NotifyCommandExecuted(string commandId, CommandStatus status, Exception exception)
         {
+            var commandResult = new CommandResult(status, commandId, exception);
+            this.NotifyCommandExecuted(commandResult);
+        }
+
+        /// <summary>
+        /// 通知命令已处理
+        /// </summary>
+        protected void NotifyCommandExecuted(CommandResult commandResult)
+        {
             if (_commandTaskDict.Count == 0)
                 return;
 
             CommandTaskCompletionSource commandTaskCompletionSource;
             bool completed = false;
-            if(_commandTaskDict.TryGetValue(commandId, out commandTaskCompletionSource)) {
-                if (commandTaskCompletionSource.CommandReplyType == CommandReplyType.CommandExecuted) {
+            if (_commandTaskDict.TryGetValue(commandResult.CommandId, out commandTaskCompletionSource)) {
+                if (commandTaskCompletionSource.CommandReplyType == CommandResultType.CommandExecuted) {
                     completed = true;
                 }
-                else if (commandTaskCompletionSource.CommandReplyType == CommandReplyType.DomainEventHandled) {
-                    completed = (status == CommandStatus.Failed || status == CommandStatus.NothingChanged);
+                else if (commandTaskCompletionSource.CommandReplyType == CommandResultType.DomainEventHandled) {
+                    completed = (commandResult.Status == CommandStatus.Failed || commandResult.Status == CommandStatus.NothingChanged);
                 }
             }
 
-            if(completed) {
-                //var commandResult = new CommandResult(commandId, commandStatus, exception);
-                //commandTaskCompletionSource.TaskCompletionSource.TrySetResult(commandResult);
-                //_commandTaskDict.TryRemove(commandId, out commandTaskCompletionSource);
-                this.NotifyCommandCompleted(commandId, status, exception);
+            if (completed) {
+                this.NotifyCommandCompleted(commandResult);
             }
         }
 
         class CommandTaskCompletionSource
         {
-            public CommandTaskCompletionSource(CommandReplyType commandReplyType)
+            public CommandTaskCompletionSource(CommandResultType commandReplyType)
             {
                 this.CommandReplyType = commandReplyType;
                 this.TaskCompletionSource = new TaskCompletionSource<CommandResult>();
             }
 
             public TaskCompletionSource<CommandResult> TaskCompletionSource { get; set; }
-            public CommandReplyType CommandReplyType { get; set; }
+            public CommandResultType CommandReplyType { get; set; }
         }
     }
 }

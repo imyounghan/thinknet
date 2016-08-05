@@ -1,5 +1,4 @@
 ﻿using System;
-using ThinkNet.Kernel;
 using ThinkNet.Messaging.Handling;
 using UserRegistration.Commands;
 using UserRegistration.Events;
@@ -51,7 +50,7 @@ namespace UserRegistration.Handlers
                 UserName = @event.UserName
             });
 
-            //Console.WriteLine("同步到Q端数据库");
+            Console.WriteLine("同步到Q端数据库");
         }
 
         #endregion

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
@@ -22,7 +21,8 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected Message(string id)
         {
-            this.Id = id.DefaultIfEmpty(ObjectId.GenerateNewStringId);
+            this.Id = id.IfEmpty(ObjectId.GenerateNewStringId);
+            this.CreatedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -32,11 +32,18 @@ namespace ThinkNet.Messaging
         public string Id { get; private set; }
 
         /// <summary>
+        /// 创建时间
+        /// </summary>
+        [DataMember]
+        public DateTime CreatedTime { get; private set; }
+
+        /// <summary>
         /// 输出该类型的字符串
         /// </summary>
         public override string ToString()
         {
             return string.Concat(this.GetType().FullName, "@", this.Id);
         }
+
     } 
 }

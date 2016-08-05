@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
-using ThinkLib.Common;
 
 namespace ThinkNet.Database
 {
@@ -90,13 +89,13 @@ namespace ThinkNet.Database
             string methodDesc = "OrderByDescending";
             Expression queryExpr = source.Expression;
             foreach (var sort in sorts) {
-                MemberExpression selector = (sort.Expression as LambdaExpression).Body.RemoveConvert() as MemberExpression;
+                MemberExpression selector = RemoveConvert((sort.Expression as LambdaExpression).Body) as MemberExpression;
                 if (selector == null) {
                     throw new InvalidOperationException("不支持的排序类型。");
                 }
                 Type resultType = selector.Type;
 
-                Expression exp = Expression.Quote(Expression.Lambda(selector, selector.Parameter()));
+                Expression exp = Expression.Quote(Expression.Lambda(selector, Parameter(selector)));
                 if (resultType.IsValueType || resultType == typeof(string)) {
                     queryExpr = Expression.Call(
                     typeof(Queryable), sort.SortOrder == SortOrder.Ascending ? methodAsc : methodDesc,
@@ -138,6 +137,27 @@ namespace ThinkNet.Database
             //return orderenumerable;
         }
 
+        static Expression RemoveConvert(Expression expression)
+        {
+            while (expression != null && (expression.NodeType == ExpressionType.Convert || expression.NodeType == ExpressionType.ConvertChecked)) {
+                expression = RemoveConvert(((UnaryExpression)expression).Operand);
+            }
+            return expression;
+        }
+
+        /// <summary></summary>
+        static ParameterExpression Parameter(MemberExpression expression)
+        {
+            ParameterExpression parameter = expression.Expression as ParameterExpression;
+            if (parameter != null) {
+                return parameter;
+            }
+            MemberExpression member = expression.Expression as MemberExpression;
+            if (member == null) {
+                throw new InvalidOperationException("不支持的排序类型。");
+            }
+            return Parameter(member);
+        }
         #endregion
 
 

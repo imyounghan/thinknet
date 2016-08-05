@@ -1,14 +1,13 @@
 ﻿using System;
-using ThinkLib.Common;
-using ThinkLib.Contexts;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
 {
-    public interface IEventContext : IUnitOfWork, IContext, IDisposable
+    public interface IEventContext
     {
-        object Context { get; }
+        IUnitOfWork UnitOfWork { get; }
 
-        T GetContext<T>() where T : class;
+        T GetDbContext<T>() where T : class;
 
         void AddCommand(ICommand command);
     }

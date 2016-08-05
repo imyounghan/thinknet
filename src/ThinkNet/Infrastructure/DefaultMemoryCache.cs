@@ -1,17 +1,19 @@
 ﻿using System;
+using System.Collections;
 using System.Configuration;
 using System.IO;
-using System.Reflection;
+using System.Runtime.Caching;
 using System.Runtime.Serialization.Formatters.Binary;
-using ThinkLib.Caching;
-using ThinkLib.Common;
 
 namespace ThinkNet.Infrastructure
 {
-    public class DefaultMemoryCache : IMemoryCache
+    public class DefaultMemoryCache : ICache
     {
         private readonly BinaryFormatter _serializer;
         private readonly bool _enabled;
+        private readonly MemoryCache cache;
+        private readonly CacheItemPolicy policy;
+
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
@@ -19,6 +21,11 @@ namespace ThinkNet.Infrastructure
         {
             this._serializer = new BinaryFormatter();
             this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].Change(false);
+
+            this.cache = System.Runtime.Caching.MemoryCache.Default;
+            this.policy = new CacheItemPolicy() {
+                 SlidingExpiration = TimeSpan.FromSeconds(ConfigurationManager.AppSettings["thinkcfg.caching_expired"].Change(300))
+            };
         }
 
         private byte[] Serialize(object obj)
@@ -50,11 +57,17 @@ namespace ThinkNet.Infrastructure
             string cacheRegion = GetCacheRegion(type);
             string cacheKey = BuildCacheKey(type, key);
 
-            object data = CacheManager.GetCache(cacheRegion).Get(cacheKey);
+            object data = cache.Get(cacheKey, cacheRegion);
             if (data == null)
                 return null;
 
-            return this.Deserialize((byte[])data);
+            var de = (DictionaryEntry)data;
+            if (key.ToString() == de.Key.ToString()) {
+                return this.Deserialize((byte[])de.Value);
+            }
+            else {
+                return null;
+            }            
         }
         /// <summary>
         /// 设置实例到缓存
@@ -72,8 +85,13 @@ namespace ThinkNet.Infrastructure
             string cacheRegion = GetCacheRegion(type);
             string cacheKey = BuildCacheKey(type, key);
 
-            var data = this.Serialize(entity);
-            CacheManager.GetCache(cacheRegion).Put(cacheKey, data);
+            var data = new DictionaryEntry(key, this.Serialize(entity));
+            if (cache.Contains(cacheKey, cacheRegion)) {
+                cache.Set(cacheKey, data, policy, cacheRegion);
+            }
+            else {
+                cache.Add(cacheKey, data, policy, cacheRegion);
+            }
         }
         /// <summary>
         /// 从缓存中移除
@@ -89,7 +107,9 @@ namespace ThinkNet.Infrastructure
             string cacheRegion = GetCacheRegion(type);
             string cacheKey = BuildCacheKey(type, key);
 
-            CacheManager.GetCache(cacheRegion).Remove(cacheKey);
+            if (cache.Contains(cacheKey, cacheRegion)) {
+                cache.Remove(cacheKey, cacheRegion);
+            }
         }
 
 
@@ -97,13 +117,13 @@ namespace ThinkNet.Infrastructure
         {
             var attr = type.GetAttribute<CacheRegionAttribute>(false);
             if (attr == null)
-                return CacheManager.CacheRegion;
+                return CacheRegionAttribute.DefaultRegionName;
 
             return attr.CacheRegion;
         }
         private static string BuildCacheKey(Type type, object key)
         {
-            return string.Format("Entity:{0}:{1}", type.FullName, key.ToString());
+            return string.Format("Entity:{0}:{1}", type.FullName, key);
         }
     }
 }

@@ -40,37 +40,45 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThinkLib">
-      <HintPath>..\Dependency\ThinkLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Context\ContextManager.cs" />
+    <Compile Include="Context\CurrentContext.cs" />
+    <Compile Include="Context\IContext.cs" />
+    <Compile Include="Context\IContextManager.cs" />
+    <Compile Include="Context\ICurrentContext.cs" />
+    <Compile Include="ExpressionExtensions.cs" />
+    <Compile Include="ILifecycle.cs" />
     <Compile Include="Infrastructure\Repository.cs" />
     <Compile Include="Infrastructure\RepositoryContextFactory.cs" />
     <Compile Include="ISortItem.cs" />
+    <Compile Include="IValidatable.cs" />
+    <Compile Include="LifecycleVeto.cs" />
     <Compile Include="MemoryContextFactory.cs" />
-    <Compile Include="Storage\Event.cs" />
-    <Compile Include="Storage\EventPublishedVersion.cs" />
-    <Compile Include="Storage\EventStore.cs" />
+    <Compile Include="Infrastructure\Event.cs" />
+    <Compile Include="Infrastructure\EventPublishedVersion.cs" />
+    <Compile Include="Infrastructure\EventStore.cs" />
     <Compile Include="Infrastructure\Repository`.cs" />
-    <Compile Include="Storage\Snapshot.cs" />
-    <Compile Include="Storage\SnapshotStore.cs" />
+    <Compile Include="Infrastructure\Snapshot.cs" />
+    <Compile Include="Infrastructure\SnapshotStore.cs" />
     <Compile Include="Criteria.cs" />
     <Compile Include="DataContextBase.cs" />
     <Compile Include="DataContextExtentions.cs" />
     <Compile Include="ICriteria.cs" />
-    <Compile Include="Storage\EventPublishedVersionStore.cs" />
+    <Compile Include="Infrastructure\EventPublishedVersionStore.cs" />
     <Compile Include="IDataContext.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IDataContextFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Storage\HandlerRecord.cs" />
-    <Compile Include="Storage\HandlerRecordStore.cs" />
+    <Compile Include="Infrastructure\HandlerRecord.cs" />
+    <Compile Include="Infrastructure\HandlerRecordStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ISortSet.cs" />
     <Compile Include="SortSet.cs" />

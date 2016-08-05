@@ -1,45 +1,44 @@
 ﻿using System;
+using System.Configuration;
 using System.Data.Common;
 using System.Data.Entity;
-using ThinkLib.Contexts;
 
 namespace ThinkNet.Database.EntityFramework
 {
-    public class EntityFrameworkContextFactory : ContextManager, IDataContextFactory
+    [Register(typeof(IDataContextFactory))]
+    public class EntityFrameworkContextFactory : IDataContextFactory
     {
-        private readonly Func<DbContext> _contextFactory;
+        //private readonly Func<DbContext> _contextFactory;
         private readonly Type _dbContextType;
-        public EntityFrameworkContextFactory(Func<DbContext> contextFactory, string contextType = null)
-            : this(contextFactory, null, contextType)
-        { }
+        //public EntityFrameworkContextFactory(Func<DbContext> contextFactory)
+        //    : this(contextFactory, null)
+        //{ }
+                //public EntityFrameworkContextFactory(Type dbContextType)
+        //    : this(null, dbContextType)
+        //{ }
+        //public EntityFrameworkContextFactory(Func<DbContext> contextFactory, Type dbContextType)
+        //{
+        //    this._contextFactory = contextFactory;
+        //    this._dbContextType = dbContextType;
+        //}
 
-        public EntityFrameworkContextFactory(Type dbContextType, string contextType = null)
-            : this(null, dbContextType, contextType)
-        { }
-
-        public EntityFrameworkContextFactory(Func<DbContext> contextFactory, Type dbContextType, string contextType = null)
-            : base(contextType)
+        public EntityFrameworkContextFactory()
         {
-            this._contextFactory = contextFactory;
+            var typeName = ConfigurationManager.AppSettings["thinkcfg.ef_dbtype"];
+            if (string.IsNullOrWhiteSpace(typeName)) {
+            }
+
+            var dbContextType = Type.GetType(typeName);
+            if (dbContextType.IsAssignableFrom(typeof(DbContext)))
+                throw new InvalidCastException("");
+
             this._dbContextType = dbContextType;
-        }
-
-
-        public IDataContext GetCurrentDataContext()
-        {
-            return base.CurrentContext.GetContext() as IDataContext;
         }
 
         public IDataContext CreateDataContext()
         {
-            DbContext dbContext;
-            if (_contextFactory == null) {
-                dbContext = (DbContext)Activator.CreateInstance(_dbContextType);
-            }
-            else {
-                dbContext = _contextFactory.Invoke();
-            }
-            return new EntityFrameworkContext(dbContext, this);
+            var dbContext = (DbContext)Activator.CreateInstance(_dbContextType);
+            return new EntityFrameworkContext(dbContext);
         }
 
 
@@ -52,8 +51,7 @@ namespace ThinkNet.Database.EntityFramework
             }
 
             var dbContext = (DbContext)constructor.Invoke(new object[] { nameOrConnectionString });
-
-            return new EntityFrameworkContext(dbContext, this);
+            return new EntityFrameworkContext(dbContext);
         }
 
         public IDataContext CreateDataContext(DbConnection connection)
@@ -65,8 +63,7 @@ namespace ThinkNet.Database.EntityFramework
             }
 
             var dbContext = (DbContext)constructor.Invoke(new object[] { connection });
-
-            return new EntityFrameworkContext(dbContext, this);
+            return new EntityFrameworkContext(dbContext);
         }
     }
 }

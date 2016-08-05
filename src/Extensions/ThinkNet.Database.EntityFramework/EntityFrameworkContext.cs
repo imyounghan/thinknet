@@ -5,19 +5,12 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-using ThinkLib.Common;
-using ThinkLib.Contexts;
 
 namespace ThinkNet.Database.EntityFramework
 {
     public class EntityFrameworkContext : DataContextBase, IEntityFrameworkContext
     {
         public EntityFrameworkContext(DbContext efContext)
-            : this(efContext, null)
-        { }
-
-        internal EntityFrameworkContext(DbContext efContext, IContextManager contextManager)
-            : base(contextManager)
         {
             this._efContext = efContext;
         }

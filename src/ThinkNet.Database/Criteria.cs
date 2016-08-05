@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using ThinkLib.Common;
 
 namespace ThinkNet.Database
 {
@@ -50,21 +49,21 @@ namespace ThinkNet.Database
 
             return this;
         }
-        /// <summary>
-        /// And
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public Criteria<T> AndAlso(Expression<Func<T, bool>> expression)
-        {
-            if (expression == null) {
-                throw new ArgumentNullException("expression");
-            }
+        ///// <summary>
+        ///// And
+        ///// </summary>
+        ///// <param name="expression"></param>
+        ///// <returns></returns>
+        //public Criteria<T> AndAlso(Expression<Func<T, bool>> expression)
+        //{
+        //    if (expression == null) {
+        //        throw new ArgumentNullException("expression");
+        //    }
 
-            expressions = expressions.AndAlso(expression);
+        //    expressions = expressions.AndAlso(expression);
 
-            return this;
-        }
+        //    return this;
+        //}
         /// <summary>
         /// 否定And
         /// </summary>

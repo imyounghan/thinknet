@@ -3,14 +3,9 @@ using System.Linq;
 using Microsoft.Practices.ServiceLocation;
 using ThinkNet.Configurations;
 using ThinkNet.Messaging;
-using ThinkLib.Common;
 using UserRegistration.Application;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
-using ThinkNet.Infrastructure;
-using ThinkLib.Scheduling;
-using ThinkNet.Messaging.Handling;
-using UserRegistration.Events;
 
 namespace UserRegistration
 {
@@ -18,7 +13,6 @@ namespace UserRegistration
     {
         static void Main(string[] args)
         {
-
             Bootstrapper.Current.Done();
 
             var manager = ServiceLocator.Current.GetInstance<ICommandResultManager>();
@@ -27,7 +21,7 @@ namespace UserRegistration
                 Password = "hanyang",
                 LoginId = "young.han",
                 Email = "19126332@qq.com"
-            }, CommandReplyType.DomainEventHandled).Wait();
+            }, CommandResultType.DomainEventHandled).Wait();
             //int counter = 0;
             //var tasks = new System.Threading.Tasks.Task[5000];
             //var sw = new System.Diagnostics.Stopwatch();

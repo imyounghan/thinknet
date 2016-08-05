@@ -46,15 +46,12 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThinkLib">
-      <HintPath>..\..\Dependency\ThinkLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="INHibernateContext.cs" />
     <Compile Include="NHibernateContext.cs" />
     <Compile Include="NHibernateContextFactory.cs" />
-    <Compile Include="NHibernateFactory.cs" />
+    <Compile Include="NHibernateSessionBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,23 +1,33 @@
-﻿using System;
-using ThinkLib.Common;
-using ThinkLib.Logging;
+﻿using System.Collections.Concurrent;
+using ThinkNet.Configurations;
 
 namespace ThinkNet.Infrastructure
 {
     public abstract class Processor<T> : DisposableObject, IProcessor
     {
-        protected readonly ILogger logger;
-
+        private readonly BlockingCollection<T>[] brokers;
+        //private readonly Worker[] works;
+        private readonly IRoutingKeyProvider routingKeyProvider;
         
-        private readonly object lockObject = new object();
-        private bool started = false;
+        private readonly object lockObject;
+        private bool started;
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
         protected Processor()
         {
-            this.logger = LogManager.GetLogger("ThinkNet");
+            this.lockObject = new object();
+
+            var count = ConfigurationSetting.Current.ProcessorCount;
+            this.brokers = new BlockingCollection<T>[count];
+            //this.works = new Worker[count + 1];
+
+            //works[0] = WorkerFactory.Create<T>(EnvelopeBuffer<T>.Instance.Dequeue(), Process);
+            for (int i = 0; i < count; i++) {
+                brokers[i] = new BlockingCollection<T>();
+                //works[i + 1] = WorkerFactory.Create<T>(brokers[i].Take, Process);
+            }
         }
 
         /// <summary>
@@ -28,12 +38,18 @@ namespace ThinkNet.Infrastructure
             ThrowIfDisposed();
             lock (this.lockObject) {
                 if (!this.started) {
-                    MessageCenter<T>.Instance.MessageHandling += OnMessageHandling;
-                    MessageCenter<T>.Instance.Start();
+                    //MessageCenter<T>.Instance.MessageHandling += OnMessageHandling;
+                    //MessageCenter<T>.Instance.Start();
+                    //works.ForEach(StartWorker);
                     this.started = true;
                 }
             }
         }
+
+        //private static void StartWorker(Worker worker)
+        //{
+        //    worker.Start();
+        //}
 
         /// <summary>
         /// Stops the listener.
@@ -42,12 +58,18 @@ namespace ThinkNet.Infrastructure
         {
             lock (this.lockObject) {
                 if (this.started) {
-                    MessageCenter<T>.Instance.Stop();
-                    MessageCenter<T>.Instance.MessageHandling -= OnMessageHandling;
+                    //MessageCenter<T>.Instance.Stop();
+                    //MessageCenter<T>.Instance.MessageHandling -= OnMessageHandling;
+                    //works.ForEach(StopWorker);
                     this.started = false;
                 }
             }
         }
+
+        //private static void StopWorker(Worker worker)
+        //{
+        //    worker.Stop();
+        //}
                
         
         /// <summary>
@@ -65,21 +87,23 @@ namespace ThinkNet.Infrastructure
         protected abstract void Process(T message);
         
 
-        private void OnMessageHandling(object sender, Message<T> args)
-        {
-            var message = (T)args.Body;
-            if (message.IsNull()) {
-                Console.WriteLine("empty message.");
-                return;
-            }
+        //private void OnMessageHandling(object sender, Message<T> arg)
+        //{
+        //    var message = arg.Body;
+        //    if (message.IsNull()) {
+        //        Console.WriteLine("empty message.");
+        //        return;
+        //    }
 
-            try {
-                this.Process(message);
-            }
-            catch (Exception ex) {
-                logger.Error("An exception happened while processing message through handler", ex);
-                logger.Warn("Error will be ignored and message receiving will continue.");
-            }
-        }
+        //    //arg.TimeForWait = DateTime.UtcNow - arg.CreatedTime;
+
+        //    try {
+        //        this.Process(message);
+        //    }
+        //    catch (Exception ex) {
+        //        logger.Error("An exception happened while processing message through handler", ex);
+        //        logger.Warn("Error will be ignored and message receiving will continue.");
+        //    }
+        //}
     }
 }
