@@ -46,7 +46,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// Represents the aggregate root which is related with the command.
         /// </summary>
-        [DataMember]
+        [DataMember(Name = "aggregateRootId")]
         public TAggregateRootId AggregateRootId { get; private set; }
 
         /// <summary>

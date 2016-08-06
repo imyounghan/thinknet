@@ -55,7 +55,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 事件来源的标识id
         /// </summary>
-        [DataMember]
+        [DataMember(Name = "sourceId")]
         public TSourceId SourceId { get; internal set; }
 
         /// <summary>

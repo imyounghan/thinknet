@@ -15,8 +15,7 @@ namespace ThinkNet.Infrastructure
         private readonly ISnapshotPolicy _snapshotPolicy;
         private readonly ICache _cache;
         private readonly IEventBus _eventBus;
-        private readonly IBinarySerializer _binarySerializer;
-        private readonly ITextSerializer _textSerializer;
+        private readonly ISerializer _serializer;
 
         /// <summary>
         /// Parameterized constructor.
@@ -26,16 +25,14 @@ namespace ThinkNet.Infrastructure
             ISnapshotPolicy snapshotPolicy,
             ICache cache,
             IEventBus eventBus,
-            IBinarySerializer binarySerializer,
-            ITextSerializer textSerializer)
+            ISerializer serializer)
         {
             this._eventStore = eventStore;
             this._snapshotStore = snapshotStore;
             this._snapshotPolicy = snapshotPolicy;
             this._cache = cache;
             this._eventBus = eventBus;
-            this._binarySerializer = binarySerializer;
-            this._textSerializer = textSerializer;
+            this._serializer = serializer;
         }
 
         public IEventSourced Create(Type type, object id)
@@ -76,7 +73,7 @@ namespace ThinkNet.Infrastructure
             try {
                 var snapshot = _snapshotStore.GetLastest(sourceKey);
                 if (snapshot != null) {
-                    eventSourced = _binarySerializer.Deserialize(snapshot.Payload, eventSourcedType) as IEventSourced;
+                    eventSourced = _serializer.DeserializeFromBinary(snapshot.Payload, eventSourcedType) as IEventSourced;
 
                     if (LogManager.Default.IsDebugEnabled)
                         LogManager.Default.DebugFormat("find the aggregate root {0} of id {1} from snapshot. version:{2}.",
@@ -117,13 +114,13 @@ namespace ThinkNet.Infrastructure
 
         private IEvent Deserialize(DataStream stream)
         {
-            return (IEvent)_binarySerializer.Deserialize(stream.Payload, stream.GetSourceType());
+            return (IEvent)_serializer.DeserializeFromBinary(stream.Payload, stream.GetSourceType());
         }
 
         private EventStream.Stream SerializeToStream(IEvent @event)
         {
             return new EventStream.Stream(@event.GetType()) {
-                Payload = _textSerializer.Serialize(@event)
+                Payload = _serializer.Serialize(@event)
             };
         }
 
@@ -132,7 +129,7 @@ namespace ThinkNet.Infrastructure
             return new DataStream() {
                 Key = sourceKey,
                 Version = aggregateRoot.Version,
-                Payload = _binarySerializer.Serialize(aggregateRoot)
+                Payload = _serializer.SerializeToBinary(aggregateRoot)
             };
         }
 
@@ -154,7 +151,7 @@ namespace ThinkNet.Infrastructure
             var streams = events.Select(@event => new DataStream() {
                 Key = new DataKey(@event.Id, @event.GetType()),
                 Version = eventSourced.Version + 1,
-                Payload = _binarySerializer.Serialize(@event)
+                Payload = _serializer.SerializeToBinary(@event)
             }).ToArray();
 
             if (_eventStore.Save(key, correlationId, streams)) {

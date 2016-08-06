@@ -154,7 +154,7 @@ namespace ThinkNet.Database
 
        
         #region IEventPublisher 成员
-
+        [IgnoreDataMember]
         IEnumerable<IEvent> IEventPublisher.Events
         {
             get { return this.GetPendingEvents().Cast<IEvent>(); }
@@ -163,7 +163,7 @@ namespace ThinkNet.Database
         #endregion
 
         #region IAggregateRoot 成员
-
+        [IgnoreDataMember]
         object IAggregateRoot.Id
         {
             get { return this.Id; }

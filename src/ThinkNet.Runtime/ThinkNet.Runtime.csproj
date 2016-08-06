@@ -64,15 +64,13 @@
     <Compile Include="Configurations\Bootstrapper.cs" />
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
-    <Compile Include="Infrastructure\DefaultBinarySerializer.cs" />
-    <Compile Include="Infrastructure\DefaultTextSerializer.cs" />
+    <Compile Include="Infrastructure\DefaultSerializer.cs" />
     <Compile Include="Common\Envelope.cs" />
     <Compile Include="Common\EnvelopeBuffer.cs" />
-    <Compile Include="Infrastructure\IBinarySerializer.cs" />
     <Compile Include="Infrastructure\IMetadataProvider.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
-    <Compile Include="Infrastructure\ITextSerializer.cs" />
+    <Compile Include="Infrastructure\ISerializer.cs" />
     <Compile Include="Infrastructure\Processor.cs" />
     <Compile Include="Infrastructure\SerializerExtensions.cs" />
     <Compile Include="Infrastructure\StandardMetadata.cs" />

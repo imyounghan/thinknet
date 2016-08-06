@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Practices.ServiceLocation;
 using ThinkNet.Configurations;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using UserRegistration.Application;
 using UserRegistration.Commands;
@@ -13,15 +15,22 @@ namespace UserRegistration
     {
         static void Main(string[] args)
         {
-            Bootstrapper.Current.UsingKafka().Done();
+            Bootstrapper.Current.Done();
 
-            var manager = ServiceLocator.Current.GetInstance<ICommandResultManager>();
-            manager.RegisterCommand(new RegisterUser {
+
+            var command = new RegisterUser {
                 UserName = "老韩",
                 Password = "hanyang",
                 LoginId = "young.han",
                 Email = "19126332@qq.com"
-            }, CommandResultType.DomainEventHandled).Wait();
+            };
+            
+
+            Console.ReadKey();
+
+
+            var manager = ServiceLocator.Current.GetInstance<ICommandResultManager>();
+            manager.RegisterCommand(command, CommandResultType.DomainEventHandled).Wait();
             //int counter = 0;
             //var tasks = new System.Threading.Tasks.Task[5000];
             //var sw = new System.Diagnostics.Stopwatch();

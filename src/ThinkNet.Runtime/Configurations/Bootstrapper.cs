@@ -445,8 +445,7 @@ namespace ThinkNet.Configurations
             this.RegisterType<IEventStore, MemoryEventStore>();
             this.RegisterType<ISnapshotPolicy, NoneSnapshotPolicy>();
             this.RegisterType<ISnapshotStore, NoneSnapshotStore>();
-            this.RegisterType<IBinarySerializer, DefaultBinarySerializer>();
-            this.RegisterType<ITextSerializer, DefaultTextSerializer>();
+            this.RegisterType<ISerializer, DefaultSerializer>();
             this.RegisterType<ICache, DefaultMemoryCache>();            
             this.RegisterType<IRoutingKeyProvider, DefaultRoutingKeyProvider>();
             this.RegisterType<IMetadataProvider, StandardMetadataProvider>();

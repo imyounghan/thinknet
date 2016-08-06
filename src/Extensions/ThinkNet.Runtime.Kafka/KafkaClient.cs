@@ -72,7 +72,7 @@ namespace ThinkNet.Runtime
         public readonly static KafkaClient Instance = new KafkaClient();
 
 
-        private readonly static ITextSerializer serializer;
+        private readonly static ISerializer serializer;
         private readonly static IMetadataProvider metadataProvider;
         private readonly static ITopicProvider topicProvider;
 
@@ -83,7 +83,7 @@ namespace ThinkNet.Runtime
 
         static KafkaClient()
         {
-            serializer = ServiceLocator.Current.GetInstance<ITextSerializer>();
+            serializer = ServiceLocator.Current.GetInstance<ISerializer>();
             metadataProvider = ServiceLocator.Current.GetInstance<IMetadataProvider>();
             topicProvider = ServiceLocator.Current.GetInstance<ITopicProvider>();
         }
@@ -189,7 +189,7 @@ namespace ThinkNet.Runtime
         private object Deserialize(Message message)
         {
             var serialized = message.Value.ToUtf8String();
-            var metadata = serializer.Deserialize<IDictionary<string, string>>(serialized, true);
+            var metadata = serializer.Deserialize<IDictionary<string, string>>(serialized);
 
             var typeFullName = string.Format("{0}.{1}, {2}",
                 metadata[StandardMetadata.Namespace],
@@ -205,7 +205,7 @@ namespace ThinkNet.Runtime
             var metadata = metadataProvider.GetMetadata(message);
             metadata["Playload"] = serializer.Serialize(message);
 
-            return new Message(serializer.Serialize(metadata, true));
+            return new Message(serializer.Serialize(metadata));
         }
 
         public void ConsumerComplete(string topic, string messageId)

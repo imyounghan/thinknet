@@ -203,14 +203,12 @@ namespace ThinkNet
                 }
             }
 
-            private static string GetMapPath(string path)
+            private static string GetMapPath(string fileName)
             {
-                if (HttpContext.Current != null) {
-                    return HttpContext.Current.Server.MapPath(path);
-                }
-                else { //非web程序引用
-                    return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
-                }
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string relativeSearchPath = AppDomain.CurrentDomain.RelativeSearchPath;
+                string binPath = string.IsNullOrEmpty(relativeSearchPath) ? baseDir : Path.Combine(baseDir, relativeSearchPath);
+                return Path.Combine(binPath, fileName);
             }
 
             private static string CreateFile()

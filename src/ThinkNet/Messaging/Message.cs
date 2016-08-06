@@ -28,13 +28,13 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 事件标识
         /// </summary>
-        [DataMember]
+        [DataMember(Name = "id")]
         public string Id { get; private set; }
 
         /// <summary>
         /// 创建时间
         /// </summary>
-        [DataMember]
+        [DataMember(Name = "createdTime")]
         public DateTime CreatedTime { get; private set; }
 
         /// <summary>

@@ -15,7 +15,7 @@ namespace ThinkNet.Messaging.Processing
         private readonly IEventBus _eventBus;
         private readonly IEventContextFactory _eventContextFactory;
         private readonly IEventPublishedVersionStore _eventPublishedVersionStore;
-        private readonly ITextSerializer _serializer;
+        private readonly ISerializer _serializer;
 
         private readonly BlockingCollection<ParsedEvent> retryQueue;
         private readonly ConcurrentQueue<IEvent> pendingQueue;
@@ -28,7 +28,7 @@ namespace ThinkNet.Messaging.Processing
             IHandlerProvider handlerProvider,
             IEventBus eventBus,
             IEventPublishedVersionStore eventPublishedVersionStore,
-            ITextSerializer serializer,
+            ISerializer serializer,
             IEventContextFactory eventContextFactory,
             IEnvelopeDelivery envelopeDelivery)
             : base(envelopeDelivery)
