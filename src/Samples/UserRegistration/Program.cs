@@ -15,7 +15,7 @@ namespace UserRegistration
     {
         static void Main(string[] args)
         {
-            Bootstrapper.Current.Done();
+            Bootstrapper.Current.UsingKafka().Done();
 
 
             var command = new RegisterUser {
@@ -24,7 +24,13 @@ namespace UserRegistration
                 LoginId = "young.han",
                 Email = "19126332@qq.com"
             };
-            
+
+            //var serializer = ServiceLocator.Current.GetInstance<ISerializer>();
+            //var json = serializer.Serialize(command);
+            //var dict = new Dictionary<string, string>() {
+            //    { "Playload", json }
+            //};
+            //Console.WriteLine(serializer.Serialize(dict));
 
             Console.ReadKey();
 
