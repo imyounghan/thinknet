@@ -78,6 +78,7 @@ namespace ThinkNet.Messaging
         /// Default Constructor.
         /// </summary>
         public EventStream()
+            : base(string.Empty)
         { }
 
         public EventStream(object sourceId, Type sourceType)
@@ -92,6 +93,7 @@ namespace ThinkNet.Messaging
         { }
 
         public EventStream(string sourceId, string sourceNamespace, string sourceTypeName, string sourceAssemblyName)
+            : this()
         {
             this.SourceId = sourceId;
             this.SourceNamespace = sourceNamespace;

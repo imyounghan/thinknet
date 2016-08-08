@@ -283,7 +283,10 @@ namespace ThinkNet.Configurations
             if (!_running)
                 return;
 
-            ServiceLocator.Current.GetAllInstances<IProcessor>().ForEach(p => p.Start());
+            var processores = ServiceLocator.Current.GetAllInstances<IProcessor>();
+            foreach (var processor in processores) {
+                processor.Start();
+            }
         }
 
         public void Stop()

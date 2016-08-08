@@ -14,22 +14,23 @@ namespace ThinkNet.Messaging
         /// Default Constructor.
         /// </summary>
         protected Message()
-            : this(null)
-        { }
+        {
+            this.CreatedTime = DateTime.UtcNow;
+        }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
         protected Message(string id)
+            : this()
         {
             this.Id = id.IfEmpty(ObjectId.GenerateNewStringId);
-            this.CreatedTime = DateTime.UtcNow;
         }
 
         /// <summary>
         /// 事件标识
         /// </summary>
         [DataMember(Name = "id")]
-        public string Id { get; private set; }
+        public string Id { get; protected set; }
 
         /// <summary>
         /// 创建时间

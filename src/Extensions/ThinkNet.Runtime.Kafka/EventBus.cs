@@ -7,6 +7,13 @@ namespace ThinkNet.Runtime
 {
     public class EventBus : AbstractBus, IEventBus
     {
+        private readonly KafkaClient _kafkaClient;
+
+        public EventBus(KafkaClient kafkaClient)
+        {
+            this._kafkaClient = kafkaClient;
+        }
+
         protected override bool MatchType(Type type)
         {
             return TypeHelper.IsEvent(type);
@@ -19,7 +26,10 @@ namespace ThinkNet.Runtime
 
         public void Publish(IEnumerable<IEvent> events)
         {
-            KafkaClient.Instance.Push(events);
+            if (events.IsEmpty())
+                return;
+
+            _kafkaClient.Push(events);
         }
 
     }

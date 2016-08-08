@@ -19,10 +19,13 @@ namespace ThinkNet.Configurations
                 .IfEmpty(ConfigurationManager.AppSettings["thinkcfg.kafka_topic"]).IfEmpty(string.Empty).Split(',');
             this.ConsumerTopics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic_consumer"]
                 .IfEmpty(ConfigurationManager.AppSettings["thinkcfg.kafka_topic"]).IfEmpty(string.Empty).Split(',');
+            this.Topics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic"].IfEmpty(string.Empty).Split(',');
         }
 
 
         public Uri[] KafkaUris { get; set; }
+
+        public string[] Topics { get; set; }
 
         public string[] ProducerTopics { get; set; }
 

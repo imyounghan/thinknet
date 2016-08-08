@@ -14,7 +14,7 @@ namespace ThinkNet.Messaging
         /// Default Constructor.
         /// </summary>
         protected Event()
-            : base()
+            : this(string.Empty)
         { }
         /// <summary>
         /// Parameterized constructor.

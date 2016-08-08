@@ -37,7 +37,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public IDictionary ErrorData { get; private set; }
 
-        private CommandResult()
+        protected CommandResult()
         {
             this.Status = CommandStatus.Success;
         }

@@ -7,6 +7,14 @@ namespace ThinkNet.Runtime
 {
     public class CommandBus : AbstractBus, ICommandBus
     {
+        private readonly KafkaClient _kafkaClient;
+
+        public CommandBus(KafkaClient kafkaClient)
+        {
+            this._kafkaClient = kafkaClient;
+        }
+
+
         protected override bool MatchType(Type type)
         {
             return TypeHelper.IsCommand(type);
@@ -19,7 +27,10 @@ namespace ThinkNet.Runtime
 
         public void Send(IEnumerable<ICommand> commands)
         {
-            KafkaClient.Instance.Push(commands);
+            if (commands.IsEmpty())
+                return;
+
+            _kafkaClient.Push(commands);
         }
     }
 }

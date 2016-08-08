@@ -3,103 +3,95 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using KafkaNet;
 using KafkaNet.Common;
 using KafkaNet.Model;
 using KafkaNet.Protocol;
-using Microsoft.Practices.ServiceLocation;
 using ThinkNet.Configurations;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Runtime
 {
+    [Register(typeof(KafkaClient))]
     public class KafkaClient : DisposableObject
     {
-        class KafkaConsumer : IDisposable
+        class KafkaLog : IKafkaLog
         {
+            public static readonly IKafkaLog Instance = new KafkaLog();
 
-            private readonly Consumer _consumer;
 
-            public KafkaConsumer(Consumer consumer, string topic)
+            private readonly LogManager.ILogger logger;
+            private KafkaLog()
             {
-                this._consumer = consumer;
-                this.Topic = topic;
-                this.Metadatas = new ConcurrentDictionary<string, MessageMetadata>();
-            }
-
-            public string Topic { get; private set; }
-
-            public IEnumerable Consume()
-            {
-                return _consumer.Consume().Aggregate(new ArrayList(), (list, item) => {
-                    list.Add(Deserialize(item));
-                    return list;
-                });
-            }
-
-            private object Deserialize(Message message)
-            {
-                var serialized = message.Value.ToUtf8String();
-                var metadata = serializer.Deserialize<IDictionary<string, string>>(serialized);
-
-                var typeFullName = string.Format("{0}.{1}, {2}",
-                    metadata[StandardMetadata.Namespace],
-                    metadata[StandardMetadata.TypeName],
-                    metadata[StandardMetadata.AssemblyName]);
-                var type = Type.GetType(typeFullName);
-
-                Metadatas.TryAdd(metadata[StandardMetadata.UniqueId], message.Meta);
-
-                return serializer.Deserialize(metadata["Playload"], type);
+                this.logger = LogManager.GetLogger("Kafka");
             }
 
 
-            public ConcurrentDictionary<string, MessageMetadata> Metadatas { get; private set; }
+            #region IKafkaLog 成员
 
-            #region IDisposable 成员
-
-            public void Dispose()
+            public void DebugFormat(string format, params object[] args)
             {
-                _consumer.Dispose();
+                if (logger.IsDebugEnabled)
+                    logger.DebugFormat(format, args);
+            }
+
+            public void ErrorFormat(string format, params object[] args)
+            {
+                if (logger.IsErrorEnabled)
+                    logger.ErrorFormat(format, args);
+            }
+
+            public void FatalFormat(string format, params object[] args)
+            {
+                if (logger.IsFatalEnabled)
+                    logger.FatalFormat(format, args);
+            }
+
+            public void InfoFormat(string format, params object[] args)
+            {
+                if (logger.IsInfoEnabled)
+                    logger.InfoFormat(format, args);
+            }
+
+            public void WarnFormat(string format, params object[] args)
+            {
+                if (logger.IsWarnEnabled)
+                    logger.WarnFormat(format, args);
             }
 
             #endregion
         }
+        
+        
+        private readonly ISerializer serializer;
+        private readonly IMetadataProvider metadataProvider;
+        private readonly ITopicProvider topicProvider;
 
-
-        public readonly static KafkaClient Instance = new KafkaClient();
-
-
-        private readonly static ISerializer serializer;
-        private readonly static IMetadataProvider metadataProvider;
-        private readonly static ITopicProvider topicProvider;
-
-        private readonly IBrokerRouter router;
         private readonly Lazy<Producer> producer;
-        private readonly ConcurrentDictionary<string, KafkaConsumer> consumers;
-        private readonly ConcurrentDictionary<string, MessageMetadata> metadatas;
+        private readonly Dictionary<string, Consumer> consumers;
+        private readonly Dictionary<string, ConcurrentDictionary<string, MessageMetadata>> metadatas;
 
-        static KafkaClient()
+        public KafkaClient(ISerializer serializer, IMetadataProvider metadataProvider, ITopicProvider topicProvider)
         {
-            serializer = ServiceLocator.Current.GetInstance<ISerializer>();
-            metadataProvider = ServiceLocator.Current.GetInstance<IMetadataProvider>();
-            topicProvider = ServiceLocator.Current.GetInstance<ITopicProvider>();
-        }
+            this.serializer = serializer;
+            this.metadataProvider = metadataProvider;
+            this.topicProvider = topicProvider;
 
-        private KafkaClient()
-            : this(KafkaSettings.Current.KafkaUris)
-        { }
+            var kafkaOptions = new KafkaOptions(KafkaSettings.Current.KafkaUris) {
+                Log = KafkaLog.Instance
+            };
+            this.producer = new Lazy<Producer>(() => new Producer(new BrokerRouter(kafkaOptions)), false);
 
-        public KafkaClient(params Uri[] kafkaUris)
-        {
-            var option = new KafkaOptions(kafkaUris);
-            this.router = new BrokerRouter(option);
+            this.consumers = new Dictionary<string, Consumer>();
+            this.metadatas = new Dictionary<string, ConcurrentDictionary<string, MessageMetadata>>();
 
-            this.producer = new Lazy<Producer>(() => new Producer(router), true);
-            this.consumers = new ConcurrentDictionary<string, KafkaConsumer>();
-            this.metadatas = new ConcurrentDictionary<string, MessageMetadata>();
+            foreach (var topic in KafkaSettings.Current.Topics) {
+                consumers[topic] = new Consumer(new ConsumerOptions(topic, new BrokerRouter(kafkaOptions)) {
+                    Log = KafkaLog.Instance
+                });
+                metadatas[topic] = new ConcurrentDictionary<string, MessageMetadata>();
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -116,49 +108,48 @@ namespace ThinkNet.Runtime
             }
         }
 
-        public void EnsureProducerTopic(params string[] topics)
-        {
-            foreach (var topic in topics) {
-                int count = -1;
-                while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
-                    try {
-                        Topic result = producer.Value.GetTopic(topic);
-                        if (result.ErrorCode == (short)ErrorResponseCode.NoError) {
-                            break;
-                        }
+        //public void EnsureProducerTopic(params string[] topics)
+        //{
+        //    foreach (var topic in topics) {
+        //        int count = -1;
+        //        while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
+        //            try {
+        //                Topic result = producer.Value.GetTopic(topic);
+        //                if (result.ErrorCode == (short)ErrorResponseCode.NoError) {
+        //                    break;
+        //                }
 
-                        Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
-                    }
-                    catch (Exception) {
-                    }
-                }
-            }
-        }
+        //                Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
+        //            }
+        //            catch (Exception) {
+        //            }
+        //        }
+        //    }
+        //}
 
-        public void EnsureConsumerTopic(params string[] topics)
-        {
-            foreach (var topic in topics) {
-                int count = -1;
-                var consumer = new Consumer(new ConsumerOptions(topic, router));
-                while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
-                    try {
-                        Topic result = consumer.GetTopic(topic);
-                        if (result.ErrorCode == (short)ErrorResponseCode.NoError) {
-                            consumers.TryAdd(topic, new KafkaConsumer(consumer, topic));
-                            break;
-                        }
+        //public void EnsureConsumerTopic(params string[] topics)
+        //{
+        //    foreach (var topic in topics) {
+        //        int count = -1;
+        //        var consumer = new Consumer(new ConsumerOptions(topic, router));
+        //        while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
+        //            try {
+        //                Topic result = consumer.GetTopic(topic);
+        //                if (result.ErrorCode == (short)ErrorResponseCode.NoError) {
+        //                    consumers.TryAdd(topic, new KafkaConsumer(consumer, topic));
+        //                    break;
+        //                }
 
-                        if (LogManager.Default.IsDebugEnabled)
-                            LogManager.Default.DebugFormat("get the topic('{0}') of status is {1}", topic, (ErrorResponseCode)result.ErrorCode);
+        //                if (LogManager.Default.IsDebugEnabled)
+        //                    LogManager.Default.DebugFormat("get the topic('{0}') of status is {1}", topic, (ErrorResponseCode)result.ErrorCode);
 
-                        Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
-                    }
-                    catch (Exception) {
-                    }
-                }
-            }
-        }
-
+        //                Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
+        //            }
+        //            catch (Exception) {
+        //            }
+        //        }
+        //    }
+        //}
 
         public void Push(IEnumerable messages)
         {
@@ -181,15 +172,35 @@ namespace ThinkNet.Runtime
             Task.WaitAll(tasks);
         }
 
-        public IEnumerable Pull(string topic)
+        public void Pull(string topic, Action<object> action)
         {
-            return consumers[topic].Consume();
+            var consumer = consumers[topic];
+            var metadata = metadatas[topic];
+
+            foreach (var message in consumer.Consume()) {
+                object item;
+                if (this.Deserialize(message, metadata, out item)) {
+                    action(item);
+                }
+            }
         }
 
-        private object Deserialize(Message message)
+
+
+        private bool Deserialize(Message message, ConcurrentDictionary<string, MessageMetadata> dict, out object obj)
         {
             var serialized = message.Value.ToUtf8String();
+            if (!serialized.StartsWith("{") && !serialized.EndsWith("}")) {
+                obj = DBNull.Value;
+                return false;
+            }
+
             var metadata = serializer.Deserialize<IDictionary<string, string>>(serialized);
+
+            string uniqueId;
+            if (metadata.TryGetValue(StandardMetadata.UniqueId, out uniqueId)) {
+                dict.TryAdd(uniqueId, message.Meta);
+            }
 
             var typeFullName = string.Format("{0}.{1}, {2}",
                 metadata[StandardMetadata.Namespace],
@@ -197,7 +208,9 @@ namespace ThinkNet.Runtime
                 metadata[StandardMetadata.AssemblyName]);
             var type = Type.GetType(typeFullName);
 
-            return serializer.Deserialize(metadata["Playload"], type);
+            obj = serializer.Deserialize(metadata["Playload"], type);
+
+            return true;
         }
 
         private Message Serialize(object message)
@@ -210,7 +223,7 @@ namespace ThinkNet.Runtime
 
         public void ConsumerComplete(string topic, string messageId)
         {
-            consumers[topic].Metadatas.Remove(messageId);
+            metadatas[topic].Remove(messageId);
         }
     }
 }
