@@ -10,8 +10,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Sunsoft Studio(mail:young.han@foxmail.com)")]
 [assembly: AssemblyProduct("ThinkNet")]
-[assembly: AssemblyCopyright("Copyright © 2015 Sunsoft Studio")]
-[assembly: AssemblyTrademark("Sunsoft")]
+[assembly: AssemblyCopyright("Copyright © 2014~2016 Sunsoft Studio")]
+[assembly: AssemblyTrademark("sunsoft")]
 [assembly: AssemblyCulture("")]
 
 // 将 ComVisible 设置为 false 使此程序集中的类型

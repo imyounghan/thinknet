@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 // 特性集控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("ThinkNet.Runtime.Kafka")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("kafka.net integration with ThinkNet.Runtime")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ThinkNet.Runtime.Kafka")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCompany("Sunsoft Studio(mail:young.han@foxmail.com)")]
+[assembly: AssemblyProduct("ThinkNet")]
+[assembly: AssemblyCopyright("Copyright © 2014~2016 Sunsoft Studio")]
+[assembly: AssemblyTrademark("sunsoft")]
 [assembly: AssemblyCulture("")]
 
 // 将 ComVisible 设置为 false 使此程序集中的类型

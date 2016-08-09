@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("ThinkNet.Runtime.JsonNet")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("json.net integration with ThinkNet.Runtime")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ThinkNet.Runtime.JsonNet")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCompany("Sunsoft Studio(mail:young.han@foxmail.com)")]
+[assembly: AssemblyProduct("ThinkNet")]
+[assembly: AssemblyCopyright("Copyright © 2014~2016 Sunsoft Studio")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

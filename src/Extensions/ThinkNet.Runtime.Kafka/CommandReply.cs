@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Runtime
 {
+    [DataContract]
     [Serializable]
     public class CommandReply : CommandResult, IMessage
     {
@@ -29,14 +31,14 @@ namespace ThinkNet.Runtime
             this.CreatedTime = DateTime.UtcNow;
         }
 
+        [DataMember]
         public CommandResultType CommandResultType { get; set; }
 
         #region IMessage 成员
-
+        [DataMember]
         public string Id { get; set; }
-
+        [DataMember]
         public DateTime CreatedTime { get; set; }
-
         #endregion
     }
 }
