@@ -23,13 +23,13 @@ namespace ThinkNet.Runtime
                 ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,                 
                 TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
                 NullValueHandling = NullValueHandling.Ignore,
-                Formatting = Formatting.Indented,
+                Formatting = Formatting.None,
                 TypeNameHandling = TypeNameHandling.All,
                 Converters = new List<JsonConverter>(converters)
             };
             this.withoutTypeNameSettings = new JsonSerializerSettings {
                 NullValueHandling = NullValueHandling.Ignore,
-                Formatting = Formatting.Indented,
+                Formatting = Formatting.None,
                 TypeNameHandling = TypeNameHandling.None,
                 Converters = new List<JsonConverter>(converters)
             };

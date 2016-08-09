@@ -37,6 +37,7 @@ namespace ThinkNet.Runtime
         #region IMessage 成员
         [DataMember]
         public string Id { get; set; }
+
         [DataMember]
         public DateTime CreatedTime { get; set; }
         #endregion

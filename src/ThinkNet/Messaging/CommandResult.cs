@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization;
 
 
 namespace ThinkNet.Messaging
@@ -9,32 +10,39 @@ namespace ThinkNet.Messaging
     /// <summary>
     /// 命令处理结果
     /// </summary>
+    [DataContract]
     [Serializable]
     public class CommandResult
     {
         /// <summary>
         /// 命令处理状态。
         /// </summary>
+        [DataMember]
         public CommandStatus Status { get; private set; }
         /// <summary>
         /// Represents the unique identifier of the command.
         /// </summary>
+        [DataMember]
         public string CommandId { get; private set; }
         /// <summary>
         /// 异常类型名称
         /// </summary>
+        [DataMember]
         public string ExceptionTypeName { get; private set; }
         /// <summary>
         /// 错误消息
         /// </summary>
+        [DataMember]
         public string ErrorMessage { get; private set; }
         /// <summary>
         /// 错误编码
         /// </summary>
+        [DataMember]
         public string ErrorCode { get; private set; }
         /// <summary>
         /// 设置或获取一个提供用户定义的其他异常信息的键/值对的集合。
         /// </summary>
+        [DataMember]
         public IDictionary ErrorData { get; private set; }
 
         protected CommandResult()

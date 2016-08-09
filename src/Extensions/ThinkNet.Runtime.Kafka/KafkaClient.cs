@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using KafkaNet;
 using KafkaNet.Common;
@@ -14,7 +15,7 @@ using ThinkNet.Infrastructure;
 namespace ThinkNet.Runtime
 {
     [Register(typeof(KafkaClient))]
-    public class KafkaClient : DisposableObject
+    public class KafkaClient : DisposableObject, IInitializer
     {
         class KafkaLog : IKafkaLog
         {
@@ -160,16 +161,20 @@ namespace ThinkNet.Runtime
 
                 var message = this.Serialize(item.Current);
                 dict.GetOrAdd(topic, () => new List<Message>()).Add(message);
-                //IList<Message> list;
-                //if (!dict.TryGetValue(topic, out list)) {
-                //    list = new List<Message>();
-                //    dict.Add(topic, list);
-                //}
-                //list.Add(Serialize(item.Current));
             }
 
-            var tasks = dict.Select(item => producer.Value.SendMessageAsync(item.Key, item.Value)).ToArray();
-            Task.WaitAll(tasks);
+            foreach (var kvp in dict) {
+                producer.Value.SendMessageAsync(kvp.Key, kvp.Value).ContinueWith(task => {
+                    if (task.Exception != null) {
+                        if (LogManager.Default.IsErrorEnabled) {
+                            LogManager.Default.Error("send to kafka encountered error.", task.Exception);
+                        }
+                    }
+                });
+            }
+
+            //var tasks = dict.Select(item => producer.Value.SendMessageAsync(item.Key, item.Value)).ToArray();
+            //Task.WaitAll(tasks);
         }
 
         public void Pull(string topic, Action<object> action)
@@ -225,5 +230,31 @@ namespace ThinkNet.Runtime
         {
             metadatas[topic].Remove(messageId);
         }
+
+        #region IInitializer 成员
+
+        public void Initialize(IEnumerable<Type> types)
+        {
+            using (var router = new BrokerRouter(new KafkaOptions(KafkaSettings.Current.KafkaUris))) {
+                
+
+                    int count = -1;
+                    while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
+                        try {
+                            var result = router.GetTopicMetadata(KafkaSettings.Current.Topics);
+                            if (result.All(topic => topic.ErrorCode == (short)ErrorResponseCode.NoError))
+                                break;
+                            
+
+                            Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
+                        }
+                        catch (Exception) {
+                        }
+                    }
+                
+            }
+        }
+
+        #endregion
     }
 }

@@ -25,7 +25,7 @@ namespace ThinkNet.Runtime
                 return "CommandResults";
             }
 
-            throw new ThinkNetException();
+            throw new ThinkNetException(string.Format("Can't find the type '{0}' of topic.", payload.GetType().FullName));
         }
 
         #endregion

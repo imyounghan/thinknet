@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using ThinkNet.Common;
 using ThinkNet.Configurations;
 using ThinkNet.Infrastructure;
@@ -12,9 +13,11 @@ namespace ThinkNet.Messaging
     {
         private readonly BlockingCollection<IEvent> queue;
         private readonly Worker worker;
+        private int limit;
 
         public DefaultEventBus()
         {
+            this.limit = ConfigurationSetting.Current.QueueCapacity * 5;
             this.queue = new BlockingCollection<IEvent>();
             this.worker = WorkerFactory.Create<IEvent>(queue.Take, Transform);
         }
@@ -37,11 +40,22 @@ namespace ThinkNet.Messaging
 
         public void Publish(IEnumerable<IEvent> events)
         {
+            if (events.IsEmpty())
+                return;
+
+            var count = 0 - events.Count();
+            if (Interlocked.Add(ref limit, count) < 0) {
+                Interlocked.Add(ref limit, Math.Abs(count));
+                throw new Exception("server is busy.");
+            }
+
             events.ForEach(queue.Add);
         }
 
         private void Transform(IEvent @event)
         {
+            Interlocked.Increment(ref limit);
+
             var stream = @event as EventStream;
             if (stream == null) {
                 var item = new Envelope<IEvent>(@event) {
@@ -49,15 +63,13 @@ namespace ThinkNet.Messaging
                 };
 
                 EnvelopeBuffer<IEvent>.Instance.Enqueue(item);
-                item.WaitTime = DateTime.UtcNow - @event.CreatedTime;
             }
             else {
                 var item = new Envelope<EventStream>(stream) {
-                    CorrelationId = @event.Id
+                    CorrelationId = stream.Id
                 };
 
                 EnvelopeBuffer<EventStream>.Instance.Enqueue(item);
-                item.WaitTime = DateTime.UtcNow - @event.CreatedTime;
             }           
         }
     }
