@@ -26,7 +26,7 @@ namespace ThinkNet.Common
         public TimeSpan Delay { get; set; }
 
         /// <summary>
-        /// 从消息构造到等待处理的时间
+        /// 等待入队的时间
         /// </summary>
         public TimeSpan WaitTime { get; set; }
 

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using ThinkNet.Common;
 using ThinkNet.Configurations;
 using ThinkNet.Infrastructure;
@@ -12,9 +13,11 @@ namespace ThinkNet.Messaging
     {
         private readonly BlockingCollection<ICommand> queue;
         private readonly Worker worker;
+        private int limit;
 
         public DefaultCommandBus()
         {
+            this.limit = ConfigurationSetting.Current.QueueCapacity * 5;
             this.queue = new BlockingCollection<ICommand>();
             this.worker = WorkerFactory.Create<ICommand>(queue.Take, Transform);
         }
@@ -39,8 +42,11 @@ namespace ThinkNet.Messaging
             if (commands.IsEmpty())
                 return;
 
-            if (queue.Count + commands.Count() >= ConfigurationSetting.Current.QueueCapacity * 5)
+            var count = 0 - commands.Count();
+            if (Interlocked.Add(ref limit, count) < 0) {
+                Interlocked.Add(ref limit, Math.Abs(count));
                 throw new Exception("server is busy.");
+            }
 
             commands.ForEach(queue.Add);
         }
@@ -51,8 +57,9 @@ namespace ThinkNet.Messaging
                 CorrelationId = command.Id
             };
 
+            Interlocked.Increment(ref limit);
             EnvelopeBuffer<ICommand>.Instance.Enqueue(item);
-            item.WaitTime = DateTime.UtcNow - command.CreatedTime;
+            //item.WaitTime = DateTime.UtcNow - command.CreatedTime;
         }
     }
 }

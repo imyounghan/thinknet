@@ -2,10 +2,11 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using ThinkNet.Configurations;
+using ThinkNet.Messaging;
 
 namespace ThinkNet.Common
 {
-    public class EnvelopeBuffer<T> //where T : IMessage
+    public class EnvelopeBuffer<T>// where T : IMessage
     {
         public readonly static EnvelopeBuffer<T> Instance = new EnvelopeBuffer<T>();
 
@@ -42,12 +43,12 @@ namespace ThinkNet.Common
 
         public void Enqueue(Envelope<T> item)
         {
+            var time = wait.GetOrAdd(item.CorrelationId, DateTime.UtcNow);
             producerSemaphore.Wait();
 
+            item.WaitTime = DateTime.UtcNow - time;
             queue.Enqueue(item);
-            wait.TryAdd(item.CorrelationId, DateTime.UtcNow);
-            //item.TimeOfTaked = DateTime.UtcNow;
-            //wait.GetOrAdd(item.CorrelationId, key => new EnvelopeTimer()).TimeToLive = DateTime.UtcNow - item.TimeOfCreated;
+            wait.TryUpdate(item.CorrelationId, DateTime.UtcNow, time);
 
             consumerSemaphore.Release();
         }
