@@ -30,9 +30,9 @@ namespace ThinkNet.Infrastructure
             };
         }
 
-        #region ITextSerializer 成员
-        
-        public string Serialize(object obj, bool containType)
+        #region ISerializer 成员
+
+        public string Serialize(object obj, bool indented, bool containType)
         {
             if(containType)
                 return this.serializer.Serialize(obj);

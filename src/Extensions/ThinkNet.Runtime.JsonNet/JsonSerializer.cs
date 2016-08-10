@@ -20,28 +20,29 @@ namespace ThinkNet.Runtime
             };
             this.withTypeNameSettings = new JsonSerializerSettings {
                 // In a version resilient way
-                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,                 
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
+                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
                 NullValueHandling = NullValueHandling.Ignore,
-                Formatting = Formatting.None,
                 TypeNameHandling = TypeNameHandling.All,
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
                 Converters = new List<JsonConverter>(converters)
             };
             this.withoutTypeNameSettings = new JsonSerializerSettings {
+                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
                 NullValueHandling = NullValueHandling.Ignore,
-                Formatting = Formatting.None,
-                TypeNameHandling = TypeNameHandling.None,
+                 CheckAdditionalContent = false,
                 Converters = new List<JsonConverter>(converters)
             };
-        }        
+        }
 
-        public string Serialize(object obj, bool containType = false)
+        public string Serialize(object obj, bool indented, bool containType)
         {
             try
             {
+                var formatting = indented ? Formatting.Indented : Formatting.None;
+
                 return containType ?
-                    JsonConvert.SerializeObject(obj, withTypeNameSettings) :
-                    JsonConvert.SerializeObject(obj, withoutTypeNameSettings);
+                    JsonConvert.SerializeObject(obj, formatting, withTypeNameSettings) :
+                    JsonConvert.SerializeObject(obj, formatting, withoutTypeNameSettings);
             }
             catch (JsonSerializationException ex)
             {

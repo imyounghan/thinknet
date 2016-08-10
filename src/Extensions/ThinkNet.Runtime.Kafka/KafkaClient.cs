@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using KafkaNet;
 using KafkaNet.Common;
 using KafkaNet.Model;
@@ -63,15 +63,25 @@ namespace ThinkNet.Runtime
 
             #endregion
         }
-        
+
+        class KafkaTopicOffsetPosition
+        {
+            public string Topic { get; set; }
+
+            public OffsetPosition[] Positions { get; set; }
+        }
+
+        private const string OffsetPositionFile = "kafka.consumer.offset";
         
         private readonly ISerializer serializer;
         private readonly IMetadataProvider metadataProvider;
         private readonly ITopicProvider topicProvider;
 
+        private readonly Timer timer;
         private readonly Lazy<Producer> producer;
         private readonly Dictionary<string, Consumer> consumers;
         private readonly Dictionary<string, ConcurrentDictionary<string, MessageMetadata>> metadatas;
+        private readonly Dictionary<string, ConcurrentDictionary<int, long>> lasted;
 
         public KafkaClient(ISerializer serializer, IMetadataProvider metadataProvider, ITopicProvider topicProvider)
         {
@@ -82,16 +92,53 @@ namespace ThinkNet.Runtime
             var kafkaOptions = new KafkaOptions(KafkaSettings.Current.KafkaUris) {
                 Log = KafkaLog.Instance
             };
-            this.producer = new Lazy<Producer>(() => new Producer(new BrokerRouter(kafkaOptions)), false);
+            this.producer = new Lazy<Producer>(() => new Producer(new BrokerRouter(kafkaOptions)), LazyThreadSafetyMode.ExecutionAndPublication);
 
             this.consumers = new Dictionary<string, Consumer>();
             this.metadatas = new Dictionary<string, ConcurrentDictionary<string, MessageMetadata>>();
+            this.lasted = new Dictionary<string, ConcurrentDictionary<int, long>>();
 
             foreach (var topic in KafkaSettings.Current.Topics) {
                 consumers[topic] = new Consumer(new ConsumerOptions(topic, new BrokerRouter(kafkaOptions)) {
                     Log = KafkaLog.Instance
-                });
+                }, GetCurrentOffsetPosition(topic));
                 metadatas[topic] = new ConcurrentDictionary<string, MessageMetadata>();
+                lasted[topic] = new ConcurrentDictionary<int, long>();
+            }
+
+            this.timer = new Timer(LongTask, this, 2000, 2000);
+        }
+
+        private OffsetPosition[] GetCurrentOffsetPosition(string topic)
+        {
+            try {
+                var serialized = File.ReadAllText(string.Concat(OffsetPositionFile, ".", topic));
+                return serializer.Deserialize<OffsetPosition[]>(serialized);
+            }
+            catch (Exception) {
+                return new OffsetPosition[0];
+            }
+        }
+
+
+        private void LongTask(object state)
+        {
+            if (metadatas.All(item => item.Value.Count == 0)) {
+                lasted.AsParallel().ForAll(item => {
+                    var positions = item.Value.Select(p => new OffsetPosition(p.Key, p.Value)).ToArray();
+                    var serialized = serializer.Serialize(positions, true);
+                    File.WriteAllText(string.Concat(OffsetPositionFile, ".", item.Key), serialized);
+                });
+            }
+            else {
+                metadatas.AsParallel().ForAll(item => {
+                    var positions = item.Value.Values
+                            .GroupBy(p => p.PartitionId, p => p.Offset)
+                            .Select(p => new OffsetPosition(p.Key, p.Min()))
+                            .ToArray();
+                    var serialized = serializer.Serialize(positions, true);
+                    File.WriteAllText(string.Concat(OffsetPositionFile, ".", item.Key), serialized);
+                });
             }
         }
 
@@ -106,51 +153,10 @@ namespace ThinkNet.Runtime
                     kvp.Value.Dispose();
                 }
                 consumers.Clear();
+
+                timer.Dispose();
             }
         }
-
-        //public void EnsureProducerTopic(params string[] topics)
-        //{
-        //    foreach (var topic in topics) {
-        //        int count = -1;
-        //        while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
-        //            try {
-        //                Topic result = producer.Value.GetTopic(topic);
-        //                if (result.ErrorCode == (short)ErrorResponseCode.NoError) {
-        //                    break;
-        //                }
-
-        //                Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
-        //            }
-        //            catch (Exception) {
-        //            }
-        //        }
-        //    }
-        //}
-
-        //public void EnsureConsumerTopic(params string[] topics)
-        //{
-        //    foreach (var topic in topics) {
-        //        int count = -1;
-        //        var consumer = new Consumer(new ConsumerOptions(topic, router));
-        //        while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
-        //            try {
-        //                Topic result = consumer.GetTopic(topic);
-        //                if (result.ErrorCode == (short)ErrorResponseCode.NoError) {
-        //                    consumers.TryAdd(topic, new KafkaConsumer(consumer, topic));
-        //                    break;
-        //                }
-
-        //                if (LogManager.Default.IsDebugEnabled)
-        //                    LogManager.Default.DebugFormat("get the topic('{0}') of status is {1}", topic, (ErrorResponseCode)result.ErrorCode);
-
-        //                Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
-        //            }
-        //            catch (Exception) {
-        //            }
-        //        }
-        //    }
-        //}
 
         public void Push(IEnumerable messages)
         {
@@ -181,9 +187,11 @@ namespace ThinkNet.Runtime
         {
             var consumer = consumers[topic];
             var metadata = metadatas[topic];
+            var position = lasted[topic];
 
             foreach (var message in consumer.Consume()) {
                 object item;
+                position.AddOrUpdate(message.Meta.PartitionId, message.Meta.Offset, (key, value) => message.Meta.Offset);
                 if (this.Deserialize(message, metadata, out item)) {
                     action(item);
                 }
@@ -236,25 +244,29 @@ namespace ThinkNet.Runtime
         public void Initialize(IEnumerable<Type> types)
         {
             using (var router = new BrokerRouter(new KafkaOptions(KafkaSettings.Current.KafkaUris))) {
-                
+                int count = -1;
+                while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
+                    try {
+                        var result = router.GetTopicMetadata(KafkaSettings.Current.Topics);
+                        if (result.All(topic => topic.ErrorCode == (short)ErrorResponseCode.NoError))
+                            break;
 
-                    int count = -1;
-                    while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
-                        try {
-                            var result = router.GetTopicMetadata(KafkaSettings.Current.Topics);
-                            if (result.All(topic => topic.ErrorCode == (short)ErrorResponseCode.NoError))
-                                break;
-                            
+                        result.Where(topic => topic.ErrorCode != (short)ErrorResponseCode.NoError)
+                            .ForEach(topic => {
+                                if (LogManager.Default.IsWarnEnabled)
+                                    LogManager.Default.WarnFormat("get the topic('{0}') of status is {1}.",
+                                        topic.Name, (ErrorResponseCode)topic.ErrorCode);
+                            });
 
-                            Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
-                        }
-                        catch (Exception) {
-                        }
+
+                        Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
                     }
-                
+                    catch (Exception) {
+                        throw;
+                    }
+                }
             }
         }
-
         #endregion
     }
 }
