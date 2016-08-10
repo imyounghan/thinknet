@@ -111,35 +111,39 @@ namespace ThinkNet.Runtime
 
         private OffsetPosition[] GetCurrentOffsetPosition(string topic)
         {
+            string serialized = null;
             try {
-                var serialized = File.ReadAllText(string.Concat(OffsetPositionFile, ".", topic));
-                return serializer.Deserialize<OffsetPosition[]>(serialized);
+                serialized = File.ReadAllText(string.Concat(OffsetPositionFile, ".", topic));
             }
             catch (Exception) {
-                return new OffsetPosition[0];
             }
+
+            if(string.IsNullOrEmpty(serialized))
+                return new OffsetPosition[] { new OffsetPosition(0, 0) };
+
+            return serializer.Deserialize<OffsetPosition[]>(serialized) ?? new OffsetPosition[] { new OffsetPosition(0, 0) };
         }
 
 
         private void LongTask(object state)
         {
-            if (metadatas.All(item => item.Value.Count == 0)) {
-                lasted.AsParallel().ForAll(item => {
-                    var positions = item.Value.Select(p => new OffsetPosition(p.Key, p.Value)).ToArray();
-                    var serialized = serializer.Serialize(positions, true);
-                    File.WriteAllText(string.Concat(OffsetPositionFile, ".", item.Key), serialized);
-                });
-            }
-            else {
-                metadatas.AsParallel().ForAll(item => {
-                    var positions = item.Value.Values
-                            .GroupBy(p => p.PartitionId, p => p.Offset)
-                            .Select(p => new OffsetPosition(p.Key, p.Min()))
-                            .ToArray();
-                    var serialized = serializer.Serialize(positions, true);
-                    File.WriteAllText(string.Concat(OffsetPositionFile, ".", item.Key), serialized);
-                });
-            }
+
+            var xml = new System.Xml.XmlDocument();
+            xml.CreateElement("topic");
+            metadatas.AsParallel().ForAll(item => {
+                OffsetPosition[] positions;
+                if(item.Value.Count == 0) {
+                    positions = lasted[item.Key].Select(p => new OffsetPosition(p.Key, p.Value + 1)).ToArray();
+                }
+                else {
+                    positions = item.Value.Values
+                        .GroupBy(p => p.PartitionId, p => p.Offset)
+                        .Select(p => new OffsetPosition(p.Key, p.Min() + 1))
+                        .ToArray();
+                }
+                var serialized = serializer.Serialize(positions, true);
+                File.WriteAllText(string.Concat(OffsetPositionFile, ".", item.Key), serialized);
+            });
         }
 
         protected override void Dispose(bool disposing)
