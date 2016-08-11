@@ -9,9 +9,13 @@ namespace ThinkNet.Runtime
     {
         public KafkaProcessor(KafkaClient kafkaClient)
         {
+            kafkaClient.InitConsumers();
+
             foreach (var topic in KafkaSettings.Current.Topics) {
                 base.BuildWorker(() => kafkaClient.Pull(topic, Distribute));
             }
+
+            base.BuildWorker(kafkaClient.RecordConsumerOffset).SetDelay(5000).SetInterval(2000);
         }
 
         

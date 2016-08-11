@@ -22,16 +22,19 @@ namespace ThinkNet.Infrastructure
         }
 
 
-        protected void BuildWorker<TMessage>(Func<TMessage> factory, Action<TMessage> action)
+        protected Worker BuildWorker<TMessage>(Func<TMessage> factory, Action<TMessage> action)
         {
             var worker = WorkerFactory.Create<TMessage>(factory, action);
             workers.Add(worker);
+
+            return worker;
         }
 
-        protected void BuildWorker(Action action)
+        protected Worker BuildWorker(Action action)
         {
             var worker = WorkerFactory.Create(action);
             workers.Add(worker);
+            return worker;
         }
 
         /// <summary>

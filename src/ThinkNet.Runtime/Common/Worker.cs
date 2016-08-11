@@ -39,6 +39,11 @@ namespace ThinkNet.Common
         public int Interval { get; private set; }
 
         /// <summary>
+        /// 延迟时间(毫秒数)
+        /// </summary>
+        public int Delay { get; private set; }
+
+        /// <summary>
         /// 要执行的函数。
         /// </summary>
         protected Action Processor { get; private set; }
@@ -56,11 +61,14 @@ namespace ThinkNet.Common
 
         private void AlwaysRunning()
         {
+            if (this.Delay > 0)
+                Thread.Sleep(this.Delay);
+
             while (!cancellationSource.IsCancellationRequested) {
                 this.Working();
 
                 if (this.Interval > 0)
-                    Thread.Sleep(Interval);
+                    Thread.Sleep(this.Interval);
             }
         }
 
@@ -77,12 +85,23 @@ namespace ThinkNet.Common
         }
 
         /// <summary>
+        /// 启用任务的延迟时间
+        /// </summary>
+        /// <param name="delay">毫秒</param>
+        public Worker SetDelay(int delay)
+        {
+            this.Delay = delay;
+            return this;
+        }
+
+        /// <summary>
         /// 等待下一个任务的间隔时间
         /// </summary>
         /// <param name="interval">毫秒</param>
-        public void SetInterval(int interval)
+        public Worker SetInterval(int interval)
         {
             this.Interval = interval;
+            return this;
         }
 
         private CancellationTokenSource cancellationSource;

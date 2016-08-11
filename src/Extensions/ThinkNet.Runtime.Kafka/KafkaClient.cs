@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Xml;
+using System.Xml.Linq;
 using KafkaNet;
 using KafkaNet.Common;
 using KafkaNet.Model;
@@ -63,21 +65,14 @@ namespace ThinkNet.Runtime
 
             #endregion
         }
-
-        class KafkaTopicOffsetPosition
-        {
-            public string Topic { get; set; }
-
-            public OffsetPosition[] Positions { get; set; }
-        }
-
+        
         private const string OffsetPositionFile = "kafka.consumer.offset";
         
         private readonly ISerializer serializer;
         private readonly IMetadataProvider metadataProvider;
         private readonly ITopicProvider topicProvider;
 
-        private readonly Timer timer;
+        private readonly KafkaOptions kafkaOptions;
         private readonly Lazy<Producer> producer;
         private readonly Dictionary<string, Consumer> consumers;
         private readonly Dictionary<string, ConcurrentDictionary<string, MessageMetadata>> metadatas;
@@ -89,61 +84,107 @@ namespace ThinkNet.Runtime
             this.metadataProvider = metadataProvider;
             this.topicProvider = topicProvider;
 
-            var kafkaOptions = new KafkaOptions(KafkaSettings.Current.KafkaUris) {
+            this.kafkaOptions = new KafkaOptions(KafkaSettings.Current.KafkaUris) {
                 Log = KafkaLog.Instance
             };
-            this.producer = new Lazy<Producer>(() => new Producer(new BrokerRouter(kafkaOptions)), LazyThreadSafetyMode.ExecutionAndPublication);
 
+            this.producer = new Lazy<Producer>(() => new Producer(new BrokerRouter(kafkaOptions)), LazyThreadSafetyMode.ExecutionAndPublication);
             this.consumers = new Dictionary<string, Consumer>();
             this.metadatas = new Dictionary<string, ConcurrentDictionary<string, MessageMetadata>>();
             this.lasted = new Dictionary<string, ConcurrentDictionary<int, long>>();
+        }
+
+        //private OffsetPosition[] GetCurrentOffsetPosition(string topic)
+        //{
+        //    string serialized = null;
+        //    try {
+        //        serialized = File.ReadAllText(string.Concat(OffsetPositionFile, ".", topic));
+        //    }
+        //    catch (Exception) {
+        //    }
+
+        //    if(string.IsNullOrEmpty(serialized))
+        //        return new OffsetPosition[] { new OffsetPosition(0, 0) };
+
+        //    return serializer.Deserialize<OffsetPosition[]>(serialized) ?? new OffsetPosition[] { new OffsetPosition(0, 0) };
+        //}
+
+        public void InitConsumers()
+        {
+            var offsetPositions = new Dictionary<string, OffsetPosition[]>();
+
+            try {
+                var xml = new XmlDocument();
+                xml.Load(OffsetPositionFile);
+
+                offsetPositions = xml.DocumentElement.ChildNodes.Cast<XmlElement>().AsParallel()
+                    .ToDictionary(topic => topic.GetAttribute("name"), topic => {
+                        return topic.ChildNodes.Cast<XmlElement>()
+                            .Select(offset => new OffsetPosition() {
+                                PartitionId = offset.GetAttribute("partitionId").Change(0),
+                                Offset = offset.InnerText.Change(0)
+                            }).ToArray();
+                    });
+            }
+            catch (Exception) {
+                //TODO...Write LOG
+            } 
 
             foreach (var topic in KafkaSettings.Current.Topics) {
                 consumers[topic] = new Consumer(new ConsumerOptions(topic, new BrokerRouter(kafkaOptions)) {
                     Log = KafkaLog.Instance
-                }, GetCurrentOffsetPosition(topic));
+                }, offsetPositions.ContainsKey(topic) ? offsetPositions[topic] : new OffsetPosition[0]);
                 metadatas[topic] = new ConcurrentDictionary<string, MessageMetadata>();
                 lasted[topic] = new ConcurrentDictionary<int, long>();
             }
-
-            this.timer = new Timer(LongTask, this, 2000, 2000);
-        }
-
-        private OffsetPosition[] GetCurrentOffsetPosition(string topic)
-        {
-            string serialized = null;
-            try {
-                serialized = File.ReadAllText(string.Concat(OffsetPositionFile, ".", topic));
-            }
-            catch (Exception) {
-            }
-
-            if(string.IsNullOrEmpty(serialized))
-                return new OffsetPosition[] { new OffsetPosition(0, 0) };
-
-            return serializer.Deserialize<OffsetPosition[]>(serialized) ?? new OffsetPosition[] { new OffsetPosition(0, 0) };
         }
 
 
-        private void LongTask(object state)
+        public void RecordConsumerOffset()
         {
+            if (metadatas.All(p => p.Value.Count == 0) && lasted.All(p => p.Value.Count == 0))
+                return;
 
-            var xml = new System.Xml.XmlDocument();
-            xml.CreateElement("topic");
-            metadatas.AsParallel().ForAll(item => {
+            var xml = new XmlDocument();
+            xml.AppendChild(xml.CreateXmlDeclaration("1.0", "utf-8", null));
+            var root = xml.AppendChild(xml.CreateElement("root"));
+            foreach (var topic in KafkaSettings.Current.Topics) {
                 OffsetPosition[] positions;
-                if(item.Value.Count == 0) {
-                    positions = lasted[item.Key].Select(p => new OffsetPosition(p.Key, p.Value + 1)).ToArray();
+                if (metadatas[topic].Count == 0) {
+                    positions = lasted[topic].Select(p => new OffsetPosition(p.Key, p.Value + 1)).ToArray();
                 }
                 else {
-                    positions = item.Value.Values
+                    positions = metadatas[topic].Values
                         .GroupBy(p => p.PartitionId, p => p.Offset)
                         .Select(p => new OffsetPosition(p.Key, p.Min() + 1))
                         .ToArray();
                 }
-                var serialized = serializer.Serialize(positions, true);
-                File.WriteAllText(string.Concat(OffsetPositionFile, ".", item.Key), serialized);
-            });
+
+                var el = xml.CreateElement("topic");
+                el.SetAttribute("name", topic);
+                positions.ForEach(item => {
+                    var node = xml.CreateElement("offset");
+                    node.SetAttribute("partitionId", item.PartitionId.ToString());
+                    node.InnerText = item.Offset.ToString();
+                    el.AppendChild(node);
+                });
+                root.AppendChild(el);
+            }
+            xml.Save(OffsetPositionFile);
+            //metadatas.AsParallel().ForAll(item => {
+            //    OffsetPosition[] positions;
+            //    if(item.Value.Count == 0) {
+            //        positions = lasted[item.Key].Select(p => new OffsetPosition(p.Key, p.Value + 1)).ToArray();
+            //    }
+            //    else {
+            //        positions = item.Value.Values
+            //            .GroupBy(p => p.PartitionId, p => p.Offset)
+            //            .Select(p => new OffsetPosition(p.Key, p.Min() + 1))
+            //            .ToArray();
+            //    }
+            //    var serialized = serializer.Serialize(positions, true);
+            //    File.WriteAllText(string.Concat(OffsetPositionFile, ".", item.Key), serialized);
+            //});
         }
 
         protected override void Dispose(bool disposing)
@@ -157,8 +198,6 @@ namespace ThinkNet.Runtime
                     kvp.Value.Dispose();
                 }
                 consumers.Clear();
-
-                timer.Dispose();
             }
         }
 
@@ -266,6 +305,7 @@ namespace ThinkNet.Runtime
                         Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
                     }
                     catch (Exception) {
+                        //TODO...Write LOG
                         throw;
                     }
                 }
