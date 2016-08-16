@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkNet.Messaging;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Messaging
 {
     [DataContract]
     [Serializable]

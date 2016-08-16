@@ -13,13 +13,15 @@ namespace ThinkNet.Messaging
     {
         private readonly BlockingCollection<IEvent> queue;
         private readonly Worker worker;
+        private readonly IEnvelopeHub hub;
         private int limit;
 
-        public DefaultEventBus()
+        public DefaultEventBus(IEnvelopeHub hub)
         {
             this.limit = ConfigurationSetting.Current.QueueCapacity * 5;
             this.queue = new BlockingCollection<IEvent>();
-            this.worker = WorkerFactory.Create<IEvent>(queue.Take, Transform);
+            this.worker = WorkerFactory.Create<IEvent>(Transform, queue.Take);
+            this.hub = hub;
         }
 
         protected override void Initialize(IEnumerable<Type> types)
@@ -55,22 +57,7 @@ namespace ThinkNet.Messaging
         private void Transform(IEvent @event)
         {
             Interlocked.Increment(ref limit);
-
-            var stream = @event as EventStream;
-            if (stream == null) {
-                var item = new Envelope<IEvent>(@event) {
-                    CorrelationId = @event.Id
-                };
-
-                EnvelopeBuffer<IEvent>.Instance.Enqueue(item);
-            }
-            else {
-                var item = new Envelope<EventStream>(stream) {
-                    CorrelationId = stream.Id
-                };
-
-                EnvelopeBuffer<EventStream>.Instance.Enqueue(item);
-            }           
+            hub.Distribute(@event);
         }
     }
 }

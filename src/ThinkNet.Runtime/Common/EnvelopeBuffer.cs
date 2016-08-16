@@ -26,21 +26,6 @@ namespace ThinkNet.Common
             this.consumerSemaphore = new SemaphoreSlim(0, capacity);
         }
 
-        //public void Deliver(T item)
-        //{
-        //    this.Enqueue(new Envelope<T>(item));
-        //}
-        //public T Dequeue()
-        //{
-        //    return this.Dequeue().Body;
-        //}
-
-        //public bool TryEnqueue(IEnumerable<Envelope<T>> items)
-        //{
-        //    if (producerSemaphore.CurrentCount < items.Count())
-        //        return false;
-        //}
-
         public void Enqueue(Envelope<T> item)
         {
             var time = wait.GetOrAdd(item.CorrelationId, DateTime.UtcNow);

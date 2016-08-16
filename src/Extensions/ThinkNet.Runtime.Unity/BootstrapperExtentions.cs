@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Configuration;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.Configuration;
 using Microsoft.Practices.Unity.InterceptionExtension;
-using ThinkLib.Common;
-using ThinkNet.Infrastructure;
 
 
 namespace ThinkNet.Configurations
@@ -69,8 +66,8 @@ namespace ThinkNet.Configurations
                 }
             }
 
-            if (type.IsDefined<HandlerAttribute>(false) ||
-                type.GetMembers().Any(item => item.IsDefined<HandlerAttribute>(false))) {
+            if (type.IsDefined(typeof(HandlerAttribute), false) ||
+                type.GetMembers().Any(item => item.IsDefined(typeof(HandlerAttribute), false))) {
                 int position = injectionMembers.Count > 0 ? 1 : 0;
                 injectionMembers.Insert(position, new InterceptionBehavior<PolicyInjectionBehavior>());
             }
@@ -115,8 +112,8 @@ namespace ThinkNet.Configurations
                 }
             }
 
-            if (to.IsDefined<HandlerAttribute>(false) ||
-                to.GetMembers().Any(item => item.IsDefined<HandlerAttribute>(false))) {
+            if (to.IsDefined(typeof(HandlerAttribute), false) ||
+                to.GetMembers().Any(item => item.IsDefined(typeof(HandlerAttribute), false))) {
                 int position = injectionMembers.Count > 0 ? 1 : 0;
                 injectionMembers.Insert(position, new InterceptionBehavior<PolicyInjectionBehavior>());
             }

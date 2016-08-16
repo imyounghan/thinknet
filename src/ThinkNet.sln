@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet", "ThinkNet\ThinkNet.csproj", "{A8FCD0BF-04FC-4628-B376-6861D63D9538}"
 EndProject
@@ -22,8 +22,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Runtime.Unity", "Extensions\ThinkNet.Runtime.Unity\ThinkNet.Runtime.Unity.csproj", "{7F73C3D8-27F3-4791-B781-9714FBF8DF8D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Runtime.Kafka", "Extensions\ThinkNet.Runtime.Kafka\ThinkNet.Runtime.Kafka.csproj", "{FACEA926-7587-4D44-A013-050B2EEF3572}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Runtime.JsonNet", "Extensions\ThinkNet.Runtime.JsonNet\ThinkNet.Runtime.JsonNet.csproj", "{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,29 +113,16 @@ Global
 		{FACEA926-7587-4D44-A013-050B2EEF3572}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{FACEA926-7587-4D44-A013-050B2EEF3572}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{FACEA926-7587-4D44-A013-050B2EEF3572}.Release|x86.ActiveCfg = Release|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Debug|x86.Build.0 = Debug|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Release|x86.ActiveCfg = Release|Any CPU
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{02BDD654-C2CF-4E20-B74D-E620BB5ED13B} = {DBF599A2-CA1B-452B-8259-15CFDB51EE11}
 		{1CC1E42F-B984-4668-94B0-EB322F833932} = {DBF599A2-CA1B-452B-8259-15CFDB51EE11}
-		{700AFC24-7314-493F-A47D-AFA41D756D28} = {AD12C0F3-772D-4B49-92A1-132586E7D7E1}
+		{02BDD654-C2CF-4E20-B74D-E620BB5ED13B} = {DBF599A2-CA1B-452B-8259-15CFDB51EE11}
 		{7F73C3D8-27F3-4791-B781-9714FBF8DF8D} = {DBF599A2-CA1B-452B-8259-15CFDB51EE11}
 		{FACEA926-7587-4D44-A013-050B2EEF3572} = {DBF599A2-CA1B-452B-8259-15CFDB51EE11}
-		{D079ADA8-A0DC-43E8-8844-45B2EDC48B18} = {DBF599A2-CA1B-452B-8259-15CFDB51EE11}
+		{700AFC24-7314-493F-A47D-AFA41D756D28} = {AD12C0F3-772D-4B49-92A1-132586E7D7E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.0\lib\NET35;packages\Unity.Interception.2.1.505.2\lib\NET35;packages\Unity.2.1.505.2\lib\NET35

@@ -10,7 +10,7 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 序列化一个对象
         /// </summary>
-        string Serialize(object obj, bool indented = false, bool containType = false);
+        string Serialize(object obj, bool containType = false);
 
         /// <summary>
         /// 从 <param name="serialized" /> 反序列化一个对象。

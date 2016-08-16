@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using ThinkNet.Infrastructure;
-using ThinkNet.Messaging;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Messaging
 {
-    public class CommandBus : AbstractBus, ICommandBus
+    public class CommandBus : KafkaBus, ICommandBus
     {
-        private readonly KafkaClient _kafkaClient;
-
-        public CommandBus(KafkaClient kafkaClient)
-        {
-            this._kafkaClient = kafkaClient;
-        }
+        public CommandBus(ISerializer serializer, IMetadataProvider metadataProvider, ITopicProvider topicProvider)
+            : base(serializer, metadataProvider, topicProvider)
+        { }
 
 
         protected override bool MatchType(Type type)
@@ -30,7 +26,7 @@ namespace ThinkNet.Runtime
             if (commands.IsEmpty())
                 return;
 
-            _kafkaClient.Push(commands);
+            base.Push(commands);
         }
     }
 }

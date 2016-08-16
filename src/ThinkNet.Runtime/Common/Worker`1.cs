@@ -7,14 +7,17 @@ namespace ThinkNet.Common
     /// </summary>
     public class Worker<T> : Worker
     {
+        private readonly T state;
         /// <summary>
         /// constructor.
         /// </summary>
-        public Worker(Action<T> processor, Action<T> successCallback, Action<T, Exception> exceptionCallback)
+        public Worker(Action<T> processor, T state, Action<T> successCallback, Action<T, Exception> exceptionCallback)
         {
             processor.NotNull("processor");
+            state.NotNull("state");
 
-            this.Processor = processor;
+            this.state = state;
+            this.Processor = processor;            
             this.SuccessCallback = successCallback ?? EmptyMethod;
             this.ExceptionCallback = exceptionCallback ?? EmptyMethod;
         }
@@ -22,7 +25,7 @@ namespace ThinkNet.Common
         /// <summary>
         /// constructor.
         /// </summary>
-        public Worker(Func<T> factory, Action<T> processor, Action<T> successCallback, Action<T, Exception> exceptionCallback)
+        public Worker(Action<T> processor, Func<T> factory, Action<T> successCallback, Action<T, Exception> exceptionCallback)
         {
             processor.NotNull("processor");
             factory.NotNull("factory");
@@ -45,7 +48,7 @@ namespace ThinkNet.Common
         /// </summary>
         protected override void Working()
         {
-            var message = Factory();
+            var message = state == null ? Factory() : state;
 
             bool success = true;
 
@@ -60,6 +63,8 @@ namespace ThinkNet.Common
                 }
                 catch (Exception) {
                 }
+
+                //TODO.. Write LOG
             }
 
             if (success) {

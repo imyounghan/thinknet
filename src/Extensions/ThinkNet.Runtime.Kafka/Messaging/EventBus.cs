@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using ThinkNet.Infrastructure;
-using ThinkNet.Messaging;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Messaging
 {
-    public class EventBus : AbstractBus, IEventBus
+    public class EventBus : KafkaBus, IEventBus
     {
-        private readonly KafkaClient _kafkaClient;
-
-        public EventBus(KafkaClient kafkaClient)
-        {
-            this._kafkaClient = kafkaClient;
-        }
+        public EventBus(ISerializer serializer, IMetadataProvider metadataProvider, ITopicProvider topicProvider)
+            : base(serializer, metadataProvider, topicProvider)
+        { }
 
         protected override bool MatchType(Type type)
         {
@@ -29,7 +25,7 @@ namespace ThinkNet.Runtime
             if (events.IsEmpty())
                 return;
 
-            _kafkaClient.Push(events);
+            base.Push(events);
         }
 
     }

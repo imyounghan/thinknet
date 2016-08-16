@@ -1,16 +1,14 @@
-﻿using ThinkNet.Common;
+﻿using ThinkNet.Infrastructure;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Common
 {
     public class EnvelopeDelivery : DefaultEnvelopeDelivery
     {
         private readonly ITopicProvider _topicProvider;
-        private readonly KafkaClient _kafkaClient;
 
-        public EnvelopeDelivery(ITopicProvider topicProvider, KafkaClient kafkaClient)
+        public EnvelopeDelivery(ITopicProvider topicProvider)
         {
             this._topicProvider = topicProvider;
-            this._kafkaClient = kafkaClient;
         }
 
         public override void Post<T>(Envelope<T> envelope)
@@ -18,7 +16,8 @@ namespace ThinkNet.Runtime
             base.Post<T>(envelope);
 
             var topic = _topicProvider.GetTopic(envelope.Body);
-            _kafkaClient.ConsumerComplete(topic, envelope.CorrelationId);
+
+            OffsetPositionManager.Instance.Remove(topic, envelope.CorrelationId);
         }
     }
 }

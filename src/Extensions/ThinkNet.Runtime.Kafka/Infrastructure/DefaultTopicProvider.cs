@@ -1,7 +1,6 @@
-﻿using System;
-using ThinkNet.Messaging;
+﻿using ThinkNet.Messaging;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Infrastructure
 {
     public class DefaultTopicProvider : ITopicProvider
     {
@@ -9,21 +8,21 @@ namespace ThinkNet.Runtime
 
         public string GetTopic(object payload)
         {
-            if (payload is ICommand) {
-                return "Commands";
-            }
-
             if (payload is EventStream) {
                 return "EventStreams";
-            }
-            
-            if (payload is IEvent) {
-                return "Events";
             }
 
             if (payload is CommandReply) {
                 return "CommandResults";
             }
+
+            if (payload is ICommand) {
+                return "Commands";
+            }
+
+            if (payload is IEvent) {
+                return "Events";
+            }            
 
             throw new ThinkNetException(string.Format("Can't find the type '{0}' of topic.", payload.GetType().FullName));
         }

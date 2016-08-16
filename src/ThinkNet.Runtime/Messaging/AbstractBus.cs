@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace ThinkNet.Messaging
 {
-    public abstract class AbstractBus : IInitializer
+    public abstract class AbstractBus : DisposableObject, IInitializer
     {
         /// <summary>
         /// 检索匹配的类型
@@ -16,6 +16,9 @@ namespace ThinkNet.Messaging
         /// 初始化操作
         /// </summary>
         protected virtual void Initialize(IEnumerable<Type> types)
+        { }
+
+        protected override void Dispose(bool disposing)
         { }
 
         void IInitializer.Initialize(IEnumerable<Type> types)

@@ -52,18 +52,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandBus.cs" />
-    <Compile Include="CommandReply.cs" />
-    <Compile Include="CommandNotification.cs" />
-    <Compile Include="CommandReplyProcessor.cs" />
+    <Compile Include="Messaging\CommandBus.cs" />
+    <Compile Include="Messaging\CommandReply.cs" />
+    <Compile Include="Messaging\CommandNotification.cs" />
+    <Compile Include="Messaging\Processing\CommandReplyProcessor.cs" />
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
-    <Compile Include="DefaultTopicProvider.cs" />
-    <Compile Include="EnvelopeDelivery.cs" />
-    <Compile Include="EventBus.cs" />
-    <Compile Include="ITopicProvider.cs" />
-    <Compile Include="KafkaClient.cs" />
-    <Compile Include="KafkaProcessor.cs" />
+    <Compile Include="Infrastructure\ITopicProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Infrastructure\DefaultTopicProvider.cs" />
+    <Compile Include="Common\EnvelopeDelivery.cs" />
+    <Compile Include="Common\EnvelopeHub.cs" />
+    <Compile Include="Messaging\EventBus.cs" />
+    <Compile Include="Messaging\KafkaBus.cs" />
+    <Compile Include="Infrastructure\KafkaLog.cs" />
+    <Compile Include="Messaging\Processing\KafkaProcessor.cs" />
     <Compile Include="Configurations\KafkaSettings.cs" />
+    <Compile Include="Infrastructure\OffsetPositionManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

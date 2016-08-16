@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Practices.Unity.InterceptionExtension;
-using ThinkLib.Logging;
 
 namespace ThinkNet.Configurations
 {
@@ -29,7 +28,7 @@ namespace ThinkNet.Configurations
         {
             var methodReturn = getNext().Invoke(input, getNext);
             if (methodReturn.Exception != null) {
-                LogManager.GetLogger("ThinkNet").Error(methodReturn.Exception);
+                LogManager.Default.Error(methodReturn.Exception);
             }
             return methodReturn;
         }

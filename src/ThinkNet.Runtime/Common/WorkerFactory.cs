@@ -39,30 +39,30 @@ namespace ThinkNet.Common
         /// <summary>
         /// 创建一个后台线程工作器
         /// </summary>
-        public static Worker<TMessage> Create<TMessage>(Func<TMessage> factory, Action<TMessage> action)
+        public static Worker<TMessage> Create<TMessage>(Action<TMessage> action, Func<TMessage> factory)
         {
-            return new Worker<TMessage>(factory, action, null, null);
+            return new Worker<TMessage>(action, factory, null, null);
         }
         /// <summary>
         /// 创建一个后台线程工作器
         /// </summary>
-        public static Worker<TMessage> Create<TMessage>(Func<TMessage> factory, Action<TMessage> action, Action<TMessage> successCallback)
+        public static Worker<TMessage> Create<TMessage>(Action<TMessage> action, Func<TMessage> factory, Action<TMessage> successCallback)
         {
-            return new Worker<TMessage>(factory, action, successCallback, null);
+            return new Worker<TMessage>(action, factory, successCallback, null);
         }
         /// <summary>
         /// 创建一个后台线程工作器
         /// </summary>
-        public static Worker<TMessage> Create<TMessage>(Func<TMessage> factory, Action<TMessage> action, Action<TMessage, Exception> exceptionCallback)
+        public static Worker<TMessage> Create<TMessage>(Action<TMessage> action, Func<TMessage> factory, Action<TMessage, Exception> exceptionCallback)
         {
-            return new Worker<TMessage>(factory, action, null, exceptionCallback);
+            return new Worker<TMessage>(action, factory, null, exceptionCallback);
         }
         /// <summary>
         /// 创建一个后台线程工作器
         /// </summary>
-        public static Worker<TMessage> Create<TMessage>(Func<TMessage> factory, Action<TMessage> action, Action<TMessage> successCallback, Action<TMessage, Exception> exceptionCallback)
+        public static Worker<TMessage> Create<TMessage>(Action<TMessage> action, Func<TMessage> factory, Action<TMessage> successCallback, Action<TMessage, Exception> exceptionCallback)
         {
-            return new Worker<TMessage>(factory, action, successCallback, exceptionCallback);
+            return new Worker<TMessage>(action, factory, successCallback, exceptionCallback);
         }
     }
 }

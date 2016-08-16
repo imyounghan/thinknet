@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using ThinkNet.Common;
-using ThinkNet.Configurations;
 
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Common
 {
     public abstract class Processor : DisposableObject, IProcessor
     {
@@ -21,10 +18,17 @@ namespace ThinkNet.Infrastructure
             this.workers = new List<Worker>();
         }
 
+        protected Worker BuildWorker<TMessage>(Action<TMessage> action, TMessage message)
+        {
+            var worker = new Worker<TMessage>(action, message, null, null);
+            workers.Add(worker);
+
+            return worker;
+        }
 
         protected Worker BuildWorker<TMessage>(Func<TMessage> factory, Action<TMessage> action)
         {
-            var worker = WorkerFactory.Create<TMessage>(factory, action);
+            var worker = WorkerFactory.Create<TMessage>(action, factory);
             workers.Add(worker);
 
             return worker;

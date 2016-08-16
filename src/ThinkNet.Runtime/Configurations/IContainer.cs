@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Configurations
 {
-    public interface ITopicProvider
+    public interface IContainer
     {
-        string GetTopic(object payload);
     }
 }

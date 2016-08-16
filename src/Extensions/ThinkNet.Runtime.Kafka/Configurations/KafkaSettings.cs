@@ -15,10 +15,6 @@ namespace ThinkNet.Configurations
             this.EnableKafkaProcessor = true;
 
             this.KafkaUris = (ConfigurationManager.AppSettings["thinkcfg.kafka_uri"] ?? string.Empty).Split(',').Select(str => new Uri(string.Concat("tcp://", str))).ToArray();
-            this.ProducerTopics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic_producer"]
-                .IfEmpty(ConfigurationManager.AppSettings["thinkcfg.kafka_topic"]).IfEmpty(string.Empty).Split(',');
-            this.ConsumerTopics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic_consumer"]
-                .IfEmpty(ConfigurationManager.AppSettings["thinkcfg.kafka_topic"]).IfEmpty(string.Empty).Split(',');
             this.Topics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic"].IfEmpty(string.Empty).Split(',');
         }
 
@@ -26,10 +22,6 @@ namespace ThinkNet.Configurations
         public Uri[] KafkaUris { get; set; }
 
         public string[] Topics { get; set; }
-
-        public string[] ProducerTopics { get; set; }
-
-        public string[] ConsumerTopics { get; set; }
 
         /// <summary>
         /// 确认Topic遇到错误的重试次数
@@ -45,6 +37,6 @@ namespace ThinkNet.Configurations
 
         public bool EnableKafkaProcessor { get; set; }
 
-        public bool EnableCommandResultProcessor { get; set; }
+        public bool EnableCommandReplyProcessor { get; set; }
     }
 }

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using ThinkNet.Common;
-using ThinkNet.Infrastructure;
-using ThinkNet.Messaging;
+﻿using ThinkNet.Common;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Messaging.Processing
 {
     public class CommandReplyProcessor : Processor, IProcessor
     {

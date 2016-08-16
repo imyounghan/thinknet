@@ -13,13 +13,15 @@ namespace ThinkNet.Messaging
     {
         private readonly BlockingCollection<ICommand> queue;
         private readonly Worker worker;
+        private readonly IEnvelopeHub hub;
         private int limit;
 
-        public DefaultCommandBus()
+        public DefaultCommandBus(IEnvelopeHub hub)
         {
             this.limit = ConfigurationSetting.Current.QueueCapacity * 5;
             this.queue = new BlockingCollection<ICommand>();
-            this.worker = WorkerFactory.Create<ICommand>(queue.Take, Transform);
+            this.worker = WorkerFactory.Create<ICommand>(Transform, queue.Take);
+            this.hub = hub;
         }
 
         protected override void Initialize(IEnumerable<Type> types)
@@ -53,13 +55,8 @@ namespace ThinkNet.Messaging
 
         private void Transform(ICommand command)
         {
-            var item = new Envelope<ICommand>(command) {
-                CorrelationId = command.Id
-            };
-
             Interlocked.Increment(ref limit);
-            EnvelopeBuffer<ICommand>.Instance.Enqueue(item);
-            //item.WaitTime = DateTime.UtcNow - command.CreatedTime;
+            hub.Distribute(command);
         }
     }
 }

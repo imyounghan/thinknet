@@ -56,6 +56,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\DefaultEnvelopeHub.cs" />
+    <Compile Include="Common\IEnvelopeHub.cs" />
     <Compile Include="Common\IEnvelopeDelivery.cs" />
     <Compile Include="Common\DefaultEnvelopeDelivery.cs" />
     <Compile Include="Common\Worker.cs" />
@@ -64,14 +66,15 @@
     <Compile Include="Configurations\Bootstrapper.cs" />
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
+    <Compile Include="Configurations\IContainer.cs" />
     <Compile Include="Infrastructure\DefaultSerializer.cs" />
     <Compile Include="Common\Envelope.cs" />
     <Compile Include="Common\EnvelopeBuffer.cs" />
     <Compile Include="Infrastructure\IMetadataProvider.cs" />
-    <Compile Include="Infrastructure\IProcessor.cs" />
+    <Compile Include="Common\IProcessor.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
     <Compile Include="Infrastructure\ISerializer.cs" />
-    <Compile Include="Infrastructure\Processor.cs" />
+    <Compile Include="Common\Processor.cs" />
     <Compile Include="Infrastructure\SerializerExtensions.cs" />
     <Compile Include="Infrastructure\StandardMetadata.cs" />
     <Compile Include="Infrastructure\StandardMetadataProvider.cs" />

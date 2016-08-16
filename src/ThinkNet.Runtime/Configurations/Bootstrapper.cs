@@ -463,6 +463,7 @@ namespace ThinkNet.Configurations
             this.RegisterType<ICommandNotification, DefaultCommandNotification>();
             this.RegisterType<IHandlerProvider, DefaultHandlerProvider>();
             this.RegisterType<IEnvelopeDelivery, DefaultEnvelopeDelivery>();
+            this.RegisterType<IEnvelopeHub, DefaultEnvelopeHub>();
 
             if (ConfigurationSetting.Current.EnableCommandProcessor)
                 this.RegisterType<IProcessor, CommandProcessor>("CommandProcessor");
