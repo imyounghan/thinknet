@@ -60,13 +60,15 @@
     <Compile Include="Common\IEnvelopeHub.cs" />
     <Compile Include="Common\IEnvelopeDelivery.cs" />
     <Compile Include="Common\DefaultEnvelopeDelivery.cs" />
+    <Compile Include="Common\ObjectContainer.cs" />
+    <Compile Include="Common\ObjectContainerExtentions.cs" />
     <Compile Include="Common\Worker.cs" />
     <Compile Include="Common\WorkerFactory.cs" />
     <Compile Include="Common\Worker`1.cs" />
     <Compile Include="Configurations\Bootstrapper.cs" />
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
-    <Compile Include="Configurations\IContainer.cs" />
+    <Compile Include="Common\IObjectContainer.cs" />
     <Compile Include="Infrastructure\DefaultSerializer.cs" />
     <Compile Include="Common\Envelope.cs" />
     <Compile Include="Common\EnvelopeBuffer.cs" />
