@@ -13,14 +13,6 @@ namespace ThinkNet
         /// <summary>
         /// 单例
         /// </summary>
-        Singleton,
-        /// <summary>
-        /// 同一个线程
-        /// </summary>
-        PerThread,
-        /// <summary>
-        /// 同一个会话
-        /// </summary>
-        PerSession,
+        Singleton,        
     }
 }

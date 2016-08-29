@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Practices.ServiceLocation;
+using ThinkNet.Common;
 using ThinkNet.Configurations;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
@@ -15,7 +15,7 @@ namespace UserRegistration
     {
         static void Main(string[] args)
         {
-            Bootstrapper.Current.UsingKafka().Done();
+            Bootstrapper.Current.Done();
 
 
             var command = new RegisterUser {
@@ -33,10 +33,10 @@ namespace UserRegistration
             //Console.WriteLine(serializer.Serialize(dict));
 
             Console.ReadKey();
+            
 
-
-            var manager = ServiceLocator.Current.GetInstance<ICommandResultManager>();
-            manager.RegisterCommand(command, CommandResultType.DomainEventHandled).Wait();
+            var commandService = ObjectContainer.Instance.Resolve<ICommandService>();
+            commandService.Execute(command, CommandReturnType.DomainEventHandled);
             //int counter = 0;
             //var tasks = new System.Threading.Tasks.Task[5000];
             //var sw = new System.Diagnostics.Stopwatch();
@@ -57,13 +57,13 @@ namespace UserRegistration
 
             //Console.WriteLine(tasks.Where(p => p.IsCompleted).Count());
 
-            var userDao = ServiceLocator.Current.GetInstance<IUserDao>();
+            var userDao = ObjectContainer.Instance.Resolve<IUserDao>();
 
             var count = userDao.GetAll().Count();
             Console.ResetColor();
             Console.WriteLine("共有 " + count + " 个用户。");
 
-            var authenticationService = ServiceLocator.Current.GetInstance<IAuthenticationService>();
+            var authenticationService = ObjectContainer.Instance.Resolve<IAuthenticationService>();
             if (!authenticationService.Authenticate("young.han", "hanyang", "127.0.0.1")) {
                 Console.WriteLine("用户名或密码错误");
             }

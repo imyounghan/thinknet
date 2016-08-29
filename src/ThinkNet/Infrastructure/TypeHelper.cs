@@ -46,13 +46,13 @@ namespace ThinkNet.Infrastructure
                 type.GetInterfaces().Any(IsRepositoryInterfaceType);
         }
 
-        ///// <summary>
-        ///// Check whether a type is a message type.
-        ///// </summary>
-        //public static bool IsMessage(Type type)
-        //{
-        //    return type.IsClass && !type.IsAbstract && typeof(IMessage).IsAssignableFrom(type);
-        //}
+        /// <summary>
+        /// Check whether a type is a message type.
+        /// </summary>
+        public static bool IsMessage(Type type)
+        {
+            return type.IsClass && !type.IsAbstract && typeof(IMessage).IsAssignableFrom(type);
+        }
 
         /// <summary>
         /// Check whether a type is a command type.
@@ -89,7 +89,12 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public static bool IsEventHandlerInterfaceType(Type type)
         {
-            return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEventHandler<>);
+            return type.IsInterface && type.IsGenericType && 
+                (type.GetGenericTypeDefinition() == typeof(IEventHandler<>) || 
+                type.GetGenericTypeDefinition() == typeof(IEventHandler<,>) || 
+                type.GetGenericTypeDefinition() == typeof(IEventHandler<,,>) ||
+                type.GetGenericTypeDefinition() == typeof(IEventHandler<,,,>) ||
+                type.GetGenericTypeDefinition() == typeof(IEventHandler<,,,,>));
         }
         /// <summary>
         /// Check whether a type is a event handler.
@@ -112,8 +117,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public static bool IsHandlerType(Type type)
         {
-            return type.IsClass && !type.IsAbstract &&
-                type.GetInterfaces().Any(IsHandlerInterfaceType);
+            return type.IsClass && !type.IsAbstract && typeof(IHandler).IsAssignableFrom(type);
         }
 
         /// <summary>
@@ -121,7 +125,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public static bool IsMessageHandlerInterfaceType(Type type)
         {
-            return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IHandler<>);
+            return type.IsInterface && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IMessageHandler<>);
         }
         /// <summary>
         /// Check whether a type is a message handler.

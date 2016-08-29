@@ -7,7 +7,6 @@ using System.ComponentModel.Composition.Registration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Practices.ServiceLocation;
 using ThinkNet.Common;
 using ThinkNet.Database;
 using ThinkNet.EventSourcing;
@@ -131,10 +130,10 @@ namespace ThinkNet.Configurations
             internal static object GetInstance(Component component)
             {
                 var serviceType = component.GetServiceType();
-                var key = /*TypeHelper.IsHandlerInterfaceType(serviceType) ? string.Empty : */component.ContractName;
+                var key = component.ContractName;
                 return string.IsNullOrWhiteSpace(key) ?
-                    ServiceLocator.Current.GetInstance(serviceType) :
-                    ServiceLocator.Current.GetInstance(serviceType, key);
+                    ObjectContainer.Instance.Resolve(serviceType) :
+                    ObjectContainer.Instance.Resolve(serviceType, key);
             }
 
             internal static void Register(Component component)
@@ -195,7 +194,11 @@ namespace ThinkNet.Configurations
 
             public override bool IsRegistered(Type type, string name)
             {
-                return catalog.Catalogs.SelectMany(p => p.ToArray()).SelectMany(p => p.ExportDefinitions).Any(p => p.ContractName == name);
+                var contractName = AttributedModelServices.GetContractName(type);
+                if(!string.IsNullOrEmpty(name)) {
+                    contractName = name.Insert(0, "|").Insert(0, contractName);
+                }
+                return catalog.Catalogs.SelectMany(p => p.ToArray()).SelectMany(p => p.ExportDefinitions).Any(p => p.ContractName == contractName);
             }
 
             public override void RegisterInstance(Type type, string name, object instance)
@@ -208,7 +211,8 @@ namespace ThinkNet.Configurations
                 var builder = dict.GetOrAdd(type.Assembly, () => new RegistrationBuilder()).ForType(type);
 
                 if(!string.IsNullOrEmpty(name)) {
-                    builder = builder.Export(p => p.AsContractName(name));
+                    var contractName = name.Insert(0, "|").Insert(0, AttributedModelServices.GetContractName(type));
+                    builder = builder.Export(p => p.AsContractName(contractName));
                 }
 
                 switch(lifetime) {
@@ -226,7 +230,8 @@ namespace ThinkNet.Configurations
                 var builder = dict.GetOrAdd(to.Assembly, () => new RegistrationBuilder()).ForType(to).Export(p => p.AsContractType(from));
 
                 if(!string.IsNullOrEmpty(name)) {
-                    builder = builder.Export(p => p.AsContractName(name));
+                    var contractName = name.Insert(0, "|").Insert(0, AttributedModelServices.GetContractName(from));
+                    builder = builder.Export(p => p.AsContractName(contractName));
                 }
 
                 switch(lifetime) {
@@ -241,12 +246,12 @@ namespace ThinkNet.Configurations
 
             public override object Resolve(Type type, string name)
             {
-                if(string.IsNullOrEmpty(name)) {
-                    var contractName = AttributedModelServices.GetContractName(type);
+                var contractName = AttributedModelServices.GetContractName(type);
+                if(string.IsNullOrEmpty(name)) {                    
                     return container.GetExportedValueOrDefault<object>(contractName);
                 }
                 else {
-                    return container.GetExportedValueOrDefault<object>(name);
+                    return container.GetExportedValueOrDefault<object>(name.Insert(0, "|").Insert(0, contractName));
                 }
             }
 
@@ -258,9 +263,9 @@ namespace ThinkNet.Configurations
 
             public void Complete()
             {
-                dict.ForEach(item => {
+                foreach(var item in dict) {
                     catalog.Catalogs.Add(new AssemblyCatalog(item.Key, item.Value));
-                });
+                }
                 container.ComposeParts();
 
                 this.dict.Clear();
@@ -326,10 +331,7 @@ namespace ThinkNet.Configurations
             if (!_running)
                 return;
 
-            var processores = ServiceLocator.Current.GetAllInstances<IProcessor>();
-            foreach (var processor in processores) {
-                processor.Start();
-            }
+            ObjectContainer.Instance.ResolveAll<IProcessor>().ForEach(p => p.Start());
         }
 
         public void Stop()
@@ -337,7 +339,7 @@ namespace ThinkNet.Configurations
             if (!_running)
                 return;
 
-            ServiceLocator.Current.GetAllInstances<IProcessor>().ForEach(p => p.Stop());
+            ObjectContainer.Instance.ResolveAll<IProcessor>().ForEach(p => p.Stop());
         }
 
         private bool _running = false;
@@ -355,6 +357,11 @@ namespace ThinkNet.Configurations
         /// </summary>
         public void Done(IObjectContainer container)
         {
+            if(_running) {
+                return;
+            }
+
+            ObjectContainer.Instance = container;
 
             if (_assemblies.Count == 0) {
                 this.LoadAssemblies();
@@ -366,10 +373,8 @@ namespace ThinkNet.Configurations
 
             var allTypes = _assemblies.SelectMany(assembly => assembly.GetTypes()).ToArray();
 
-            this.RegisterComponents(allTypes);
+            this.RegisterComponentsAndHanders(allTypes);
             this.RegisterFrameworkComponents();
-            this.RegisterHandlers(allTypes);
-            //this.RegisterInterceptor(allTypes);
 
             _components.ForEach(Component.Register);
 
@@ -377,7 +382,11 @@ namespace ThinkNet.Configurations
             if(compositionContainer != null)
                 compositionContainer.Complete();
 
-             _components.Where(Component.MustbeInitialize).Select(Component.GetInstance).Distinct().Cast<IInitializer>().ForEach(item => item.Initialize(allTypes));
+             _components.Where(Component.MustbeInitialize)
+                .Select(Component.GetInstance)
+                .Distinct()
+                .Cast<IInitializer>()
+                .ForEach(item => item.Initialize(allTypes));
 
             _assemblies.Clear();
             _components.Clear();
@@ -395,7 +404,7 @@ namespace ThinkNet.Configurations
         /// <summary>
         /// 注册类型
         /// </summary>
-        public void RegisterType(Type type, string name, Lifecycle lifecycle)
+        public void Register(Type type, string name, Lifecycle lifecycle)
         {
             if (_running) {
                 throw new ApplicationException("system is running, can not register type, please execute before 'done' method.");
@@ -408,7 +417,7 @@ namespace ThinkNet.Configurations
         /// <summary>
         /// 注册类型
         /// </summary>
-        public void RegisterType(Type from, Type to, string name, Lifecycle lifecycle)
+        public void Register(Type from, Type to, string name, Lifecycle lifecycle)
         {
             if (_running) {
                 throw new ApplicationException("system is running, can not register type, please execute before 'done' method.");
@@ -419,34 +428,64 @@ namespace ThinkNet.Configurations
             _components.Add(new Component(from, to, name, lifecycle));
         }
 
-        private void RegisterComponents(IEnumerable<Type> types)
+        private void RegisterComponentsAndHanders(IEnumerable<Type> types)
         {
             var registionTypes = types.Where(p => p.IsClass && !p.IsAbstract && p.IsDefined(typeof(RegisterAttribute), false));
 
-            foreach (var type in registionTypes) {
+            foreach(var type in types.Where(p => p.IsClass && !p.IsAbstract)) {
+                var lifecycle = LifeCycleAttribute.GetLifecycle(type);
+
                 var attribute = type.GetAttribute<RegisterAttribute>(false);
-                var contractType = attribute.ContractType;
-                var contractName = attribute.ContractName;
-                var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
-                if (attribute.ContractType == null) {
-                    this.RegisterType(type, contractName, lifecycle);
+                if(attribute != null) {
+                    var contractType = attribute.ContractType;
+                    var contractName = attribute.ContractName;
+                    if(attribute.ContractType == null) {
+                        this.Register(type, contractName, lifecycle);
+                    }
+                    else {
+                        this.Register(attribute.ContractType, type, contractName, lifecycle);
+                    }
                 }
-                else {
-                    this.RegisterType(attribute.ContractType, type, contractName, lifecycle);
-                }
-            }           
-        }
-        private void RegisterHandlers(IEnumerable<Type> types)
-        {
-            var handlerTypes = types.Where(TypeHelper.IsHandlerType);
-            foreach (var type in handlerTypes) {
-                var interfaceTypes = type.GetInterfaces().Where(TypeHelper.IsHandlerInterfaceType);
-                var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
-                foreach (var interfaceType in interfaceTypes) {
-                    this.RegisterType(interfaceType, type, type.FullName, lifecycle);
+
+                var interfaces = type.GetInterfaces();
+                if(interfaces != null && interfaces.Length > 0) {
+                    foreach(var interfaceType in interfaces.Where(TypeHelper.IsHandlerInterfaceType)) {
+                        this.Register(interfaceType, type, type.FullName, lifecycle);
+                    }
                 }
             }
         }
+
+        //private void RegisterComponents(IEnumerable<Type> types)
+        //{
+        //    var registionTypes = types.Where(p => p.IsClass && !p.IsAbstract && p.IsDefined(typeof(RegisterAttribute), false));
+
+        //    foreach (var type in registionTypes) {
+        //        var attribute = type.GetAttribute<RegisterAttribute>(false);
+        //        var contractType = attribute.ContractType;
+        //        var contractName = attribute.ContractName;
+        //        var lifecycle = LifeCycleAttribute.GetLifecycle(type);
+        //        if (attribute.ContractType == null) {
+        //            this.RegisterType(type, contractName, lifecycle);
+        //        }
+        //        else {
+        //            this.RegisterType(attribute.ContractType, type, contractName, lifecycle);
+        //        }
+        //    }           
+        //}
+        //private void RegisterHandlers(IEnumerable<Type> types)
+        //{
+        //    foreach(var type in types.Where(p => p.IsClass && !p.IsAbstract)) {
+        //        var interfaces = type.GetInterfaces();
+        //        if(interfaces == null || interfaces.Length == 0)
+        //            continue;
+
+        //        var lifecycle = LifeCycleAttribute.GetLifecycle(type);
+        //        foreach(var interfaceType in interfaces.Where(TypeHelper.IsHandlerInterfaceType)) {
+        //            this.RegisterType(interfaceType, type, type.FullName, lifecycle);
+        //        }
+        //    }
+        //}
         //private void RegisterInterceptor(IEnumerable<Type> types)
         //{
         //    var interceptorTypes=types.Where(TypeHelper.IsInterceptionType);
@@ -462,33 +501,32 @@ namespace ThinkNet.Configurations
 
         private void RegisterFrameworkComponents()
         {
-            this.RegisterType<IEventPublishedVersionStore, EventPublishedVersionInMemory>();
-            this.RegisterType<IEventStore, MemoryEventStore>();
-            this.RegisterType<ISnapshotPolicy, NoneSnapshotPolicy>();
-            this.RegisterType<ISnapshotStore, NoneSnapshotStore>();
-            this.RegisterType<ISerializer, DefaultSerializer>();
-            this.RegisterType<ICache, DefaultMemoryCache>();            
-            this.RegisterType<IRoutingKeyProvider, DefaultRoutingKeyProvider>();
-            this.RegisterType<IMetadataProvider, StandardMetadataProvider>();
-            this.RegisterType<IEventSourcedRepository, EventSourcedRepository>();
-            this.RegisterType<IRepository, MemoryRepository>();
-            this.RegisterType<ICommandBus, DefaultCommandBus>();
-            this.RegisterType<ICommandResultManager, DefaultCommandNotification>();
-            this.RegisterType<IEventBus, DefaultEventBus>();
-            this.RegisterType<ICommandContextFactory, CommandContextFactory>();
-            this.RegisterType<IEventContextFactory, EventContextFactory>();
-            this.RegisterType<IHandlerRecordStore, HandlerRecordInMemory>();
-            this.RegisterType<ICommandNotification, DefaultCommandNotification>();
-            this.RegisterType<IHandlerProvider, DefaultHandlerProvider>();
-            this.RegisterType<IEnvelopeDelivery, DefaultEnvelopeDelivery>();
-            this.RegisterType<IEnvelopeHub, DefaultEnvelopeHub>();
+            this.Register<IEventPublishedVersionStore, EventPublishedVersionInMemory>();
+            this.Register<IEventStore, MemoryEventStore>();
+            this.Register<ISnapshotPolicy, NoneSnapshotPolicy>();
+            this.Register<ISnapshotStore, NoneSnapshotStore>();
+            this.Register<ISerializer, DefaultSerializer>();
+            this.Register<ICache, DefaultMemoryCache>();            
+            this.Register<IRoutingKeyProvider, DefaultRoutingKeyProvider>();
+            //this.Register<IMetadataProvider, StandardMetadataProvider>();
+            this.Register<IEventSourcedRepository, EventSourcedRepository>();
+            this.Register<IRepository, MemoryRepository>();
+            this.Register<ICommandBus, DefaultCoreService>();
+            this.Register<ICommandService, DefaultCoreService>();
+            this.Register<IEventBus, DefaultCoreService>();
+            //this.Register<ICommandContextFactory, CommandContextFactory>();
+            this.Register<IHandlerRecordStore, HandlerRecordInMemory>();
+            //this.Register<ICommandNotification, DefaultCoreService>();
+            this.Register<IHandlerProvider, DefaultHandlerProvider>();
+            //this.RegisterType<IEnvelopeDelivery, DefaultEnvelopeDelivery>();
+            //this.RegisterType<IEnvelopeHub, DefaultEnvelopeHub>();
 
-            if (ConfigurationSetting.Current.EnableCommandProcessor)
-                this.RegisterType<IProcessor, CommandProcessor>("CommandProcessor");
-            if (ConfigurationSetting.Current.EnableSynchronousProcessor)
-                this.RegisterType<IProcessor, SynchronousProcessor>("SynchronousProcessor");
-            if (ConfigurationSetting.Current.EnableEventProcessor)
-                this.RegisterType<IProcessor, EventProcessor>("EventProcessor");
+            //if (ConfigurationSetting.Current.EnableCommandProcessor)
+            //    this.RegisterType<IProcessor, CommandProcessor>("CommandProcessor");
+            //if (ConfigurationSetting.Current.EnableSynchronousProcessor)
+            //    this.RegisterType<IProcessor, SynchronousProcessor>("SynchronousProcessor");
+            //if (ConfigurationSetting.Current.EnableEventProcessor)
+            //    this.RegisterType<IProcessor, EventProcessor>("EventProcessor");
         }
         
     }

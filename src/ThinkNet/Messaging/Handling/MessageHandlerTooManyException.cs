@@ -1,5 +1,6 @@
 ﻿using System;
-using ThinkNet.Infrastructure;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ThinkNet.Messaging.Handling
 {
@@ -11,8 +12,12 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>Parameterized constructor.
         /// </summary>
         /// <param name="messageType">The message type.</param>
-        public MessageHandlerTooManyException(Type messageType)
-            : base(string.Format("Found more than one message handler, messageType:{0}.", messageType.FullName)) 
+        public MessageHandlerTooManyException(Type type)
+            : base(string.Format("Found more than one message handler, messageType:{0}.", type.FullName)) 
+        { }
+
+        public MessageHandlerTooManyException(IEnumerable<Type> types)
+           : base(string.Format("Found more than one event handler, event types:{0}.", string.Join(",", types.Select(p => p.FullName).ToArray())))
         { }
     }
 }

@@ -12,8 +12,7 @@ namespace ThinkNet.Messaging.Processing
     {
         private readonly ICommandNotification _notification;
         private readonly IHandlerProvider _handlerProvider;
-        private readonly IEventBus _eventBus;
-        private readonly IEventContextFactory _eventContextFactory;
+        private readonly IMessageBus _messageBus;
         private readonly IEventPublishedVersionStore _eventPublishedVersionStore;
         private readonly ISerializer _serializer;
 
@@ -26,10 +25,9 @@ namespace ThinkNet.Messaging.Processing
         /// </summary>
         public SynchronousProcessor(ICommandNotification notification,
             IHandlerProvider handlerProvider,
-            IEventBus eventBus,
+            IMessageBus messageBus,
             IEventPublishedVersionStore eventPublishedVersionStore,
             ISerializer serializer,
-            IEventContextFactory eventContextFactory,
             IEnvelopeDelivery envelopeDelivery)
             : base(envelopeDelivery)
         {
@@ -37,8 +35,7 @@ namespace ThinkNet.Messaging.Processing
             this._handlerProvider = handlerProvider;
             this._eventPublishedVersionStore = eventPublishedVersionStore;
             this._serializer = serializer;
-            this._eventContextFactory = eventContextFactory;
-            this._eventBus = eventBus;
+            this._messageBus = messageBus;
 
             this.tempList = new List<IEvent>();
             this.retryQueue = new BlockingCollection<ParsedEvent>();
@@ -76,6 +73,17 @@ namespace ThinkNet.Messaging.Processing
             public int Version { get; set; }
 
             public IEnumerable<IEvent> Events { get; set; }
+
+            public object[] GetParameter()
+            {
+                var array = new System.Collections.ArrayList();
+                array.Add(this.Version);
+                foreach(var @event in this.Events) {
+                    array.Add(@event);
+                }
+
+                return array.ToArray();
+            }
         }
 
 
@@ -92,7 +100,7 @@ namespace ThinkNet.Messaging.Processing
             if (tempList.Count == 0)
                 System.Threading.Thread.Sleep(1000);
 
-            _eventBus.Publish(tempList);
+            _messageBus.Publish(tempList);
             tempList.Clear();
         }
 
@@ -142,32 +150,16 @@ namespace ThinkNet.Messaging.Processing
                 return SynchronizeStatus.Obsolete;
             }
 
-            bool success = true;
-            _eventContextFactory.Bind();
-            try {                
-                @event.Events.ForEach(ProcessHandler);
-            }
-            catch (Exception) {
-                success = false;
-                throw;
-            }
-            finally {
-                _eventContextFactory.Unbind(success);
-            }
+            var eventTypes = @event.Events.Select(p => p.GetType()).ToArray();
+            var handler = _handlerProvider.GetEventHandler(eventTypes);
+
+
+            handler.Handle(@event.GetParameter());
 
             _eventPublishedVersionStore.AddOrUpdatePublishedVersion(@event.Key, @event.Version);
 
             return SynchronizeStatus.Complete;
-        }
-
-        void ProcessHandler(IEvent @event)
-        {
-            var eventType = @event.GetType();
-            var handler = _handlerProvider.GetEventHandler(eventType);
-            if (handler == null)
-                throw new MessageHandlerNotFoundException(eventType);
-            handler.Handle(@event);
-        }
+        }        
 
         private IEvent Deserialize(EventStream.Stream stream)
         {

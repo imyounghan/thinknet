@@ -40,9 +40,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Practices.ServiceLocation">
-      <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.Composition.Registration" />
@@ -56,59 +53,42 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\DefaultEnvelopeHub.cs" />
-    <Compile Include="Common\IEnvelopeHub.cs" />
-    <Compile Include="Common\IEnvelopeDelivery.cs" />
-    <Compile Include="Common\DefaultEnvelopeDelivery.cs" />
+    <Compile Include="Common\IObjectContainer.cs" />
     <Compile Include="Common\ObjectContainer.cs" />
     <Compile Include="Common\ObjectContainerExtentions.cs" />
-    <Compile Include="Common\Worker.cs" />
-    <Compile Include="Common\WorkerFactory.cs" />
-    <Compile Include="Common\Worker`1.cs" />
     <Compile Include="Configurations\Bootstrapper.cs" />
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
-    <Compile Include="Common\IObjectContainer.cs" />
     <Compile Include="Infrastructure\DefaultSerializer.cs" />
-    <Compile Include="Common\Envelope.cs" />
-    <Compile Include="Common\EnvelopeBuffer.cs" />
-    <Compile Include="Infrastructure\IMetadataProvider.cs" />
-    <Compile Include="Common\IProcessor.cs" />
+    <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
     <Compile Include="Infrastructure\ISerializer.cs" />
-    <Compile Include="Common\Processor.cs" />
     <Compile Include="Infrastructure\SerializerExtensions.cs" />
-    <Compile Include="Infrastructure\StandardMetadata.cs" />
-    <Compile Include="Infrastructure\StandardMetadataProvider.cs" />
+    <Compile Include="Messaging\DefaultCoreService.cs" />
+    <Compile Include="Messaging\Envelope.cs" />
+    <Compile Include="Messaging\EnvelopeHub.cs" />
+    <Compile Include="Messaging\IEnvelopeReceivercs.cs" />
+    <Compile Include="Messaging\IEnvelopeSender.cs" />
+    <Compile Include="Messaging\MessageBus.cs" />
+    <Compile Include="Messaging\Processing\CommandExecutor.cs" />
+    <Compile Include="Messaging\Processing\EventExecutor.cs" />
+    <Compile Include="Messaging\Processing\SynchronousExecutor.cs" />
     <Compile Include="Messaging\Handling\IHandlerProvider.cs" />
     <Compile Include="Messaging\Handling\IProxyHandler.cs" />
-    <Compile Include="Messaging\Processing\CommandProcessor.cs" />
     <Compile Include="Messaging\Handling\CommandContextFactory.cs" />
-    <Compile Include="Messaging\Handling\EventContextFactory.cs" />
     <Compile Include="Messaging\Handling\DefaultHandlerProvider.cs" />
-    <Compile Include="Messaging\DefaultCommandNotification.cs" />
     <Compile Include="Infrastructure\DefaultRoutingKeyProvider.cs" />
-    <Compile Include="Messaging\Processing\EventProcessor.cs" />
-    <Compile Include="Messaging\Processing\SynchronousProcessor.cs" />
+    <Compile Include="Messaging\Processing\IMessageExecutor.cs" />
+    <Compile Include="Messaging\Processing\MessageExecutor.cs" />
     <Compile Include="Messaging\EventStream.cs" />
     <Compile Include="Infrastructure\MemoryEventStore.cs" />
     <Compile Include="Infrastructure\MemoryRepository.cs" />
     <Compile Include="Messaging\Handling\ICommandContextFactory.cs" />
-    <Compile Include="Messaging\Handling\IEventContextFactory.cs" />
-    <Compile Include="Messaging\AbstractBus.cs" />
-    <Compile Include="Messaging\DefaultCommandBus.cs" />
-    <Compile Include="Messaging\DefaultEventBus.cs" />
     <Compile Include="Messaging\ICommandNotification.cs" />
     <Compile Include="Infrastructure\EventSourcedRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Messaging\Processing\MessageProcessor.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Infrastructure\NoneSnapshotPolicy.cs" />
     <Compile Include="Infrastructure\NoneSnapshotStore.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThinkNet\ThinkNet.csproj">

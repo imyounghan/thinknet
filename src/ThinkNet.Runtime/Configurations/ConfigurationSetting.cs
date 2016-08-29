@@ -10,11 +10,11 @@ namespace ThinkNet.Configurations
         {
             this.HandleRetrytimes = 5;
             this.HandleRetryInterval = 1000;
-            this.ProcessorCount = 4;
+            this.QueueCount = 4;
             this.QueueCapacity = 1000;
-            this.EnableCommandProcessor = true;
-            this.EnableEventProcessor = true;
-            this.EnableSynchronousProcessor = true;
+            //this.EnableCommandProcessor = true;
+            //this.EnableEventProcessor = true;
+            //this.EnableSynchronousProcessor = true;
         }
 
         /// <summary>
@@ -30,10 +30,10 @@ namespace ThinkNet.Configurations
         public int HandleRetryInterval { get; set; }
 
         /// <summary>
-        /// 内部消息处理器的个数，建议和CPU核数一样
+        /// 内部消息的队列数量
         /// 默认为4
         /// </summary>
-        public int ProcessorCount { get; set; }
+        public int QueueCount { get; set; }
 
         /// <summary>
         /// 消息队列的容量
@@ -41,17 +41,17 @@ namespace ThinkNet.Configurations
         /// </summary>
         public int QueueCapacity { get; set; }
 
-        /// <summary>
-        /// 是否启用命令处理器
-        /// </summary>
-        public bool EnableCommandProcessor { get; set; }
-        /// <summary>
-        /// 是否启用同步处理器
-        /// </summary>
-        public bool EnableSynchronousProcessor { get; set; }
-        /// <summary>
-        /// 是否启用事件处理器
-        /// </summary>
-        public bool EnableEventProcessor { get; set; }
+        ///// <summary>
+        ///// 是否启用命令处理器
+        ///// </summary>
+        //public bool EnableCommandProcessor { get; set; }
+        ///// <summary>
+        ///// 是否启用同步处理器
+        ///// </summary>
+        //public bool EnableSynchronousProcessor { get; set; }
+        ///// <summary>
+        ///// 是否启用事件处理器
+        ///// </summary>
+        //public bool EnableEventProcessor { get; set; }
     }
 }

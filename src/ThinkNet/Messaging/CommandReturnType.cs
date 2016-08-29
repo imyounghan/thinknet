@@ -5,7 +5,7 @@ namespace ThinkNet.Messaging
     /// 命令处理类型
     /// </summary>
     [System.Serializable]
-    public enum CommandResultType : int
+    public enum CommandReturnType : int
     {
         /// <summary>Return the command result when the command execution has the following cases:
         /// 1. the command execution meets some error or exception;

@@ -65,6 +65,11 @@ namespace ThinkNet.Common
 
         private readonly List<TypeRegistration> _registeredTypes;
 
+        protected ObjectContainer()
+        {
+            this._registeredTypes = new List<TypeRegistration>();
+        }
+
         public IReadOnlyCollection<TypeRegistration> RegisteredTypes
         {
             get
@@ -145,7 +150,7 @@ namespace ThinkNet.Common
                 throw new ApplicationException(string.Format("the type of '{0}' must be a class and cannot be abstract.", to.FullName));
             }
 
-            if(!to.IsAssignableFrom(from)) {
+            if(!from.IsAssignableFrom(to)) {
                 throw new ApplicationException(string.Format("'{0}' does not extend '{1}'.", to.FullName, from.FullName));
             }
 

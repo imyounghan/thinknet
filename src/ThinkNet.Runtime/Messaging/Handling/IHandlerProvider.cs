@@ -5,10 +5,10 @@ namespace ThinkNet.Messaging.Handling
 {
     public interface IHandlerProvider
     {
-        IEnumerable<IProxyHandler> GetHandlers(Type type);
+        IEnumerable<IProxyHandler> GetMessageHandlers(Type type);
 
         IProxyHandler GetCommandHandler(Type type);
 
-        IProxyHandler GetEventHandler(Type type);
+        IProxyHandler GetEventHandler(IEnumerable<Type> types);
     }
 }

@@ -1,5 +1,5 @@
 ﻿
-namespace ThinkNet.Common
+namespace ThinkNet.Infrastructure
 {
     /// <summary>
     /// 表示这是一个任务

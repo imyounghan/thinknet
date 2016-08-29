@@ -72,10 +72,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BootstrapperExtentions.cs" />
-    <Compile Include="CachingBehavior.cs" />
     <Compile Include="ExceptionLoggingBehavior.cs" />
     <Compile Include="InterceptionBehaviorMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnityObjectContainer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ThinkNet.Runtime\ThinkNet.Runtime.csproj">

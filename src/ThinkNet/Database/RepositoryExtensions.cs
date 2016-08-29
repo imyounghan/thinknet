@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Database
 {

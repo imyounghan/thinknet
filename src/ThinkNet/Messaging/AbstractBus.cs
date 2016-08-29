@@ -23,13 +23,13 @@ namespace ThinkNet.Messaging
 
         void IInitializer.Initialize(IEnumerable<Type> types)
         {
-            //var types = assemblies.SelectMany(assembly => assembly.GetTypes());
-            types.Where(MatchType).ForEach(type => {
-                if (!type.IsSerializable) {
+            foreach(var type in types.Where(MatchType)) {
+                if(!type.IsSerializable) {
                     string message = string.Format("{0} should be marked as serializable.", type.FullName);
                     throw new ApplicationException(message);
                 }
-            });
+            }
+            
 
             this.Initialize(types);
         }

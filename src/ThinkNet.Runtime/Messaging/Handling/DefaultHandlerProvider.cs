@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Practices.ServiceLocation;
+using ThinkNet.Common;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 
@@ -9,33 +10,73 @@ namespace ThinkNet.Messaging.Handling
 {
     internal class DefaultHandlerProvider : IHandlerProvider, IInitializer
     {
-        private readonly ICommandContextFactory _commandContextFactory;
-        private readonly IEventContextFactory _eventContextFactory;
-
-        private readonly Dictionary<Type, IProxyHandler> singleHandlerDict;
-        private readonly Dictionary<Type, IEnumerable<IProxyHandler>> manyHandlerDict;
-
-        public DefaultHandlerProvider(ICommandContextFactory commandContextFactory, IEventContextFactory eventContextFactory)
+        class CompositeKey : IEnumerable<Type>
         {
-            this._commandContextFactory = commandContextFactory;
-            this._eventContextFactory = eventContextFactory;
+            private readonly IEnumerable<Type> eventTypes;
 
-            this.singleHandlerDict = new Dictionary<Type, IProxyHandler>();
-            this.manyHandlerDict = new Dictionary<Type, IEnumerable<IProxyHandler>>();
+            public CompositeKey(IEnumerable<Type> types)
+            {
+                this.eventTypes = types;
+            }
+
+            public IEnumerator<Type> GetEnumerator()
+            {
+                return eventTypes.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return ((IEnumerable)eventTypes).GetEnumerator();
+            }
+
+            public override bool Equals(object obj)
+            {
+                var other = obj as CompositeKey;
+
+                if(other == null)
+                    return false;
+
+                return this.Except(other).IsEmpty();
+            }
+
+            public override int GetHashCode()
+            {
+                return eventTypes.Select(type => type.GetHashCode()).Aggregate((x, y) => x ^ y);
+            }
+        }
+
+        private readonly ICommandContextFactory _commandContextFactory;
+        //private readonly IEventContextFactory _eventContextFactory;
+
+        private readonly Dictionary<CompositeKey, Type> EventTypesMapServiceType;
+        //private readonly Dictionary<CompositeKey, IProxyHandler> eventHanderDict;
+        //private readonly Dictionary<Type, IProxyHandler> commandHandlerDict;
+
+        //private readonly Dictionary<Type, IProxyHandler> singleHandlerDict;
+        //private readonly Dictionary<Type, IEnumerable<IProxyHandler>> manyHandlerDict;
+
+        public DefaultHandlerProvider(IEventSourcedRepository repository, IEventBus eventBus)
+        {
+            this._commandContextFactory = new CommandContextFactory(repository, eventBus);
+            this.EventTypesMapServiceType = new Dictionary<CompositeKey, Type>();
+            //this._eventContextFactory = eventContextFactory;
+
+            //this.singleHandlerDict = new Dictionary<Type, IProxyHandler>();
+            //this.manyHandlerDict = new Dictionary<Type, IEnumerable<IProxyHandler>>();
         }
 
 
         public IProxyHandler GetCommandHandler(Type commandType)
         {
             var handlerType = typeof(ICommandHandler<>).MakeGenericType(commandType);
-            var handlers = ServiceLocator.Current.GetAllInstances(handlerType)
+            var handlers = ObjectContainer.Instance.ResolveAll(handlerType)
                 .Cast<IHandler>()
                 .Select(handler => new CommandHandlerWrapper(handler, _commandContextFactory))
                 .Cast<IProxyHandler>()
                 .ToArray();
 
             if (handlers.IsEmpty()) {
-                handlers = this.GetHandlers(commandType).ToArray();
+                handlers = this.GetMessageHandlers(commandType).ToArray();
             }
 
 
@@ -49,52 +90,71 @@ namespace ThinkNet.Messaging.Handling
             }
         }
 
-        public IProxyHandler GetEventHandler(Type eventType)
+        public IProxyHandler GetEventHandler(IEnumerable<Type> types)
         {
-            var handlerType = typeof(IEventHandler<>).MakeGenericType(eventType);
-            var handlers = ServiceLocator.Current.GetAllInstances(handlerType)
+            var handlerType = EventTypesMapServiceType[new CompositeKey(types)];// typeof(IEventHandler<>).MakeGenericType(eventType);
+            var handlers = ObjectContainer.Instance.ResolveAll(handlerType)
                 .Cast<IHandler>()
-                .Select(handler => new EventHandlerWrapper(handler, _eventContextFactory))
+                .Select(handler => new EventHandlerWrapper(handler, handlerType))
                 .Cast<IProxyHandler>()
                 .ToArray();
 
-            switch (handlers.Length) {
+            switch(handlers.Length) {
                 case 0:
                     return null;
                 case 1:
                     return handlers[0];
                 default:
-                    throw new MessageHandlerTooManyException(eventType);
+                    throw new MessageHandlerTooManyException(types);
             }
         }
 
-        public IEnumerable<IProxyHandler> GetHandlers(Type messageType)
+        //public IProxyHandler GetEventHandler(Type eventType)
+        //{
+        //    var handlerType = typeof(IEventHandler<>).MakeGenericType(eventType);
+        //    var handlers = ObjectContainer.Instance.ResolveAll(handlerType)
+        //        .Cast<IHandler>()
+        //        .Select(handler => new EventHandlerWrapper(handler, _eventContextFactory))
+        //        .Cast<IProxyHandler>()
+        //        .ToArray();
+
+        //    switch (handlers.Length) {
+        //        case 0:
+        //            return null;
+        //        case 1:
+        //            return handlers[0];
+        //        default:
+        //            throw new MessageHandlerTooManyException(eventType);
+        //    }
+        //}
+
+        public IEnumerable<IProxyHandler> GetMessageHandlers(Type type)
         {
-            var handlerType = typeof(IHandler<>).MakeGenericType(messageType);
-            return ServiceLocator.Current.GetAllInstances(handlerType)
+            var handlerType = typeof(IMessageHandler<>).MakeGenericType(type);
+            return ObjectContainer.Instance.ResolveAll(handlerType)
                 .Cast<IHandler>()
-                .Select(handler => new HandlerWrapper(handler))
+                .Select(handler => new MessageHandlerWrapper(handler))
                 .Cast<IProxyHandler>();
         }
 
-        #region IHandlerProvider 成员
+        //#region IHandlerProvider 成员
 
-        IEnumerable<IProxyHandler> IHandlerProvider.GetHandlers(Type type)
-        {
-            return manyHandlerDict[type];
-        }
+        //IEnumerable<IProxyHandler> IHandlerProvider.GetHandlers(Type type)
+        //{
+        //    return manyHandlerDict[type];
+        //}
 
-        IProxyHandler IHandlerProvider.GetCommandHandler(Type type)
-        {
-            return singleHandlerDict[type];
-        }
+        //IProxyHandler IHandlerProvider.GetCommandHandler(Type type)
+        //{
+        //    return singleHandlerDict[type];
+        //}
 
-        IProxyHandler IHandlerProvider.GetEventHandler(Type type)
-        {
-            return singleHandlerDict[type];
-        }
+        //IProxyHandler IHandlerProvider.GetEventHandler(Type type)
+        //{
+        //    return singleHandlerDict[type];
+        //}
 
-        #endregion
+        //#endregion
 
         #region IInitializer 成员
 
@@ -102,35 +162,61 @@ namespace ThinkNet.Messaging.Handling
         {
             EventSourcedInnerHandlerProvider.Initialize(types);
 
+            foreach(var type in types.Where(p => p.IsClass && !p.IsAbstract)) {
+                var interfaces = type.GetInterfaces();
+                if(interfaces == null || interfaces.Length == 0)
+                    continue;
+                
+                foreach(var interfaceType in interfaces.Where(TypeHelper.IsEventHandlerInterfaceType)) {
+                    var eventTypes = new CompositeKey(interfaceType.GenericTypeArguments);
+                    if(EventTypesMapServiceType.ContainsKey(eventTypes)) {
 
-            foreach (var type in types) {
-                if (TypeHelper.IsCommand(type)) {
-                    singleHandlerDict[type] = this.GetCommandHandler(type);
-                }
-                if (TypeHelper.IsEvent(type)) {
-                    singleHandlerDict[type] = this.GetEventHandler(type);
-                    manyHandlerDict[type] = this.GetHandlers(type).ToArray();
+                    }
+                    else {
+                        EventTypesMapServiceType[eventTypes] = interfaceType;
+                    }
                 }
             }
+            //foreach (var type in types.Where(TypeHelper.IsHandlerType)) {
+            //    foreach(var interfaceType in type.GetInterfaces()) {
+            //        if(TypeHelper.IsCommandHandlerInterfaceType(interfaceType)) {
+            //            var commandType = type.GenericTypeArguments[0];
+            //            commandHandlerDict[commandType] = this.GetCommandHandler(commandType);
+            //        }
+            //        else if(TypeHelper.IsEventHandlerInterfaceType(type)) {
+            //            var eventTypes = new CompositeKey(type.GenericTypeArguments);
+            //            eventHanderTypeMap[eventTypes] = interfaceType;
+            //            //eventHanderDict[eventTypes] = 
+            //        }
+            //    }
+            //    if (TypeHelper.IsCommand(type)) {
+            //        singleHandlerDict[type] = this.GetCommandHandler(type);
+            //    }
+            //    if (TypeHelper.IsEvent(type)) {
+            //        //singleHandlerDict[type] = this.GetEventHandler(type);
+            //        manyHandlerDict[type] = this.GetHandlers(type).ToArray();
+            //    }
+            //    if(TypeHelper.IsEventHandlerType(type)) {
+            //        type.GetInterfaces().Where(TypeHelper.IsEventHandlerInterfaceType);
+            //    }
+            //}
         }
 
         #endregion
 
-        public class HandlerWrapper : DisposableObject, IProxyHandler
+        public class MessageHandlerWrapper : DisposableObject, IProxyHandler
         {
             private readonly IHandler handler;
-            private readonly Type handerType;
-            private readonly Lifecycle lifetime;
 
-            public HandlerWrapper(IHandler handler)
+            public MessageHandlerWrapper(IHandler handler)
             {
                 this.handler = handler;
-                this.handerType = handler.GetType();
-                this.lifetime = LifeCycleAttribute.GetLifecycle(handerType);
+                this.HanderType = handler.GetType();
             }
 
-            public virtual void Handle(object handler, object message)
+            public virtual void Handle(object handler, object[] args)
             {
+                var message = args.First();
                 ((dynamic)handler).Handle((dynamic)message);
             }
 
@@ -139,14 +225,14 @@ namespace ThinkNet.Messaging.Handling
             /// </summary>
             protected override void Dispose(bool disposing)
             {
-                if (lifetime != Lifecycle.Singleton && disposing) {
+                if (LifeCycleAttribute.GetLifecycle(this.HanderType) == Lifecycle.Transient && disposing) {
                     using (handler as IDisposable) {
                         // Dispose handler if it's disposable.
                     }
                 }
             }
 
-            public Type HanderType { get { return this.handerType; } }
+            public Type HanderType { get; private set; }
 
             public IHandler GetInnerHandler()
             {
@@ -155,14 +241,14 @@ namespace ThinkNet.Messaging.Handling
 
             #region IProxyHandler 成员
 
-            void IProxyHandler.Handle(object message)
+            void IProxyHandler.Handle(params object[] args)
             {
-                this.Handle(handler, message);
+                this.Handle(handler, args);
             }
             #endregion
         }
 
-        public class CommandHandlerWrapper : HandlerWrapper
+        public class CommandHandlerWrapper : MessageHandlerWrapper
         {
             private readonly ICommandContextFactory commandContextFactory;
 
@@ -172,28 +258,60 @@ namespace ThinkNet.Messaging.Handling
                 this.commandContextFactory = commandContextFactory;
             }
 
-            public override void Handle(object handler, object message)
+            public override void Handle(object handler, object[] args)
             {
                 var context = commandContextFactory.CreateCommandContext();
+                var message = args.First();
+
                 ((dynamic)handler).Handle((dynamic)context, (dynamic)message);
                 context.Commit(((dynamic)message).Id);
             }
         }
 
-        public class EventHandlerWrapper : HandlerWrapper
+        public class EventHandlerWrapper : MessageHandlerWrapper
         {
-            private readonly IEventContextFactory eventContextFactory;
-
-            public EventHandlerWrapper(IHandler handler, IEventContextFactory eventContextFactory)
+            public EventHandlerWrapper(IHandler handler, Type serviceType)
                 : base(handler)
             {
-                this.eventContextFactory = eventContextFactory;
+                this.ServiceType = serviceType;
             }
 
-            public override void Handle(object handler, object message)
+            public Type ServiceType { get; private set; }
+
+            public override void Handle(object handler, object[] args)
             {
-                var context = eventContextFactory.GetEventContext();
-                ((dynamic)handler).Handle(context, (dynamic)message);
+                var version = args.First();
+                switch(args.Length - 1) {
+                    case 1:
+                        ((dynamic)handler).Handle((dynamic)version, (dynamic)args[1]);
+                        break;
+                    case 2:
+                        var event1 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[1]);
+                        var event2 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[2]);
+                        ((dynamic)handler).Handle((dynamic)version, (dynamic)event1, (dynamic)event2);
+                        break;
+                    case 3:
+                        event1 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[1]);
+                        event2 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[2]);
+                        var event3 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[3]);
+                        ((dynamic)handler).Handle((dynamic)version, (dynamic)event1, (dynamic)event2, (dynamic)event3);
+                        break;
+                    case 4:
+                        event1 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[1]);
+                        event2 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[2]);
+                        event3 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[3]);
+                        var event4 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[4]);
+                        ((dynamic)handler).Handle((dynamic)version, (dynamic)event1, (dynamic)event2, (dynamic)event3, (dynamic)event4);
+                        break;
+                    case 5:
+                        event1 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[1]);
+                        event2 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[2]);
+                        event3 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[3]);
+                        event4 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[4]);
+                        var event5 = args.First(p => p.GetType() == ServiceType.GenericTypeArguments[5]);
+                        ((dynamic)handler).Handle((dynamic)version, (dynamic)event1, (dynamic)event2, (dynamic)event3, (dynamic)event4, (dynamic)event5);
+                        break;
+                }
             }
         }
     }

@@ -5,7 +5,7 @@ namespace ThinkNet.Messaging.Handling
 {
     public interface IProxyHandler
     {
-        void Handle(object message);
+        void Handle(params object[] args);
         //string MessageId { get; }
 
         //Type MessageType { get; }

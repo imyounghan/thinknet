@@ -11,15 +11,17 @@ namespace ThinkNet.Messaging
         /// 错误
         /// </summary>
         Failed = 0,
-
         /// <summary>
         /// 成功
         /// </summary>
         Success = 1,
-
         /// <summary>
         /// 没有变化
         /// </summary>
-        NothingChanged = 2
+        NothingChanged = 2,
+        /// <summary>
+        /// 超时
+        /// </summary>
+        Timeout = 3,
     }
 }

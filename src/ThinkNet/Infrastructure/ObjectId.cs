@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
-namespace ThinkNet
+namespace ThinkNet.Infrastructure
 {
     /// <summary>Represents an ObjectId
     /// </summary>

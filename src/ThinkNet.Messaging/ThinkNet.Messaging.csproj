@@ -1,20 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{700AFC24-7314-493F-A47D-AFA41D756D28}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{9156B9CB-B550-49F4-84B4-576F852F7515}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UserRegistration</RootNamespace>
-    <AssemblyName>UserRegistration</AssemblyName>
+    <RootNamespace>ThinkNet.Messaging</RootNamespace>
+    <AssemblyName>ThinkNet.Messaging</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -25,7 +24,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -37,39 +35,22 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Application\IAuthenticationService.cs" />
-    <Compile Include="Handlers\EventHandler.cs" />
-    <Compile Include="ReadModel\IUserDao.cs" />
-    <Compile Include="ReadModel\UserModel.cs" />
-    <Compile Include="Commands\RegisterUser.cs" />
-    <Compile Include="User.cs" />
-    <Compile Include="Events\UserCreated.cs" />
-    <Compile Include="Events\UserLogined.cs" />
-    <Compile Include="Handlers\CommandHandler.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Envelope.cs" />
+    <Compile Include="EnvelopeHub.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ThinkNet.Runtime\ThinkNet.Runtime.csproj">
-      <Project>{7dd719e0-5aaa-4878-b259-5d8648d585fd}</Project>
-      <Name>ThinkNet.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ThinkNet\ThinkNet.csproj">
+    <ProjectReference Include="..\ThinkNet\ThinkNet.csproj">
       <Project>{a8fcd0bf-04fc-4628-b376-6861d63d9538}</Project>
       <Name>ThinkNet</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

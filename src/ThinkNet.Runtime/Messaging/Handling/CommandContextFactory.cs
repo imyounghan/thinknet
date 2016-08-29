@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ThinkNet.EventSourcing;
 
-
 namespace ThinkNet.Messaging.Handling
 {
     public class CommandContextFactory : ICommandContextFactory

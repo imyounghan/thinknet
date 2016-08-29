@@ -2,49 +2,61 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-
 namespace ThinkNet.Messaging
 {
     /// <summary>
-    /// <see cref="ICommandResultManager"/> 的实现
+    /// <see cref="ICommandService"/> 的抽像实现
     /// </summary>
-    public class CommandResultManager : ICommandResultManager
+    public abstract class CommandService : ICommandService
     {
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;
-        private readonly ICommandBus _commandBus;
 
-        /// <summary>
-        /// default constructor.
-        /// </summary>
-        public CommandResultManager()
+        public CommandService()
         {
             this._commandTaskDict = new ConcurrentDictionary<string, CommandTaskCompletionSource>();
         }
 
-        protected CommandResultManager(ICommandBus commandBus)
-            : this()
+        public abstract void Send(ICommand command);
+
+        //protected abstract Task SendAsync(ICommand command);
+
+        public CommandResult Execute(ICommand command, CommandReturnType returnType)
         {
-            this._commandBus = commandBus;
+            return this.ExecuteAsync(command, returnType).Result;
+        }
+
+        public CommandResult Execute(ICommand command, CommandReturnType returnType, TimeSpan timeout)
+        {
+            var task = this.ExecuteAsync(command, returnType);
+
+            if(!task.Wait(timeout)) {
+                this.NotifyCommandCompleted(command.Id, CommandStatus.Timeout, new TimeoutException());
+            }
+            return task.Result;
         }
 
         /// <summary>
-        /// 注册一个命令
+        /// 执行一个命令
         /// </summary>
-        public Task<CommandResult> RegisterCommand(ICommand command, CommandResultType commandReplyType)
+        public Task<CommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType)
         {
-            return this.RegisterCommand(command, commandReplyType, _commandBus.Send);
-        }
-
-        /// <summary>
-        /// 注册一个命令
-        /// </summary>
-        public Task<CommandResult> RegisterCommand(ICommand command, CommandResultType commandReplyType, Action<ICommand> commandAction)
-        {
-            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, key => new CommandTaskCompletionSource(commandReplyType));
-
-            commandAction(command);
+            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, key => new CommandTaskCompletionSource(returnType));
+            //this.SendAsync(command).ContinueWith(task => {
+            //    if(task.Status == TaskStatus.Faulted) {
+            //        this.NotifyCommandCompleted(command.Id, CommandStatus.Failed, task.Exception);
+            //    }
+            //});
+            this.Send(command);
 
             return commandTaskCompletionSource.TaskCompletionSource.Task;
+        }
+
+        void ICommandService.Send(ICommand command)
+        {
+            if(_commandTaskDict.Count > 1000)
+                throw new ThinkNetException("server is busy.");
+
+            this.Send(command);
         }
 
         /// <summary>
@@ -90,10 +102,10 @@ namespace ThinkNet.Messaging
             CommandTaskCompletionSource commandTaskCompletionSource;
             bool completed = false;
             if (_commandTaskDict.TryGetValue(commandResult.CommandId, out commandTaskCompletionSource)) {
-                if (commandTaskCompletionSource.CommandReplyType == CommandResultType.CommandExecuted) {
+                if (commandTaskCompletionSource.CommandReplyType == CommandReturnType.CommandExecuted) {
                     completed = true;
                 }
-                else if (commandTaskCompletionSource.CommandReplyType == CommandResultType.DomainEventHandled) {
+                else if (commandTaskCompletionSource.CommandReplyType == CommandReturnType.DomainEventHandled) {
                     completed = (commandResult.Status == CommandStatus.Failed || commandResult.Status == CommandStatus.NothingChanged);
                 }
             }
@@ -105,14 +117,14 @@ namespace ThinkNet.Messaging
 
         class CommandTaskCompletionSource
         {
-            public CommandTaskCompletionSource(CommandResultType commandReplyType)
+            public CommandTaskCompletionSource(CommandReturnType commandReplyType)
             {
                 this.CommandReplyType = commandReplyType;
                 this.TaskCompletionSource = new TaskCompletionSource<CommandResult>();
             }
 
             public TaskCompletionSource<CommandResult> TaskCompletionSource { get; set; }
-            public CommandResultType CommandReplyType { get; set; }
+            public CommandReturnType CommandReplyType { get; set; }
         }
     }
 }

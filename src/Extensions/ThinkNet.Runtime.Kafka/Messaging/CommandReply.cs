@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
@@ -13,11 +14,11 @@ namespace ThinkNet.Messaging
         public CommandReply(string commandId)
             : base(CommandStatus.NothingChanged, commandId)
         {
-            this.CommandResultType = CommandResultType.DomainEventHandled;
+            this.CommandResultType = CommandReturnType.DomainEventHandled;
             this.Init();
         }
 
-        public CommandReply(string commandId, Exception exception, CommandResultType commandResultType)
+        public CommandReply(string commandId, Exception exception, CommandReturnType commandResultType)
             : base(commandId, exception)
         {
             this.CommandResultType = commandResultType;
@@ -31,7 +32,7 @@ namespace ThinkNet.Messaging
         }
 
         [DataMember]
-        public CommandResultType CommandResultType { get; set; }
+        public CommandReturnType CommandResultType { get; set; }
 
         #region IMessage 成员
         [DataMember]

@@ -11,12 +11,12 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 注册当前命令到管理器
         /// </summary>
-        Task<CommandResult> RegisterCommand(ICommand command, CommandResultType commandReplyType = CommandResultType.CommandExecuted);
+        Task<CommandResult> RegisterCommand(ICommand command, CommandReturnType commandReplyType = CommandReturnType.CommandExecuted);
 
         /// <summary>
         /// 注册当前命令到管理器
         /// </summary>
-        Task<CommandResult> RegisterCommand(ICommand command, CommandResultType commandReplyType, Action<ICommand> commandAction);
+        Task<CommandResult> RegisterCommand(ICommand command, CommandReturnType commandReplyType, Action<ICommand> commandAction);
 
         ///// <summary>
         ///// 通知命令已完成

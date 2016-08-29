@@ -11,12 +11,12 @@ namespace ThinkNet.Messaging
 
         public void NotifyCompleted(string messageId, Exception exception = null)
         {
-            base.Push(new[] { new CommandReply(messageId, exception, CommandResultType.DomainEventHandled) });
+            base.Push(new[] { new CommandReply(messageId, exception, CommandReturnType.DomainEventHandled) });
         }
 
         public void NotifyHandled(string messageId, Exception exception = null)
         {
-            base.Push(new[] { new CommandReply(messageId, exception, CommandResultType.CommandExecuted) });
+            base.Push(new[] { new CommandReply(messageId, exception, CommandReturnType.CommandExecuted) });
         }
 
         public void NotifyUnchanged(string messageId)

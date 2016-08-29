@@ -476,6 +476,6 @@ namespace ThinkNet
         public static void Fatal(this LogManager.ILogger log, Exception ex, string format, params object[] args)
         {
             log.Fatal(string.Format(format, args), ex);
-        }
+        }        
     }
 }

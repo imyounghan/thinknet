@@ -38,9 +38,9 @@ namespace ThinkNet.Infrastructure
                 _context.Commit();
 
                 var events = _context.TrackingObjects.OfType<IEventPublisher>()
-                    .SelectMany(item => item.Events).ToList();
+                    .SelectMany(item => item.Events);
 
-                if (events.Count == 0) {
+                if (events.IsEmpty()) {
                     if (LogManager.Default.IsDebugEnabled)
                         LogManager.Default.DebugFormat("commit all aggregateRoots. count:{0}.", _context.TrackingObjects.Count);
                     return;
@@ -51,7 +51,7 @@ namespace ThinkNet.Infrastructure
                 if (LogManager.Default.IsDebugEnabled)
                     LogManager.Default.DebugFormat("commit all aggregateRoots then publish all events. count:{0}, data:[{1}].",
                         _context.TrackingObjects.Count,
-                        string.Join("|", events.Select(item => item.ToString())));
+                        string.Join("|", events));
             }
 
             private object CreateRepository(Type aggregateRootType)

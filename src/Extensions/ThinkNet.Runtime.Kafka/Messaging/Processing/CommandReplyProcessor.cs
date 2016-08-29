@@ -20,11 +20,11 @@ namespace ThinkNet.Messaging.Processing
             var reply = item.Body;
 
             switch (reply.CommandResultType) {
-                case CommandResultType.CommandExecuted:
+                case CommandReturnType.CommandExecuted:
                     //_notification.NotifyHandled(new CommandResult(reply.Status, reply.CommandId, reply.ExceptionTypeName, reply.ErrorMessage, reply.ErrorData));
                     _notification.NotifyHandled(reply.CommandId, reply.GetInnerException());
                     break;
-                case CommandResultType.DomainEventHandled:
+                case CommandReturnType.DomainEventHandled:
                     //_notification.NotifyCommandCompleted(new CommandResult(reply.Status, reply.CommandId, reply.ExceptionTypeName, reply.ErrorMessage, reply.ErrorData));
                     _notification.NotifyCompleted(reply.CommandId, reply.GetInnerException());
                     break;
