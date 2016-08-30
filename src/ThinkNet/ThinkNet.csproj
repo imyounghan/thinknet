@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheRegionAttribute.cs" />
+    <Compile Include="CachingAttribute.cs" />
     <Compile Include="EventSourcing\EventSourced.cs" />
     <Compile Include="EventSourcing\EventSourcedException.cs" />
     <Compile Include="EventSourcing\IEventSourced.cs" />

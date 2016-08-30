@@ -9,7 +9,7 @@ namespace ThinkNet.Messaging.Processing
     {
         private readonly IEnvelopeReceiver _receiver;
 
-        private readonly Dictionary<string, IMessageExecutor> executorDict;
+        private readonly Dictionary<string, IExecutor> executorDict;
         private readonly object lockObject;
 
         public DefaultMessageProcessor(IEnvelopeReceiver receiver,
@@ -22,7 +22,7 @@ namespace ThinkNet.Messaging.Processing
         {
             this._receiver = receiver;
 
-            this.executorDict = new Dictionary<string, IMessageExecutor>() {
+            this.executorDict = new Dictionary<string, IExecutor>() {
                 { "Command", new CommandExecutor(notification, handlerProvider) },
                 { "Event", new EventExecutor(handlerStore, handlerProvider) },
                 { "EventStream", new SynchronousExecutor(notification, handlerProvider, eventBus, eventPublishedVersionStore, serializer) }
@@ -30,15 +30,35 @@ namespace ThinkNet.Messaging.Processing
             this.lockObject = new object();
         }
 
-        protected void AddExecutor(string kind, IMessageExecutor executor)
+        protected void AddExecutor(string kind, IExecutor executor)
         {
             executorDict.Add(kind, executor);
         }
 
+        protected virtual string GetKind(object data)
+        {
+            if (data is EventStream)
+                return "EventStream";
+
+            if (data is IEvent)
+                return "Event";
+
+            if (data is ICommand)
+                return "Command";
+
+            return string.Empty;
+        }
+
         private void OnEnvelopeReceived(object sender, Envelope envelope)
         {
+            var kind = this.GetKind(envelope.Body);
+            if (string.IsNullOrEmpty(kind)) {
+                //TODO...WriteLog
+                return;
+            }
+
             TimeSpan processTime;
-            executorDict[envelope.Kind].Execute(envelope.Body, out processTime);
+            executorDict[kind].Execute(envelope.Body, out processTime);
             envelope.ProcessTime = processTime;
         }
 

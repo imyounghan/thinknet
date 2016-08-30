@@ -10,7 +10,7 @@ namespace ThinkNet.Messaging
     /// </summary>
     [DataContract]
     [Serializable]
-    public class EventStream : Event
+    public class EventStream : Message, IEvent
     {
         [DataContract]
         [Serializable]
@@ -132,20 +132,10 @@ namespace ThinkNet.Messaging
         [DataMember]
         public int Version { get; set; }
         ///// <summary>
-        ///// 结束版本号
-        ///// </summary>
-        //[DataMember]
-        //public int EndVersion { get; set; }
-        ///// <summary>
         /// 事件源
         /// </summary>
         [DataMember]
         public IEnumerable<Stream> Events { get; set; }
-
-        public override string GetSourceStringId()
-        {
-            return this.SourceId;
-        }
 
 
         /// <summary>

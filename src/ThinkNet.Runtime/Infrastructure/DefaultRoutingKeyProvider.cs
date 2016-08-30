@@ -9,14 +9,14 @@ namespace ThinkNet.Infrastructure
 
         public string GetRoutingKey(object payload)
         {
-            var command = payload as Command;
+            var command = payload as ICommand;
             if (command != null) {
-                return command.GetAggregateRootStringId();
+                return command.AggregateRootId;
             }
 
-            var @event = payload as Event;
+            var @event = payload as IEvent;
             if (@event != null) {
-                return @event.GetSourceStringId();
+                return @event.SourceId;
             }
 
             return string.Empty;

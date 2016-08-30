@@ -5,7 +5,7 @@ using ThinkNet.Configurations;
 
 namespace ThinkNet.Messaging.Processing
 {
-    public abstract class MessageExecutor<TMessage> : IMessageExecutor
+    public abstract class MessageExecutor<TMessage> : IExecutor
         where TMessage : class, IMessage
     {
         private readonly int _retryTimes;
@@ -34,26 +34,32 @@ namespace ThinkNet.Messaging.Processing
             }
         }
 
-        bool IMessageExecutor.Execute(IMessage message, out TimeSpan processTime)
+        bool IExecutor.Execute(object data, out TimeSpan processTime)
         {
-            int count = 0;            
             processTime = TimeSpan.Zero;
+            var message = data as TMessage;
+            if (message == null) {
+                //TODO....WriteLog
+                return false;
+            }
+
+            int count = 0;            
 
             while(count++ < _retryTimes) {
                 try {
                     var sw = Stopwatch.StartNew();
-                    this.Execute(message as TMessage);
+                    this.Execute(message);
                     sw.Stop();
                     processTime = sw.Elapsed;
                     break;
                 }
                 catch(ThinkNetException ex) {
-                    this.Notify(message as TMessage, ex);
+                    this.Notify(message, ex);
                     return false;
                 }
                 catch(Exception ex) {
                     if(count == _retryTimes) {
-                        this.Notify(message as TMessage, ex);
+                        this.Notify(message, ex);
                         return false;
                     }
 
@@ -66,7 +72,7 @@ namespace ThinkNet.Messaging.Processing
                 }                
             }
 
-            this.Notify(message as TMessage, null);
+            this.Notify(message, null);
             return true;
         }
     }

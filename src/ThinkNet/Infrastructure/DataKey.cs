@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -40,9 +41,9 @@ namespace ThinkNet.Infrastructure
         public DataKey(string sourceId, string sourceNamespace, string sourceTypeName, string sourceAssemblyName)
         {
             sourceId.NotNullOrWhiteSpace("sourceId");
-            sourceId.NotNullOrWhiteSpace("sourceNamespace");
-            sourceId.NotNullOrWhiteSpace("sourceTypeName");
-            sourceId.NotNullOrWhiteSpace("sourceAssemblyName");
+            sourceNamespace.NotNullOrWhiteSpace("sourceNamespace");
+            sourceTypeName.NotNullOrWhiteSpace("sourceTypeName");
+            //sourceAssemblyName.NotNullOrWhiteSpace("sourceAssemblyName");
 
             this.sourceId = sourceId;
             this.@namespace = sourceNamespace;
@@ -115,7 +116,12 @@ namespace ThinkNet.Infrastructure
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            var codes = new int[] {
+                string.Concat(this.Namespace, ".", this.TypeName).GetHashCode(),
+                this.AssemblyName.GetHashCode(),
+                this.SourceId.GetHashCode()
+            };
+            return codes.Aggregate((x, y) => x ^ y);
         }
 
         /// <summary>

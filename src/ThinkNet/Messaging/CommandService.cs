@@ -11,7 +11,7 @@ namespace ThinkNet.Messaging
     {
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;
 
-        public CommandService()
+        protected CommandService()
         {
             this._commandTaskDict = new ConcurrentDictionary<string, CommandTaskCompletionSource>();
         }

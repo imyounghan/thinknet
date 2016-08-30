@@ -30,10 +30,19 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 获取聚合根标识的字符串形式
         /// </summary>
-        public virtual string GetAggregateRootStringId()
+        protected virtual string GetAggregateRootStringId()
         {
             return string.Empty;
-        }     
+        }
+
+        #region ICommand 成员
+
+        string ICommand.AggregateRootId
+        {
+            get { return this.GetAggregateRootStringId(); }
+        }
+
+        #endregion
     }
 
     /// <summary>
@@ -67,7 +76,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 获取处理聚合命令的聚合根ID的字符串形式
         /// </summary>
-        public override string GetAggregateRootStringId()
+        protected override string GetAggregateRootStringId()
         {
             return this.AggregateRootId.ToString();
         }

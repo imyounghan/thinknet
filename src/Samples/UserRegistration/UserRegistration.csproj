@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{700AFC24-7314-493F-A47D-AFA41D756D28}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>UserRegistration</RootNamespace>
     <AssemblyName>UserRegistration</AssemblyName>
@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,24 +55,13 @@
     <Compile Include="Events\UserCreated.cs" />
     <Compile Include="Events\UserLogined.cs" />
     <Compile Include="Handlers\CommandHandler.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ThinkNet.Runtime\ThinkNet.Runtime.csproj">
-      <Project>{7dd719e0-5aaa-4878-b259-5d8648d585fd}</Project>
-      <Name>ThinkNet.Runtime</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\ThinkNet\ThinkNet.csproj">
       <Project>{a8fcd0bf-04fc-4628-b376-6861d63d9538}</Project>
       <Name>ThinkNet</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

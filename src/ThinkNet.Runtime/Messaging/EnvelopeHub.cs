@@ -1,29 +1,37 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ThinkNet.Configurations;
 
 namespace ThinkNet.Messaging
 {
-    public abstract class EnvelopeHub : DisposableObject, IEnvelopeSender, IEnvelopeReceiver
+    public class EnvelopeHub : DisposableObject, IEnvelopeSender, IEnvelopeReceiver
     {
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> semaphores;
+        //private readonly ConcurrentDictionary<string, SemaphoreSlim> semaphores;
         private readonly BlockingCollection<Envelope>[] brokers;
 
         private CancellationTokenSource cancellationSource;
 
-        protected EnvelopeHub(int queueCount)
+        [ImportingConstructor]
+        public EnvelopeHub()
+            : this(ConfigurationSetting.Current.QueueCount, ConfigurationSetting.Current.QueueCapacity)
+        { }
+
+        protected EnvelopeHub(int queueCount, int queueCapacity)
         {
-            this.semaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
             this.brokers = new BlockingCollection<Envelope>[queueCount];
 
             for(int i = 0; i < queueCount; i++) {
-                brokers[i] = new BlockingCollection<Envelope>();
+                brokers[i] = new BlockingCollection<Envelope>(queueCapacity);
             }
-            
         }
+
+        protected override void Dispose(bool disposing)
+        { }
 
         private BlockingCollection<Envelope> GetBroker(string routingKey)
         {
@@ -41,22 +49,29 @@ namespace ThinkNet.Messaging
 
         protected void Distribute(Envelope envelope)
         {
-            semaphores.GetOrAdd(envelope.Kind, (key) => new SemaphoreSlim(1000, 1000)).Wait();
-
             GetBroker(envelope.RoutingKey).Add(envelope);
         }
 
         public event EventHandler<Envelope> EnvelopeReceived = (sender, args) => { };
 
 
-        private void ReceiveMessages(BlockingCollection<Envelope> queue, CancellationToken cancellationToken)
+        //private void ReceiveMessages(BlockingCollection<Envelope> queue, CancellationToken cancellationToken)
+        //{
+        //    while(!cancellationToken.IsCancellationRequested) {
+        //        var item = queue.Take();
+
+        //        this.EnvelopeReceived(this, item);
+        //    }
+        //}
+
+        private void ReceiveMessages(object state)
         {
-            while(!cancellationToken.IsCancellationRequested) {
-                var item = queue.Take();
+            var broker = state as BlockingCollection<Envelope>;
+            broker.NotNull("state");
 
+            while (!cancellationSource.Token.IsCancellationRequested) {
+                var item = broker.Take();
                 this.EnvelopeReceived(this, item);
-
-                semaphores[item.Kind].Release();
             }
         }
 
@@ -66,8 +81,8 @@ namespace ThinkNet.Messaging
                 this.cancellationSource = new CancellationTokenSource();
 
                 foreach(var broker in brokers) {
-                    Task.Factory.StartNew(
-                        () => this.ReceiveMessages(broker, this.cancellationSource.Token),
+                    Task.Factory.StartNew(this.ReceiveMessages,
+                        broker,
                         this.cancellationSource.Token,
                         TaskCreationOptions.LongRunning,
                         TaskScheduler.Current);
@@ -77,16 +92,22 @@ namespace ThinkNet.Messaging
 
         public void Stop()
         {
-            using(this.cancellationSource) {
-                if(this.cancellationSource != null) {
+            if (this.cancellationSource != null) {
+                using (this.cancellationSource) {
                     this.cancellationSource.Cancel();
                     this.cancellationSource = null;
                 }
             }
         }
 
-        public abstract Task SendAsync(Envelope envelope);
+        public virtual Task SendAsync(Envelope envelope)
+        {
+            return Task.Factory.StartNew(() => this.Distribute(envelope));
+        }
 
-        public abstract Task SendAsync(IEnumerable<Envelope> envelopes);
+        public virtual Task SendAsync(IEnumerable<Envelope> envelopes)
+        {
+            return Task.Factory.StartNew(() => envelopes.ForEach(this.Distribute));
+        }
     }
 }

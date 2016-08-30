@@ -7,9 +7,9 @@ namespace ThinkNet.Messaging
     /// </summary>
     public interface IEvent : IMessage
     {
-        ///// <summary>
-        ///// 获取事件ID
-        ///// </summary>
-        //string Id { get; }
+        /// <summary>
+        /// 获取事件ID
+        /// </summary>
+        string SourceId { get; set; }
     }
 }

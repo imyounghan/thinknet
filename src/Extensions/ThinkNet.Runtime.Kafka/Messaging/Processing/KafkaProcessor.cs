@@ -107,7 +107,7 @@ namespace ThinkNet.Messaging.Processing
             }
         }
 
-        private bool Deserialize(string serialized, out string id, out object obj)
+        private bool Deserialize(string serialized, Type type)
         {
             if (!serialized.StartsWith("{") && !serialized.EndsWith("}")) {
                 id = null;

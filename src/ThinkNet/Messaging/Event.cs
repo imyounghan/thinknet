@@ -24,12 +24,26 @@ namespace ThinkNet.Messaging
         { }
         
         /// <summary>
-        /// 获取源标识的字符串形式
+        /// 事件来源的标识id
         /// </summary>
-        public virtual string GetSourceStringId()
+        //[DataMember(Name = "sourceId")]
+        protected string SourceId { get; set; }
+
+        #region IEvent 成员
+        [IgnoreDataMember]
+        string IEvent.SourceId
         {
-            return string.Empty;
+            get
+            {
+                return this.SourceId;
+            }
+            set
+            {
+                this.SourceId = value;
+            }
         }
+
+        #endregion
     }
 
 
@@ -56,22 +70,26 @@ namespace ThinkNet.Messaging
         /// 事件来源的标识id
         /// </summary>
         [DataMember(Name = "sourceId")]
-        public TSourceId SourceId { get; internal set; }
+        new public TSourceId SourceId
+        {
+            get { return (TSourceId)base.SourceId.Change(typeof(TSourceId)); }
+            internal set { base.SourceId = value.ToString(); }
+        }
 
         /// <summary>
         /// 输出字符串信息
         /// </summary>
         public override string ToString()
         {
-            return string.Concat(this.GetType().FullName, "@", this.SourceId, "&", this.Id);
+            return string.Concat(this.GetType().FullName, "&", this.SourceId, "@", this.Id);
         }
 
-        /// <summary>
-        /// 获取源标识的字符串形式
-        /// </summary>
-        public override string GetSourceStringId()
-        {
-            return this.SourceId.ToString();
-        }
+        ///// <summary>
+        ///// 获取源标识的字符串形式
+        ///// </summary>
+        //public override string GetSourceStringId()
+        //{
+        //    return this.SourceId.ToString();
+        //}
     }
 }

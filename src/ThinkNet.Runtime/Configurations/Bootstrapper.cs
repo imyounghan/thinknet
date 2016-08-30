@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.ComponentModel.Composition.Registration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -363,11 +364,16 @@ namespace ThinkNet.Configurations
 
             ObjectContainer.Instance = container;
 
+            var sw = Stopwatch.StartNew();
             if (_assemblies.Count == 0) {
                 this.LoadAssemblies();
 
-                LogManager.Default.InfoFormat("load assemblies completed.\r\n{0}",
-                    string.Join("\r\n", _assemblies.Select(item => item.FullName)));
+                Console.WriteLine("load assemblies completed.");
+                Console.WriteLine("[");
+                foreach (var assembly in _assemblies) {
+                    Console.WriteLine(assembly.FullName);
+                }
+                Console.WriteLine("]");
             }
 
 
@@ -398,7 +404,9 @@ namespace ThinkNet.Configurations
 
             this.Start();
 
-            LogManager.Default.Info("system is running.");
+            sw.Stop();
+
+            Console.WriteLine("system is running, used time:{0}ms.\r\n", sw.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -511,15 +519,19 @@ namespace ThinkNet.Configurations
             //this.Register<IMetadataProvider, StandardMetadataProvider>();
             this.Register<IEventSourcedRepository, EventSourcedRepository>();
             this.Register<IRepository, MemoryRepository>();
-            this.Register<ICommandBus, DefaultCoreService>();
-            this.Register<ICommandService, DefaultCoreService>();
-            this.Register<IEventBus, DefaultCoreService>();
+            this.Register<ICommandBus, MessageBus>();
+            this.Register<ICommandService, DefaultCommandService>();
+            this.Register<IEventBus, MessageBus>();
             //this.Register<ICommandContextFactory, CommandContextFactory>();
             this.Register<IHandlerRecordStore, HandlerRecordInMemory>();
-            //this.Register<ICommandNotification, DefaultCoreService>();
+            this.Register<ICommandNotification, DefaultCommandService>();
             this.Register<IHandlerProvider, DefaultHandlerProvider>();
+            this.Register<ICommandNotification, DefaultCommandService>();
+            this.Register<IEnvelopeSender, EnvelopeHub>();
+            this.Register<IEnvelopeReceiver, EnvelopeHub>();
             //this.RegisterType<IEnvelopeDelivery, DefaultEnvelopeDelivery>();
             //this.RegisterType<IEnvelopeHub, DefaultEnvelopeHub>();
+            this.Register<IProcessor, DefaultMessageProcessor>("CoreProcessor");
 
             //if (ConfigurationSetting.Current.EnableCommandProcessor)
             //    this.RegisterType<IProcessor, CommandProcessor>("CommandProcessor");

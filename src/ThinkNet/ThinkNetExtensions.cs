@@ -132,7 +132,7 @@ namespace ThinkNet
         /// <summary>
         /// 将 <param name="str" /> 转换为 <param name="targetType" /> 的值。转换失败会抛异常
         /// </summary>
-        private static object Change(string str, Type targetType)
+        public static object Change(this string str, Type targetType)
         {
             if (string.IsNullOrWhiteSpace(str))
                 return Activator.CreateInstance(targetType);

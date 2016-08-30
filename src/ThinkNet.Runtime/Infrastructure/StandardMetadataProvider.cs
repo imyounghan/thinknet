@@ -25,22 +25,20 @@ namespace ThinkNet.Infrastructure
             metadata[StandardMetadata.TypeName] = type.Name;
 
 
-            var e = payload as IEvent;
-            if (e != null) {
-                metadata[StandardMetadata.UniqueId] = e.Id;
-                metadata[StandardMetadata.Kind] = e is EventStream ? "EventStream" : StandardMetadata.EventKind;                
-            }            
+            //var e = payload as IEvent;
+            //if (e != null) {
+            //    metadata[StandardMetadata.UniqueId] = e.Id;              
+            //}            
 
-            var c = payload as ICommand;
-            if (c != null) {
-                metadata[StandardMetadata.UniqueId] = c.Id;
-                metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
-            }
+            //var c = payload as ICommand;
+            //if (c != null) {
+            //    metadata[StandardMetadata.UniqueId] = c.Id;
+            //}
 
-            var result = payload as CommandResult;
-            if (result != null) {
-                metadata[StandardMetadata.UniqueId] = result.CommandId;
-            }
+            //var result = payload as CommandResult;
+            //if (result != null) {
+            //    metadata[StandardMetadata.UniqueId] = result.CommandId;
+            //}
 
             return metadata;
         }

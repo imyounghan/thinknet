@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,20 +8,22 @@ using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
-    public class MessageBus : ICommandBus, IEventBus, IProcessor, IInitializer
+    public class MessageBus : DisposableObject, ICommandBus, IEventBus, IInitializer
     {
         private readonly BlockingCollection<IMessage> _broker;
         private readonly IEnvelopeSender _sender;
         private readonly IRoutingKeyProvider _routingKeyProvider;
-        private readonly ISerializer _serializer;
+        //private readonly ISerializer _serializer;
 
         private CancellationTokenSource cancellationSource;
 
-        protected MessageBus(IEnvelopeSender sender, IRoutingKeyProvider routingKeyProvider, ISerializer serializer)
+        public MessageBus(IEnvelopeSender sender, 
+            IRoutingKeyProvider routingKeyProvider/*, 
+            ISerializer serializer*/)
         {
             this._sender = sender;
             this._routingKeyProvider = routingKeyProvider;
-            this._serializer = serializer;
+            //this._serializer = serializer;
 
             this._broker = new BlockingCollection<IMessage>();
         }
@@ -56,8 +57,16 @@ namespace ThinkNet.Messaging
         }
         #endregion
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && this.cancellationSource != null) {
+                using (this.cancellationSource) {
+                    this.cancellationSource.Cancel();
+                    this.cancellationSource = null;
+                }
+            }
+        }
 
-        #region
         private void Consume(object state)
         {
             var broker = state as BlockingCollection<IMessage>;
@@ -71,45 +80,15 @@ namespace ThinkNet.Messaging
 
         private Envelope Transform(IMessage message)
         {
-            //var metadata = _metadataProvider.GetMetadata(message);
             var routingKey = _routingKeyProvider.GetRoutingKey(message);
-            var playload = _serializer.Serialize(message);
-            var type = message.GetType();
+            //var playload = _serializer.Serialize(message);
+            //var type = message.GetType();
 
-            return new Envelope {
-                Body = new Envelope.Metadata {
-                    AssemblyName = Path.GetFileNameWithoutExtension(type.Assembly.ManifestModule.FullyQualifiedName),
-                    Namespace = type.Namespace,
-                    TypeName = type.Name,
-                    Data = playload
-                },
+            return new Envelope() {
+                Body = message,
                 CorrelationId = message.Id,
                 RoutingKey = routingKey,
             };
-        }
-        #endregion
-
-
-        public void Start()
-        {
-            if(this.cancellationSource == null) {
-                this.cancellationSource = new CancellationTokenSource();
-
-                Task.Factory.StartNew(Consume, _broker,
-                        this.cancellationSource.Token,
-                        TaskCreationOptions.LongRunning,
-                        TaskScheduler.Current);
-            }
-        }
-
-        public void Stop()
-        {
-            if(this.cancellationSource != null) {
-                using(this.cancellationSource) {
-                    this.cancellationSource.Cancel();
-                    this.cancellationSource = null;
-                }
-            }
         }
 
         public virtual void Initialize(IEnumerable<Type> types)
@@ -119,7 +98,16 @@ namespace ThinkNet.Messaging
                     string message = string.Format("{0} should be marked as serializable.", type.FullName);
                     throw new ApplicationException(message);
                 }
-            }            
+            }
+
+            if (this.cancellationSource == null) {
+                this.cancellationSource = new CancellationTokenSource();
+
+                Task.Factory.StartNew(Consume, _broker,
+                        this.cancellationSource.Token,
+                        TaskCreationOptions.LongRunning,
+                        TaskScheduler.Current);
+            }
         }
     }
 }
