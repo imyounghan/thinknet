@@ -2,26 +2,52 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using KafkaNet;
 using KafkaNet.Common;
 using KafkaNet.Model;
 using KafkaNet.Protocol;
+using ThinkNet.Configurations;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
-    public class KafkaService : EnvelopeHub
+    public class KafkaService : EnvelopeHub, IProcessor, IInitializer
     {
         public const string OffsetPositionFile = "kafka.consumer.offset";
 
         private readonly ISerializer _serializer;
         private readonly ITopicProvider _topicProvider;
+        private readonly IRoutingKeyProvider _routingKeyProvider;
         private readonly Lazy<Producer> producer;
-
         private readonly Dictionary<string, Consumer> consumers;
+
+        private readonly object lockObject;
+        private CancellationTokenSource cancellationSource;
+        private bool started;
+
+        public KafkaService(ISerializer serializer, ITopicProvider topicProvider, IRoutingKeyProvider routingKeyProvider)
+        {
+            this._serializer = serializer;
+            this._topicProvider = topicProvider;
+            this._routingKeyProvider = routingKeyProvider;
+
+            this.producer = new Lazy<Producer>(CreateKafkaProducer, LazyThreadSafetyMode.ExecutionAndPublication);
+            this.consumers = new Dictionary<string, Consumer>();
+            this.lockObject = new object();
+        }
+
+        private Producer CreateKafkaProducer()
+        {
+            var options = new KafkaOptions(KafkaSettings.Current.KafkaUris) {
+                Log = KafkaLog.Instance
+            };
+            var router = new BrokerRouter(options);
+
+            return new Producer(router);
+        }
 
         private KafkaNet.Protocol.Message Serialize(object message)
         {
@@ -87,6 +113,33 @@ namespace ThinkNet.Messaging
         }
 
 
+        private void InitConsumers(KafkaOptions kafkaOptions)
+        {
+            var offsetPositions = new Dictionary<string, OffsetPosition[]>();
+
+            try {
+                var xml = new XmlDocument();
+                xml.Load(OffsetPositionFile);
+
+                offsetPositions = xml.DocumentElement.ChildNodes.Cast<XmlElement>().AsParallel()
+                    .ToDictionary(topic => topic.GetAttribute("name"), topic => {
+                        return topic.ChildNodes.Cast<XmlElement>()
+                            .Select(offset => new OffsetPosition() {
+                                PartitionId = offset.GetAttribute("partitionId").Change(0),
+                                Offset = offset.InnerText.Change(0)
+                            }).ToArray();
+                    });
+            }
+            catch(Exception) {
+                //TODO...Write LOG
+            }
+
+            foreach(var topic in KafkaSettings.Current.Topics) {
+                consumers[topic] = new Consumer(new ConsumerOptions(topic, new BrokerRouter(kafkaOptions)) {
+                    Log = KafkaLog.Instance
+                }, offsetPositions.ContainsKey(topic) ? offsetPositions[topic] : new OffsetPosition[0]);
+            }
+        }
 
         private void RecordConsumerOffset()
         {
@@ -112,42 +165,130 @@ namespace ThinkNet.Messaging
             xml.Save(OffsetPositionFile);
         }
 
-        private void PullThenForward(string topic)
+        private void PullThenForward(object state)
         {
+            string topic = state as string;
             var consumer = consumers[topic];
+            var type = _topicProvider.GetType(topic);
 
-            foreach (var message in consumer.Consume()) {
-                object item;
-                string uniqueId;
-                var success = this.Deserialize(message.Value.ToUtf8String(), out uniqueId, out item);
-
-                OffsetPositionManager.Instance.Add(topic, uniqueId, message.Meta);
-                //if (success) {
-                //    hub.Distribute(item);
-                //}
+            while(!cancellationSource.Token.IsCancellationRequested) {
+                foreach(var message in consumer.Consume()) {
+                    var serialized = message.Value.ToUtf8String();
+                    try {
+                        var envelope = this.Deserialize(serialized, type);
+                        OffsetPositionManager.Instance.Add(topic, envelope.CorrelationId, message.Meta);
+                        base.Distribute(envelope);
+                    }
+                    catch(Exception) {
+                        //TODO...WriteLog
+                    }
+                }
             }
         }
 
-        private bool Deserialize(string serialized, Type type)
+        private Envelope Deserialize(string serialized, Type type)
         {
-            var metadata = _serializer.Deserialize(serialized, type);
+            IMessage message;
+            if(type == typeof(EventStream) || type == typeof(CommandReply)) {
+                message = (IMessage)_serializer.Deserialize(serialized, type);
+            }
+            else {
+                var metadata = (IDictionary<string, string>)_serializer.Deserialize(serialized, type);
+                var typeFullName = string.Format("{0}.{1}, {2}",
+                    metadata[StandardMetadata.Namespace],
+                    metadata[StandardMetadata.TypeName],
+                    metadata[StandardMetadata.AssemblyName]);
+                message = (IMessage)_serializer.Deserialize(metadata["Playload"], Type.GetType(typeFullName, true));
+            }
 
-            //string uniqueId;
-            //if (metadata.TryGetValue(StandardMetadata.UniqueId, out uniqueId)) {
-            //    id = string.Format("{0}@{1}", metadata[StandardMetadata.TypeName], uniqueId);
-            //}
-            //else {
-            //    id = null;
-            //}
-            //var typeFullName = string.Format("{0}.{1}, {2}",
-            //    metadata[StandardMetadata.Namespace],
-            //    metadata[StandardMetadata.TypeName],
-            //    metadata[StandardMetadata.AssemblyName]);
-            //var type = Type.GetType(typeFullName);
 
-            //obj = serializer.Deserialize(metadata["Playload"], type);
+            var routingKey = _routingKeyProvider.GetRoutingKey(message);
+            return new Envelope() {
+                Body = message,
+                CorrelationId = message.Id,
+                RoutingKey = routingKey,
+            };
+        }
 
-            return true;
+
+        public void Start()
+        {
+            ThrowIfDisposed();
+            lock(this.lockObject) {
+                if(!this.started) {
+                    if(this.cancellationSource == null) {
+                        this.cancellationSource = new CancellationTokenSource();
+
+                        foreach(var topic in KafkaSettings.Current.Topics) {
+                            Task.Factory.StartNew(this.PullThenForward, 
+                                topic, 
+                                this.cancellationSource.Token,
+                                TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness,
+                                TaskScheduler.Current);
+                        }
+                    }
+                    this.started = true;
+                }
+            }
+        }
+
+        public void Stop()
+        {
+            lock(this.lockObject) {
+                if(this.started) {
+                    if(this.cancellationSource != null) {
+                        using(this.cancellationSource) {
+                            this.cancellationSource.Cancel();
+                            this.cancellationSource = null;
+                        }
+                    }
+                    this.started = false;
+                }
+            }
+        }
+
+        public void Initialize(IEnumerable<Type> types)
+        {
+            if(KafkaSettings.Current.Topics.IsEmpty())
+                return;
+
+            var offsetPositions = new Dictionary<string, OffsetPosition[]>();
+            try {
+                var xml = new XmlDocument();
+                xml.Load(OffsetPositionFile);
+
+                offsetPositions = xml.DocumentElement.ChildNodes.Cast<XmlElement>().AsParallel()
+                    .ToDictionary(topic => topic.GetAttribute("name"), topic => {
+                        return topic.ChildNodes.Cast<XmlElement>()
+                            .Select(offset => new OffsetPosition() {
+                                PartitionId = offset.GetAttribute("partitionId").Change(0),
+                                Offset = offset.InnerText.Change(0)
+                            }).ToArray();
+                    });
+            }
+            catch(Exception) {
+                //TODO...Write LOG
+            }
+
+            var kafkaOptions = new KafkaOptions(KafkaSettings.Current.KafkaUris);
+
+            foreach(var topic in KafkaSettings.Current.Topics) {
+                consumers[topic] = new Consumer(new ConsumerOptions(topic, new BrokerRouter(kafkaOptions)) {
+                    Log = KafkaLog.Instance
+                }, offsetPositions.ContainsKey(topic) ? offsetPositions[topic] : new OffsetPosition[0]);
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            ThrowIfDisposed();
+
+            if(disposing) {
+                if(producer.IsValueCreated)
+                    producer.Value.Dispose();
+
+                consumers.Values.ForEach(consumer => consumer.Dispose());
+            }
         }
     }
 }

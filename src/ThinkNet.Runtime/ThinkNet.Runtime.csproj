@@ -53,15 +53,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\IObjectContainer.cs" />
-    <Compile Include="Common\ObjectContainer.cs" />
-    <Compile Include="Common\ObjectContainerExtentions.cs" />
+    <Compile Include="Configurations\IObjectContainer.cs" />
+    <Compile Include="Configurations\ObjectContainer.cs" />
+    <Compile Include="Configurations\ObjectContainerExtentions.cs" />
     <Compile Include="Configurations\Bootstrapper.cs" />
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
-    <Compile Include="Infrastructure\IMetadataProvider.cs" />
     <Compile Include="Infrastructure\StandardMetadata.cs" />
-    <Compile Include="Infrastructure\StandardMetadataProvider.cs" />
     <Compile Include="Messaging\DefaultCommandService.cs" />
     <Compile Include="Infrastructure\DefaultSerializer.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
@@ -74,7 +72,7 @@
     <Compile Include="Messaging\IEnvelopeSender.cs" />
     <Compile Include="Messaging\MessageBus.cs" />
     <Compile Include="Messaging\Processing\CommandExecutor.cs" />
-    <Compile Include="Messaging\Processing\DefaultMessageProcessor.cs" />
+    <Compile Include="Messaging\Processing\DefaultProcessor.cs" />
     <Compile Include="Messaging\Processing\EventExecutor.cs" />
     <Compile Include="Messaging\Processing\SynchronousExecutor.cs" />
     <Compile Include="Messaging\Handling\IHandlerProvider.cs" />

@@ -25,6 +25,10 @@ namespace ThinkNet.Configurations
             //that.RegisterType<ICommandNotification, CommandNotification>();
             //that.RegisterType<IEnvelopeDelivery, EnvelopeDelivery>();
             //that.RegisterType<IEnvelopeHub, EnvelopeHub>();
+            that.Register<ICommandNotification, CommandNotification>();
+            that.Register<IEnvelopeSender, KafkaService>();
+            that.Register<IEnvelopeReceiver, KafkaService>();
+            that.Register<IProcessor, KafkaService>("KafkaProcessor");
 
             using (var router = new BrokerRouter(new KafkaOptions(KafkaSettings.Current.KafkaUris))) {
                 int count = -1;

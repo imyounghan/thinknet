@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition.Primitives;
 using System.ComponentModel.Composition.Registration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using ThinkNet.Common;
 using ThinkNet.Database;
 using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
@@ -25,20 +23,6 @@ namespace ThinkNet.Configurations
     {
         class Component
         {
-            ///// <summary>
-            ///// Parameterized constructor.
-            ///// </summary>
-            //public Component(Type type, object instance, string name)
-            //    : this(type, name)
-            //{
-            //    this.Instance = instance;
-            //}
-            ///// <summary>
-            ///// Parameterized constructor.
-            ///// </summary>
-            //public Component(Type type, string name)
-            //    : this(type, name, Lifecycle.Singleton)
-            //{ }
             /// <summary>
             /// Parameterized constructor.
             /// </summary>
@@ -464,49 +448,6 @@ namespace ThinkNet.Configurations
             }
         }
 
-        //private void RegisterComponents(IEnumerable<Type> types)
-        //{
-        //    var registionTypes = types.Where(p => p.IsClass && !p.IsAbstract && p.IsDefined(typeof(RegisterAttribute), false));
-
-        //    foreach (var type in registionTypes) {
-        //        var attribute = type.GetAttribute<RegisterAttribute>(false);
-        //        var contractType = attribute.ContractType;
-        //        var contractName = attribute.ContractName;
-        //        var lifecycle = LifeCycleAttribute.GetLifecycle(type);
-        //        if (attribute.ContractType == null) {
-        //            this.RegisterType(type, contractName, lifecycle);
-        //        }
-        //        else {
-        //            this.RegisterType(attribute.ContractType, type, contractName, lifecycle);
-        //        }
-        //    }           
-        //}
-        //private void RegisterHandlers(IEnumerable<Type> types)
-        //{
-        //    foreach(var type in types.Where(p => p.IsClass && !p.IsAbstract)) {
-        //        var interfaces = type.GetInterfaces();
-        //        if(interfaces == null || interfaces.Length == 0)
-        //            continue;
-
-        //        var lifecycle = LifeCycleAttribute.GetLifecycle(type);
-        //        foreach(var interfaceType in interfaces.Where(TypeHelper.IsHandlerInterfaceType)) {
-        //            this.RegisterType(interfaceType, type, type.FullName, lifecycle);
-        //        }
-        //    }
-        //}
-        //private void RegisterInterceptor(IEnumerable<Type> types)
-        //{
-        //    var interceptorTypes=types.Where(TypeHelper.IsInterceptionType);
-        //    foreach (var type in interceptorTypes) {
-        //        var interfaceTypes = type.GetInterfaces().Where(TypeHelper.IsInterceptionInterfaceType);
-        //        var lifecycle = (Lifecycle)LifeCycleAttribute.GetLifecycle(type);
-        //        foreach (var interfaceType in interfaceTypes) {
-        //            this.RegisterType(interfaceType, type, lifecycle, type.FullName);
-        //        }
-        //    }
-        //}
-
-
         private void RegisterFrameworkComponents()
         {
             this.Register<IEventPublishedVersionStore, EventPublishedVersionInMemory>();
@@ -522,23 +463,13 @@ namespace ThinkNet.Configurations
             this.Register<ICommandBus, MessageBus>();
             this.Register<ICommandService, DefaultCommandService>();
             this.Register<IEventBus, MessageBus>();
-            //this.Register<ICommandContextFactory, CommandContextFactory>();
             this.Register<IHandlerRecordStore, HandlerRecordInMemory>();
             this.Register<ICommandNotification, DefaultCommandService>();
             this.Register<IHandlerProvider, DefaultHandlerProvider>();
             this.Register<ICommandNotification, DefaultCommandService>();
             this.Register<IEnvelopeSender, EnvelopeHub>();
             this.Register<IEnvelopeReceiver, EnvelopeHub>();
-            //this.RegisterType<IEnvelopeDelivery, DefaultEnvelopeDelivery>();
-            //this.RegisterType<IEnvelopeHub, DefaultEnvelopeHub>();
-            this.Register<IProcessor, DefaultMessageProcessor>("CoreProcessor");
-
-            //if (ConfigurationSetting.Current.EnableCommandProcessor)
-            //    this.RegisterType<IProcessor, CommandProcessor>("CommandProcessor");
-            //if (ConfigurationSetting.Current.EnableSynchronousProcessor)
-            //    this.RegisterType<IProcessor, SynchronousProcessor>("SynchronousProcessor");
-            //if (ConfigurationSetting.Current.EnableEventProcessor)
-            //    this.RegisterType<IProcessor, EventProcessor>("EventProcessor");
+            this.Register<IProcessor, DefaultProcessor>("CoreProcessor");
         }
         
     }

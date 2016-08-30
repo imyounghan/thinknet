@@ -5,14 +5,15 @@ using ThinkNet.Messaging.Handling;
 
 namespace ThinkNet.Messaging.Processing
 {
-    public class DefaultMessageProcessor : IProcessor
+    public class DefaultProcessor : DisposableObject, IProcessor
     {
         private readonly IEnvelopeReceiver _receiver;
 
         private readonly Dictionary<string, IExecutor> executorDict;
         private readonly object lockObject;
+        private bool started;
 
-        public DefaultMessageProcessor(IEnvelopeReceiver receiver,
+        public DefaultProcessor(IEnvelopeReceiver receiver,
             ICommandNotification notification, 
             IHandlerProvider handlerProvider,
             IHandlerRecordStore handlerStore,
@@ -49,6 +50,7 @@ namespace ThinkNet.Messaging.Processing
             return string.Empty;
         }
 
+
         private void OnEnvelopeReceived(object sender, Envelope envelope)
         {
             var kind = this.GetKind(envelope.Body);
@@ -64,17 +66,33 @@ namespace ThinkNet.Messaging.Processing
 
         public void Start()
         {
+            ThrowIfDisposed();
             lock(this.lockObject) {
-                _receiver.EnvelopeReceived += OnEnvelopeReceived;
-                _receiver.Start();
+                if(!this.started) {
+                    _receiver.EnvelopeReceived += OnEnvelopeReceived;
+                    _receiver.Start();
+                    this.started = true;
+                }
             }
         }
 
         public void Stop()
         {
             lock(this.lockObject) {
-                _receiver.EnvelopeReceived -= OnEnvelopeReceived;
-                _receiver.Stop();
+                if(this.started) {
+                    _receiver.EnvelopeReceived -= OnEnvelopeReceived;
+                    _receiver.Stop();
+                    this.started = false;
+                }
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            ThrowIfDisposed();
+
+            if(disposing) {
+                this.Stop();
             }
         }
     }

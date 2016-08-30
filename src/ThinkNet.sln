@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Runtime.Kafka", "E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet.Testing", "ThinkNet.Testing\ThinkNet.Testing.csproj", "{B99A48BC-2A23-42E9-B71E-C863EA918C9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserRegistration.QuickStart", "UserRegistration.QuickStart\UserRegistration.QuickStart.csproj", "{AB2B8EFF-2F1B-47AE-9291-F4CD656860DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserRegistration.QuickStart", "Samples\UserRegistration.QuickStart\UserRegistration.QuickStart.csproj", "{AB2B8EFF-2F1B-47AE-9291-F4CD656860DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

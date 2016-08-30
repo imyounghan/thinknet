@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.InterceptionExtension;
-using ThinkNet.Configurations;
 
-namespace ThinkNet.Common
+
+namespace ThinkNet.Configurations
 {
     public class UnityObjectContainer : ObjectContainer
     {

@@ -75,7 +75,7 @@ namespace ThinkNet.Messaging
             }
         }
 
-        public void Start()
+        void IEnvelopeReceiver.Start()
         {
             if(this.cancellationSource == null) {
                 this.cancellationSource = new CancellationTokenSource();
@@ -84,13 +84,13 @@ namespace ThinkNet.Messaging
                     Task.Factory.StartNew(this.ReceiveMessages,
                         broker,
                         this.cancellationSource.Token,
-                        TaskCreationOptions.LongRunning,
+                        TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness,
                         TaskScheduler.Current);
                 }
             }
         }
 
-        public void Stop()
+        void IEnvelopeReceiver.Stop()
         {
             if (this.cancellationSource != null) {
                 using (this.cancellationSource) {

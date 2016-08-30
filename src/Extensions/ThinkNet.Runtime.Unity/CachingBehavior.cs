@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
+using System.Text;
 using Microsoft.Practices.Unity.InterceptionExtension;
+using ThinkNet.Caching;
 
 namespace ThinkNet.Configurations
 {
@@ -11,6 +13,27 @@ namespace ThinkNet.Configurations
     /// </summary>
     public class CachingBehavior : IInterceptionBehavior
     {
+        private static readonly IDictionary<string, string> EmptyDictionary = new Dictionary<string, string>();
+
+        private readonly ICacheProvider _cacheProvider;
+        private readonly ConcurrentDictionary<string, ICache> _caches;
+
+        public CachingBehavior(ICacheProvider cacheProvider)
+        {
+            this._cacheProvider = cacheProvider;
+            this._caches = new ConcurrentDictionary<string, ICache>(StringComparer.CurrentCultureIgnoreCase);
+        }
+
+        private ICache BuildCache(string regionName)
+        {
+            return _cacheProvider.BuildCache(regionName, EmptyDictionary);
+        }
+
+        private ICache GetCache(string region)
+        {
+            return _caches.GetOrAdd(region, BuildCache);
+        }
+
         public virtual IEnumerable<Type> GetRequiredInterfaces()
         {
             return Type.EmptyTypes;
@@ -19,9 +42,9 @@ namespace ThinkNet.Configurations
         public virtual IMethodReturn Invoke(IMethodInvocation input, GetNextInterceptionBehaviorDelegate getNext)
         {
             var method = input.MethodBase;
-            if (method.IsDefined<CachingAttribute>(false)) {
-                var cachingAttribute = method.GetAttribute<CachingAttribute>(false);
 
+            var cachingAttribute = method.GetAttribute<CachingAttribute>(false);
+            if (cachingAttribute != null) {
                 string cacheKey = cachingAttribute.CacheKey;
                 if (string.IsNullOrEmpty(cacheKey)) {
                     cacheKey = CreateCacheKey(input);
@@ -31,13 +54,14 @@ namespace ThinkNet.Configurations
                 if (string.IsNullOrEmpty(cacheRegion)) {
                     cacheRegion = "ThinkCache";
                 }
-                var cache = CacheManager.GetCache(cacheRegion);
+                //var cache = CacheManager.GetCache(cacheRegion);
 
                 switch (cachingAttribute.Method) {
-                    case CachingMethod.Get:
+                    case CachingAttribute.CachingMethod.Get:
                         if (TargetMethodReturnsVoid(input)) {
                             return getNext()(input, getNext);
                         }
+                        var cache = this.GetCache(cacheRegion);
 
                         object cachedResult = cache.Get(cacheKey);
                         if (cachedResult == null) {
@@ -51,18 +75,18 @@ namespace ThinkNet.Configurations
                             return cachedReturn;
                         }
 
-                    case CachingMethod.Put:
+                    case CachingAttribute.CachingMethod.Put:
                         if (TargetMethodReturnsVoid(input)) {
                             return getNext()(input, getNext);
                         }
 
                         IMethodReturn methodReturn = getNext().Invoke(input, getNext);
-                        CacheManager.GetCache(cacheRegion).Put(cacheKey, methodReturn.ReturnValue);
+                        this.GetCache(cacheRegion).Put(cacheKey, methodReturn.ReturnValue);
 
                         return methodReturn;
-                    case CachingMethod.Remove:
+                    case CachingAttribute.CachingMethod.Remove:
                         foreach (var region in cachingAttribute.RelatedAreas) {
-                            CacheManager.GetCache(region).Clear();
+                            this.GetCache(region).Clear();
                         }
                         return getNext().Invoke(input, getNext);
                 }

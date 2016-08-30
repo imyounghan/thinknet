@@ -66,12 +66,26 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BootstrapperExtentions.cs" />
+    <Compile Include="CachingBehavior.cs" />
+    <Compile Include="Caching\CacheConfiguration.cs" />
+    <Compile Include="Caching\CacheConfigurationSectionHandler.cs" />
+    <Compile Include="Caching\CacheProvider.cs" />
+    <Compile Include="Caching\HashtableCache\HashtableCache.cs" />
+    <Compile Include="Caching\HashtableCache\HashtableCacheProvider.cs" />
+    <Compile Include="Caching\ICache.cs" />
+    <Compile Include="Caching\ICacheProvider.cs" />
+    <Compile Include="Caching\MemoryCache\MemoryCache.cs" />
+    <Compile Include="Caching\MemoryCache\MemoryCacheProvider.cs" />
+    <Compile Include="Caching\WebCache\WebCache.cs" />
+    <Compile Include="Caching\WebCache\WebCacheProvider.cs" />
     <Compile Include="ExceptionLoggingBehavior.cs" />
     <Compile Include="InterceptionBehaviorMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

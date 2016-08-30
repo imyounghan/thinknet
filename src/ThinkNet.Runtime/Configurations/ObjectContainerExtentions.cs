@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ThinkNet.Common
+namespace ThinkNet.Configurations
 {
     /// <summary>
     /// <see cref="IObjectContainer"/> 扩展方法

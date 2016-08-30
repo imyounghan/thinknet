@@ -3,7 +3,7 @@ using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.Configuration;
 using Microsoft.Practices.Unity.InterceptionExtension;
-using ThinkNet.Common;
+using ThinkNet.Caching;
 
 namespace ThinkNet.Configurations
 {
@@ -22,6 +22,9 @@ namespace ThinkNet.Configurations
         {
             container.NotNull("container");
 
+            if(!container.IsRegistered<ICacheProvider>()) {
+                container.RegisterType<ICacheProvider, MemoryCacheProvider>();
+            }
             ServiceLocator.SetLocatorProvider(() => new UnityServiceLocator(container));
 
             that.Done(new UnityObjectContainer(container));

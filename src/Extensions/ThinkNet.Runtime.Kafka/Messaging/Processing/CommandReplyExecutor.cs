@@ -1,25 +1,18 @@
-﻿using ThinkNet.Common;
-
-namespace ThinkNet.Messaging.Processing
+﻿namespace ThinkNet.Messaging.Processing
 {
-    public class CommandReplyProcessor : Processor, IProcessor
+    public class CommandReplyExecutor : MessageExecutor<CommandReply>
     {
         private readonly ICommandNotification _notification;
-        private readonly IEnvelopeDelivery _envelopeDelivery;
 
-        public CommandReplyProcessor(ICommandResultManager commandResultManager,
-            IEnvelopeDelivery envelopeDelivery)
+        public CommandReplyExecutor(ICommandService commandService)
         {
-            this._envelopeDelivery = envelopeDelivery;
-            this._notification = commandResultManager as ICommandNotification;
-            base.BuildWorker(EnvelopeBuffer<CommandReply>.Instance.Dequeue, Process);            
+            this._notification = commandService as ICommandNotification;
+            _notification.NotNull("commandService");
         }
 
-        void Process(Envelope<CommandReply> item)
+        protected override void Execute(CommandReply reply)
         {
-            var reply = item.Body;
-
-            switch (reply.CommandResultType) {
+            switch(reply.CommandReturnType) {
                 case CommandReturnType.CommandExecuted:
                     //_notification.NotifyHandled(new CommandResult(reply.Status, reply.CommandId, reply.ExceptionTypeName, reply.ErrorMessage, reply.ErrorData));
                     _notification.NotifyHandled(reply.CommandId, reply.GetInnerException());
@@ -29,9 +22,6 @@ namespace ThinkNet.Messaging.Processing
                     _notification.NotifyCompleted(reply.CommandId, reply.GetInnerException());
                     break;
             }
-
-            _envelopeDelivery.Post(item);
         }
-        
     }
 }

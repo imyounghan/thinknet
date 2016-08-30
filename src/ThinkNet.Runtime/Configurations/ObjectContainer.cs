@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace ThinkNet.Common
+namespace ThinkNet.Configurations
 {
     /// <summary>
     /// <see cref="IObjectContainer"/>抽象实现类

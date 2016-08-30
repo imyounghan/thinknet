@@ -98,6 +98,7 @@ namespace ThinkNet.Infrastructure
 
             protected override void Dispose(bool disposing)
             {
+                ThrowIfDisposed();
                 if (disposing)
                 {
                     _repositories.Clear();

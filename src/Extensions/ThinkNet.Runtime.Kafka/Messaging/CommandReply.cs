@@ -14,14 +14,14 @@ namespace ThinkNet.Messaging
         public CommandReply(string commandId)
             : base(CommandStatus.NothingChanged, commandId)
         {
-            this.CommandResultType = CommandReturnType.DomainEventHandled;
+            this.CommandReturnType = CommandReturnType.DomainEventHandled;
             this.Init();
         }
 
-        public CommandReply(string commandId, Exception exception, CommandReturnType commandResultType)
+        public CommandReply(string commandId, Exception exception, CommandReturnType commandReturnType)
             : base(commandId, exception)
         {
-            this.CommandResultType = commandResultType;
+            this.CommandReturnType = commandReturnType;
             this.Init();
         }
 
@@ -32,7 +32,7 @@ namespace ThinkNet.Messaging
         }
 
         [DataMember]
-        public CommandReturnType CommandResultType { get; set; }
+        public CommandReturnType CommandReturnType { get; set; }
 
         #region IMessage 成员
         [DataMember]

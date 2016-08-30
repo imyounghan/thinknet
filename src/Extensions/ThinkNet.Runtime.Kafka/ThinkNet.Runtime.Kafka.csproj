@@ -60,6 +60,8 @@
     <Compile Include="Configurations\KafkaSettings.cs" />
     <Compile Include="Configurations\OffsetPositionManager.cs" />
     <Compile Include="Messaging\KafkaService.cs" />
+    <Compile Include="Messaging\Processing\CommandReplyExecutor.cs" />
+    <Compile Include="Messaging\Processing\KafkaProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -76,9 +78,7 @@
       <Name>ThinkNet</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Messaging\Processing\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

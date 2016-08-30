@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ThinkNet.Common
+namespace ThinkNet.Configurations
 {
     /// <summary>
     /// 对象容器接口
