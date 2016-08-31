@@ -60,6 +60,7 @@
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
     <Compile Include="Infrastructure\StandardMetadata.cs" />
+    <Compile Include="Messaging\CommandReply.cs" />
     <Compile Include="Messaging\DefaultCommandService.cs" />
     <Compile Include="Infrastructure\DefaultSerializer.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />

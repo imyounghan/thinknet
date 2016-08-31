@@ -46,6 +46,7 @@ namespace ThinkNet.Messaging
 
         protected override void Dispose(bool disposing)
         {
+            ThrowIfDisposed();
             if (disposing && this.cancellationSource != null) {
                 using (this.cancellationSource) {
                     this.cancellationSource.Cancel();
@@ -55,15 +56,12 @@ namespace ThinkNet.Messaging
         }
 
         #region IInitializer 成员
-        private void Consume(object state)
+        private void Consume()
         {
-            var broker = state as BlockingCollection<CommandReply>;
-            broker.NotNull("broker");
-
-            while (!cancellationSource.Token.IsCancellationRequested) {
-                var messages = broker.GetConsumingEnumerable();
+            //while (!cancellationSource.IsCancellationRequested) {
+                var messages = _broker.GetConsumingEnumerable();
                 _sender.SendAsync(messages.Select(Transform)).Wait();
-            }
+            //}
         }
 
         public void Initialize(IEnumerable<Type> types)
@@ -71,7 +69,7 @@ namespace ThinkNet.Messaging
             if (this.cancellationSource == null) {
                 this.cancellationSource = new CancellationTokenSource();
 
-                Task.Factory.StartNew(Consume, _broker,
+                Task.Factory.StartNew(Consume,
                         this.cancellationSource.Token,
                         TaskCreationOptions.LongRunning,
                         TaskScheduler.Current);

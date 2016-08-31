@@ -54,22 +54,12 @@ namespace ThinkNet.Messaging
 
         public event EventHandler<Envelope> EnvelopeReceived = (sender, args) => { };
 
-
-        //private void ReceiveMessages(BlockingCollection<Envelope> queue, CancellationToken cancellationToken)
-        //{
-        //    while(!cancellationToken.IsCancellationRequested) {
-        //        var item = queue.Take();
-
-        //        this.EnvelopeReceived(this, item);
-        //    }
-        //}
-
         private void ReceiveMessages(object state)
         {
             var broker = state as BlockingCollection<Envelope>;
             broker.NotNull("state");
 
-            while (!cancellationSource.Token.IsCancellationRequested) {
+            while (!cancellationSource.IsCancellationRequested) {
                 var item = broker.Take();
                 this.EnvelopeReceived(this, item);
             }

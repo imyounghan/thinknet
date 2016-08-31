@@ -8,14 +8,14 @@ using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
-    public class MessageBus : DisposableObject, ICommandBus, IEventBus, IInitializer
+    public class MessageBus : DisposableObject, ICommandBus, IEventBus//, IInitializer
     {
-        private readonly BlockingCollection<IMessage> _broker;
+        //private readonly BlockingCollection<IMessage> _broker;
         private readonly IEnvelopeSender _sender;
         private readonly IRoutingKeyProvider _routingKeyProvider;
         //private readonly ISerializer _serializer;
 
-        private CancellationTokenSource cancellationSource;
+        //private CancellationTokenSource cancellationSource;
 
         public MessageBus(IEnvelopeSender sender, 
             IRoutingKeyProvider routingKeyProvider/*, 
@@ -25,15 +25,16 @@ namespace ThinkNet.Messaging
             this._routingKeyProvider = routingKeyProvider;
             //this._serializer = serializer;
 
-            this._broker = new BlockingCollection<IMessage>();
+            //this._broker = new BlockingCollection<IMessage>();
         }
 
         #region IEventBus 成员
         public virtual void Publish(IEnumerable<IEvent> events)
         {
-            foreach(var @event in events) {
-                _broker.Add(@event);
-            }
+            //foreach(var @event in events) {
+            //    _broker.Add(@event);
+            //}
+            _sender.SendAsync(events.Select(Transform));
         }
 
         public void Publish(IEvent @event)
@@ -46,36 +47,26 @@ namespace ThinkNet.Messaging
         #region ICommandBus 成员
         public virtual void Send(IEnumerable<ICommand> commands)
         {
-            foreach(var command in commands) {
-                _broker.Add(command);
-            }
+            //foreach(var command in commands) {
+            //    _broker.Add(command);
+            //}
+            _sender.SendAsync(commands.Select(Transform));
         }
 
         public void Send(ICommand command)
         {
-            _sender.SendAsync(Transform(command));
+            _sender.SendAsync(Transform(command)).Wait();
         }
         #endregion
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && this.cancellationSource != null) {
-                using (this.cancellationSource) {
-                    this.cancellationSource.Cancel();
-                    this.cancellationSource = null;
-                }
-            }
-        }
-
-        private void Consume(object state)
-        {
-            var broker = state as BlockingCollection<IMessage>;
-            broker.NotNull("broker");
-
-            while(!cancellationSource.Token.IsCancellationRequested) {
-                var messages = broker.GetConsumingEnumerable();
-                _sender.SendAsync(messages.Select(Transform)).Wait();               
-            }
+            //if (disposing && this.cancellationSource != null) {
+            //    using (this.cancellationSource) {
+            //        this.cancellationSource.Cancel();
+            //        this.cancellationSource = null;
+            //    }
+            //}
         }
 
         private Envelope Transform(IMessage message)
@@ -91,23 +82,34 @@ namespace ThinkNet.Messaging
             };
         }
 
-        public virtual void Initialize(IEnumerable<Type> types)
-        {
-            foreach(var type in types.Where(TypeHelper.IsMessage)) {
-                if(!type.IsSerializable) {
-                    string message = string.Format("{0} should be marked as serializable.", type.FullName);
-                    throw new ApplicationException(message);
-                }
-            }
+        //private void Consume(object state)
+        //{
+        //    var broker = state as BlockingCollection<IMessage>;
+        //    broker.NotNull("broker");
 
-            if (this.cancellationSource == null) {
-                this.cancellationSource = new CancellationTokenSource();
+        //    //while(!cancellationSource.Token.IsCancellationRequested) {
+        //    var messages = broker.GetConsumingEnumerable();
+        //    _sender.SendAsync(messages.Select(Transform)).Wait();
+        //    //}
+        //}
 
-                Task.Factory.StartNew(Consume, _broker,
-                        this.cancellationSource.Token,
-                        TaskCreationOptions.LongRunning,
-                        TaskScheduler.Current);
-            }
-        }
+        //public virtual void Initialize(IEnumerable<Type> types)
+        //{
+        //    foreach(var type in types.Where(TypeHelper.IsMessage)) {
+        //        if(!type.IsSerializable) {
+        //            string message = string.Format("{0} should be marked as serializable.", type.FullName);
+        //            throw new ApplicationException(message);
+        //        }
+        //    }
+
+        //    if (this.cancellationSource == null) {
+        //        this.cancellationSource = new CancellationTokenSource();
+
+        //        Task.Factory.StartNew(Consume, _broker,
+        //                this.cancellationSource.Token,
+        //                TaskCreationOptions.LongRunning,
+        //                TaskScheduler.Current);
+        //    }
+        //}
     }
 }

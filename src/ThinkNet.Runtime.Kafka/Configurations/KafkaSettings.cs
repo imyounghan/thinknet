@@ -12,9 +12,8 @@ namespace ThinkNet.Configurations
         {
             this.EnsureTopicRetrycount = 5;
             this.EnsureTopicRetryInterval = 1000;
-            this.EnableKafkaProcessor = true;
 
-            this.KafkaUris = (ConfigurationManager.AppSettings["thinkcfg.kafka_uri"] ?? string.Empty).Split(',').Select(str => new Uri(string.Concat("tcp://", str))).ToArray();
+            this.KafkaUris = ConfigurationManager.AppSettings["thinkcfg.kafka_uri"].IfEmpty(string.Empty).Split(',').Select(str => new Uri(str)).ToArray();
             this.Topics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic"].IfEmpty(string.Empty).Split(',');
         }
 
@@ -35,8 +34,8 @@ namespace ThinkNet.Configurations
         /// </summary>
         public int EnsureTopicRetryInterval { get; set; }
 
-        public bool EnableKafkaProcessor { get; set; }
+        //public bool EnableKafkaProcessor { get; set; }
 
-        public bool EnableCommandReplyProcessor { get; set; }
+        //public bool EnableCommandReplyProcessor { get; set; }
     }
 }

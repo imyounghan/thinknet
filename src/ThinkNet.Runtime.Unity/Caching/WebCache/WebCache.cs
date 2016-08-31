@@ -134,7 +134,7 @@ namespace ThinkNet.Caching
                 return null;
 
             var de = (DictionaryEntry)obj;
-            if (key == de.Key.Change<string>()) {
+            if (key == de.Key.ToString()) {
                 return de.Value;
             }
             else {

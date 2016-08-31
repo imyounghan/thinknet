@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{02BDD654-C2CF-4E20-B74D-E620BB5ED13B}</ProjectGuid>
+    <ProjectGuid>{05D9D063-323F-42B8-A8DA-4D36980B99D3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ThinkNet.Database</RootNamespace>
-    <AssemblyName>ThinkNet.Database.EntityFramework</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <RootNamespace>ThinkNet.Runtime.Kafka</RootNamespace>
+    <AssemblyName>ThinkNet.Runtime.Kafka</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -30,48 +30,49 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\\..\\sunsoft.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\\sunsoft.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EntityFramework">
-      <HintPath>..\..\packages\EntityFramework.6.1.3\lib\net40\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer">
-      <HintPath>..\..\packages\EntityFramework.6.1.3\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+    <Reference Include="kafka-net">
+      <HintPath>..\packages\kafka-net.0.9.0.65\lib\net45\kafka-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.configuration" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EntityFrameworkContext.cs" />
-    <Compile Include="EntityFrameworkContextFactory.cs" />
-    <Compile Include="IEntityFrameworkContext.cs" />
+    <Compile Include="Configurations\BootstrapperExtentions.cs" />
+    <Compile Include="Configurations\KafkaSettings.cs" />
+    <Compile Include="Configurations\OffsetPositionManager.cs" />
+    <Compile Include="Infrastructure\DefaultTopicProvider.cs" />
+    <Compile Include="Infrastructure\ITopicProvider.cs" />
+    <Compile Include="Infrastructure\KafkaLog.cs" />
+    <Compile Include="Messaging\CommandNotification.cs" />
+    <Compile Include="Messaging\KafkaService.cs" />
+    <Compile Include="Messaging\Processing\CommandReplyExecutor.cs" />
+    <Compile Include="Messaging\Processing\KafkaProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ThinkNetDbContext.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\ThinkNet.Database\ThinkNet.Database.csproj">
-      <Project>{1f193073-7698-455a-9516-3d6f4358ed35}</Project>
-      <Name>ThinkNet.Database</Name>
+    <ProjectReference Include="..\ThinkNet.Runtime\ThinkNet.Runtime.csproj">
+      <Project>{7dd719e0-5aaa-4878-b259-5d8648d585fd}</Project>
+      <Name>ThinkNet.Runtime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\ThinkNet\ThinkNet.csproj">
+    <ProjectReference Include="..\ThinkNet\ThinkNet.csproj">
       <Project>{a8fcd0bf-04fc-4628-b376-6861d63d9538}</Project>
       <Name>ThinkNet</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

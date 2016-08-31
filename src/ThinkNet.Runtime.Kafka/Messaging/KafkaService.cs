@@ -141,9 +141,9 @@ namespace ThinkNet.Messaging
             }
         }
 
-        private void RecordConsumerOffset()
+        private void RecordConsumerOffset(object state)
         {
-            var offsetPositions = OffsetPositionManager.Instance.Get();
+            var offsetPositions = ((OffsetPositionManager)state).Get();
             if (offsetPositions.Count == 0)
                 return;
 
@@ -171,7 +171,7 @@ namespace ThinkNet.Messaging
             var consumer = consumers[topic];
             var type = _topicProvider.GetType(topic);
 
-            while(!cancellationSource.Token.IsCancellationRequested) {
+            //while(!cancellationSource.IsCancellationRequested) {
                 foreach(var message in consumer.Consume()) {
                     var serialized = message.Value.ToUtf8String();
                     try {
@@ -183,7 +183,7 @@ namespace ThinkNet.Messaging
                         //TODO...WriteLog
                     }
                 }
-            }
+            //}
         }
 
         private Envelope Deserialize(string serialized, Type type)
@@ -251,6 +251,8 @@ namespace ThinkNet.Messaging
         {
             if(KafkaSettings.Current.Topics.IsEmpty())
                 return;
+
+            new Timer(RecordConsumerOffset, OffsetPositionManager.Instance, 2000, 2000);
 
             var offsetPositions = new Dictionary<string, OffsetPosition[]>();
             try {

@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 namespace ThinkNet
 {
@@ -111,6 +112,46 @@ namespace ThinkNet
             //return provider.IsDefined<A>(inherit)
             //        ? provider.GetAttributes<A>(inherit)[0]
             //        : (A)null;
+        }
+
+        /// <summary>
+        /// 判定字符串是不是数值型
+        /// </summary>
+        public static bool IsNumeric(this string str)
+        {
+            return Regex.IsMatch(str, @"^[-]?[0-9]*$");
+        }
+
+        /// <summary>
+        /// 判断字符串是不是yyyy-mm-dd字符串
+        /// </summary>
+        public static bool IsDate(this string str)
+        {
+            return Regex.IsMatch(str, @"(\d{4})-(\d{1,2})-(\d{1,2})");
+        }
+
+        /// <summary>
+        /// 判断字符串是不是时间格式
+        /// </summary>
+        public static bool IsTime(this string str)
+        {
+            return Regex.IsMatch(str, @"^((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9])(:[0-5]?[0-9])?)$");
+        }
+
+        /// <summary>
+        /// 判断字符串是不是日期模式
+        /// </summary>
+        public static bool IsDateTime(this string str)
+        {
+            return Regex.IsMatch(str, @"(\d{4})-(\d{1,2})-(\d{1,2}) ^((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9])(:[0-5]?[0-9])?)$");
+        }
+
+        /// <summary>
+        /// 判断字符串是不是小数类型
+        /// </summary>
+        public static bool IsDecimal(this string str)
+        {
+            return Regex.IsMatch(str, @"^[-]?[0-9]*[.]?[0-9]*$");
         }
 
         /// <summary>
@@ -246,13 +287,13 @@ namespace ThinkNet
         }
 
 
-        /// <summary>
-        /// 如果 <param name="source" /> 为null，则创建一个空的 <see cref="IEnumerable{T}"/>。
-        /// </summary>
-        public static IEnumerable<T> IfNull<T>(this IEnumerable<T> source)
-        {
-            return source ?? Enumerable.Empty<T>();
-        }
+        ///// <summary>
+        ///// 如果 <param name="source" /> 为null，则创建一个空的 <see cref="IEnumerable{T}"/>。
+        ///// </summary>
+        //public static IEnumerable<T> IfNull<T>(this IEnumerable<T> source)
+        //{
+        //    return source ?? Enumerable.Empty<T>();
+        //}
         /// <summary>
         /// 检查 <param name="source" /> 是否为空。
         /// </summary>

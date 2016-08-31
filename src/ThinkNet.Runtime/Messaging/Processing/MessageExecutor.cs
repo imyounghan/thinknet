@@ -20,17 +20,72 @@ namespace ThinkNet.Messaging.Processing
 
         protected abstract void Execute(TMessage message);
 
-        protected virtual void Notify(TMessage message, Exception exception)
+        //protected virtual void Notify(TMessage message, Exception exception)
+        //{
+        //    if(exception == null) {
+        //        if(LogManager.Default.IsDebugEnabled) {
+        //            LogManager.Default.DebugFormat("Handle {0} success.", message);
+        //        }
+        //    }
+        //    else {
+        //        if(LogManager.Default.IsErrorEnabled) {
+        //            LogManager.Default.Error(exception, "Exception raised when handling {0}.", message);
+        //        }
+        //    }
+        //}
+
+        protected virtual void OnExecuted(TMessage message)
         {
-            if(exception == null) {
-                if(LogManager.Default.IsDebugEnabled) {
-                    LogManager.Default.DebugFormat("Handle {0} success.", message);
+            if (LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.DebugFormat("Handle {0} success.", message);
+            }
+        }
+
+        protected virtual void OnException(TMessage message, Exception ex)
+        {
+            if (LogManager.Default.IsErrorEnabled) {
+                LogManager.Default.Error(ex, "Exception raised when handling {0}.", message);
+            }
+        }
+
+        private bool Execute(TMessage message, ref TimeSpan processTime)
+        {
+            int count = 0;
+            Exception exception = null;
+            while (count++ < _retryTimes) {
+                try {
+                    var sw = Stopwatch.StartNew();
+                    this.Execute(message);
+                    sw.Stop();
+                    processTime = sw.Elapsed;
+                    break;
+                }
+                catch (ThinkNetException ex) {
+                    exception = ex;
+                    break;
+                }
+                catch (Exception ex) {
+                    if (count == _retryTimes) {
+                        exception = ex;
+                        break;
+                    }
+
+                    if (LogManager.Default.IsWarnEnabled) {
+                        LogManager.Default.Warn(ex,
+                            "An exception happened while processing {0} through handler, Error will be ignored and retry again({1}).",
+                             message, count);
+                    }
+                    Thread.Sleep(ConfigurationSetting.Current.HandleRetryInterval);
                 }
             }
+
+            if (exception == null) {
+                this.OnExecuted(message);
+                return true;
+            }
             else {
-                if(LogManager.Default.IsErrorEnabled) {
-                    LogManager.Default.Error(exception, "Exception raised when handling {0}.", message);
-                }
+                this.OnException(message, exception);
+                return false;
             }
         }
 
@@ -43,37 +98,7 @@ namespace ThinkNet.Messaging.Processing
                 return false;
             }
 
-            int count = 0;            
-
-            while(count++ < _retryTimes) {
-                try {
-                    var sw = Stopwatch.StartNew();
-                    this.Execute(message);
-                    sw.Stop();
-                    processTime = sw.Elapsed;
-                    break;
-                }
-                catch(ThinkNetException ex) {
-                    this.Notify(message, ex);
-                    return false;
-                }
-                catch(Exception ex) {
-                    if(count == _retryTimes) {
-                        this.Notify(message, ex);
-                        return false;
-                    }
-
-                    if(LogManager.Default.IsWarnEnabled) {
-                        LogManager.Default.Warn(ex,
-                            "An exception happened while processing {0} through handler, Error will be ignored and retry again({1}).",
-                             message, count);
-                    }
-                    Thread.Sleep(ConfigurationSetting.Current.HandleRetryInterval);
-                }                
-            }
-
-            this.Notify(message, null);
-            return true;
+            return this.Execute(message, ref processTime);
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Threading;
 using KafkaNet;
 using KafkaNet.Model;
 using KafkaNet.Protocol;
-using ThinkNet.Common;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Processing;
@@ -15,20 +14,12 @@ namespace ThinkNet.Configurations
     {
         public static Bootstrapper UsingKafka(this Bootstrapper that)
         {
-            //that.RegisterType<ICommandBus, CommandBus>();
-            //that.RegisterType<IEventBus, EventBus>();
-            //that.RegisterType<ITopicProvider, DefaultTopicProvider>();
-            //if (KafkaSettings.Current.EnableKafkaProcessor)
-            //    that.RegisterType<IProcessor, KafkaProcessor>("KafkaProcessor");
-            //if (KafkaSettings.Current.EnableCommandReplyProcessor)
-            //    that.RegisterType<IProcessor, CommandReplyProcessor>("CommandReplyProcessor");
-            //that.RegisterType<ICommandNotification, CommandNotification>();
-            //that.RegisterType<IEnvelopeDelivery, EnvelopeDelivery>();
-            //that.RegisterType<IEnvelopeHub, EnvelopeHub>();
+            that.Register<ITopicProvider, DefaultTopicProvider>();
             that.Register<ICommandNotification, CommandNotification>();
             that.Register<IEnvelopeSender, KafkaService>();
             that.Register<IEnvelopeReceiver, KafkaService>();
             that.Register<IProcessor, KafkaService>("KafkaProcessor");
+            that.Register<IProcessor, KafkaProcessor>("CoreProcessor");
 
             using (var router = new BrokerRouter(new KafkaOptions(KafkaSettings.Current.KafkaUris))) {
                 int count = -1;

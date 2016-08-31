@@ -14,9 +14,11 @@ namespace ThinkNet.Messaging.Processing
             IEventBus eventBus,
             IEventPublishedVersionStore eventPublishedVersionStore,
             ISerializer serializer,
-            ICommandService commandService)
+            ICommandService commandService,
+            ITopicProvider topicProvider)
             : base(receiver, notification, handlerProvider, handlerStore, eventBus, eventPublishedVersionStore, serializer)
         {
+            this._topicProvider = topicProvider;
             base.AddExecutor("CommandReply", new CommandReplyExecutor(commandService));
         }
 
@@ -25,6 +27,16 @@ namespace ThinkNet.Messaging.Processing
             var topic = _topicProvider.GetTopic(envelope.Body);
 
             OffsetPositionManager.Instance.Remove(topic, envelope.CorrelationId);
+        }
+
+        protected override void Subscribe(IEnvelopeReceiver receiver)
+        {
+            receiver.EnvelopeReceived += UpdateOffset;
+        }
+
+        protected override void Unsubscribe(IEnvelopeReceiver receiver)
+        {
+            receiver.EnvelopeReceived -= UpdateOffset;
         }
 
         protected override string GetKind(object data)

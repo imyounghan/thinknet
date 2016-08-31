@@ -5,26 +5,26 @@ using System.Linq;
 namespace ThinkNet.Caching
 {
     /// <summary>
-    /// .Net WebCache
+    /// .Net MemoryCache
     /// </summary>
-    public class WebCacheProvider : ICacheProvider
+    public class MemoryCacheProvider : ICacheProvider
     {
         private readonly Dictionary<string, ICache> caches;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public WebCacheProvider()
+        public MemoryCacheProvider()
             : this(CacheConfigurationSectionHandler.SectionName)
         { }
 
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public WebCacheProvider(string sectionKey)
+        public MemoryCacheProvider(string sectionKey)
         {
             this.caches = (ConfigurationManager.GetSection(sectionKey) as IEnumerable<CacheConfiguration>)
-                .Safe()
+                .DefaultIfEmpty()
                 .ToDictionary(config => config.Region, config => BuildCache(config.Region, config.Properties));
         }
 
@@ -38,8 +38,7 @@ namespace ThinkNet.Caching
                 return result;
             }
 
-            return new WebCache(regionName, properties);
+            return new MemoryCache(regionName, properties);
         }
-
     }
 }

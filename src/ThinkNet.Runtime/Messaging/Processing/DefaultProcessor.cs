@@ -64,12 +64,18 @@ namespace ThinkNet.Messaging.Processing
             envelope.ProcessTime = processTime;
         }
 
+        protected virtual void Subscribe(IEnvelopeReceiver receiver)
+        { }
+        protected virtual void Unsubscribe(IEnvelopeReceiver receiver)
+        { }
+
         public void Start()
         {
             ThrowIfDisposed();
             lock(this.lockObject) {
                 if(!this.started) {
                     _receiver.EnvelopeReceived += OnEnvelopeReceived;
+                    this.Subscribe(_receiver);
                     _receiver.Start();
                     this.started = true;
                 }
@@ -81,6 +87,7 @@ namespace ThinkNet.Messaging.Processing
             lock(this.lockObject) {
                 if(this.started) {
                     _receiver.EnvelopeReceived -= OnEnvelopeReceived;
+                    this.Unsubscribe(_receiver);
                     _receiver.Stop();
                     this.started = false;
                 }
