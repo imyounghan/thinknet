@@ -41,6 +41,13 @@ namespace ThinkNet.Messaging
         [DataMember(Name = "routingKey")]
         public string RoutingKey { get; set; }
 
+        public void Complete(object source)
+        {
+            EnvelopeCompleted.Invoke(source, this);
+        }
+
+        public static event EventHandler<Envelope> EnvelopeCompleted = (sender, args) => { };
+
         //public Type GetMetadataType()
         //{
         //    return TypeMaps.GetOrAdd(string.Concat(this.Namespace, ".", this.TypeName), 

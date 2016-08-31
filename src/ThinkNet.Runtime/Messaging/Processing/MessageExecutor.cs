@@ -18,7 +18,7 @@ namespace ThinkNet.Messaging.Processing
             this._retryTimes = retryTimes;
         }
 
-        protected abstract void Execute(TMessage message);
+        protected abstract ExecutionStatus Execute(TMessage message);
 
         //protected virtual void Notify(TMessage message, Exception exception)
         //{
@@ -34,7 +34,7 @@ namespace ThinkNet.Messaging.Processing
         //    }
         //}
 
-        protected virtual void OnExecuted(TMessage message)
+        protected virtual void OnExecuted(TMessage message, ExecutionStatus status)
         {
             if (LogManager.Default.IsDebugEnabled) {
                 LogManager.Default.DebugFormat("Handle {0} success.", message);
@@ -48,14 +48,15 @@ namespace ThinkNet.Messaging.Processing
             }
         }
 
-        private bool Execute(TMessage message, ref TimeSpan processTime)
+        private void Execute(TMessage message, ref TimeSpan processTime)
         {
             int count = 0;
+            var status = ExecutionStatus.Completed;
             Exception exception = null;
             while (count++ < _retryTimes) {
                 try {
                     var sw = Stopwatch.StartNew();
-                    this.Execute(message);
+                    status = this.Execute(message);
                     sw.Stop();
                     processTime = sw.Elapsed;
                     break;
@@ -80,25 +81,23 @@ namespace ThinkNet.Messaging.Processing
             }
 
             if (exception == null) {
-                this.OnExecuted(message);
-                return true;
+                this.OnExecuted(message, status);                
             }
             else {
                 this.OnException(message, exception);
-                return false;
             }
         }
 
-        bool IExecutor.Execute(object data, out TimeSpan processTime)
+        void IExecutor.Execute(object data, out TimeSpan processTime)
         {
             processTime = TimeSpan.Zero;
             var message = data as TMessage;
             if (message == null) {
                 //TODO....WriteLog
-                return false;
+                return;// false;
             }
 
-            return this.Execute(message, ref processTime);
+             this.Execute(message, ref processTime);
         }
     }
 }

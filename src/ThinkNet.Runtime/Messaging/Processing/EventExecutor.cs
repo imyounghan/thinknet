@@ -1,4 +1,5 @@
-﻿using ThinkNet.Infrastructure;
+﻿using System;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Handling;
 
 namespace ThinkNet.Messaging.Processing
@@ -15,7 +16,7 @@ namespace ThinkNet.Messaging.Processing
             this._handlerStore = handlerStore;
         }
 
-        protected override void Execute(IEvent @event)
+        protected override ExecutionStatus Execute(IEvent @event)
         {
             var eventType = @event.GetType();
 
@@ -30,6 +31,8 @@ namespace ThinkNet.Messaging.Processing
 
                 _handlerStore.AddHandlerInfo(@event.Id, eventType, handler.HanderType);
             }
+
+            return ExecutionStatus.Completed;
         }
     }
 }

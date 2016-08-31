@@ -51,14 +51,11 @@
   <ItemGroup>
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
     <Compile Include="Configurations\KafkaSettings.cs" />
-    <Compile Include="Configurations\OffsetPositionManager.cs" />
     <Compile Include="Infrastructure\DefaultTopicProvider.cs" />
     <Compile Include="Infrastructure\ITopicProvider.cs" />
+    <Compile Include="Infrastructure\KafkaClient.cs" />
     <Compile Include="Infrastructure\KafkaLog.cs" />
-    <Compile Include="Messaging\CommandNotification.cs" />
     <Compile Include="Messaging\KafkaService.cs" />
-    <Compile Include="Messaging\Processing\CommandReplyExecutor.cs" />
-    <Compile Include="Messaging\Processing\KafkaProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

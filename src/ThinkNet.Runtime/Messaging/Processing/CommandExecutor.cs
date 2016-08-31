@@ -14,18 +14,21 @@ namespace ThinkNet.Messaging.Processing
             this._handlerProvider = handlerProvider;
         }
 
-        protected override void Execute(ICommand command)
+        protected override ExecutionStatus Execute(ICommand command)
         {
             var commandType = command.GetType();
 
             var handler = _handlerProvider.GetCommandHandler(commandType);
             handler.Handle(command);
+
+            return ExecutionStatus.Completed;
         }
 
-        protected override void OnExecuted(ICommand command)
+
+        protected override void OnExecuted(ICommand command, ExecutionStatus status)
         {
             _sender.SendAsync(Transform(command, null));
-            base.OnExecuted(command);
+            base.OnExecuted(command, status);
         }
 
         protected override void OnException(ICommand command, Exception ex)

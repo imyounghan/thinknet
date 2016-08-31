@@ -7,6 +7,6 @@ namespace ThinkNet.Messaging.Processing
         /// <summary>
         /// 执行消息结果。
         /// </summary>
-        bool Execute(object data, out TimeSpan processTime);
+        void Execute(object data, out TimeSpan processTime);
     }
 }

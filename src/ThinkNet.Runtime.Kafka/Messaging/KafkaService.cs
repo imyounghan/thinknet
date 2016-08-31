@@ -143,26 +143,26 @@ namespace ThinkNet.Messaging
 
         private void RecordConsumerOffset(object state)
         {
-            var offsetPositions = ((OffsetPositionManager)state).Get();
-            if (offsetPositions.Count == 0)
-                return;
+            //var offsetPositions = ((OffsetPositionManager)state).Get();
+            //if (offsetPositions.Count == 0)
+            //    return;
 
-            var xml = new XmlDocument();
-            xml.AppendChild(xml.CreateXmlDeclaration("1.0", "utf-8", null));
-            var root = xml.AppendChild(xml.CreateElement("root"));
+            //var xml = new XmlDocument();
+            //xml.AppendChild(xml.CreateXmlDeclaration("1.0", "utf-8", null));
+            //var root = xml.AppendChild(xml.CreateElement("root"));
 
-            foreach (var kvp in offsetPositions) {
-                var el = xml.CreateElement("topic");
-                el.SetAttribute("name", kvp.Key);
-                kvp.Value.ForEach(item => {
-                    var node = xml.CreateElement("offset");
-                    node.SetAttribute("partitionId", item.PartitionId.ToString());
-                    node.InnerText = item.Offset.ToString();
-                    el.AppendChild(node);
-                });
-                root.AppendChild(el);
-            }
-            xml.Save(OffsetPositionFile);
+            //foreach (var kvp in offsetPositions) {
+            //    var el = xml.CreateElement("topic");
+            //    el.SetAttribute("name", kvp.Key);
+            //    kvp.Value.ForEach(item => {
+            //        var node = xml.CreateElement("offset");
+            //        node.SetAttribute("partitionId", item.PartitionId.ToString());
+            //        node.InnerText = item.Offset.ToString();
+            //        el.AppendChild(node);
+            //    });
+            //    root.AppendChild(el);
+            //}
+            //xml.Save(OffsetPositionFile);
         }
 
         private void PullThenForward(object state)
@@ -176,7 +176,7 @@ namespace ThinkNet.Messaging
                     var serialized = message.Value.ToUtf8String();
                     try {
                         var envelope = this.Deserialize(serialized, type);
-                        OffsetPositionManager.Instance.Add(topic, envelope.CorrelationId, message.Meta);
+                        //OffsetPositionManager.Instance.Add(topic, envelope.CorrelationId, message.Meta);
                         base.Distribute(envelope);
                     }
                     catch(Exception) {
@@ -252,7 +252,7 @@ namespace ThinkNet.Messaging
             if(KafkaSettings.Current.Topics.IsEmpty())
                 return;
 
-            new Timer(RecordConsumerOffset, OffsetPositionManager.Instance, 2000, 2000);
+            //new Timer(RecordConsumerOffset, OffsetPositionManager.Instance, 2000, 2000);
 
             var offsetPositions = new Dictionary<string, OffsetPosition[]>();
             try {

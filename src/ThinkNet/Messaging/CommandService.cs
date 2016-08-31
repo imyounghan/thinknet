@@ -16,7 +16,12 @@ namespace ThinkNet.Messaging
             this._commandTaskDict = new ConcurrentDictionary<string, CommandTaskCompletionSource>();
         }
 
-        public abstract void Send(ICommand command);
+        public virtual void Send(ICommand command)
+        {
+            this.SendAsync(command).Wait();
+        }
+
+        public abstract Task SendAsync(ICommand command);
 
         //protected abstract Task SendAsync(ICommand command);
 
@@ -41,12 +46,12 @@ namespace ThinkNet.Messaging
         public Task<CommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType)
         {
             var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, key => new CommandTaskCompletionSource(returnType));
-            //this.SendAsync(command).ContinueWith(task => {
-            //    if(task.Status == TaskStatus.Faulted) {
-            //        this.NotifyCommandCompleted(command.Id, CommandStatus.Failed, task.Exception);
-            //    }
-            //});
-            this.Send(command);
+            this.SendAsync(command).ContinueWith(task => {
+                if(task.Status == TaskStatus.Faulted) {
+                    this.NotifyCommandCompleted(command.Id, CommandStatus.Failed, task.Exception);
+                }
+            });
+            //this.Send(command);
 
             return commandTaskCompletionSource.TaskCompletionSource.Task;
         }

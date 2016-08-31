@@ -11,8 +11,12 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 发送命令
         /// </summary>
-        /// <param name="command"></param>
         void Send(ICommand command);
+
+        /// <summary>
+        /// 异步发送命令
+        /// </summary>
+        Task SendAsync(ICommand command);
 
         /// <summary>
         /// 执行一个命令

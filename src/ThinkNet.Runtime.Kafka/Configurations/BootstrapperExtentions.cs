@@ -15,11 +15,10 @@ namespace ThinkNet.Configurations
         public static Bootstrapper UsingKafka(this Bootstrapper that)
         {
             that.Register<ITopicProvider, DefaultTopicProvider>();
-            that.Register<ICommandNotification, CommandNotification>();
             that.Register<IEnvelopeSender, KafkaService>();
             that.Register<IEnvelopeReceiver, KafkaService>();
             that.Register<IProcessor, KafkaService>("KafkaProcessor");
-            that.Register<IProcessor, KafkaProcessor>("CoreProcessor");
+            //that.Register<IProcessor, KafkaProcessor>("CoreProcessor");
 
             using (var router = new BrokerRouter(new KafkaOptions(KafkaSettings.Current.KafkaUris))) {
                 int count = -1;

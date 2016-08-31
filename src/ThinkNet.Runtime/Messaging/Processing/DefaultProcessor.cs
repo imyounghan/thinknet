@@ -13,7 +13,8 @@ namespace ThinkNet.Messaging.Processing
         private readonly object lockObject;
         private bool started;
 
-        public DefaultProcessor(IEnvelopeReceiver receiver,
+        public DefaultProcessor(IEnvelopeSender sender,
+            IEnvelopeReceiver receiver,
             ICommandNotification notification, 
             IHandlerProvider handlerProvider,
             IHandlerRecordStore handlerStore,
@@ -24,22 +25,21 @@ namespace ThinkNet.Messaging.Processing
             this._receiver = receiver;
 
             this.executorDict = new Dictionary<string, IExecutor>() {
-                { "Command", new CommandExecutor(notification, handlerProvider) },
+                { "Command", new CommandExecutor(sender, handlerProvider) },
                 { "Event", new EventExecutor(handlerStore, handlerProvider) },
-                { "EventStream", new SynchronousExecutor(notification, handlerProvider, eventBus, eventPublishedVersionStore, serializer) }
+                { "EventStream", new EventStreamExecutor(handlerProvider, eventBus, sender, eventPublishedVersionStore, serializer) },
+                { "CommandReply", new CommandReplyExecutor(notification) }
             };
             this.lockObject = new object();
-        }
-
-        protected void AddExecutor(string kind, IExecutor executor)
-        {
-            executorDict.Add(kind, executor);
         }
 
         protected virtual string GetKind(object data)
         {
             if (data is EventStream)
                 return "EventStream";
+
+            if(data is CommandReply)
+                return "CommandReply";
 
             if (data is IEvent)
                 return "Event";
@@ -62,12 +62,9 @@ namespace ThinkNet.Messaging.Processing
             TimeSpan processTime;
             executorDict[kind].Execute(envelope.Body, out processTime);
             envelope.ProcessTime = processTime;
-        }
 
-        protected virtual void Subscribe(IEnvelopeReceiver receiver)
-        { }
-        protected virtual void Unsubscribe(IEnvelopeReceiver receiver)
-        { }
+            envelope.Complete(sender);
+        }
 
         public void Start()
         {
@@ -75,7 +72,6 @@ namespace ThinkNet.Messaging.Processing
             lock(this.lockObject) {
                 if(!this.started) {
                     _receiver.EnvelopeReceived += OnEnvelopeReceived;
-                    this.Subscribe(_receiver);
                     _receiver.Start();
                     this.started = true;
                 }
@@ -87,7 +83,6 @@ namespace ThinkNet.Messaging.Processing
             lock(this.lockObject) {
                 if(this.started) {
                     _receiver.EnvelopeReceived -= OnEnvelopeReceived;
-                    this.Unsubscribe(_receiver);
                     _receiver.Stop();
                     this.started = false;
                 }

@@ -461,12 +461,11 @@ namespace ThinkNet.Configurations
             this.Register<IEventSourcedRepository, EventSourcedRepository>();
             this.Register<IRepository, MemoryRepository>();
             this.Register<ICommandBus, MessageBus>();
-            this.Register<ICommandService, DefaultCommandService>();
+            this.Register<ICommandService, MessageBus>();
             this.Register<IEventBus, MessageBus>();
-            this.Register<IHandlerRecordStore, HandlerRecordInMemory>();
-            this.Register<ICommandNotification, DefaultCommandService>();
+            this.Register<ICommandNotification, MessageBus>();
+            this.Register<IHandlerRecordStore, HandlerRecordInMemory>();            
             this.Register<IHandlerProvider, DefaultHandlerProvider>();
-            this.Register<ICommandNotification, DefaultCommandService>();
             this.Register<IEnvelopeSender, EnvelopeHub>();
             this.Register<IEnvelopeReceiver, EnvelopeHub>();
             this.Register<IProcessor, DefaultProcessor>("CoreProcessor");

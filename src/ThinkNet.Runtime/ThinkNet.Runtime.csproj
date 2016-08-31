@@ -61,7 +61,7 @@
     <Compile Include="Configurations\ConfigurationSetting.cs" />
     <Compile Include="Infrastructure\StandardMetadata.cs" />
     <Compile Include="Messaging\CommandReply.cs" />
-    <Compile Include="Messaging\DefaultCommandService.cs" />
+    <Compile Include="Messaging\MessageBus.cs" />
     <Compile Include="Infrastructure\DefaultSerializer.cs" />
     <Compile Include="Infrastructure\IProcessor.cs" />
     <Compile Include="Infrastructure\IRoutingKeyProvider.cs" />
@@ -71,11 +71,12 @@
     <Compile Include="Messaging\EnvelopeHub.cs" />
     <Compile Include="Messaging\IEnvelopeReceivercs.cs" />
     <Compile Include="Messaging\IEnvelopeSender.cs" />
-    <Compile Include="Messaging\MessageBus.cs" />
     <Compile Include="Messaging\Processing\CommandExecutor.cs" />
+    <Compile Include="Messaging\Processing\CommandReplyExecutor.cs" />
     <Compile Include="Messaging\Processing\DefaultProcessor.cs" />
     <Compile Include="Messaging\Processing\EventExecutor.cs" />
-    <Compile Include="Messaging\Processing\SynchronousExecutor.cs" />
+    <Compile Include="Messaging\Processing\ExecutionStatus.cs" />
+    <Compile Include="Messaging\Processing\EventStreamExecutor.cs" />
     <Compile Include="Messaging\Handling\IHandlerProvider.cs" />
     <Compile Include="Messaging\Handling\IProxyHandler.cs" />
     <Compile Include="Messaging\Handling\CommandContextFactory.cs" />

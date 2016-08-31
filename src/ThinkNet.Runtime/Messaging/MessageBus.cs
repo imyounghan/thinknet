@@ -1,31 +1,43 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
-    public class MessageBus : DisposableObject, ICommandBus, IEventBus//, IInitializer
+    internal class MessageBus : CommandService, ICommandNotification, ICommandBus, IEventBus
     {
-        //private readonly BlockingCollection<IMessage> _broker;
         private readonly IEnvelopeSender _sender;
         private readonly IRoutingKeyProvider _routingKeyProvider;
-        //private readonly ISerializer _serializer;
-
-        //private CancellationTokenSource cancellationSource;
-
-        public MessageBus(IEnvelopeSender sender, 
-            IRoutingKeyProvider routingKeyProvider/*, 
-            ISerializer serializer*/)
+        public MessageBus(IEnvelopeSender sender,
+            IRoutingKeyProvider routingKeyProvider)
         {
             this._sender = sender;
             this._routingKeyProvider = routingKeyProvider;
-            //this._serializer = serializer;
+        }
+        
+        private Envelope Transform(IMessage message)
+        {
+            var routingKey = _routingKeyProvider.GetRoutingKey(message);
+            return new Envelope() {
+                Body = message,
+                CorrelationId = message.Id,
+                RoutingKey = routingKey,
+            };
+        }
 
-            //this._broker = new BlockingCollection<IMessage>();
+        public override Task SendAsync(ICommand command)
+        {
+            return _sender.SendAsync(Transform(command));
+        }
+
+        public virtual void Send(IEnumerable<ICommand> commands)
+        {
+            //foreach(var command in commands) {
+            //    _broker.Add(command);
+            //}
+            _sender.SendAsync(commands.Select(Transform));
         }
 
         #region IEventBus 成员
@@ -41,75 +53,30 @@ namespace ThinkNet.Messaging
         {
             _sender.SendAsync(Transform(@event));
         }
-        
+
         #endregion
 
-        #region ICommandBus 成员
-        public virtual void Send(IEnumerable<ICommand> commands)
+        #region IMessageNotification 成员
+
+        public void NotifyCompleted(string commandId, Exception exception = null)
         {
-            //foreach(var command in commands) {
-            //    _broker.Add(command);
-            //}
-            _sender.SendAsync(commands.Select(Transform));
+            this.NotifyCommandCompleted(commandId,
+                exception == null ? CommandStatus.Success : CommandStatus.Failed,
+                exception);
         }
 
-        public void Send(ICommand command)
+        public void NotifyHandled(string commandId, Exception exception = null)
         {
-            _sender.SendAsync(Transform(command)).Wait();
+            this.NotifyCommandExecuted(commandId,
+                exception == null ? CommandStatus.Success : CommandStatus.Failed,
+                exception);
         }
+
+        public void NotifyUnchanged(string commandId)
+        {
+            this.NotifyCommandCompleted(commandId, CommandStatus.NothingChanged, null);
+        }
+
         #endregion
-
-        protected override void Dispose(bool disposing)
-        {
-            //if (disposing && this.cancellationSource != null) {
-            //    using (this.cancellationSource) {
-            //        this.cancellationSource.Cancel();
-            //        this.cancellationSource = null;
-            //    }
-            //}
-        }
-
-        private Envelope Transform(IMessage message)
-        {
-            var routingKey = _routingKeyProvider.GetRoutingKey(message);
-            //var playload = _serializer.Serialize(message);
-            //var type = message.GetType();
-
-            return new Envelope() {
-                Body = message,
-                CorrelationId = message.Id,
-                RoutingKey = routingKey,
-            };
-        }
-
-        //private void Consume(object state)
-        //{
-        //    var broker = state as BlockingCollection<IMessage>;
-        //    broker.NotNull("broker");
-
-        //    //while(!cancellationSource.Token.IsCancellationRequested) {
-        //    var messages = broker.GetConsumingEnumerable();
-        //    _sender.SendAsync(messages.Select(Transform)).Wait();
-        //    //}
-        //}
-
-        //public virtual void Initialize(IEnumerable<Type> types)
-        //{
-        //    foreach(var type in types.Where(TypeHelper.IsMessage)) {
-        //        if(!type.IsSerializable) {
-        //            string message = string.Format("{0} should be marked as serializable.", type.FullName);
-        //            throw new ApplicationException(message);
-        //        }
-        //    }
-
-        //    if (this.cancellationSource == null) {
-        //        this.cancellationSource = new CancellationTokenSource();
-
-        //        Task.Factory.StartNew(Consume, _broker,
-        //                this.cancellationSource.Token,
-        //                TaskCreationOptions.LongRunning,
-        //                TaskScheduler.Current);
-        //    }
-        //}
     }
 }

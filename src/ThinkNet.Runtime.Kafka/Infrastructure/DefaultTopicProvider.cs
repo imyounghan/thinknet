@@ -6,7 +6,22 @@ namespace ThinkNet.Infrastructure
 {
     public class DefaultTopicProvider : ITopicProvider
     {
-        #region ITopicProvider 成员
+        public string GetTopic(Type type)
+        {
+            if(type == typeof(EventStream))
+                return "EventStreams";
+
+            if(type == typeof(CommandReply))
+                return "EventStreams";
+
+            if(TypeHelper.IsCommand(type))
+                return "Commands";
+
+            if(TypeHelper.IsEvent(type))
+                return "Events";
+
+            throw new ThinkNetException(string.Format("Unknown topic from the type of '{0}'.", type.FullName));
+        }
 
         public string GetTopic(object payload)
         {
@@ -42,8 +57,6 @@ namespace ThinkNet.Infrastructure
                 default:
                     throw new ThinkNetException(string.Format("Unknown topic of '{0}'.", topic));
             }
-        }
-
-        #endregion
+        }        
     }
 }
