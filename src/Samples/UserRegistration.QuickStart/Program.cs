@@ -51,8 +51,8 @@ namespace UserRegistration.QuickStart
             //}
             //System.Threading.Tasks.Task.WaitAll(tasks, TimeSpan.FromSeconds(30));
             //sw.Stop();
-            //Console.WriteLine(sw.ElapsedMilliseconds);
-            //Console.WriteLine(tasks.Where(p => p.IsCompleted).Count());
+            //Console.WriteLine("用时:{0}ms", sw.ElapsedMilliseconds);
+            //Console.WriteLine("成功完成的命令数量：{0}", tasks.Where(p => p.IsCompleted).Count());
 
             System.Threading.Thread.Sleep(2000);
 

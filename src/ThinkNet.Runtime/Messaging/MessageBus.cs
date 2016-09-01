@@ -19,12 +19,20 @@ namespace ThinkNet.Messaging
         
         private Envelope Transform(IMessage message)
         {
-            var routingKey = _routingKeyProvider.GetRoutingKey(message);
-            return new Envelope() {
-                Body = message,
-                CorrelationId = message.Id,
-                RoutingKey = routingKey,
-            };
+            var envelope = new Envelope(message);
+            envelope.Metadata[StandardMetadata.CorrelationId] = message.Id;
+            envelope.Metadata[StandardMetadata.RoutingKey] = _routingKeyProvider.GetRoutingKey(message);
+            if (message is EventStream) {
+                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventStreamKind;
+            }
+            else if (message is ICommand) {
+                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
+            }
+            else if (message is IEvent) {
+                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
+            }
+
+            return envelope;
         }
 
         public override Task SendAsync(ICommand command)

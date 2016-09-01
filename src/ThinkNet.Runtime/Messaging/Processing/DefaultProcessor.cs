@@ -25,10 +25,10 @@ namespace ThinkNet.Messaging.Processing
             this._receiver = receiver;
 
             this.executorDict = new Dictionary<string, IExecutor>() {
-                { "Command", new CommandExecutor(sender, handlerProvider) },
-                { "Event", new EventExecutor(handlerStore, handlerProvider) },
-                { "EventStream", new EventStreamExecutor(handlerProvider, eventBus, sender, eventPublishedVersionStore, serializer) },
-                { "CommandReply", new CommandReplyExecutor(notification) }
+                { StandardMetadata.CommandKind, new CommandExecutor(sender, handlerProvider) },
+                { StandardMetadata.EventKind, new EventExecutor(handlerStore, handlerProvider) },
+                { StandardMetadata.EventStreamKind, new EventStreamExecutor(handlerProvider, eventBus, sender, eventPublishedVersionStore, serializer) },
+                { StandardMetadata.CommandReplyKind, new CommandReplyExecutor(notification) }
             };
             this.lockObject = new object();
         }
@@ -36,16 +36,16 @@ namespace ThinkNet.Messaging.Processing
         protected virtual string GetKind(object data)
         {
             if (data is EventStream)
-                return "EventStream";
+                return StandardMetadata.EventStreamKind;
 
             if(data is CommandReply)
-                return "CommandReply";
+                return StandardMetadata.CommandReplyKind;
 
             if (data is IEvent)
-                return "Event";
+                return StandardMetadata.EventKind;
 
             if (data is ICommand)
-                return "Command";
+                return StandardMetadata.CommandKind;
 
             return string.Empty;
         }
@@ -53,7 +53,10 @@ namespace ThinkNet.Messaging.Processing
 
         private void OnEnvelopeReceived(object sender, Envelope envelope)
         {
-            var kind = this.GetKind(envelope.Body);
+            var kind = envelope.GetMetadata(StandardMetadata.Kind);
+            if (string.IsNullOrEmpty(kind)) {
+                kind = this.GetKind(envelope.Body);
+            }
             if (string.IsNullOrEmpty(kind)) {
                 //TODO...WriteLog
                 return;

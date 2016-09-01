@@ -39,21 +39,12 @@ namespace ThinkNet.Messaging.Processing
             }
         }
 
-        //enum SynchronizeStatus
-        //{
-        //    Complete,
-        //    Processed,
-        //    Retry,
-        //    Obsolete
-        //}
 
         private readonly IHandlerProvider _handlerProvider;
         private readonly IEventBus _eventBus;
         private readonly IEventPublishedVersionStore _eventPublishedVersionStore;
         private readonly ISerializer _serializer;
         private readonly IEnvelopeSender _sender;
-
-        private readonly BlockingCollection<ParsedEvent> _retryQueue;
 
 
         public EventStreamExecutor(IHandlerProvider handlerProvider,
@@ -67,17 +58,6 @@ namespace ThinkNet.Messaging.Processing
             this._eventBus = eventBus;
             this._eventPublishedVersionStore = eventPublishedVersionStore;
             this._serializer = serializer;
-
-            this._retryQueue = new BlockingCollection<ParsedEvent>();
-
-            //Task.Factory.StartNew(() => {
-            //    foreach(var @event in _retryQueue.GetConsumingEnumerable()) {
-            //    }
-            //    //while(true) {
-            //    //    var @event = _retryQueue.Take();
-            //    //    this.Execute(@event);
-            //    //}
-            //}, TaskCreationOptions.LongRunning);
         }
 
         private Envelope Transform(EventStream @event, Exception ex)
@@ -85,11 +65,12 @@ namespace ThinkNet.Messaging.Processing
             var reply = @event.Events.IsEmpty() ? new CommandReply(@event.CommandId) :
                 new CommandReply(@event.CommandId, ex, CommandReturnType.DomainEventHandled);
 
-            return new Envelope() {
-                Body = reply,
-                CorrelationId = reply.Id,
-                RoutingKey = @event.CommandId,
-            };
+            var envelope = new Envelope(reply);
+            envelope.Metadata[StandardMetadata.CorrelationId] = reply.Id;
+            envelope.Metadata[StandardMetadata.RoutingKey] = @event.CommandId;
+            envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandReplyKind;
+
+            return envelope;
         }
 
         protected override void OnExecuted(EventStream @event, ExecutionStatus status)

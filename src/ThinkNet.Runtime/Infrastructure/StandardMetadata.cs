@@ -12,9 +12,19 @@ namespace ThinkNet.Infrastructure
         public const string EventKind = "Event";
 
         /// <summary>
+        /// An event stream.
+        /// </summary>
+        public const string EventStreamKind = "EventStream";
+
+        /// <summary>
         /// A command message.
         /// </summary>
         public const string CommandKind = "Command";
+
+        /// <summary>
+        /// A command reply.
+        /// </summary>
+        public const string CommandReplyKind = "CommandReply";
 
         /// <summary>
         /// Kind of message, either <see cref="EventKind"/> or <see cref="CommandKind"/>.
@@ -36,10 +46,10 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public const string Namespace = "Namespace";
 
-        ///// <summary>
-        ///// The full type name of the message payload (i.e. event or command).
-        ///// </summary>
-        //public const string FullName = "FullName";
+        /// <summary>
+        /// The full type name of the message payload (i.e. event or command).
+        /// </summary>
+        public const string TypeFullName = "TypeFullName";
 
         /// <summary>
         /// The simple type name (without the namespace) of the message payload (i.e. event or command).
@@ -52,6 +62,8 @@ namespace ThinkNet.Infrastructure
         public const string SourceType = "SourceType";
 
 
-        public const string UniqueId = "UniqueId";
+        public const string CorrelationId = "CorrelationId";
+
+        public const string RoutingKey = "RoutingKey";
     }
 }

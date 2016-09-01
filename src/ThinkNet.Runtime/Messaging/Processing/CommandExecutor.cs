@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Handling;
 
 namespace ThinkNet.Messaging.Processing
@@ -40,12 +41,12 @@ namespace ThinkNet.Messaging.Processing
         private Envelope Transform(ICommand command, Exception ex)
         {
             var reply = new CommandReply(command.Id, ex, CommandReturnType.CommandExecuted);
+            var envelope = new Envelope(reply);
+            envelope.Metadata[StandardMetadata.CorrelationId] = reply.Id;
+            envelope.Metadata[StandardMetadata.RoutingKey] = command.Id;
+            envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandReplyKind;
 
-            return new Envelope() {
-                Body = reply,
-                CorrelationId = reply.Id,
-                RoutingKey = command.Id,
-            };
+            return envelope;
         }
 
         //protected override void Notify(ICommand command, Exception exception)

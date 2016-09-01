@@ -175,9 +175,7 @@ namespace ThinkNet
         /// </summary>
         public static object Change(this string str, Type targetType)
         {
-            if (string.IsNullOrWhiteSpace(str))
-                return Activator.CreateInstance(targetType);
-
+            str.NotNullOrEmpty("str");
            
             if (targetType.IsValueType) {
                 if (typeof(bool) == targetType) {

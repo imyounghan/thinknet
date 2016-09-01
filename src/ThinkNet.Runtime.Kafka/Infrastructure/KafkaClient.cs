@@ -2,60 +2,58 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using KafkaNet;
 using KafkaNet.Common;
 using KafkaNet.Model;
 using KafkaNet.Protocol;
-using ThinkNet.Configurations;
 
 namespace ThinkNet.Infrastructure
 {
     public class KafkaClient : DisposableObject
     {
-
-        //public readonly static KafkaClient Instance = new KafkaClient();
-
-
-        private readonly ISerializer serializer;
-        private readonly ITopicProvider _topicProvider;
-
-        private readonly IBrokerRouter router;
-        private readonly Lazy<Producer> producer;
-        private readonly ConcurrentDictionary<string, Consumer> consumers;
+        private readonly string _kafkaOffsetFile;
+        private readonly KafkaOptions _kafkaOption;
+        private readonly Lazy<Producer> _kafkaProducer;
+        private readonly ConcurrentDictionary<string, Consumer> _kafkaConsumers;
 
         private readonly Dictionary<string, ConcurrentDictionary<string, MessageMetadata>> metadatas;
         private readonly Dictionary<string, ConcurrentDictionary<int, long>> lasted;
         private readonly Dictionary<string, OffsetPosition[]> final;
 
 
-        private KafkaClient()
-            : this(KafkaSettings.Current.KafkaUris)
-        { }
-
-        public KafkaClient(params Uri[] kafkaUris)
+        public KafkaClient(string offsetFile, params Uri[] kafkaUris)
         {
-            var option = new KafkaOptions(kafkaUris);
-            this.router = new BrokerRouter(option);
+            offsetFile.NotNullOrEmpty("offsetFile");
+            if (kafkaUris == null || kafkaUris.Length == 0) {
+                throw new ArgumentNullException("kafkaUris");
+            }
 
-            this.producer = new Lazy<Producer>(() => new Producer(router), true);
-            this.consumers = new ConcurrentDictionary<string, Consumer>();
-            //this.metadatas = new ConcurrentDictionary<string, MessageMetadata>();
+            this._kafkaOffsetFile = offsetFile; 
+            this._kafkaOption = new KafkaOptions(kafkaUris) {
+                Log = KafkaLog.Instance
+            };
+
+            this._kafkaProducer = new Lazy<Producer>(() => new Producer(new BrokerRouter(_kafkaOption)), true);
+            this._kafkaConsumers = new ConcurrentDictionary<string, Consumer>();
+
+            this.metadatas = new Dictionary<string, ConcurrentDictionary<string, MessageMetadata>>();
+            this.lasted = new Dictionary<string, ConcurrentDictionary<int, long>>();
+            this.final = new Dictionary<string, OffsetPosition[]>();
         }
 
         protected override void Dispose(bool disposing)
         {
             ThrowIfDisposed();
             if(disposing) {
-                if(producer.IsValueCreated)
-                    producer.Value.Dispose();
+                if (_kafkaProducer.IsValueCreated)
+                    _kafkaProducer.Value.Dispose();
 
-                foreach(var kvp in consumers) {
-                    kvp.Value.Dispose();
+                foreach (var consumer in _kafkaConsumers) {
+                    consumer.Value.Dispose();
                 }
-                consumers.Clear();
+                _kafkaConsumers.Clear();
             }
         }
 
@@ -102,45 +100,45 @@ namespace ThinkNet.Infrastructure
         //    }
         //}
 
-        private Task PushToKafka(KeyValuePair<string, Message[]> item)
+        private Task PushToKafka(string topic , IEnumerable<Message> messages)
         {
-            return producer.Value.SendMessageAsync(item.Key, item.Value).ContinueWith(task => {
-                if(task.IsFaulted) {
-                    if(LogManager.Default.IsErrorEnabled) {
+            if (LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.Debug("ready to send a message to kafka.");
+            }
+
+            return _kafkaProducer.Value.SendMessageAsync(topic, messages).ContinueWith(task => {
+                if (task.IsFaulted) {
+                    if (LogManager.Default.IsErrorEnabled) {
                         LogManager.Default.Error("send to kafka encountered error.", task.Exception);
                     }
                 }
             });
         }
 
-        public Task Push<T>(IEnumerable<T> elements, Func<T, Message> serializer)
+        public Task Push<T>(T element, Func<T, string> getTopic, Func<T, string> serializer)
         {
-            var topic = _topicProvider.GetTopic(typeof(T));
-
-             var messages = elements.AsParallel().Select(serializer).ToArray();
-
-            return producer.Value.SendMessageAsync(topic, messages).ContinueWith(task => {
-                if(task.IsFaulted) {
-                    if(LogManager.Default.IsErrorEnabled) {
-                        LogManager.Default.Error("send to kafka encountered error.", task.Exception);
-                    }
-                }
+            return this.Push(getTopic(element), element, serializer);
+        }
+        public Task Push<T>(string topic, T element, Func<T, string> serializer)
+        {
+            return this.PushToKafka(topic, new[] { new Message(serializer(element)) });
+        }
+        public Task Push<T>(string topic, IEnumerable<T> elements, Func<T, string> serializer)
+        {
+            return this.PushToKafka(topic, elements.Select(item => new Message(serializer(item))).ToArray());
+        }
+        public Task Push<T>(IEnumerable<T> elements, Func<T, string> getTopic, Func<T, string> serializer)
+        {
+            return Task.Factory.StartNew(() => {
+                var tasks = elements.AsParallel()
+                    .GroupBy(item => getTopic(item))
+                    .Select(group => {
+                        var messages = group.Select(item => new Message(serializer(item))).ToArray();
+                        return this.PushToKafka(group.Key, messages);
+                    }).ToArray();
+                Task.WaitAll(tasks);
             });
         }
-        //public void Push<T>(IEnumerable<T> messages, Func<T, KeyValuePair<string, Message>> serializer)
-        //{
-        //    var topic = _topicProvider.GetTopic(typeof(T));
-
-
-        //    var tasks = messages.AsParallel()
-        //        .Select(serializer)
-        //        .GroupBy(item => item.Key)
-        //        .ToDictionary(item => item.Key, item => item.Select(p => p.Value).ToArray())
-        //        .Select(PushToKafka)
-        //        .ToArray();
-
-        //    Task.WaitAll(tasks);
-        //}
 
         private void Add(string topic, string correlationId, MessageMetadata meta)
         {
@@ -150,23 +148,23 @@ namespace ThinkNet.Infrastructure
             }
         }
 
-        public void Remove(string topic, string correlationId)
+        public void UpdateOffset(string topic, string correlationId)
         {
             if(!string.IsNullOrEmpty(correlationId)) {
                 metadatas[topic].Remove(correlationId);
             }
         }
 
-        public IDictionary<string, OffsetPosition[]> Get()
+        private IDictionary<string, OffsetPosition[]> GetOffsetPositions()
         {
             if(metadatas.All(p => p.Value.Count == 0) && lasted.All(p => p.Value.Count == 0)) {
                 final.Clear();
                 return final;
             }
 
-            foreach(var topic in KafkaSettings.Current.Topics) {
+            foreach (var topic in _kafkaConsumers.Keys) {
                 OffsetPosition[] positions;
-                if(metadatas[topic].Count == 0) {
+                if (metadatas[topic].Count == 0) {
                     positions = lasted[topic].Select(p => new OffsetPosition(p.Key, p.Value + 1)).ToArray();
                 }
                 else {
@@ -182,44 +180,67 @@ namespace ThinkNet.Infrastructure
             return final;
         }
 
-        public IEnumerable<T> Pull<T>(string topic, Func<string, Type, T> deserializer, Func<T, string> getKey)
+        public void Consume(string topic, Action<string> action)
         {
-            var type = _topicProvider.GetType(topic);
-
-            return consumers[topic].Consume()
-                .Select(message => {
-                    var serialized = message.Value.ToUtf8String();
-                    var result = deserializer(serialized, type);
-                    this.Add(topic, getKey(result), message.Meta);
-                    return result;
-                }).ToArray();
+            foreach (var message in _kafkaConsumers[topic].Consume()) {
+                var serialized = message.Value.ToUtf8String();
+                action(serialized);
+            }
         }
 
-        //private object Deserialize(Message message)
-        //{
-        //    var serialized = message.Value.ToUtf8String();
-        //    var metadata = serializer.Deserialize<IDictionary<string, string>>(serialized, true);
+        private void RecordConsumerOffset(object state)
+        {
+            var offsetPositions = this.GetOffsetPositions();
+            if (offsetPositions.Count == 0)
+                return;
 
-        //    var typeFullName = string.Format("{0}.{1}, {2}",
-        //        metadata[StandardMetadata.Namespace],
-        //        metadata[StandardMetadata.TypeName],
-        //        metadata[StandardMetadata.AssemblyName]);
-        //    var type = Type.GetType(typeFullName);
+            var xml = new XmlDocument();
+            xml.AppendChild(xml.CreateXmlDeclaration("1.0", "utf-8", null));
+            var root = xml.AppendChild(xml.CreateElement("root"));
 
-        //    return serializer.Deserialize(metadata["Playload"], type);
-        //}
+            foreach (var kvp in offsetPositions) {
+                var el = xml.CreateElement("topic");
+                el.SetAttribute("name", kvp.Key);
+                kvp.Value.ForEach(item => {
+                    var node = xml.CreateElement("offset");
+                    node.SetAttribute("partitionId", item.PartitionId.ToString());
+                    node.InnerText = item.Offset.ToString();
+                    el.AppendChild(node);
+                });
+                root.AppendChild(el);
+            }
+            xml.Save(_kafkaOffsetFile);
+        }
 
-        //private Message Serialize(object message)
-        //{
-        //    var metadata = metadataProvider.GetMetadata(message);
-        //    metadata["Playload"] = serializer.Serialize(message);
+        public void InitConsumers(params string[] topics)
+        {
+            if (topics == null || topics.Length == 0)
+                return;
 
-        //    return new Message(serializer.Serialize(metadata, true));
-        //}
+            var offsetPositions = new Dictionary<string, OffsetPosition[]>();
 
-        //public void ConsumerComplete(string topic, string messageId)
-        //{
-        //    consumers[topic].Metadatas.Remove(messageId);
-        //}
+            try {
+                var xml = new XmlDocument();
+                xml.Load(_kafkaOffsetFile);
+
+                offsetPositions = xml.DocumentElement.ChildNodes.Cast<XmlElement>().AsParallel()
+                    .ToDictionary(topic => topic.GetAttribute("name"), topic => {
+                        return topic.ChildNodes.Cast<XmlElement>()
+                            .Select(offset => new OffsetPosition() {
+                                PartitionId = offset.GetAttribute("partitionId").Change(0),
+                                Offset = offset.InnerText.Change(0)
+                            }).ToArray();
+                    });
+            }
+            catch (Exception) {
+                //TODO...Write LOG
+            }
+
+            foreach (var topic in topics) {
+                _kafkaConsumers[topic] = new Consumer(new ConsumerOptions(topic, new BrokerRouter(_kafkaOption)) {
+                    Log = KafkaLog.Instance
+                }, offsetPositions.ContainsKey(topic) ? offsetPositions[topic] : new OffsetPosition[0]);
+            }
+        }
     }
 }

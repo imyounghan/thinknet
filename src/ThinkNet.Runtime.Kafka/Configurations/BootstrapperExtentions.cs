@@ -18,13 +18,12 @@ namespace ThinkNet.Configurations
             that.Register<IEnvelopeSender, KafkaService>();
             that.Register<IEnvelopeReceiver, KafkaService>();
             that.Register<IProcessor, KafkaService>("KafkaProcessor");
-            //that.Register<IProcessor, KafkaProcessor>("CoreProcessor");
 
             using (var router = new BrokerRouter(new KafkaOptions(KafkaSettings.Current.KafkaUris))) {
                 int count = -1;
                 while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
                     try {
-                        var result = router.GetTopicMetadata(KafkaSettings.Current.Topics);
+                        var result = router.GetTopicMetadata(KafkaSettings.Current.SubscriptionTopics);
                         if (result.All(topic => topic.ErrorCode == (short)ErrorResponseCode.NoError))
                             break;
 

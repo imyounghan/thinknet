@@ -11,12 +11,12 @@ namespace ThinkNet.Infrastructure
         {
             var command = payload as ICommand;
             if (command != null) {
-                return command.AggregateRootId;
+                return command.AggregateRootId.IfEmpty(string.Empty);
             }
 
             var @event = payload as IEvent;
             if (@event != null) {
-                return @event.SourceId;
+                return @event.SourceId.IfEmpty(string.Empty);
             }
 
             return string.Empty;

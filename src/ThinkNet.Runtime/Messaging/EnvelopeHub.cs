@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ThinkNet.Configurations;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
@@ -49,7 +50,7 @@ namespace ThinkNet.Messaging
 
         protected void Distribute(Envelope envelope)
         {
-            GetBroker(envelope.RoutingKey).Add(envelope);
+            GetBroker(envelope.GetMetadata(StandardMetadata.RoutingKey)).Add(envelope);
         }
 
         public event EventHandler<Envelope> EnvelopeReceived = (sender, args) => { };
@@ -59,8 +60,11 @@ namespace ThinkNet.Messaging
             var broker = state as BlockingCollection<Envelope>;
             broker.NotNull("state");
 
-            while (!cancellationSource.IsCancellationRequested) {
-                var item = broker.Take();
+            //while (!cancellationSource.IsCancellationRequested) {
+            //    var item = broker.Take();
+            //    this.EnvelopeReceived(this, item);
+            //}
+            foreach (var item in broker.GetConsumingEnumerable()) {
                 this.EnvelopeReceived(this, item);
             }
         }
