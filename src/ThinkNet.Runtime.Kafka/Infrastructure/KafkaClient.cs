@@ -102,8 +102,8 @@ namespace ThinkNet.Infrastructure
 
         private Task PushToKafka(string topic , IEnumerable<Message> messages)
         {
-            if (LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.Debug("ready to send a message to kafka.");
+            if(LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.DebugFormat("ready to send a message to kafka in topic('{0}').", topic);
             }
 
             return _kafkaProducer.Value.SendMessageAsync(topic, messages).ContinueWith(task => {
@@ -115,9 +115,9 @@ namespace ThinkNet.Infrastructure
             });
         }
 
-        public Task Push<T>(T element, Func<T, string> getTopic, Func<T, string> serializer)
+        public Task Push<T>(T element, Func<T, string> topicGetter, Func<T, string> serializer)
         {
-            return this.Push(getTopic(element), element, serializer);
+            return this.Push(topicGetter(element), element, serializer);
         }
         public Task Push<T>(string topic, T element, Func<T, string> serializer)
         {
@@ -127,11 +127,11 @@ namespace ThinkNet.Infrastructure
         {
             return this.PushToKafka(topic, elements.Select(item => new Message(serializer(item))).ToArray());
         }
-        public Task Push<T>(IEnumerable<T> elements, Func<T, string> getTopic, Func<T, string> serializer)
+        public Task Push<T>(IEnumerable<T> elements, Func<T, string> topicGetter, Func<T, string> serializer)
         {
             return Task.Factory.StartNew(() => {
                 var tasks = elements.AsParallel()
-                    .GroupBy(item => getTopic(item))
+                    .GroupBy(item => topicGetter(item))
                     .Select(group => {
                         var messages = group.Select(item => new Message(serializer(item))).ToArray();
                         return this.PushToKafka(group.Key, messages);
@@ -140,7 +140,8 @@ namespace ThinkNet.Infrastructure
             });
         }
 
-        private void Add(string topic, string correlationId, MessageMetadata meta)
+
+        private void UpdateOffset(string topic, string correlationId, MessageMetadata meta)
         {
             lasted[topic].AddOrUpdate(meta.PartitionId, meta.Offset, (key, value) => meta.Offset);
             if(!string.IsNullOrEmpty(correlationId)) {
@@ -148,7 +149,7 @@ namespace ThinkNet.Infrastructure
             }
         }
 
-        public void UpdateOffset(string topic, string correlationId)
+        public void RemoveOffset(string topic, string correlationId)
         {
             if(!string.IsNullOrEmpty(correlationId)) {
                 metadatas[topic].Remove(correlationId);
@@ -180,15 +181,28 @@ namespace ThinkNet.Infrastructure
             return final;
         }
 
-        public void Consume(string topic, Action<string> action)
+        public void Consume<T>(string topic, 
+            Func<string, Type> typeGetter,
+            Func<string, Type, T> deserializer, 
+            Func<T, string> correlationIdGetter, 
+            Action<T> consumer)
         {
-            foreach (var message in _kafkaConsumers[topic].Consume()) {
-                var serialized = message.Value.ToUtf8String();
-                action(serialized);
+            foreach(var message in _kafkaConsumers[topic].Consume()) {
+                try {
+                    var serialized = message.Value.ToUtf8String();
+                    var type = typeGetter(topic);
+                    var result = deserializer(serialized, type);
+                    this.UpdateOffset(topic, correlationIdGetter(result), message.Meta);
+                    consumer(result);
+                }
+                catch(Exception) {
+                    //TODO...LOG
+                }
+                
             }
         }
 
-        private void RecordConsumerOffset(object state)
+        public void PersistConsumerOffset(object state)
         {
             var offsetPositions = this.GetOffsetPositions();
             if (offsetPositions.Count == 0)
@@ -217,6 +231,7 @@ namespace ThinkNet.Infrastructure
             if (topics == null || topics.Length == 0)
                 return;
 
+
             var offsetPositions = new Dictionary<string, OffsetPosition[]>();
 
             try {
@@ -237,6 +252,9 @@ namespace ThinkNet.Infrastructure
             }
 
             foreach (var topic in topics) {
+                metadatas[topic] = new ConcurrentDictionary<string, MessageMetadata>();
+                lasted[topic] = new ConcurrentDictionary<int, long>();
+
                 _kafkaConsumers[topic] = new Consumer(new ConsumerOptions(topic, new BrokerRouter(_kafkaOption)) {
                     Log = KafkaLog.Instance
                 }, offsetPositions.ContainsKey(topic) ? offsetPositions[topic] : new OffsetPosition[0]);

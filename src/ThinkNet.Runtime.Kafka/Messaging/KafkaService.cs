@@ -19,6 +19,7 @@ namespace ThinkNet.Messaging
         private readonly KafkaClient kafka;
         private CancellationTokenSource cancellationSource;
         private bool started;
+        private Timer timer;
 
         public KafkaService(ISerializer serializer, ITopicProvider topicProvider, IRoutingKeyProvider routingKeyProvider)
         {
@@ -75,16 +76,13 @@ namespace ThinkNet.Messaging
             var type = _topicProvider.GetType(topic);
 
             while(!cancellationSource.IsCancellationRequested) {
-                kafka.Consume(topic, serialized => {
-                    try {
-                        var envelope = this.Deserialize(serialized, type);
-                        base.Distribute(envelope);
-                    }
-                    catch (Exception) {
-                        //TODO...WriteLog
-                    }
-                });
+                kafka.Consume(topic, _topicProvider.GetType, this.Deserialize, this.GetCorrelationId, this.Distribute);
             }
+        }
+
+        private string GetCorrelationId(Envelope envelope)
+        {
+            return envelope.GetMetadata(StandardMetadata.CorrelationId);
         }
 
         private Envelope Deserialize(string serialized, Type type)
@@ -111,7 +109,7 @@ namespace ThinkNet.Messaging
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventStreamKind;
             }
             else if (type == typeof(CommandReply)) {
-                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventStreamKind;
+                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandReplyKind;
             }
             else if (TypeHelper.IsCommand(type)) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
@@ -126,7 +124,7 @@ namespace ThinkNet.Messaging
         private void OnEnvelopeCompleted(object sender, Envelope envelope)
         {
             var topic = _topicProvider.GetTopic(envelope.Body);
-            kafka.UpdateOffset(topic, envelope.GetMetadata(StandardMetadata.CorrelationId));
+            kafka.RemoveOffset(topic, envelope.GetMetadata(StandardMetadata.CorrelationId));
         }
 
         private void StartingKafka()
@@ -144,12 +142,16 @@ namespace ThinkNet.Messaging
                         TaskScheduler.Current);
                 }
             }
+
+            this.timer = new Timer(kafka.PersistConsumerOffset, null, 5000, 2000);
         }
 
         private void StoppingKafka()
         {
-            Envelope.EnvelopeCompleted -= OnEnvelopeCompleted;
+            this.timer.Dispose();
+            this.timer = null;
 
+            Envelope.EnvelopeCompleted -= OnEnvelopeCompleted;
             if (this.cancellationSource != null) {
                 using (this.cancellationSource) {
                     this.cancellationSource.Cancel();

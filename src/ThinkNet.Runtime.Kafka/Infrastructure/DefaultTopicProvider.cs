@@ -12,7 +12,7 @@ namespace ThinkNet.Infrastructure
                 return "EventStreams";
 
             if(type == typeof(CommandReply))
-                return "EventStreams";
+                return "CommandResults";
 
             if(TypeHelper.IsCommand(type))
                 return "Commands";

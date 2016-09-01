@@ -64,7 +64,7 @@ namespace ThinkNet.Messaging
 
         #endregion
 
-        #region IMessageNotification 成员
+        #region ICommandNotification 成员
 
         public void NotifyCompleted(string commandId, Exception exception = null)
         {

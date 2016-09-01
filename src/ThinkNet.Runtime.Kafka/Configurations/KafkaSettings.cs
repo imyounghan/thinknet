@@ -36,9 +36,5 @@ namespace ThinkNet.Configurations
         /// 默认1000ms
         /// </summary>
         public int EnsureTopicRetryInterval { get; set; }
-
-        //public bool EnableKafkaProcessor { get; set; }
-
-        //public bool EnableCommandReplyProcessor { get; set; }
     }
 }
