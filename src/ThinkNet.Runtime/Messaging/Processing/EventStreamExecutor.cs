@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Handling;
 
@@ -11,53 +8,50 @@ namespace ThinkNet.Messaging.Processing
 {
     public class EventStreamExecutor : MessageExecutor<EventStream>
     {
-        class ParsedEvent
-        {
-            public DataKey Key { get; set; }
+        //class ParsedEvent
+        //{
+        //    public DataKey Key { get; set; }
 
-            public string CommandId { get; set; }
+        //    public string CommandId { get; set; }
 
-            public int Version { get; set; }
+        //    public int Version { get; set; }
 
-            public IEnumerable<IEvent> Events { get; set; }
+        //    public IEnumerable<IEvent> Events { get; set; }
 
-            public object[] GetParameter()
-            {
-                var array = new ArrayList();
-                array.Add(this.Version);
+        //    public object[] GetParameter()
+        //    {
+        //        var array = new ArrayList();
+        //        array.Add(this.Version);
 
-                var collection = this.Events as ICollection;
-                if(collection != null) {
-                    array.AddRange(collection);
-                }
-                else {
-                    foreach(var @event in this.Events)
-                        array.Add(@event);
-                }
+        //        var collection = this.Events as ICollection;
+        //        if(collection != null) {
+        //            array.AddRange(collection);
+        //        }
+        //        else {
+        //            foreach(var @event in this.Events)
+        //                array.Add(@event);
+        //        }
 
-                return array.ToArray();
-            }
-        }
+        //        return array.ToArray();
+        //    }
+        //}
 
 
         private readonly IHandlerProvider _handlerProvider;
         private readonly IEventBus _eventBus;
         private readonly IEventPublishedVersionStore _eventPublishedVersionStore;
-        private readonly ISerializer _serializer;
         private readonly IEnvelopeSender _sender;
 
 
         public EventStreamExecutor(IHandlerProvider handlerProvider,
             IEventBus eventBus,
             IEnvelopeSender sender,
-            IEventPublishedVersionStore eventPublishedVersionStore,
-            ISerializer serializer)
+            IEventPublishedVersionStore eventPublishedVersionStore)
         {
             this._handlerProvider = handlerProvider;
             this._sender = sender;
             this._eventBus = eventBus;
             this._eventPublishedVersionStore = eventPublishedVersionStore;
-            this._serializer = serializer;
         }
 
         private Envelope Transform(EventStream @event, Exception ex)
@@ -92,19 +86,19 @@ namespace ThinkNet.Messaging.Processing
             base.OnException(@event, ex);
         }
 
-        protected override ExecutionStatus Execute(EventStream stream)
+        protected override ExecutionStatus Execute(EventStream @event)
         {
             //if(stream.Events.IsEmpty()) {
             //    _notification.NotifyUnchanged(stream.CommandId);
             //    return;
             //}
 
-            var @event = new ParsedEvent() {
-                Key = new DataKey(stream.SourceId, stream.SourceNamespace, stream.SourceTypeName, stream.SourceAssemblyName),
-                CommandId = stream.CommandId,
-                Version = stream.Version,
-                Events = stream.Events.Select(Deserialize).AsEnumerable()
-            };
+            //var @event = new ParsedEvent() {
+            //    Key = new DataKey(stream.SourceId, stream.SourceNamespace, stream.SourceTypeName, stream.SourceAssemblyName),
+            //    CommandId = stream.CommandId,
+            //    Version = stream.Version,
+            //    Events = stream.Events.Select(Deserialize).AsEnumerable()
+            //};
 
             //this.Execute(@event);
             var result = this.Synchronize(@event);
@@ -130,9 +124,11 @@ namespace ThinkNet.Messaging.Processing
         //    }
         //}
 
-        private ExecutionStatus Synchronize(ParsedEvent @event)
+        private ExecutionStatus Synchronize(EventStream @event)
         {
-            var version = _eventPublishedVersionStore.GetPublishedVersion(@event.Key);
+            var key = new DataKey(@event.SourceId, @event.SourceNamespace, @event.SourceTypeName, @event.SourceAssemblyName);
+
+            var version = _eventPublishedVersionStore.GetPublishedVersion(key);
             if(@event.Version > version + 1) { //如果该消息的版本大于要处理的版本则重新进队列等待下次处理
                 return ExecutionStatus.Awaited;
             }
@@ -142,16 +138,32 @@ namespace ThinkNet.Messaging.Processing
 
             var eventTypes = @event.Events.Select(p => p.GetType()).ToArray();
             var handler = _handlerProvider.GetEventHandler(eventTypes);
-            handler.Handle(@event.GetParameter());
+            handler.Handle(this.GetParameter(@event));
 
-            _eventPublishedVersionStore.AddOrUpdatePublishedVersion(@event.Key, @event.Version);
+            _eventPublishedVersionStore.AddOrUpdatePublishedVersion(key, @event.Version);
 
             return ExecutionStatus.Completed;
         }
 
-        private IEvent Deserialize(EventStream.Stream stream)
+        public object[] GetParameter(EventStream @event)
         {
-            return (IEvent)_serializer.Deserialize(stream.Payload, stream.GetSourceType());
+            var array = new ArrayList();
+            array.Add(@event.Version);
+
+            var collection = @event.Events as ICollection;
+            if (collection != null) {
+                array.AddRange(collection);
+            }
+            else {
+                foreach (var el in @event.Events)
+                    array.Add(el);
+            }
+
+            return array.ToArray();
         }
+        //private IEvent Deserialize(EventStream.Stream stream)
+        //{
+        //    return (IEvent)_serializer.Deserialize(stream.Payload, stream.GetSourceType());
+        //}
     }
 }

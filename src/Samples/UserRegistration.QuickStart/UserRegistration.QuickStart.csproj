@@ -41,7 +41,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -56,9 +55,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ThinkNet.Runtime.Kafka\ThinkNet.Runtime.Kafka.csproj">
-      <Project>{05d9d063-323f-42b8-a8da-4d36980b99d3}</Project>
-      <Name>ThinkNet.Runtime.Kafka</Name>
+    <ProjectReference Include="..\..\ThinkNet.Database\ThinkNet.Database.csproj">
+      <Project>{1f193073-7698-455a-9516-3d6f4358ed35}</Project>
+      <Name>ThinkNet.Database</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ThinkNet.Runtime\ThinkNet.Runtime.csproj">
       <Project>{7dd719e0-5aaa-4878-b259-5d8648d585fd}</Project>

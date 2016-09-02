@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ThinkNet.Configurations;
+using ThinkNet.Database;
 using ThinkNet.Messaging;
-using UserRegistration.Application;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
 
@@ -14,16 +14,11 @@ namespace UserRegistration.QuickStart
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("是否启用Kafka？Yes(Y)/No(N)");
-            if (Console.ReadLine() == "Y") {
-                Bootstrapper.Current.UsingKafka().Done();
-            }
-            else {
-                Bootstrapper.Current.Done();
-            }            
-            
+            Bootstrapper.Current.Register<IDataContextFactory, MemoryContextFactory>().Done();
 
-            Console.WriteLine("输入任意键继续...");
+           
+
+            Console.WriteLine("输入任意键演示...");
             Console.ReadKey();
 
             
@@ -62,13 +57,13 @@ namespace UserRegistration.QuickStart
             Console.ResetColor();
             Console.WriteLine("共有 " + count + " 个用户。");
 
-            var authenticationService = ObjectContainer.Instance.Resolve<IAuthenticationService>();
-            if (!authenticationService.Authenticate("young.han", "123456", "127.0.0.1")) {
-                Console.WriteLine("用户名或密码错误");
-            }
-            else {
-                Console.WriteLine("登录成功。");
-            }
+            //var authenticationService = ObjectContainer.Instance.Resolve<IAuthenticationService>();
+            //if (!authenticationService.Authenticate("young.han", "123456", "127.0.0.1")) {
+            //    Console.WriteLine("用户名或密码错误");
+            //}
+            //else {
+            //    Console.WriteLine("登录成功。");
+            //}
 
             Console.ReadKey();
         }

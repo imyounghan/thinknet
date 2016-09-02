@@ -22,25 +22,17 @@ namespace ThinkNet.Messaging
         protected Event(string id)
             : base(id)
         { }
-        
-        /// <summary>
-        /// 事件来源的标识id
-        /// </summary>
-        //[DataMember(Name = "sourceId")]
-        protected string SourceId { get; set; }
 
+
+        [NonSerialized]
+        [IgnoreDataMember]
+        internal string sourceId;
         #region IEvent 成员
         [IgnoreDataMember]
         string IEvent.SourceId
         {
-            get
-            {
-                return this.SourceId;
-            }
-            set
-            {
-                this.SourceId = value;
-            }
+            get { return this.sourceId; }
+            set { this.sourceId = value; }
         }
 
         #endregion
@@ -70,10 +62,10 @@ namespace ThinkNet.Messaging
         /// 事件来源的标识id
         /// </summary>
         [DataMember(Name = "sourceId")]
-        new public TSourceId SourceId
+        public TSourceId SourceId
         {
-            get { return (TSourceId)base.SourceId.Change(typeof(TSourceId)); }
-            internal set { base.SourceId = value.ToString(); }
+            get { return (TSourceId)this.sourceId.Change(typeof(TSourceId)); }
+            internal set { this.sourceId = value.ToString(); }
         }
 
         /// <summary>

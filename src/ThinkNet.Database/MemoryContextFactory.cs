@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace ThinkNet.Database
 {
-    internal class MemoryContextFactory : IDataContextFactory
+    public class MemoryContextFactory : IDataContextFactory
     {
         private static ConcurrentDictionary<Type, Hashtable> total;
         private static readonly object lockObj;
@@ -122,7 +122,7 @@ namespace ThinkNet.Database
                 } 
             }
 
-            public override object Find(Type type, params object[] keyValues)
+            public override object Find(Type type, object[] keyValues)
             {                
                 try {
                     var entity  = Activator.CreateInstance(type, keyValues);

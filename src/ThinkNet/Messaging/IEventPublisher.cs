@@ -8,7 +8,7 @@ namespace ThinkNet.Messaging
     public interface IEventPublisher
     {
         /// <summary>
-        /// 获取未发布的事件。
+        /// 获取待发布的事件。
         /// </summary>
         IEnumerable<IEvent> Events { get; }
     }

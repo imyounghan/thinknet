@@ -52,6 +52,7 @@
     <Compile Include="Context\IContext.cs" />
     <Compile Include="Context\IContextManager.cs" />
     <Compile Include="Context\ICurrentContext.cs" />
+    <Compile Include="Infrastructure\EventItem.cs" />
     <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="ILifecycle.cs" />
     <Compile Include="Infrastructure\Repository.cs" />

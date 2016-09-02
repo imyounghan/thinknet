@@ -20,12 +20,12 @@ namespace UserRegistration.Events
         }
 
         [DataMember]
-        public string LoginId { get; private set; }
+        public string LoginId { get; set; }
         [DataMember]
-        public string Password { get; private set; }
+        public string Password { get; set; }
         [DataMember]
-        public string UserName { get; private set; }
+        public string UserName { get; set; }
         [DataMember]
-        public string Email { get; private set; }
+        public string Email { get; set; }
     }
 }

@@ -57,7 +57,7 @@ namespace ThinkNet.Messaging
             _sender.SendAsync(events.Select(Transform));
         }
 
-        public void Publish(IEvent @event)
+        public void Publish(EventStream @event)
         {
             _sender.SendAsync(Transform(@event));
         }

@@ -84,7 +84,6 @@
     <Compile Include="Infrastructure\DefaultRoutingKeyProvider.cs" />
     <Compile Include="Messaging\Processing\IExecutor.cs" />
     <Compile Include="Messaging\Processing\MessageExecutor.cs" />
-    <Compile Include="Messaging\EventStream.cs" />
     <Compile Include="Infrastructure\MemoryEventStore.cs" />
     <Compile Include="Infrastructure\MemoryRepository.cs" />
     <Compile Include="Messaging\Handling\ICommandContextFactory.cs" />

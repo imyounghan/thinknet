@@ -1,21 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ThinkNet;
-using ThinkNet.Infrastructure;
+using UserRegistration.Contracts;
 
-
-
-namespace UserRegistration.ReadModel
+namespace UserRegistration.QuickStart
 {
-    public interface IUserDao
-    {
-        void Save(UserModel user);
-
-        UserModel Find(string loginid);
-
-        IEnumerable<UserModel> GetAll();
-    }
-
     [Register(typeof(IUserDao))]
     public class UserDao : IUserDao
     {
@@ -35,7 +24,6 @@ namespace UserRegistration.ReadModel
 
         public IEnumerable<UserModel> GetAll()
         {
-            //return Enumerable.Empty<UserModel>();
             return cache;
         }
 

@@ -1,14 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
+using System.Threading.Tasks;
 using ThinkNet.Messaging;
 
-namespace UserRegistration.Events
+namespace UserRegistration.Application
 {
     [DataContract]
     [Serializable]
-    public class UserLogined : Event
+    public class UserSigned : Event
     {
-        public UserLogined(string loginid, string clientIp)
+        public UserSigned(string loginid, string clientIp)
         {
             this.LoginId = loginid;
             this.ClientIP = clientIp;

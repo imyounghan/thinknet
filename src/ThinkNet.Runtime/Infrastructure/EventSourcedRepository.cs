@@ -117,12 +117,12 @@ namespace ThinkNet.Infrastructure
             return (IEvent)_serializer.DeserializeFromBinary(stream.Payload, stream.GetSourceType());
         }
 
-        private EventStream.Stream SerializeToStream(IEvent @event)
-        {
-            return new EventStream.Stream(@event.GetType()) {
-                Payload = _serializer.Serialize(@event)
-            };
-        }
+        //private EventStream.Stream SerializeToStream(IEvent @event)
+        //{
+        //    return new EventStream.Stream(@event.GetType()) {
+        //        Payload = _serializer.Serialize(@event)
+        //    };
+        //}
 
         private DataStream Serialize(DataKey sourceKey, IEventSourced aggregateRoot)
         {
@@ -145,7 +145,7 @@ namespace ThinkNet.Infrastructure
 
             var aggregateRootType = eventSourced.GetType();
             var aggregateRootId = eventSourced.Id;
-            var events = new List<IEvent>(eventSourced.GetEvents());
+            var events = eventSourced.GetEvents();
             var key = new DataKey(aggregateRootId, aggregateRootType);
 
             var streams = events.Select(@event => new DataStream() {
@@ -168,16 +168,17 @@ namespace ThinkNet.Infrastructure
                         aggregateRootId, aggregateRootType.FullName, correlationId);
             }
 
-            var eventStream = new EventStream {
+
+            var domainEvent = new EventStream {
                 SourceAssemblyName = key.AssemblyName,
                 SourceNamespace = key.Namespace,
                 SourceTypeName = key.TypeName,
                 SourceId = key.SourceId,
                 CommandId = correlationId,
                 Version = eventSourced.Version,
-                Events = events.Select(SerializeToStream).ToArray()
+                Events = events
             };
-            _eventBus.Publish(eventStream);
+            _eventBus.Publish(domainEvent);
 
 
             var snapshot = Serialize(key, eventSourced);

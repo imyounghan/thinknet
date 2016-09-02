@@ -19,15 +19,14 @@ namespace ThinkNet.Messaging.Processing
             IHandlerProvider handlerProvider,
             IHandlerRecordStore handlerStore,
             IEventBus eventBus,
-            IEventPublishedVersionStore eventPublishedVersionStore,
-            ISerializer serializer)
+            IEventPublishedVersionStore eventPublishedVersionStore)
         {
             this._receiver = receiver;
 
             this.executorDict = new Dictionary<string, IExecutor>() {
                 { StandardMetadata.CommandKind, new CommandExecutor(sender, handlerProvider) },
                 { StandardMetadata.EventKind, new EventExecutor(handlerStore, handlerProvider) },
-                { StandardMetadata.EventStreamKind, new EventStreamExecutor(handlerProvider, eventBus, sender, eventPublishedVersionStore, serializer) },
+                { StandardMetadata.EventStreamKind, new EventStreamExecutor(handlerProvider, eventBus, sender, eventPublishedVersionStore) },
                 { StandardMetadata.CommandReplyKind, new CommandReplyExecutor(notification) }
             };
             this.lockObject = new object();

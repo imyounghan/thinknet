@@ -5,97 +5,101 @@ namespace ThinkNet.Configurations
 {
     public static class BootstrapperExtentions
     {
-        public static void Register(this Bootstrapper that, Type type, Lifecycle lifecycle)
+        public static Bootstrapper Register(this Bootstrapper that, Type type, Lifecycle lifecycle)
         {
-            that.Register(type, (string)null, lifecycle);
+            return that.Register(type, (string)null, lifecycle);
         }
 
-        public static void Register(this Bootstrapper that, Type type, string name)
+        public static Bootstrapper Register(this Bootstrapper that, Type type, string name)
         {
-            that.Register(type, name, Lifecycle.Singleton);
+            return that.Register(type, name, Lifecycle.Singleton);
         }
 
-        public static void Registere(this Bootstrapper that, Type type)
+        public static Bootstrapper Registere(this Bootstrapper that, Type type)
         {
-            that.Register(type, (string)null, Lifecycle.Singleton);
+            return that.Register(type, (string)null, Lifecycle.Singleton);
         }
 
 
-        public static void Register(this Bootstrapper that, Type from, Type to, Lifecycle lifecycle)
+        public static Bootstrapper Register(this Bootstrapper that, Type from, Type to, Lifecycle lifecycle)
         {
-            that.Register(from, to, (string)null, lifecycle);
+            return that.Register(from, to, (string)null, lifecycle);
         }
 
-        public static void Register(this Bootstrapper that, Type from, Type to, string name)
+        public static Bootstrapper Register(this Bootstrapper that, Type from, Type to, string name)
         {
-            that.Register(from, to, name, Lifecycle.Singleton);
+            return that.Register(from, to, name, Lifecycle.Singleton);
         }
 
-        public static void Register(this Bootstrapper that, Type from, Type to)
+        public static Bootstrapper Register(this Bootstrapper that, Type from, Type to)
         {
-            that.Register(from, to, (string)null, Lifecycle.Singleton);
+            return that.Register(from, to, (string)null, Lifecycle.Singleton);
         }
 
-        public static void RegisterMultiple(this Bootstrapper that, Type registrationType, IEnumerable<Type> implementationTypes)
+        public static Bootstrapper RegisterMultiple(this Bootstrapper that, Type registrationType, IEnumerable<Type> implementationTypes)
         {
-            that.RegisterMultiple(registrationType, implementationTypes, Lifecycle.Singleton);
+            return that.RegisterMultiple(registrationType, implementationTypes, Lifecycle.Singleton);
         }
 
-        public static void RegisterMultiple(this Bootstrapper that, Type registrationType, IEnumerable<Type> implementationTypes, Lifecycle lifecycle)
+        public static Bootstrapper RegisterMultiple(this Bootstrapper that, Type registrationType, IEnumerable<Type> implementationTypes, Lifecycle lifecycle)
         {
             foreach(var implementationType in implementationTypes) {
                 that.Register(registrationType, implementationType, implementationType.FullName, lifecycle);
             }
+
+            return that;
         }
-        public static void RegisterMultiple(this Bootstrapper that, IEnumerable<Type> registrationTypes, Type implementationType)
+        public static Bootstrapper RegisterMultiple(this Bootstrapper that, IEnumerable<Type> registrationTypes, Type implementationType)
         {
-            that.RegisterMultiple(registrationTypes, implementationType, Lifecycle.Singleton);
+            return that.RegisterMultiple(registrationTypes, implementationType, Lifecycle.Singleton);
         }
-        public static void RegisterMultiple(this Bootstrapper that, IEnumerable<Type> registrationTypes, Type implementationType, Lifecycle lifecycle)
+        public static Bootstrapper RegisterMultiple(this Bootstrapper that, IEnumerable<Type> registrationTypes, Type implementationType, Lifecycle lifecycle)
         {
             foreach(var registrationType in registrationTypes) {
                 that.Register(registrationType, implementationType, lifecycle);
             }
+
+            return that;
         }
 
-        public static void Register<T>(this Bootstrapper that)
+        public static Bootstrapper Register<T>(this Bootstrapper that)
         {
-            that.Register<T>((string)null, Lifecycle.Singleton);
+            return that.Register<T>((string)null, Lifecycle.Singleton);
         }
-        public static void Register<T>(this Bootstrapper that, Lifecycle lifecycle)
+        public static Bootstrapper Register<T>(this Bootstrapper that, Lifecycle lifecycle)
         {
-            that.Register<T>((string)null, lifecycle);
+            return that.Register<T>((string)null, lifecycle);
         }
-        public static void Register<T>(this Bootstrapper that, string name)
+        public static Bootstrapper Register<T>(this Bootstrapper that, string name)
         {
-            that.Register<T>(name, Lifecycle.Singleton);
+            return that.Register<T>(name, Lifecycle.Singleton);
         }
-        public static void Register<T>(this Bootstrapper that, string name, Lifecycle lifecycle)
+        public static Bootstrapper Register<T>(this Bootstrapper that, string name, Lifecycle lifecycle)
         {
-            that.Register(typeof(T), name, lifecycle);
+            return that.Register(typeof(T), name, lifecycle);
         }
 
-        public static void Register<TFrom, TTo>(this Bootstrapper that)
+        public static Bootstrapper Register<TFrom, TTo>(this Bootstrapper that)
              where TTo : TFrom
         {
-            that.Register<TFrom, TTo>((string)null, Lifecycle.Singleton);
+            return that.Register<TFrom, TTo>((string)null, Lifecycle.Singleton);
         }
 
-        public static void Register<TFrom, TTo>(this Bootstrapper that, Lifecycle lifecycle)
+        public static Bootstrapper Register<TFrom, TTo>(this Bootstrapper that, Lifecycle lifecycle)
             where TTo : TFrom
         {
-            that.Register<TFrom, TTo>((string)null, lifecycle);
+            return that.Register<TFrom, TTo>((string)null, lifecycle);
         }
-        public static void Register<TFrom, TTo>(this Bootstrapper that, string name)
+        public static Bootstrapper Register<TFrom, TTo>(this Bootstrapper that, string name)
             where TTo : TFrom
         {
-            that.Register<TFrom, TTo>(name, Lifecycle.Singleton);
+            return that.Register<TFrom, TTo>(name, Lifecycle.Singleton);
         }
 
-        public static void Register<TFrom, TTo>(this Bootstrapper that, string name, Lifecycle lifecycle)
+        public static Bootstrapper Register<TFrom, TTo>(this Bootstrapper that, string name, Lifecycle lifecycle)
             where TTo : TFrom
         {
-            that.Register(typeof(TFrom), typeof(TTo), name, lifecycle);
+            return that.Register(typeof(TFrom), typeof(TTo), name, lifecycle);
         }
     }
 }

@@ -396,7 +396,7 @@ namespace ThinkNet.Configurations
         /// <summary>
         /// 注册类型
         /// </summary>
-        public void Register(Type type, string name, Lifecycle lifecycle)
+        public Bootstrapper Register(Type type, string name, Lifecycle lifecycle)
         {
             if (_running) {
                 throw new ApplicationException("system is running, can not register type, please execute before 'done' method.");
@@ -404,12 +404,14 @@ namespace ThinkNet.Configurations
             type.NotNull("type");
 
             _components.Add(new Component(type, name, lifecycle));
+
+            return this;
         }
 
         /// <summary>
         /// 注册类型
         /// </summary>
-        public void Register(Type from, Type to, string name, Lifecycle lifecycle)
+        public Bootstrapper Register(Type from, Type to, string name, Lifecycle lifecycle)
         {
             if (_running) {
                 throw new ApplicationException("system is running, can not register type, please execute before 'done' method.");
@@ -418,6 +420,8 @@ namespace ThinkNet.Configurations
             to.NotNull("to");
 
             _components.Add(new Component(from, to, name, lifecycle));
+
+            return this;
         }
 
         private void RegisterComponentsAndHanders(IEnumerable<Type> types)

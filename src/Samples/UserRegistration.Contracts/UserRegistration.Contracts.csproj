@@ -4,13 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{05D9D063-323F-42B8-A8DA-4D36980B99D3}</ProjectGuid>
+    <ProjectGuid>{D3324D2D-77D2-4202-B42F-1CF921C30D7B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ThinkNet.Runtime.Kafka</RootNamespace>
-    <AssemblyName>ThinkNet.Runtime.Kafka</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>UserRegistration.Contracts</RootNamespace>
+    <AssemblyName>UserRegistration.Contracts</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,48 +30,21 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\\sunsoft.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="kafka-net">
-      <HintPath>..\packages\kafka-net.0.9.0.65\lib\net45\kafka-net.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configurations\BootstrapperExtentions.cs" />
-    <Compile Include="Configurations\KafkaSettings.cs" />
-    <Compile Include="Infrastructure\DefaultTopicProvider.cs" />
-    <Compile Include="Infrastructure\ITopicProvider.cs" />
-    <Compile Include="Infrastructure\KafkaClient.cs" />
-    <Compile Include="Infrastructure\KafkaLog.cs" />
-    <Compile Include="Messaging\DomainEvent.cs" />
-    <Compile Include="Messaging\KafkaService.cs" />
+    <Compile Include="IAuthenticationService.cs" />
+    <Compile Include="IUserQueryService.cs" />
+    <Compile Include="IUserActionService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ThinkNet.Runtime\ThinkNet.Runtime.csproj">
-      <Project>{7dd719e0-5aaa-4878-b259-5d8648d585fd}</Project>
-      <Name>ThinkNet.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ThinkNet\ThinkNet.csproj">
-      <Project>{a8fcd0bf-04fc-4628-b376-6861d63d9538}</Project>
-      <Name>ThinkNet</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <Compile Include="UserInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

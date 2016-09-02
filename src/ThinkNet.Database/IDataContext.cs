@@ -56,7 +56,7 @@ namespace ThinkNet.Database
         /// 获取实例信息
         /// </summary>
         /// <returns></returns>
-        object Find(Type type, params object[] keyValues);
+        object Find(Type type, object[] keyValues);
         /// <summary>
         /// 加载数据
         /// </summary>

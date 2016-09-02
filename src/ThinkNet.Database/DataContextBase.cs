@@ -159,7 +159,7 @@ namespace ThinkNet.Database
         /// <summary>
         /// 获取实例信息
         /// </summary>
-        public abstract object Find(Type type, params object[] keyValues);
+        public abstract object Find(Type type, object[] keyValues);
 
         /// <summary>
         /// 加载实例信息

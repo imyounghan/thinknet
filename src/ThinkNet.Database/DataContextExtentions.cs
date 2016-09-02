@@ -20,7 +20,7 @@ namespace ThinkNet.Database
         /// <summary>
         /// 获取该类型的实例
         /// </summary>
-        public static T Find<T>(this IDataContext dataContext, params object[] keyValues)
+        public static T Find<T>(this IDataContext dataContext, object[] keyValues)
             where T : class
         {
             return dataContext.Find(typeof(T), keyValues) as T;

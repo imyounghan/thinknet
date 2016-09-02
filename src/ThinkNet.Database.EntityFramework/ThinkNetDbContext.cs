@@ -30,11 +30,15 @@ namespace ThinkNet.Infrastructure
         {
             var config = new EntityTypeConfiguration<Event>();
 
-            config.HasKey(@event => new { @event.AggregateRootId, @event.AggregateRootTypeCode, @event.Version });
+            config.HasKey(@event => new { @event.AggregateRootId, @event.AggregateRootTypeCode, @event.Version, @event.Order });
             config.Property(@event => @event.AggregateRootId).IsRequired().HasColumnType("char").HasMaxLength(36);
             config.Property(@event => @event.AggregateRootTypeCode).IsRequired().HasColumnType("int");
+            config.Property(@event => @event.AggregateRootTypeName).IsRequired().HasColumnType("varchar");
+            config.Property(@event => @event.Order).HasColumnType("int");
             config.Property(@event => @event.Version).HasColumnType("int");
             config.Property(@event => @event.CorrelationId).HasColumnType("char").HasMaxLength(36);
+            config.Property(@event => @event.AssemblyName).HasColumnType("varchar");
+            config.Property(@event => @event.AssemblyName).HasColumnType("varchar");
             config.Property(@event => @event.Payload).HasColumnType("varchar");
             config.Property(@event => @event.Timestamp).HasColumnName("OnCreated").HasColumnType("datetime");
 

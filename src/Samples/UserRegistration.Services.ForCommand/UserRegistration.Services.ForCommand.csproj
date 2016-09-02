@@ -50,6 +50,14 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ThinkNet.Database.EntityFramework\ThinkNet.Database.EntityFramework.csproj">
+      <Project>{02bdd654-c2cf-4e20-b74d-e620bb5ed13b}</Project>
+      <Name>ThinkNet.Database.EntityFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ThinkNet.Database\ThinkNet.Database.csproj">
+      <Project>{1f193073-7698-455a-9516-3d6f4358ed35}</Project>
+      <Name>ThinkNet.Database</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ThinkNet.Runtime.Kafka\ThinkNet.Runtime.Kafka.csproj">
       <Project>{05d9d063-323f-42b8-a8da-4d36980b99d3}</Project>
       <Name>ThinkNet.Runtime.Kafka</Name>

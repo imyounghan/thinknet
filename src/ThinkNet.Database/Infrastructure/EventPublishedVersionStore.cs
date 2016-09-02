@@ -28,7 +28,7 @@ namespace ThinkNet.Infrastructure
 
             Task.Factory.StartNew(() => {
                 using (var context = _contextFactory.CreateDataContext()) {
-                    var versionData = context.Find<EventPublishedVersion>(aggregateRootTypeCode, sourceKey.SourceId);
+                    var versionData = context.Find<EventPublishedVersion>(new object[] { aggregateRootTypeCode, sourceKey.SourceId });
 
                     if (versionData == null) {
                         context.Save(new EventPublishedVersion(aggregateRootTypeCode, sourceKey.SourceId, version));
@@ -54,7 +54,7 @@ namespace ThinkNet.Infrastructure
 
             return Task.Factory.StartNew(() => {
                 using (var context = _contextFactory.CreateDataContext()) {
-                    var data = context.Find<EventPublishedVersion>(aggregateRootTypeCode, sourceKey.SourceId);
+                    var data = context.Find<EventPublishedVersion>(new object[] { aggregateRootTypeCode, sourceKey.SourceId });
                     if (data != null) {
                         return data.Version;
                     }

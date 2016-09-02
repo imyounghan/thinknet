@@ -1,16 +1,10 @@
 ﻿using ThinkNet;
-using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
-using UserRegistration.Events;
+using UserRegistration.Contracts;
 using UserRegistration.ReadModel;
 
 namespace UserRegistration.Application
 {
-    public interface IAuthenticationService
-    {
-        bool Authenticate(string loginid, string password, string ip);
-    }
-
     [Register(typeof(IAuthenticationService))]
     public class AuthenticationService : IAuthenticationService
     {
@@ -33,8 +27,8 @@ namespace UserRegistration.Application
             if (user.Password != password)
                 return false;
 
-            var userLogined = new UserLogined(loginid, ip);
-            eventBus.Publish(userLogined);
+            var userSigned = new UserSigned(loginid, ip);
+            eventBus.Publish(userSigned);
 
             return true;
         }
