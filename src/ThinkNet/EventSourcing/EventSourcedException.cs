@@ -8,6 +8,9 @@ namespace ThinkNet.EventSourcing
     [Serializable]
     public class EventSourcedException : ThinkNetException
     {
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public EventSourcedException()
         { }
 

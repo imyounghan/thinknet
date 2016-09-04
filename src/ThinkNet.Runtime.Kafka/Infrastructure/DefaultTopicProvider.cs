@@ -1,35 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
+using ThinkNet.EventSourcing;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Infrastructure
 {
     public class DefaultTopicProvider : ITopicProvider
     {
-        public string GetTopic(Type type)
-        {
-            if(type == typeof(EventStream))
-                return "EventStreams";
+        //public string GetTopic(Type type)
+        //{
+        //    if(type == typeof(EventStream) || type == typeof(VersionedEvent))
+        //        return "EventStreams";
 
-            if(type == typeof(CommandReply))
-                return "CommandResults";
+        //    if(type == typeof(RepliedCommand))
+        //        return "CommandResults";
 
-            if(TypeHelper.IsCommand(type))
-                return "Commands";
+        //    if(TypeHelper.IsCommand(type))
+        //        return "Commands";
 
-            if(TypeHelper.IsEvent(type))
-                return "Events";
+        //    if(TypeHelper.IsEvent(type))
+        //        return "Events";
 
-            throw new ThinkNetException(string.Format("Unknown topic from the type of '{0}'.", type.FullName));
-        }
+        //    throw new ThinkNetException(string.Format("Unknown topic from the type of '{0}'.", type.FullName));
+        //}
 
         public string GetTopic(object payload)
         {
-            if (payload is EventStream) {
+            if (payload is VersionedEvent) {
                 return "EventStreams";
             }
 
-            if (payload is CommandReply) {
+            if (payload is RepliedCommand) {
                 return "CommandResults";
             }
 
@@ -50,10 +50,10 @@ namespace ThinkNet.Infrastructure
                 case "EventStreams":
                     return typeof(EventStream);
                 case "CommandResults":
-                    return typeof(CommandReply);
+                    return typeof(RepliedCommand);
                 case "Commands":
                 case "Events":
-                    return typeof(IDictionary<string, string>);
+                    return typeof(GeneralData);
                 default:
                     throw new ThinkNetException(string.Format("Unknown topic of '{0}'.", topic));
             }

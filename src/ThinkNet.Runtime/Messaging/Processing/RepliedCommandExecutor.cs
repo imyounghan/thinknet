@@ -1,17 +1,15 @@
-﻿using System;
-
-namespace ThinkNet.Messaging.Processing
+﻿namespace ThinkNet.Messaging.Processing
 {
-    public class CommandReplyExecutor : MessageExecutor<CommandReply>
+    public class RepliedCommandExecutor : MessageExecutor<RepliedCommand>
     {
         private readonly ICommandNotification _notification;
 
-        public CommandReplyExecutor(ICommandNotification notification)
+        public RepliedCommandExecutor(ICommandNotification notification)
         {
             this._notification = notification;
         }
 
-        protected override ExecutionStatus Execute(CommandReply reply)
+        protected override ExecutionStatus Execute(RepliedCommand reply)
         {
             switch(reply.CommandReturnType) {
                 case CommandReturnType.CommandExecuted:

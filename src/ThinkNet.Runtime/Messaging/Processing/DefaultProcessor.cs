@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Handling;
 
@@ -24,21 +25,21 @@ namespace ThinkNet.Messaging.Processing
             this._receiver = receiver;
 
             this.executorDict = new Dictionary<string, IExecutor>() {
-                { StandardMetadata.CommandKind, new CommandExecutor(sender, handlerProvider) },
+                { StandardMetadata.CommandKind, new CommandExecutor(sender, handlerProvider, handlerStore) },
                 { StandardMetadata.EventKind, new EventExecutor(handlerStore, handlerProvider) },
-                { StandardMetadata.EventStreamKind, new EventStreamExecutor(handlerProvider, eventBus, sender, eventPublishedVersionStore) },
-                { StandardMetadata.CommandReplyKind, new CommandReplyExecutor(notification) }
+                { StandardMetadata.VersionedEventKind, new VersionedEventExecutor(handlerProvider, eventBus, sender, eventPublishedVersionStore) },
+                { StandardMetadata.RepliedCommandKind, new RepliedCommandExecutor(notification) }
             };
             this.lockObject = new object();
         }
 
         protected virtual string GetKind(object data)
         {
-            if (data is EventStream)
-                return StandardMetadata.EventStreamKind;
+            if (data is VersionedEvent)
+                return StandardMetadata.VersionedEventKind;
 
-            if(data is CommandReply)
-                return StandardMetadata.CommandReplyKind;
+            if(data is RepliedCommand)
+                return StandardMetadata.RepliedCommandKind;
 
             if (data is IEvent)
                 return StandardMetadata.EventKind;

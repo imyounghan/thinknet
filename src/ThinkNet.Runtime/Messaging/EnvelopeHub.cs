@@ -14,16 +14,18 @@ namespace ThinkNet.Messaging
     {
         //private readonly ConcurrentDictionary<string, SemaphoreSlim> semaphores;
         private readonly BlockingCollection<Envelope>[] brokers;
+        private readonly IRoutingKeyProvider _routingKeyProvider;
 
         private CancellationTokenSource cancellationSource;
 
         [ImportingConstructor]
-        public EnvelopeHub()
-            : this(ConfigurationSetting.Current.QueueCount, ConfigurationSetting.Current.QueueCapacity)
+        public EnvelopeHub(IRoutingKeyProvider routingKeyProvider)
+            : this(routingKeyProvider, ConfigurationSetting.Current.QueueCount, ConfigurationSetting.Current.QueueCapacity)
         { }
 
-        protected EnvelopeHub(int queueCount, int queueCapacity)
+        protected EnvelopeHub(IRoutingKeyProvider routingKeyProvider, int queueCount, int queueCapacity)
         {
+            this._routingKeyProvider = routingKeyProvider;
             this.brokers = new BlockingCollection<Envelope>[queueCount];
 
             for(int i = 0; i < queueCount; i++) {
@@ -48,9 +50,15 @@ namespace ThinkNet.Messaging
             return brokers[index];
         }
 
+        protected virtual string GetKey(Envelope envelope)
+        {
+            return envelope.GetMetadata(StandardMetadata.SourceId)
+                .IfEmpty(() => _routingKeyProvider.GetRoutingKey(envelope.Body));
+        }
+
         protected void Distribute(Envelope envelope)
         {
-            GetBroker(envelope.GetMetadata(StandardMetadata.RoutingKey)).Add(envelope);
+            this.GetBroker(this.GetKey(envelope)).Add(envelope);
         }
 
         public event EventHandler<Envelope> EnvelopeReceived = (sender, args) => { };

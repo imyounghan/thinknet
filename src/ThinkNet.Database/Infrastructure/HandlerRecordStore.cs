@@ -28,7 +28,7 @@ namespace ThinkNet.Infrastructure
             })
             .ContinueWith(task => {
                 foreach (var record in task.Result) {
-                    base.AddHandlerInfo(record.MessageId, record.MessageType, record.HandlerType);
+                    base.AddHandlerInfo(record.MessageId, record.MessageTypeName, record.HandlerTypeName);
                 }
             });
         }
@@ -38,12 +38,9 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override void AddHandlerInfo(string messageId, Type messageType, Type handlerType)
         {
-            var messageTypeName = messageType.FullName;
-            var handlerTypeName = handlerType.FullName;
+            base.AddHandlerInfo(messageId, messageType.FullName, handlerType.FullName);
 
-            base.AddHandlerInfo(messageId, messageTypeName, handlerTypeName);
-
-            var handlerRecord = new HandlerRecord(messageId, messageTypeName, handlerTypeName);
+            var handlerRecord = new HandlerRecord(messageId, messageType, handlerType);
             Task.Factory.StartNew(() => {
                 using (var context = _contextFactory.CreateDataContext()) {
                     var executed = context.CreateQuery<HandlerRecord>()

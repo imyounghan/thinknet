@@ -1,20 +1,21 @@
 ﻿using System;
-using UserRegistration.ReadModel;
 
 namespace UserRegistration
 {
     public class UserRegisterService
     {
-        private readonly IUserDao _userDao;
-        public UserRegisterService(IUserDao userDao)
+        private readonly IUniqueLoginNameService _uniqueService;
+        private readonly string _commandId;
+        public UserRegisterService(IUniqueLoginNameService uniqueService, string commandId)
         {
-            this._userDao = userDao;
+            this._uniqueService = uniqueService;
+            this._commandId = commandId;
         }
 
 
         public User Register(string loginId, string password, string userName, string email)
         {
-            if (_userDao.Find(loginId) != null) {
+            if (!_uniqueService.Validate(loginId, _commandId)) {
                 throw new AggregateException("用户名已存在！");
             }
 

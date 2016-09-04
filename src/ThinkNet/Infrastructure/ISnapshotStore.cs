@@ -1,4 +1,5 @@
-﻿
+﻿using ThinkNet.EventSourcing;
+
 namespace ThinkNet.Infrastructure
 {
     /// <summary>
@@ -9,14 +10,14 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 获取最新的快照。
         /// </summary>
-        DataStream GetLastest(DataKey sourceKey);
+        IEventSourced GetLastest(DataKey sourceKey);
         /// <summary>
         /// 存储聚合快照。
         /// </summary>
-        bool Save(DataStream snapshot);
+        void Save(IEventSourced snapshot);
         /// <summary>
         /// 从存储中删除快照。
         /// </summary>
-        bool Remove(DataKey sourceKey);
+        void Remove(DataKey sourceKey);
     }    
 }

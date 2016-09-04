@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ThinkNet.Database;
-
+using ThinkNet.EventSourcing;
 
 namespace ThinkNet.Infrastructure
 {
@@ -14,16 +15,18 @@ namespace ThinkNet.Infrastructure
     public class SnapshotStore : ISnapshotStore
     {
         private readonly IDataContextFactory _dbContextFactory;
+        private readonly ISerializer _serializer;
         private readonly bool _persistent;
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public SnapshotStore(IDataContextFactory dbContextFactory)
+        public SnapshotStore(IDataContextFactory dbContextFactory, ISerializer serializer)
         {
             this._dbContextFactory = dbContextFactory;
+            this._serializer = serializer;
 
-            this._persistent = ConfigurationManager.AppSettings["thinkcfg.snapshot_storage"].Change(false);
+            this._persistent = ConfigurationManager.AppSettings["thinkcfg.snapshot_storage"].ChangeIfError(false);
         }
 
         /// <summary>
@@ -35,76 +38,70 @@ namespace ThinkNet.Infrastructure
         }
 
 
-        public DataStream GetLastest(DataKey sourceKey)
+        public IEventSourced GetLastest(DataKey sourceKey)
         {
             if (!_persistent)
                 return null;
+            
+            var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 
-            var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
-            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
-
-            var task = Task.Factory.StartNew(() => {
-                using (var context = _dbContextFactory.CreateDataContext()) {
+            var snapshot = Task.Factory.StartNew(() => {
+                using(var context = _dbContextFactory.CreateDataContext()) {
                     return context.CreateQuery<Snapshot>()
-                        .Where(p => p.AggregateRootId == sourceKey.SourceId &&
-                            p.AggregateRootTypeCode == aggregateRootTypeCode)
+                        .Where(p => p.AggregateRootId == sourceKey.SourceId && p.AggregateRootTypeCode == aggregateRootTypeCode)
+                        .OrderByDescending(p => p.Version)
                         .FirstOrDefault();
                 }
-            });
-            task.Wait();
-
-            var snapshot = task.Result;
+            }).Result;
+            
 
             if (snapshot == null)
                 return null;
 
-            return new DataStream {
-                Key = sourceKey,
-                Payload = snapshot.Data,
-                Version = snapshot.Version
-            };
+            return (IEventSourced)_serializer.DeserializeFromBinary(snapshot.Data, sourceKey.GetSourceType());
             
         }
 
-        public bool Save(DataStream snapshot)
+        public void Save(IEventSourced aggregateRoot)
         {
             if (!_persistent)
-                return false;
+                return;
 
-            var aggregateRootTypeName = string.Concat(snapshot.Key.Namespace, ".", snapshot.Key.TypeName);
-            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
+            var aggregateRootType = aggregateRoot.GetType();
 
-            var data = new Snapshot {
-                AggregateRootId = snapshot.Key.SourceId,
-                AggregateRootTypeCode = aggregateRootTypeCode,
-                Data = snapshot.Payload,
-                Version = snapshot.Version,
+            var snapshot = new Snapshot {
+                AggregateRootId = aggregateRoot.Id.ToString(),
+                AggregateRootTypeCode = aggregateRootType.FullName.GetHashCode(),
+                AggregateRootTypeName = string.Concat(aggregateRootType.FullName, ", ", Path.GetFileNameWithoutExtension(aggregateRootType.Assembly.ManifestModule.FullyQualifiedName)),
+                Data = _serializer.SerializeToBinary(aggregateRoot),
+                Version = aggregateRoot.Version,
                 Timestamp = DateTime.UtcNow
             };
 
-            var task = Task.Factory.StartNew(() => {
-                using (var context = _dbContextFactory.CreateDataContext()) {
-                    bool exist = context.CreateQuery<Snapshot>()
-                        .Any(entity => entity.AggregateRootId == data.AggregateRootId &&
-                            entity.AggregateRootTypeCode == data.AggregateRootTypeCode);
-                    if (exist) {
-                        context.Update(snapshot);
-                    }
-                    else {
-                        context.Save(snapshot);
-                    }
+            Task.Factory.StartNew(() => {
+                using(var context = _dbContextFactory.CreateDataContext()) {
+                    context.Save(snapshot);
                     context.Commit();
                 }
+            }).ContinueWith(task => {
+                if(task.Status == TaskStatus.Faulted) {
+                    if(LogManager.Default.IsWarnEnabled)
+                        LogManager.Default.Warn(task.Exception,
+                            "snapshot persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
+                            aggregateRoot.Id, aggregateRootType.FullName, aggregateRoot.Version);
+                }
+                else {
+                    if(LogManager.Default.IsDebugEnabled)
+                        LogManager.Default.DebugFormat("make snapshot completed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
+                           aggregateRoot.Id, aggregateRootType.FullName, aggregateRoot.Version);
+                }
             });
-            task.Wait();
-
-            return task.Exception == null;
         }
 
-        public bool Remove(DataKey sourceKey)
+        public void Remove(DataKey sourceKey)
         {
             if (!_persistent)
-                return false;
+                return;
 
             var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
@@ -119,9 +116,6 @@ namespace ThinkNet.Infrastructure
                     context.Commit();
                 }
             });
-            task.Wait();
-
-            return task.Exception == null;
         }
     }
 }

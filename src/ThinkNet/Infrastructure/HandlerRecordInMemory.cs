@@ -12,6 +12,9 @@ namespace ThinkNet.Infrastructure
         private readonly HashSet<HandlerRecordData> _handlerInfoSet;
         private readonly Timer timer;
 
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public HandlerRecordInMemory()
         {
             timer = new Timer(RemoveHandleInfo, null, 5000, 2000);
@@ -34,6 +37,9 @@ namespace ThinkNet.Infrastructure
             this.AddHandlerInfo(messageId, messageType.FullName, handlerType.FullName);
         }
 
+        /// <summary>
+        /// 添加处理程序信息到内存中
+        /// </summary>
         protected void AddHandlerInfo(string messageId, string messageTypeName, string handlerTypeName)
         {
             var messageTypeCode = messageTypeName.GetHashCode();
@@ -41,12 +47,16 @@ namespace ThinkNet.Infrastructure
 
             _handlerInfoSet.Add(new HandlerRecordData(messageId, messageTypeCode, handlerTypeCode));
         }
-
+        /// <summary>
+        /// 一个表示该处理程序信息是否执行过的返回值 。
+        /// </summary>
         public virtual bool HandlerIsExecuted(string messageId, Type messageType, Type handlerType)
         {
             return this.HandlerIsExecuted(messageId, messageType.FullName, handlerType.FullName);
         }
-
+        /// <summary>
+        /// 判断内存中是否存在该处理程序信息。
+        /// </summary>
         protected bool HandlerIsExecuted(string messageId, string messageTypeName, string handlerTypeName)
         {
             var messageTypeCode = messageTypeName.GetHashCode();

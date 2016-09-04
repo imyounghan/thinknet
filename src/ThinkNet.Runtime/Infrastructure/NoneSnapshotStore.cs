@@ -1,21 +1,18 @@
-﻿
+﻿using ThinkNet.EventSourcing;
+
 namespace ThinkNet.Infrastructure
 {
     internal class NoneSnapshotStore : ISnapshotStore
     {
-        public DataStream GetLastest(DataKey sourceKey)
+        public IEventSourced GetLastest(DataKey sourceKey)
         {
             return null;
         }
 
-        public bool Save(DataStream snapshot)
-        {
-            return false;
-        }
+        public void Save(IEventSourced snapshot)
+        { }
 
-        public bool Remove(DataKey sourceKey)
-        {
-            return false;
-        }
+        public void Remove(DataKey sourceKey)
+        { }
     }
 }

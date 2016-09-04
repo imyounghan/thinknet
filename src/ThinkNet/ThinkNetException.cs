@@ -32,6 +32,9 @@ namespace ThinkNet
             this.MessageCode = "-1";
         }
 
+        /// <summary>
+        /// 错误编码
+        /// </summary>
         public string MessageCode { get; set; }
     }
 }

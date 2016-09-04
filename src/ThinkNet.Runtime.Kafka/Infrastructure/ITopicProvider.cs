@@ -5,7 +5,7 @@ namespace ThinkNet.Infrastructure
     {
         string GetTopic(object payload);
 
-        string GetTopic(Type type);
+        //string GetTopic(Type type);
 
         Type GetType(string topic);
     }

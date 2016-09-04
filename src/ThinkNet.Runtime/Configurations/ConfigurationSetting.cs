@@ -11,8 +11,8 @@ namespace ThinkNet.Configurations
         {
             this.HandleRetrytimes = 5;
             this.HandleRetryInterval = 1000;
-            this.QueueCount = ConfigurationManager.AppSettings["thinkcfg.queue_count"].Change(4);
-            this.QueueCapacity = ConfigurationManager.AppSettings["thinkcfg.queue_capacity"].Change(1000);
+            this.QueueCount = ConfigurationManager.AppSettings["thinkcfg.queue_count"].ChangeIfError(4);
+            this.QueueCapacity = ConfigurationManager.AppSettings["thinkcfg.queue_capacity"].ChangeIfError(1000);
             //this.EnableCommandProcessor = true;
             //this.EnableEventProcessor = true;
             //this.EnableSynchronousProcessor = true;

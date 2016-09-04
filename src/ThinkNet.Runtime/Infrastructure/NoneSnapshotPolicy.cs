@@ -1,9 +1,10 @@
-﻿
+﻿using ThinkNet.EventSourcing;
+
 namespace ThinkNet.Infrastructure
 {
     internal class NoneSnapshotPolicy : ISnapshotPolicy
     {
-        public bool ShouldbeCreateSnapshot(DataStream snapshot)
+        public bool ShouldbeCreateSnapshot(IEventSourced snapshot)
         {
             return false;
         }

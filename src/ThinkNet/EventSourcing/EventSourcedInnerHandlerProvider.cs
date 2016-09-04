@@ -8,6 +8,9 @@ using ThinkNet.Messaging;
 
 namespace ThinkNet.EventSourcing
 {
+    /// <summary>
+    /// 表示这是一个获取聚合根内部处理器的提供者
+    /// </summary>
     public static class EventSourcedInnerHandlerProvider
     {
         private readonly static ConcurrentDictionary<Type, IDictionary<Type, MethodInfo>> _innerHandlers;
@@ -42,6 +45,9 @@ namespace ThinkNet.EventSourcing
             return eventHandlerDic;
         }
 
+        /// <summary>
+        /// 初始化聚合根内部处理器并提供缓存能力。
+        /// </summary>
         public static void Initialize(IEnumerable<Type> types)
         {
             foreach (var type in types.Where(TypeHelper.IsEventSourced)) {

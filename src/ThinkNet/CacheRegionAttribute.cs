@@ -8,6 +8,9 @@ namespace ThinkNet
     [AttributeUsage(AttributeTargets.Class)]
     public class CacheRegionAttribute : Attribute
     {
+        /// <summary>
+        /// 默认的缓存分区名称
+        /// </summary>
         public const string DefaultRegionName = "ThinkCache";
 
 

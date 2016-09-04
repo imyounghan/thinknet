@@ -1,8 +1,12 @@
 ﻿
 namespace ThinkNet.Infrastructure
 {
-    public class EventItem
+    public class EventDataItem
     {
+        /// <summary>
+        /// 事件ID
+        /// </summary>
+        public long EventId { get; set; }
         /// <summary>
         /// 顺序
         /// </summary>
@@ -18,14 +22,12 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 类型名称
         /// </summary>
-        public string TypeName { get; set; }
-        /// <summary>
-        /// 事件ID
-        /// </summary>
-        public string EventId { get; set; }
+        public string TypeName { get; set; }        
         /// <summary>
         /// 事件流
         /// </summary>
         public byte[] Payload { get; set; }
+
+        //public virtual EventData EventData { get; set; }
     }
 }

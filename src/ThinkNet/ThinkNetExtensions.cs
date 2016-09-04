@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -11,6 +12,9 @@ using System.Text.RegularExpressions;
 
 namespace ThinkNet
 {
+    /// <summary>
+    /// 表示这是一个扩展类
+    /// </summary>
     public static class ThinkNetExtensions
     {
         /// <summary>
@@ -70,13 +74,29 @@ namespace ThinkNet
         }
 
         /// <summary>
-        /// Returns default value for provided type
+        /// 获取该类型的默认值
         /// </summary>
-        public static object GetDefault(this Type t)
+        public static object GetDefaultValue(this Type type)
         {
-            if (!t.IsValueType)
+            if (!type.IsValueType)
                 return null;
-            return Activator.CreateInstance(t);
+            return Activator.CreateInstance(type);
+        }
+
+        /// <summary>
+        /// 获取该类型的程序集名称
+        /// </summary>
+        public static string GetAssemblyName(this Type type)
+        {
+            return Path.GetFileNameWithoutExtension(type.Assembly.ManifestModule.FullyQualifiedName);
+        }
+
+        /// <summary>
+        /// 获取该类型的完整名称且包括程序集名称
+        /// </summary>
+        public static string GetFullName(this Type type)
+        {
+            return string.Concat(type.FullName, ", ", type.GetAssemblyName());
         }
 
         /// <summary>
@@ -200,6 +220,37 @@ namespace ThinkNet
         }
 
         /// <summary>
+        /// 将 <param name="str" /> 转换为 <param name="targetType" /> 的值。如果转换失败则使用 <param name="defaultValue" /> 的值。
+        /// </summary>
+        public static object ChangeIfError(this string str, Type targetType, object defaultValue)
+        {
+            if(string.IsNullOrEmpty(str))
+                return defaultValue;
+
+            try {
+                return str.Change(targetType);
+            }
+            catch(Exception) {
+                return defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// 将 <param name="str" /> 转换为 <param name="targetType" /> 的值。一个指示转换是否成功的返回值 <param name="result" />。
+        /// </summary>
+        public static bool TryChange(this string str, Type targetType, out object result)
+        {
+            try {
+                result = str.Change(targetType);
+                return true;
+            }
+            catch(Exception) {
+                result = targetType.GetDefaultValue();
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 将 <param name="str" /> 转换为 <typeparam name="T" /> 的值。
         /// </summary>
         public static T Change<T>(this string str)
@@ -209,9 +260,9 @@ namespace ThinkNet
         }
 
         /// <summary>
-        /// 将 <param name="string" /> 转换为 <typeparam name="T" /> 的值。如果转换失败则使用 <param name="defaultValue" /> 的值。
+        /// 将 <param name="str" /> 转换为 <typeparam name="T" /> 的值。如果转换失败则使用 <param name="defaultValue" /> 的值。
         /// </summary>
-        public static T Change<T>(this string str, T defaultValue)
+        public static T ChangeIfError<T>(this string str, T defaultValue)
             where T : struct
         {
             T result;
@@ -223,7 +274,7 @@ namespace ThinkNet
         }
 
         /// <summary>
-        /// 将 <param name="string" /> 转换为 <typeparam name="T" /> 的值。一个指示转换是否成功的返回值 <param name="result" />。
+        /// 将 <param name="str" /> 转换为 <typeparam name="T" /> 的值。一个指示转换是否成功的返回值 <param name="result" />。
         /// </summary>
         public static bool TryChange<T>(this string str, out T result)
             where T : struct
@@ -238,7 +289,9 @@ namespace ThinkNet
             }
         }
 
-
+        /// <summary>
+        /// 克隆一个 <typeparamref name="T"/> 的副本。
+        /// </summary>
         public static T Clone<T>(this T obj)
             where T : class
         {
@@ -380,6 +433,9 @@ namespace ThinkNet
             return value;
         }
 
+        /// <summary>
+        /// 如果指定的键尚不存在，则将键/值对添加到 <see cref="IDictionary{TKey, TValue}"/> 中；如果指定的键已存在，则更新 <see cref="IDictionary{TKey, TValue}"/> 中的键/值对。
+        /// </summary>
         public static TValue AddOrUpdate<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey key, Func<TValue> addValueFactory, Func<TValue, TValue> updateValueFactory)
         {
             lock (GetLockObj(dict)) {
@@ -390,7 +446,7 @@ namespace ThinkNet
         /// <summary>
         /// 获取key的元素
         /// </summary>
-        public static TValue Get<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key)
+        public static TValue GetOrDefault<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key)
         {
             TValue value;
             if (dict.TryGetValue(key, out value)) {
@@ -403,13 +459,22 @@ namespace ThinkNet
         /// <summary>
         /// 删除存在key的元素
         /// </summary>
-        public static TValue Remove<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key)
+        public static void Remove<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key)
         {
-            if (dict == null || dict.Count == 0)
+            TValue value;
+            dict.TryRemove(key, out value);
+        }
+
+        /// <summary>
+        /// 删除存在key的元素
+        /// </summary>
+        public static TValue RemoveAndGet<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key)
+        {
+            if(dict == null || dict.Count == 0)
                 return default(TValue);
 
             TValue value;
-            if (dict.TryRemove(key, out value)) {
+            if(dict.TryRemove(key, out value)) {
                 return value;
             }
 

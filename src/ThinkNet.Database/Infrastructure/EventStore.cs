@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ThinkNet.Database;
+using ThinkNet.EventSourcing;
+using ThinkNet.Messaging;
 
 
 namespace ThinkNet.Infrastructure
@@ -14,115 +16,153 @@ namespace ThinkNet.Infrastructure
     public class EventStore : IEventStore
     {
         private readonly IDataContextFactory _dbContextFactory;
+        private readonly ISerializer _serializer;
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public EventStore(IDataContextFactory dbContextFactory)
+        public EventStore(IDataContextFactory dbContextFactory, ISerializer serializer)
         {
             this._dbContextFactory = dbContextFactory;
+            this._serializer = serializer;
         }
 
-        private bool EventPersisted(IDataContext context, int aggregateRootTypeCode, string aggregateRootId, string correlationId)
+        private bool EventPersisted(IDataContext context, int aggregateRootTypeCode, string aggregateRootId, int version, string correlationId)
         {
-            return context.CreateQuery<Event>()
-                .Any(p => p.CorrelationId == correlationId &&
+            var query = context.CreateQuery<EventData>();
+            if(!query.Any(p => p.CorrelationId == correlationId &&
                     p.AggregateRootId == aggregateRootId &&
-                    p.AggregateRootTypeCode == aggregateRootTypeCode);
+                    p.AggregateRootTypeCode == aggregateRootTypeCode)) {
+                return false;
+            }
+
+            return query.Any(p => p.AggregateRootId == aggregateRootId &&
+                    p.AggregateRootTypeCode == aggregateRootTypeCode &&
+                    p.Version == version);
         }
 
-
-        public bool Save(DataKey sourceKey, string correlationId, IEnumerable<DataStream> events)
+        private EventDataItem Transform(IEvent @event)
         {
-            correlationId.NotNullOrWhiteSpace("correlationId");
+            var type = @event.GetType();
 
-            var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
-            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
+            return new EventDataItem {
+                AssemblyName = type.GetAssemblyName(),
+                Namespace = type.Namespace,
+                TypeName = type.Name,
+                Payload = _serializer.SerializeToBinary(@event)
+            };
+        }
 
-            return Task.Factory.StartNew(() => {
+        private IEvent Transform(EventDataItem @event)
+        {
+            var typeName = string.Concat(@event.Namespace, ".", @event.TypeName, ", ", @event.AssemblyName);
+            var type = Type.GetType(typeName);
+
+            return (IEvent)_serializer.DeserializeFromBinary(@event.Payload, type);
+        }
+
+        private VersionedEvent Transform(EventData @event)
+        {
+            return new VersionedEvent(string.Empty, @event.Timestamp) {
+                CommandId = @event.CorrelationId,
+                SourceId = @event.AggregateRootId,
+                SourceType = Type.GetType(@event.AggregateRootTypeName),
+                Version = @event.Version,
+                Events = @event.Items.OrderBy(p => p.Order).Select(this.Transform).ToArray()
+            };
+        }
+
+        public void Save(VersionedEvent @event)
+        {
+            var aggregateRootTypeCode = @event.SourceType.FullName.GetHashCode();
+
+            Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
-                    if (EventPersisted(context, aggregateRootTypeCode, sourceKey.SourceId, correlationId))
-                        return false;
-
                     int order = 0;
-                    foreach (var stream in events) {
-                        var @event = new Event {
-                            AggregateRootId = sourceKey.SourceId,
-                            AggregateRootTypeCode = aggregateRootTypeCode,
-                            AggregateRootTypeName = aggregateRootTypeName,
-                            Version = stream.Version,
-                            CorrelationId = correlationId,
-                            Payload = stream.Payload,
-                            AssemblyName = stream.Key.AssemblyName,
-                            Namespace = stream.Key.Namespace,
-                            TypeName = stream.Key.TypeName,
-                            EventId = stream.Key.SourceId,
-                            Order = ++order,
-                            Timestamp = DateTime.UtcNow
-                        };
-                        context.Save(@event);
-                    }
-                    context.Commit();
+                    var eventItems = @event.Events.Select(this.Transform).ToList();
+                    eventItems.ForEach(item => item.Order = ++order);
 
-                    return true;
+                    var data = new EventData() {
+                        AggregateRootId = @event.SourceId,
+                        AggregateRootTypeCode = aggregateRootTypeCode,
+                        AggregateRootTypeName = @event.SourceType.GetFullName(),
+                        CorrelationId = @event.CommandId,
+                        Items = eventItems,
+                        Version = @event.Version
+                    };
+
+                    context.Save(data);
+                    context.Commit();
                 }
-            }).Result;
+            }).ContinueWith(task => {
+                if(task.Status == TaskStatus.Faulted) {
+                    if(LogManager.Default.IsErrorEnabled)
+                        LogManager.Default.Error(task.Exception,
+                            "events persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
+                            @event.SourceId, @event.SourceType.FullName, @event.Version);
+                    throw task.Exception;
+                }
+                else {
+                    if(LogManager.Default.IsDebugEnabled)
+                        LogManager.Default.DebugFormat("events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}.",
+                            @event.SourceId, @event.SourceType.FullName, @event.CommandId);
+                }
+            });
         }
 
-        public IEnumerable<DataStream> FindAll(DataKey sourceKey, string correlationId)
+        public VersionedEvent Find(DataKey sourceKey, string correlationId)
         {
             correlationId.NotNullOrWhiteSpace("correlationId");
 
-            var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
-            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
+            var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 
-            var events = Task.Factory.StartNew(() => {
+            var @event = Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
-                    return context.CreateQuery<Event>()
+                    return context.CreateQuery<EventData>()
                         .Where(p => p.CorrelationId == correlationId &&
                             p.AggregateRootId == sourceKey.SourceId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode)
-                        .ToList();
+                        .FirstOrDefault();
                 }
             }).Result;
 
-            return events.Select(item => new DataStream {
-                Key = new DataKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
-                Version = item.Version,
-                Payload = item.Payload
-            }).AsEnumerable();
+            if(@event == null) {
+                return null;
+            }
+
+            return new VersionedEvent(string.Empty, @event.Timestamp) {
+                CommandId = correlationId,
+                SourceId = @event.AggregateRootId,
+                SourceType = Type.GetType(@event.AggregateRootTypeName),
+                Version = @event.Version,
+                Events = @event.Items.Select(this.Transform).ToArray()
+            };
         }
 
-        public IEnumerable<DataStream> FindAll(DataKey sourceKey, int version)
+        public IEnumerable<VersionedEvent> FindAll(DataKey sourceKey, int version)
         {
-            var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
-            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
+            var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 
             var events = Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
-                    return context.CreateQuery<Event>()
+                    return context.CreateQuery<EventData>()
                         .Where(p => p.AggregateRootId == sourceKey.SourceId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode &&
                             p.Version > version)
-                        .OrderBy(p => p.Version).ThenBy(p => p.Order)
+                        .OrderBy(p => p.Version)//.ThenBy(p => p.Order)
                         .ToList();
                 }
             }).Result;
 
-            return events.Select(item => new DataStream {
-                Key = new DataKey(item.EventId, item.Namespace, item.TypeName, item.AssemblyName),
-                Version = item.Version,
-                Payload = item.Payload
-            }).AsEnumerable();
+            return events.Select(this.Transform).ToArray();
         }
 
         public void RemoveAll(DataKey sourceKey)
         {
-            var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
-            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
+            var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 
             Task.Factory.StartNew(() => {
                 using (var context = _dbContextFactory.CreateDataContext()) {
-                    context.CreateQuery<Event>()
+                    context.CreateQuery<EventData>()
                      .Where(p => p.AggregateRootId == sourceKey.SourceId &&
                          p.AggregateRootTypeCode == aggregateRootTypeCode)
                      .ToList()

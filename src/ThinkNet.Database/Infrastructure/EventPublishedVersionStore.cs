@@ -31,7 +31,10 @@ namespace ThinkNet.Infrastructure
                     var versionData = context.Find<EventPublishedVersion>(new object[] { aggregateRootTypeCode, sourceKey.SourceId });
 
                     if (versionData == null) {
-                        context.Save(new EventPublishedVersion(aggregateRootTypeCode, sourceKey.SourceId, version));
+                        versionData = new EventPublishedVersion(aggregateRootTypeCode, sourceKey.SourceId, version) {
+                             AggregateRootTypeName = sourceKey.GetSourceTypeFullName()
+                        };
+                        context.Save(versionData);
                     }
                     else if (versionData.Version + 1 == version) {
                         versionData.Version = version;
@@ -49,8 +52,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override int GetPublishedVersion(DataKey sourceKey)
         {
-            var aggregateRootTypeName = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName);
-            var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
+            var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 
             return Task.Factory.StartNew(() => {
                 using (var context = _contextFactory.CreateDataContext()) {

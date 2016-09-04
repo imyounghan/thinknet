@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ThinkNet.Infrastructure
@@ -7,14 +8,15 @@ namespace ThinkNet.Infrastructure
     /// 历史事件(用于还原溯源聚合的事件)
     /// </summary>
     [Serializable]
-    public class Event
+    public class EventData
     {
+        public long EventId { get; set; }
         /// <summary>
         /// 聚合根标识。
         /// </summary>
         public string AggregateRootId { get; set; }
         /// <summary>
-        /// 聚合根类型名称
+        /// 聚合根类型的完整名称且包括程序集名称
         /// </summary>
         public string AggregateRootTypeName { get; set; }
         /// <summary>
@@ -24,31 +26,7 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 版本号。
         /// </summary>
-        public int Version { get; set; }
-        /// <summary>
-        /// 顺序
-        /// </summary>
-        public int Order { get; set; }
-        /// <summary>
-        /// 程序集
-        /// </summary>
-        public string AssemblyName { get; set; }
-        /// <summary>
-        /// 程序集
-        /// </summary>
-        public string Namespace { get; set; }
-        /// <summary>
-        /// 类型名称
-        /// </summary>
-        public string TypeName { get; set; }
-        /// <summary>
-        /// 事件ID
-        /// </summary>
-        public string EventId { get; set; }
-        /// <summary>
-        /// 事件流
-        /// </summary>
-        public byte[] Payload { get; set; }
+        public int Version { get; set; }        
         /// <summary>
         /// 发布事件的相关id
         /// </summary>
@@ -57,6 +35,8 @@ namespace ThinkNet.Infrastructure
         /// 生成事件的时间戳
         /// </summary>
         public DateTime Timestamp { get; set; }
+
+        public ICollection<EventDataItem> Items { get; set; }
 
         /// <summary>
         /// 返回此实例的哈希代码
@@ -75,7 +55,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override bool Equals(object obj)
         {
-            var other = obj as Event;
+            var other = obj as EventData;
             if (other == null) {
                 return false;
             }

@@ -15,29 +15,35 @@ namespace ThinkNet.Messaging
         /// Default Constructor.
         /// </summary>
         protected Message()
-        {
-            this.CreatedTime = DateTime.UtcNow;
-        }
+            : this(ObjectId.GenerateNewStringId())
+        { }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
         protected Message(string id)
-            : this()
+            : this(id, DateTime.UtcNow)
+        { }
+
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
+        protected Message(string id, DateTime time)
         {
-            this.Id = id.IfEmpty(ObjectId.GenerateNewStringId);
+            this.CreatedTime = time.ToUniversalTime();
+            this.Id = id;
         }
 
         /// <summary>
         /// 事件标识
         /// </summary>
-        [DataMember(Name = "id")]
+        [DataMember]
         public string Id { get; protected set; }
 
         /// <summary>
         /// 创建时间
         /// </summary>
-        [DataMember(Name = "createdTime")]
-        public DateTime CreatedTime { get; private set; }
+        [DataMember]
+        public DateTime CreatedTime { get; protected set; }
 
         /// <summary>
         /// 输出该类型的字符串

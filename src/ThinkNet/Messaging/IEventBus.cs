@@ -10,7 +10,7 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 发布领域事件
         /// </summary>
-        void Publish(EventStream @event);
+        void Publish(IEvent @event);
 
         /// <summary>
         /// 发布一组事件

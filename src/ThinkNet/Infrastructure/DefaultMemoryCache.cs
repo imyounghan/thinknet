@@ -7,6 +7,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ThinkNet.Infrastructure
 {
+    /// <summary>
+    /// <see cref="ICache"/> 的默认实现类
+    /// </summary>
     public class DefaultMemoryCache : ICache
     {
         private readonly BinaryFormatter _serializer;
@@ -20,11 +23,11 @@ namespace ThinkNet.Infrastructure
         public DefaultMemoryCache()
         {
             this._serializer = new BinaryFormatter();
-            this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].Change(false);
+            this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].ChangeIfError(false);
 
             this.cache = System.Runtime.Caching.MemoryCache.Default;
             this.policy = new CacheItemPolicy() {
-                 SlidingExpiration = TimeSpan.FromSeconds(ConfigurationManager.AppSettings["thinkcfg.caching_expired"].Change(300))
+                 SlidingExpiration = TimeSpan.FromSeconds(ConfigurationManager.AppSettings["thinkcfg.caching_expired"].ChangeIfError(300))
             };
         }
 

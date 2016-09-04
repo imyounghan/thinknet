@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -12,8 +11,14 @@ namespace ThinkNet.Infrastructure
     [Serializable]
     public struct DataKey : IEquatable<DataKey>
     {
+        /// <summary>
+        /// 空的主键
+        /// </summary>
         public static readonly DataKey Empty = new DataKey();
 
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public DataKey(string str)
         {
             var match = Regex.Match(str, @"^([\w-\.]+)\.([\w-]+),\s([\w-]+)@([\w-]+)$");
@@ -26,18 +31,24 @@ namespace ThinkNet.Infrastructure
             this.assemblyName = match.Groups[3].Value;
             this.sourceId = match.Groups[4].Value;
         }
-
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public DataKey(object sourceId, Type sourceType)
             : this(sourceId.ToString(),
             sourceType.Namespace,
             sourceType.Name,
-            Path.GetFileNameWithoutExtension(sourceType.Assembly.ManifestModule.FullyQualifiedName))
+            sourceType.GetAssemblyName())
         { }
-
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public DataKey(string sourceId, string sourceNamespace, string sourceTypeName)
             : this(sourceId, sourceNamespace, sourceTypeName, string.Empty)
         { }
-
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public DataKey(string sourceId, string sourceNamespace, string sourceTypeName, string sourceAssemblyName)
         {
             sourceId.NotNullOrWhiteSpace("sourceId");
@@ -88,7 +99,9 @@ namespace ThinkNet.Infrastructure
             private set { this.sourceId = value; }
         }
 
-
+        /// <summary>
+        /// 输出该结构的字符串格式。
+        /// </summary>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -104,6 +117,9 @@ namespace ThinkNet.Infrastructure
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 确定此实例是否与指定的对象相同。
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj == null || obj.GetType() != typeof(DataKey))
@@ -114,6 +130,9 @@ namespace ThinkNet.Infrastructure
             return IsEqual(this, other);
         }
 
+        /// <summary>
+        /// 返回此实例的哈希代码。
+        /// </summary>
         public override int GetHashCode()
         {
             var codes = new int[] {
@@ -122,6 +141,29 @@ namespace ThinkNet.Infrastructure
                 this.SourceId.GetHashCode()
             };
             return codes.Aggregate((x, y) => x ^ y);
+        }
+
+        /// <summary>
+        /// 获取源类型
+        /// </summary>
+        public Type GetSourceType()
+        {
+            string typeFullName = this.GetSourceTypeFullName();
+            return Type.GetType(typeFullName);
+        }
+        /// <summary>
+        /// 获取源类型完整名称但不包括程序集名称。
+        /// </summary>
+        public string GetSourceTypeName()
+        {
+            return string.Concat(this.Namespace, ".", this.TypeName);
+        }
+        /// <summary>
+        /// 获取源类型完整名称且包括程序集名称。
+        /// </summary>
+        public string GetSourceTypeFullName()
+        {
+            return string.Concat(this.Namespace, ".", this.TypeName, ", ", this.AssemblyName);
         }
 
         /// <summary>
@@ -160,12 +202,18 @@ namespace ThinkNet.Infrastructure
 
         #endregion
 
-
+        /// <summary>
+        /// 将 <see cref="DataKey"/> 的字符串表示形式转换为它的等效的 <see cref="DataKey"/>。
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static DataKey Parse(string input)
         {
             return new DataKey(input);
         }
-
+        /// <summary>
+        /// 将 <see cref="DataKey"/> 的字符串表示形式转换为它的等效的 <see cref="DataKey"/>。一个指示转换是否成功的返回值。
+        /// </summary>
         public static bool TryParse(string input, out DataKey result)
         {
             if (!Regex.IsMatch(input, @"^([\w-\.]+)\.([\w-]+),\s([\w-]+)@([\w-]+)$")) {

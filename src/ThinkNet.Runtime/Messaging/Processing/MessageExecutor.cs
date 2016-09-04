@@ -6,7 +6,7 @@ using ThinkNet.Configurations;
 namespace ThinkNet.Messaging.Processing
 {
     public abstract class MessageExecutor<TMessage> : IExecutor
-        where TMessage : class, IMessage
+        where TMessage : class
     {
         private readonly int _retryTimes;
 

@@ -20,6 +20,9 @@ namespace ThinkNet.Database
             where TRepository : class, IRepository<TAggregateRoot>
             where TAggregateRoot : class, IAggregateRoot;
 
+        /// <summary>
+        /// 提交事务
+        /// </summary>
         void Commit();
     }
 }

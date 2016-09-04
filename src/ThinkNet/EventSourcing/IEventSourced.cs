@@ -4,6 +4,9 @@ using ThinkNet.Messaging;
 
 namespace ThinkNet.EventSourcing
 {
+    /// <summary>
+    /// 表示继承该接口的是一个通过事件溯源的聚合根。
+    /// </summary>
     public interface IEventSourced : IAggregateRoot
     {
         /// <summary>
@@ -23,6 +26,6 @@ namespace ThinkNet.EventSourcing
         /// <summary>
         /// 通过事件还原对象状态。
         /// </summary>
-        void LoadFrom(int version, IEnumerable<IEvent> events);
+        void LoadFrom(IEnumerable<VersionedEvent> events);
     }
 }

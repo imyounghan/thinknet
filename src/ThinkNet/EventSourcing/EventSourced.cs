@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
 using ThinkNet.Database;
 using ThinkNet.Messaging;
@@ -35,11 +34,11 @@ namespace ThinkNet.EventSourcing
         new protected void RaiseEvent<TEvent>(TEvent @event)
             where TEvent : Event<TIdentify>
         {
-            HandleEvent(@event);
+            this.ApplyEvent(@event);
             base.RaiseEvent(@event);
         }
 
-        private void HandleEvent(IEvent @event)
+        private void ApplyEvent(IEvent @event)
         {
             var eventType = @event.GetType();
             var eventSourcedType = this.GetType();
@@ -70,20 +69,18 @@ namespace ThinkNet.EventSourcing
             base.ClearEvents();
         }
 
-        void IEventSourced.LoadFrom(int version, IEnumerable<IEvent> events)
+        void IEventSourced.LoadFrom(IEnumerable<VersionedEvent> events)
         {
-            if (version != this.Version + 1)
-                throw new EventSourcedException(version, this.Version);
+            foreach(var @event in events) {
+                if(@event.Version != this.Version + 1)
+                    throw new EventSourcedException(@event.Version, this.Version);
 
-            this.Version = version;
-
-            var aggregateRootStringId = this.Id.ToString();
-            foreach (var @event in events.Cast<Event<TIdentify>>()) {
-                var eventSourceStringId = @event.SourceId.ToString();
-                if (eventSourceStringId != aggregateRootStringId)
-                    throw new EventSourcedException(eventSourceStringId, aggregateRootStringId);
-
-                this.HandleEvent(@event);
+                var aggregateRootStringId = this.Id.ToString();
+                if(@event.SourceId != aggregateRootStringId) {
+                    throw new EventSourcedException(@event.SourceId, aggregateRootStringId);
+                }
+                this.Version = @event.Version;
+                @event.Events.ForEach(this.ApplyEvent);
             }
         }
 

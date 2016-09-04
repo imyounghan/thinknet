@@ -7,10 +7,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
-using System.Web;
 
 namespace ThinkNet
 {
+    /// <summary>
+    /// 表示这是一个日志管理器
+    /// </summary>
     public class LogManager
     {
         /// <summary>
@@ -633,6 +635,9 @@ namespace ThinkNet
             loggers = new ConcurrentDictionary<string, ILogger>();
         }
 
+        /// <summary>
+        /// 表示这是一个默认的日志程序。
+        /// </summary>
         public static ILogger Default { get { return GetLogger("ThinkNet"); } }
 
 

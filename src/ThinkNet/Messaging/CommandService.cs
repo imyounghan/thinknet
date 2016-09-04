@@ -11,25 +11,38 @@ namespace ThinkNet.Messaging
     {
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;
 
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         protected CommandService()
         {
             this._commandTaskDict = new ConcurrentDictionary<string, CommandTaskCompletionSource>();
         }
 
+        /// <summary>
+        /// 发送一个命令
+        /// </summary>
         public virtual void Send(ICommand command)
         {
             this.SendAsync(command).Wait();
         }
 
+        /// <summary>
+        /// 异步发送一个命令
+        /// </summary>
         public abstract Task SendAsync(ICommand command);
-
-        //protected abstract Task SendAsync(ICommand command);
-
+        
+        /// <summary>
+        /// 执行一个命令并返回处理结果
+        /// </summary>
         public CommandResult Execute(ICommand command, CommandReturnType returnType)
         {
             return this.ExecuteAsync(command, returnType).Result;
         }
 
+        /// <summary>
+        /// 在规定时间内执行一个命令并返回处理结果
+        /// </summary>
         public CommandResult Execute(ICommand command, CommandReturnType returnType, TimeSpan timeout)
         {
             var task = this.ExecuteAsync(command, returnType);
@@ -41,7 +54,7 @@ namespace ThinkNet.Messaging
         }
 
         /// <summary>
-        /// 执行一个命令
+        /// 异步执行一个命令
         /// </summary>
         public Task<CommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType)
         {

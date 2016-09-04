@@ -14,7 +14,7 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// An event stream.
         /// </summary>
-        public const string EventStreamKind = "EventStream";
+        public const string VersionedEventKind = "VersionedEvent";
 
         /// <summary>
         /// A command message.
@@ -24,18 +24,13 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// A command reply.
         /// </summary>
-        public const string CommandReplyKind = "CommandReply";
+        public const string RepliedCommandKind = "RepliedCommand";
 
         /// <summary>
         /// Kind of message, either <see cref="EventKind"/> or <see cref="CommandKind"/>.
         /// </summary>
         public const string Kind = "Kind";
-
-        /// <summary>
-        /// Identifier of the object that originated the event, if any.
-        /// </summary>
-        public const string SourceId = "SourceId";
-
+        
         /// <summary>
         /// The simple assembly name of the message payload (i.e. event or command).
         /// </summary>
@@ -57,13 +52,20 @@ namespace ThinkNet.Infrastructure
         public const string TypeName = "TypeName";
 
         /// <summary>
+        /// Identifier of the object that originated the event, if any.
+        /// </summary>
+        public const string SourceId = "SourceId";
+
+        /// <summary>
         /// The name of the entity that originated this message.
         /// </summary>
         public const string SourceType = "SourceType";
 
+        /// <summary>
+        /// Identifier of the object
+        /// </summary>
+        public const string IdentifierId = "IdentifierId";
 
-        public const string CorrelationId = "CorrelationId";
-
-        public const string RoutingKey = "RoutingKey";
+        //public const string RoutingKey = "RoutingKey";
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ThinkNet.Configurations;
+using ThinkNet.EventSourcing;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
@@ -13,7 +15,6 @@ namespace ThinkNet.Messaging
 
         private readonly ISerializer _serializer;
         private readonly ITopicProvider _topicProvider;
-        private readonly IRoutingKeyProvider _routingKeyProvider;
 
         private readonly object lockObject;
         private readonly KafkaClient kafka;
@@ -22,10 +23,10 @@ namespace ThinkNet.Messaging
         private Timer timer;
 
         public KafkaService(ISerializer serializer, ITopicProvider topicProvider, IRoutingKeyProvider routingKeyProvider)
+            : base(routingKeyProvider)
         {
             this._serializer = serializer;
             this._topicProvider = topicProvider;
-            this._routingKeyProvider = routingKeyProvider;
             this.lockObject = new object();
             this.kafka = new KafkaClient(OffsetPositionFile, KafkaSettings.Current.KafkaUris);
         }
@@ -37,21 +38,39 @@ namespace ThinkNet.Messaging
             if (disposing)
                 kafka.Dispose();
         }
-       
+
+        private GeneralData Transform(object data)
+        {
+            var serialized = _serializer.Serialize(data);
+            return new GeneralData(data.GetType()) {
+                Metadata = serialized
+            };
+        }
+
+        private EventStream Transform(VersionedEvent @event)
+        {
+            @event.Events.ForEach(item => item.SourceId = string.Empty);
+            var events = @event.Events.Select(Transform).ToArray();
+            return new EventStream(@event.SourceId, @event.SourceType) {
+                Id = @event.Id,
+                CommandId = @event.CommandId,
+                CreatedTime = @event.CreatedTime,
+                Version = @event.Version,
+                Events = events
+            };
+        }
+
         private string Serialize(Envelope envelope)
         {
             var kind = envelope.GetMetadata(StandardMetadata.Kind);
             switch (kind) {
-                case StandardMetadata.EventStreamKind:
-                case StandardMetadata.CommandReplyKind:
+                case StandardMetadata.VersionedEventKind:
+                    var @event = envelope.Body as VersionedEvent;
+                    return _serializer.Serialize(Transform(@event));
+                case StandardMetadata.RepliedCommandKind:
                     return _serializer.Serialize(envelope.Body);
                 default:
-                    var metadata = new Dictionary<string, string>();
-                    metadata[StandardMetadata.AssemblyName] = envelope.GetMetadata(StandardMetadata.AssemblyName);
-                    metadata[StandardMetadata.Namespace] = envelope.GetMetadata(StandardMetadata.Namespace);
-                    metadata[StandardMetadata.TypeName] = envelope.GetMetadata(StandardMetadata.TypeName);
-                    metadata["Playload"] = _serializer.Serialize(envelope.Body);
-                    return _serializer.Serialize(metadata);
+                    return _serializer.Serialize(Transform(envelope.Body));
             }
         }
 
@@ -73,49 +92,77 @@ namespace ThinkNet.Messaging
         private void PullThenForward(object state)
         {
             string topic = state as string;
-            var type = _topicProvider.GetType(topic);
 
             while(!cancellationSource.IsCancellationRequested) {
-                kafka.Consume(topic, _topicProvider.GetType, this.Deserialize, this.GetCorrelationId, this.Distribute);
+                kafka.Consume(topic, _topicProvider.GetType, this.Deserialize, this.GetIdentifierId, this.Distribute);
             }
         }
 
-        private string GetCorrelationId(Envelope envelope)
+        private string GetIdentifierId(Envelope envelope)
         {
-            return envelope.GetMetadata(StandardMetadata.CorrelationId);
+            return envelope.GetMetadata(StandardMetadata.IdentifierId)
+                .IfEmpty(() => {
+                    var message = envelope.Body as IMessage;
+                    if(message != null)
+                        return message.Id;
+
+                    return string.Empty;
+                });
         }
 
+
+        private VersionedEvent Transform(EventStream @event)
+        {
+            var stream = new VersionedEvent(@event.Id, @event.CreatedTime) {
+                SourceId = @event.SourceId,
+                SourceType = @event.GetSourceType(),
+                CommandId = @event.CommandId,
+                Version = @event.Version,
+                Events = @event.Events.Select(Transform).Cast<IEvent>().ToArray()
+            };
+
+            stream.Events.ForEach(item => item.SourceId = @event.SourceId);
+
+            return stream;
+        }
+
+        private object Transform(GeneralData data)
+        {
+            return _serializer.Deserialize(data.Metadata, data.GetMetadataType());
+        }
         private Envelope Deserialize(string serialized, Type type)
         {
             IMessage message;
-            if(type == typeof(EventStream) || type == typeof(CommandReply)) {
-                message = (IMessage)_serializer.Deserialize(serialized, type);
+            if(type == typeof(EventStream)) {
+                var @event = _serializer.Deserialize<EventStream>(serialized);
+                message = this.Transform(@event);
+            }
+            else if(type == typeof(RepliedCommand)) {
+                message = _serializer.Deserialize<RepliedCommand>(serialized);
             }
             else {
-                var metadata = (IDictionary<string, string>)_serializer.Deserialize(serialized, type);
-                var typeFullName = string.Format("{0}.{1}, {2}",
-                    metadata[StandardMetadata.Namespace],
-                    metadata[StandardMetadata.TypeName],
-                    metadata[StandardMetadata.AssemblyName]);
-                message = (IMessage)_serializer.Deserialize(metadata["Playload"], Type.GetType(typeFullName, true));
+                var data = _serializer.Deserialize<GeneralData>(serialized);
+                message = (IMessage)this.Transform(data);
             }
 
 
             var envelope = new Envelope(message);
-            envelope.Metadata[StandardMetadata.CorrelationId] = message.Id;
-            envelope.Metadata[StandardMetadata.RoutingKey] = _routingKeyProvider.GetRoutingKey(message);
-
+            envelope.Metadata[StandardMetadata.IdentifierId] = message.Id;
             if (type == typeof(EventStream)) {
-                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventStreamKind;
+                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.VersionedEventKind;
+                envelope.Metadata[StandardMetadata.SourceId] = ((VersionedEvent)message).SourceId;
             }
-            else if (type == typeof(CommandReply)) {
-                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandReplyKind;
+            else if (type == typeof(RepliedCommand)) {
+                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.RepliedCommandKind;
+                envelope.Metadata[StandardMetadata.SourceId] = ((RepliedCommand)message).CommandId;
             }
             else if (TypeHelper.IsCommand(type)) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
+                envelope.Metadata[StandardMetadata.SourceId] = ((ICommand)message).AggregateRootId;
             }
             else if (TypeHelper.IsEvent(type)) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
+                envelope.Metadata[StandardMetadata.SourceId] = ((IEvent)message).SourceId;
             }
 
             return envelope;
@@ -124,7 +171,7 @@ namespace ThinkNet.Messaging
         private void OnEnvelopeCompleted(object sender, Envelope envelope)
         {
             var topic = _topicProvider.GetTopic(envelope.Body);
-            kafka.RemoveOffset(topic, envelope.GetMetadata(StandardMetadata.CorrelationId));
+            kafka.RemoveOffset(topic, envelope.GetMetadata(StandardMetadata.IdentifierId));
         }
 
         private void StartingKafka()

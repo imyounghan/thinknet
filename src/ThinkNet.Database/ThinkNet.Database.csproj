@@ -52,7 +52,7 @@
     <Compile Include="Context\IContext.cs" />
     <Compile Include="Context\IContextManager.cs" />
     <Compile Include="Context\ICurrentContext.cs" />
-    <Compile Include="Infrastructure\EventItem.cs" />
+    <Compile Include="Infrastructure\EventDataItem.cs" />
     <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="ILifecycle.cs" />
     <Compile Include="Infrastructure\Repository.cs" />
@@ -61,7 +61,7 @@
     <Compile Include="IValidatable.cs" />
     <Compile Include="LifecycleVeto.cs" />
     <Compile Include="MemoryContextFactory.cs" />
-    <Compile Include="Infrastructure\Event.cs" />
+    <Compile Include="Infrastructure\EventData.cs" />
     <Compile Include="Infrastructure\EventPublishedVersion.cs" />
     <Compile Include="Infrastructure\EventStore.cs" />
     <Compile Include="Infrastructure\Repository`.cs" />

@@ -19,6 +19,8 @@ namespace ThinkNet.Configurations
             that.Register<IEnvelopeReceiver, KafkaService>();
             that.Register<IProcessor, KafkaService>("KafkaProcessor");
 
+            //Console.WriteLine("kafka:{0}", );
+
             using (var router = new BrokerRouter(new KafkaOptions(KafkaSettings.Current.KafkaUris))) {
                 int count = -1;
                 while (count++ < KafkaSettings.Current.EnsureTopicRetrycount) {

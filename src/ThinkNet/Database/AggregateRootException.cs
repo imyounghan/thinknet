@@ -7,6 +7,9 @@ namespace ThinkNet.Database
     [Serializable]
     public class AggregateRootException : ThinkNetException
     {
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public AggregateRootException()
         { }
 

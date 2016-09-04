@@ -3,33 +3,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ThinkNet.Infrastructure;
+using ThinkNet.EventSourcing;
 
 namespace ThinkNet.Messaging
 {
     internal class MessageBus : CommandService, ICommandNotification, ICommandBus, IEventBus
     {
         private readonly IEnvelopeSender _sender;
-        private readonly IRoutingKeyProvider _routingKeyProvider;
-        public MessageBus(IEnvelopeSender sender,
-            IRoutingKeyProvider routingKeyProvider)
+        public MessageBus(IEnvelopeSender sender)
         {
             this._sender = sender;
-            this._routingKeyProvider = routingKeyProvider;
         }
         
         private Envelope Transform(IMessage message)
         {
             var envelope = new Envelope(message);
-            envelope.Metadata[StandardMetadata.CorrelationId] = message.Id;
-            envelope.Metadata[StandardMetadata.RoutingKey] = _routingKeyProvider.GetRoutingKey(message);
-            if (message is EventStream) {
-                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventStreamKind;
+            envelope.Metadata[StandardMetadata.IdentifierId] = message.Id;
+            if (message is VersionedEvent) {
+                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.VersionedEventKind;
+                envelope.Metadata[StandardMetadata.SourceId] = ((VersionedEvent)message).SourceId;
+            }
+            else if(message is RepliedCommand) {
+                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.RepliedCommandKind;
+                envelope.Metadata[StandardMetadata.SourceId] = ((RepliedCommand)message).CommandId;
             }
             else if (message is ICommand) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
+                envelope.Metadata[StandardMetadata.SourceId] = ((ICommand)message).AggregateRootId;
             }
             else if (message is IEvent) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
+                envelope.Metadata[StandardMetadata.SourceId] = ((IEvent)message).SourceId;
             }
 
             return envelope;
@@ -57,7 +61,7 @@ namespace ThinkNet.Messaging
             _sender.SendAsync(events.Select(Transform));
         }
 
-        public void Publish(EventStream @event)
+        public void Publish(IEvent @event)
         {
             _sender.SendAsync(Transform(@event));
         }

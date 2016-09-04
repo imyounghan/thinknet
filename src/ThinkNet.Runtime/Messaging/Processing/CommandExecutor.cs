@@ -8,19 +8,26 @@ namespace ThinkNet.Messaging.Processing
     {
         private readonly IEnvelopeSender _sender;
         private readonly IHandlerProvider _handlerProvider;
+        private readonly IHandlerRecordStore _handlerStore;
 
-        public CommandExecutor(IEnvelopeSender sender, IHandlerProvider handlerProvider)
+        public CommandExecutor(IEnvelopeSender sender, IHandlerProvider handlerProvider, IHandlerRecordStore handlerStore)
         {
             this._sender = sender;
             this._handlerProvider = handlerProvider;
+            this._handlerStore = handlerStore;
         }
 
         protected override ExecutionStatus Execute(ICommand command)
         {
             var commandType = command.GetType();
-
             var handler = _handlerProvider.GetCommandHandler(commandType);
-            handler.Handle(command);
+
+            if(_handlerStore.HandlerIsExecuted(command.Id, commandType, handler.HanderType)) {
+                handler.Handle(command);
+                return ExecutionStatus.Obsoleted;
+            }
+
+            _handlerStore.AddHandlerInfo(command.Id, commandType, handler.HanderType);
 
             return ExecutionStatus.Completed;
         }
@@ -40,11 +47,11 @@ namespace ThinkNet.Messaging.Processing
 
         private Envelope Transform(ICommand command, Exception ex)
         {
-            var reply = new CommandReply(command.Id, ex, CommandReturnType.CommandExecuted);
+            var reply = new RepliedCommand(command.Id, ex, CommandReturnType.CommandExecuted);
             var envelope = new Envelope(reply);
-            envelope.Metadata[StandardMetadata.CorrelationId] = reply.Id;
-            envelope.Metadata[StandardMetadata.RoutingKey] = command.Id;
-            envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandReplyKind;
+            envelope.Metadata[StandardMetadata.IdentifierId] = reply.Id;
+            envelope.Metadata[StandardMetadata.SourceId] = reply.CommandId;
+            envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.RepliedCommandKind;
 
             return envelope;
         }

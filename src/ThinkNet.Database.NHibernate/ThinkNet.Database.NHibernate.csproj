@@ -58,9 +58,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="MapFiles\Event.hbm.xml" />
-    <Content Include="MapFiles\HandlerRecord.hbm.xml" />
-    <Content Include="MapFiles\Snapshot.hbm.xml" />
+    <None Include="MapFiles\EventData.hbm.xml" />
+    <None Include="MapFiles\EventDataItem.hbm.xml" />
+    <None Include="MapFiles\EventPublishedVersion.hbm.xml" />
+    <None Include="MapFiles\HandlerRecord.hbm.xml" />
+    <None Include="MapFiles\Snapshot.hbm.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThinkNet.Database\ThinkNet.Database.csproj">

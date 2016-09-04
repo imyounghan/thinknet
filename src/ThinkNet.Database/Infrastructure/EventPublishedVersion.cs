@@ -41,6 +41,10 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public int AggregateRootTypeCode { get; set; }
         /// <summary>
+        /// 聚合根类型的完整名称且包括程序集名称
+        /// </summary>
+        public string AggregateRootTypeName { get; set; }
+        /// <summary>
         /// 版本号。
         /// </summary>
         public int Version { get; set; }

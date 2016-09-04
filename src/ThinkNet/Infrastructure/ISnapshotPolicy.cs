@@ -1,4 +1,5 @@
-﻿
+﻿using ThinkNet.EventSourcing;
+
 namespace ThinkNet.Infrastructure
 {
     /// <summary>
@@ -9,6 +10,6 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 创建快照
         /// </summary>
-        bool ShouldbeCreateSnapshot(DataStream snapshot);
+        bool ShouldbeCreateSnapshot(IEventSourced snapshot);
     }    
 }

@@ -74,6 +74,9 @@ namespace ThinkNet.Database
             }
         }
 
+        /// <summary>
+        /// 将该对象演译成<typeparam name="TRole" />。
+        /// </summary>
         public TRole ActAs<TRole>() where TRole : class
         {
             if (!typeof(TRole).IsInterface) {

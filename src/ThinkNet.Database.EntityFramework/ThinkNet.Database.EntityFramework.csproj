@@ -51,11 +51,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configurations\EventDataConfiguration.cs" />
+    <Compile Include="Configurations\EventDataItemConfiguration.cs" />
+    <Compile Include="Configurations\EventPublishedVersionConfiguration.cs" />
+    <Compile Include="Configurations\HandlerRecordConfiguration.cs" />
+    <Compile Include="Configurations\SnapshotConfiguration.cs" />
     <Compile Include="EntityFrameworkContext.cs" />
     <Compile Include="EntityFrameworkContextFactory.cs" />
     <Compile Include="IEntityFrameworkContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ThinkNetDbContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

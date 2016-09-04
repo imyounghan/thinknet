@@ -29,6 +29,9 @@ namespace ThinkNet.Infrastructure
             return !IsEqual(left, right);
         }
 
+        /// <summary>
+        /// 获取该值对象所有属性的值。
+        /// </summary>
         protected virtual IEnumerable<object> GetAtomicValues()
         {
             return this.GetPropertyInfos().Select(p => p.GetValue(this, null)).AsEnumerable();

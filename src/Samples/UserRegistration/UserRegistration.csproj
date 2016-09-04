@@ -47,8 +47,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\RegisterUser.cs" />
+    <Compile Include="IUniqueLoginNameService.cs" />
+    <Compile Include="LoginNameData.cs" />
     <Compile Include="ReadMondel\IUserDao.cs" />
     <Compile Include="ReadMondel\UserModel.cs" />
+    <Compile Include="UniqueLoginNameService.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Events\UserCreated.cs" />
     <Compile Include="Handlers\UserHandler.cs" />

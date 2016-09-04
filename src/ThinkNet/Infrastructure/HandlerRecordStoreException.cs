@@ -3,6 +3,9 @@ using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
 {
+    /// <summary>
+    /// 表示存储处理器信息的异常类
+    /// </summary>
     public class HandlerRecordStoreException : ThinkNetException
     {
         /// <summary>

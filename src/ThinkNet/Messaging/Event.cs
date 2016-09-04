@@ -14,13 +14,18 @@ namespace ThinkNet.Messaging
         /// Default Constructor.
         /// </summary>
         protected Event()
-            : this(string.Empty)
         { }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
         protected Event(string id)
             : base(id)
+        { }
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
+        protected Event(string id, DateTime time)
+            : base(id, time)
         { }
 
 
@@ -64,7 +69,7 @@ namespace ThinkNet.Messaging
         [DataMember(Name = "sourceId")]
         public TSourceId SourceId
         {
-            get { return (TSourceId)this.sourceId.Change(typeof(TSourceId)); }
+            get { return (TSourceId)this.sourceId.ChangeIfError(typeof(TSourceId), default(TSourceId)); }
             internal set { this.sourceId = value.ToString(); }
         }
 

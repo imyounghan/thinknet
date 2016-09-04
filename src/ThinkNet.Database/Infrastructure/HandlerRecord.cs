@@ -17,13 +17,13 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public HandlerRecord(string messageId, string messageType, string handlerType)
+        public HandlerRecord(string messageId, Type messageType, Type handlerType)
         {
             this.MessageId = messageId;
-            this.HandlerTypeCode = handlerType.GetHashCode();
-            this.MessageTypeCode = messageType.GetHashCode();
-            this.HandlerType = handlerType;
-            this.MessageType = messageType;
+            this.HandlerTypeCode = handlerType.FullName.GetHashCode();
+            this.MessageTypeCode = messageType.FullName.GetHashCode();
+            this.HandlerTypeName = handlerType.GetFullName();
+            this.MessageTypeName = messageType.GetFullName();
             this.Timestamp = DateTime.UtcNow;
         }
 
@@ -43,11 +43,11 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 消息类型名称
         /// </summary>
-        public string MessageType { get; set; }
+        public string MessageTypeName { get; set; }
         /// <summary>
         /// 处理器类型名称
         /// </summary>
-        public string HandlerType { get; set; }
+        public string HandlerTypeName { get; set; }
 
         /// <summary>
         /// 创建时间
@@ -86,7 +86,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}_{1}_{2}", MessageId, MessageType, HandlerType);
+            return string.Format("{0}_{1}_{2}", MessageId, MessageTypeName, HandlerTypeName);
         }
     }
 }

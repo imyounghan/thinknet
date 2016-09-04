@@ -50,6 +50,7 @@
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
@@ -58,6 +59,7 @@
     <Compile Include="CachingAttribute.cs" />
     <Compile Include="EventSourcing\EventSourced.cs" />
     <Compile Include="EventSourcing\EventSourcedException.cs" />
+    <Compile Include="EventSourcing\EventSourcedRepository.cs" />
     <Compile Include="EventSourcing\IEventSourced.cs" />
     <Compile Include="EventSourcing\EventSourcedRepositoryExtensions.cs" />
     <Compile Include="DisposableObject.cs" />
@@ -66,14 +68,16 @@
     <Compile Include="Infrastructure\ICache.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Infrastructure\ISerializer.cs" />
+    <Compile Include="Infrastructure\SerializerExtensions.cs" />
     <Compile Include="Lifecycle.cs" />
     <Compile Include="LifeCycleAttribute.cs" />
     <Compile Include="LogManager.cs" />
-    <Compile Include="Messaging\EventStream.cs" />
     <Compile Include="Messaging\Handling\IMessageHandler.cs" />
     <Compile Include="Messaging\ICommandBus.cs" />
     <Compile Include="Messaging\ICommandService.cs" />
     <Compile Include="Messaging\IEventBus.cs" />
+    <Compile Include="EventSourcing\VersionedEvent.cs" />
     <Compile Include="RegisterAttribute.cs" />
     <Compile Include="Infrastructure\EventPublishedVersionInMemory.cs" />
     <Compile Include="Infrastructure\IEventPublishedVersionStore.cs" />
@@ -81,7 +85,6 @@
     <Compile Include="Infrastructure\ISnapshotPolicy.cs" />
     <Compile Include="Infrastructure\ISnapshotStore.cs" />
     <Compile Include="Infrastructure\DataKey.cs" />
-    <Compile Include="Infrastructure\DataStream.cs" />
     <Compile Include="Infrastructure\ObjectId.cs" />
     <Compile Include="Database\AggregateRoot.cs" />
     <Compile Include="Database\AggregateRootException.cs" />

@@ -32,21 +32,13 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public int AggregateRootTypeCode { get; set; }
         /// <summary>
+        /// 聚合根类型名称
+        /// </summary>
+        public string AggregateRootTypeName { get; set; }
+        /// <summary>
         /// 创建该聚合快照的聚合根版本号
         /// </summary>
-        public int Version { get; set; }
-        /// <summary>
-        /// 程序集
-        /// </summary>
-        public string AssemblyName { get; set; }
-        /// <summary>
-        /// 程序集
-        /// </summary>
-        public string Namespace { get; set; }
-        /// <summary>
-        /// 类型名称
-        /// </summary>
-        public string TypeName { get; set; }
+        public int Version { get; set; }        
         /// <summary>
         /// 聚合根数据
         /// </summary>
@@ -86,7 +78,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}_{1}", AggregateRootTypeCode, AggregateRootId);
+            return string.Format("{0}@{1}", AggregateRootTypeName, AggregateRootId);
         }
     }
 }

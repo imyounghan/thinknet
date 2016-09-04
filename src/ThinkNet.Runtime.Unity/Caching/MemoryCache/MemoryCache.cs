@@ -45,7 +45,7 @@ namespace ThinkNet.Caching
             TimeSpan expiration = TimeSpan.FromSeconds(300);
             string expirationString;
             if (props != null && props.TryGetValue("expiration", out expirationString)) {
-                expiration = TimeSpan.FromSeconds(expirationString.Change(300));
+                expiration = TimeSpan.FromSeconds(expirationString.ChangeIfError(300));
             }
 
             return expiration;

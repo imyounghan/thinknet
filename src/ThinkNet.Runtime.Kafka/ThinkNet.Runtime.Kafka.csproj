@@ -7,7 +7,7 @@
     <ProjectGuid>{05D9D063-323F-42B8-A8DA-4D36980B99D3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ThinkNet.Runtime.Kafka</RootNamespace>
+    <RootNamespace>ThinkNet</RootNamespace>
     <AssemblyName>ThinkNet.Runtime.Kafka</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -55,7 +55,8 @@
     <Compile Include="Infrastructure\ITopicProvider.cs" />
     <Compile Include="Infrastructure\KafkaClient.cs" />
     <Compile Include="Infrastructure\KafkaLog.cs" />
-    <Compile Include="Messaging\DomainEvent.cs" />
+    <Compile Include="Messaging\EventStream.cs" />
+    <Compile Include="Messaging\GeneralData.cs" />
     <Compile Include="Messaging\KafkaService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -184,7 +184,7 @@ namespace ThinkNet.Infrastructure
         public void Consume<T>(string topic, 
             Func<string, Type> typeGetter,
             Func<string, Type, T> deserializer, 
-            Func<T, string> correlationIdGetter, 
+            Func<T, string> identifierGetter, 
             Action<T> consumer)
         {
             foreach(var message in _kafkaConsumers[topic].Consume()) {
@@ -192,7 +192,7 @@ namespace ThinkNet.Infrastructure
                     var serialized = message.Value.ToUtf8String();
                     var type = typeGetter(topic);
                     var result = deserializer(serialized, type);
-                    this.UpdateOffset(topic, correlationIdGetter(result), message.Meta);
+                    this.UpdateOffset(topic, identifierGetter(result), message.Meta);
                     consumer(result);
                 }
                 catch(Exception) {
@@ -242,8 +242,8 @@ namespace ThinkNet.Infrastructure
                     .ToDictionary(topic => topic.GetAttribute("name"), topic => {
                         return topic.ChildNodes.Cast<XmlElement>()
                             .Select(offset => new OffsetPosition() {
-                                PartitionId = offset.GetAttribute("partitionId").Change(0),
-                                Offset = offset.InnerText.Change(0)
+                                PartitionId = offset.GetAttribute("partitionId").ChangeIfError(0),
+                                Offset = offset.InnerText.ChangeIfError(0)
                             }).ToArray();
                     });
             }

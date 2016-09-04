@@ -45,6 +45,9 @@ namespace ThinkNet.Messaging
         [DataMember]
         public IDictionary ErrorData { get; private set; }
 
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         protected CommandResult()
         {
             this.Status = CommandStatus.Success;
