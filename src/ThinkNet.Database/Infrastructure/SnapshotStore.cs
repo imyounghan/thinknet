@@ -72,7 +72,7 @@ namespace ThinkNet.Infrastructure
             var snapshot = new Snapshot {
                 AggregateRootId = aggregateRoot.Id.ToString(),
                 AggregateRootTypeCode = aggregateRootType.FullName.GetHashCode(),
-                AggregateRootTypeName = string.Concat(aggregateRootType.FullName, ", ", Path.GetFileNameWithoutExtension(aggregateRootType.Assembly.ManifestModule.FullyQualifiedName)),
+                AggregateRootTypeName = aggregateRootType.GetFullName(),
                 Data = _serializer.SerializeToBinary(aggregateRoot),
                 Version = aggregateRoot.Version,
                 Timestamp = DateTime.UtcNow

@@ -76,7 +76,7 @@ namespace ThinkNet.Infrastructure
                 eventSourced = _snapshotStore.GetLastest(sourceKey);
                 if (eventSourced != null) {
                     if (LogManager.Default.IsDebugEnabled)
-                        LogManager.Default.DebugFormat("find the aggregate root {0} of id {1} from snapshot. version:{2}.",
+                        LogManager.Default.DebugFormat("find the aggregate root {0} of id {1} from snapshot. current version:{2}.",
                             eventSourcedType.FullName, eventSourcedId, eventSourced.Version);
                 }                
             }
@@ -125,8 +125,23 @@ namespace ThinkNet.Infrastructure
                 SourceType = aggregateRootType,
                 Version = eventSourced.Version + 1
             };
-            
-            _eventStore.Save(@event);
+
+            try {
+                _eventStore.Save(@event);
+
+                if (LogManager.Default.IsDebugEnabled)
+                    LogManager.Default.DebugFormat("events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}.",
+                        aggregateRootId, aggregateRootType.FullName, correlationId);
+            }
+            catch (Exception ex) {
+                if(LogManager.Default.IsErrorEnabled)
+                    LogManager.Default.Error(ex,
+                        "events persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
+                        aggregateRootId, aggregateRootType.FullName, eventSourced.Version);
+                throw ex;
+            }
+
+            eventSourced.ClearEvents();
             _cache.Set(eventSourced, eventSourced.Id);
             _eventBus.Publish(@event);
 
@@ -134,7 +149,6 @@ namespace ThinkNet.Infrastructure
             if(!_snapshotPolicy.ShouldbeCreateSnapshot(eventSourced))
                 return;
 
-            eventSourced.ClearEvents();
             _snapshotStore.Save(eventSourced);
         }
                 

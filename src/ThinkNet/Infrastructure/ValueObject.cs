@@ -46,6 +46,13 @@ namespace ThinkNet.Infrastructure
                 return false;
 
             var other = (ValueObject)obj;
+            if (ReferenceEquals(null, other)) {
+                return false;
+            }
+            if (ReferenceEquals(this, other)) {
+                return true;
+            }
+
             IEnumerable enumerable1 = this.GetAtomicValues();
             IEnumerable enumerable2 = other.GetAtomicValues();
 

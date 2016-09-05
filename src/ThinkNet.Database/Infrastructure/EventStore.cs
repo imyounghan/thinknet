@@ -93,20 +93,7 @@ namespace ThinkNet.Infrastructure
                     context.Save(data);
                     context.Commit();
                 }
-            }).ContinueWith(task => {
-                if(task.Status == TaskStatus.Faulted) {
-                    if(LogManager.Default.IsErrorEnabled)
-                        LogManager.Default.Error(task.Exception,
-                            "events persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
-                            @event.SourceId, @event.SourceType.FullName, @event.Version);
-                    throw task.Exception;
-                }
-                else {
-                    if(LogManager.Default.IsDebugEnabled)
-                        LogManager.Default.DebugFormat("events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}.",
-                            @event.SourceId, @event.SourceType.FullName, @event.CommandId);
-                }
-            });
+            }).Wait();
         }
 
         public VersionedEvent Find(DataKey sourceKey, string correlationId)

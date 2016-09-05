@@ -72,8 +72,11 @@ namespace ThinkNet.Infrastructure
         public override bool Equals(object obj)
         {
             var other = obj as HandlerRecord;
-            if (obj == null) {
+            if (ReferenceEquals(null, other)) {
                 return false;
+            }
+            if (ReferenceEquals(this, other)) {
+                return true;
             }
 
             return other.MessageId == this.MessageId
@@ -86,7 +89,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}_{1}_{2}", MessageId, MessageTypeName, HandlerTypeName);
+            return string.Format("{0}@{1}&{2}", MessageId, MessageTypeName, HandlerTypeName);
         }
     }
 }

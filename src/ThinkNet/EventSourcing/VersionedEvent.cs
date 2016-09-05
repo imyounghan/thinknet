@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using ThinkNet.Messaging;
 
@@ -23,10 +22,6 @@ namespace ThinkNet.EventSourcing
             : base(id, time)
         { }
 
-        ///// <summary>
-        ///// 事件来源的标识
-        ///// </summary>
-        //public DataKey SourceKey { get; set; }
         /// <summary>
         /// 产生事件的命令标识
         /// </summary>
@@ -48,32 +43,32 @@ namespace ThinkNet.EventSourcing
         /// </summary>
         public Type SourceType { get; set; }
 
-        /// <summary>
-        /// 确定此实例是否与指定的对象相同。
-        /// </summary>
-        public override bool Equals(object obj)
-        {
-            var other = obj as VersionedEvent;
-            if(other == null) {
-                return false;
-            }
+        ///// <summary>
+        ///// 确定此实例是否与指定的对象相同。
+        ///// </summary>
+        //public override bool Equals(object obj)
+        //{
+        //    var other = obj as VersionedEvent;
+        //    if(other == null) {
+        //        return false;
+        //    }
 
-            return other.SourceType == this.SourceType && other.Version == this.Version;
-        }
+        //    return other.SourceType == this.SourceType && other.Version == this.Version;
+        //}
 
-        /// <summary>
-        /// 返回此实例的哈希代码。
-        /// </summary>
-        public override int GetHashCode()
-        {
-            var codes = new int[] {
-                Path.GetFileNameWithoutExtension(this.SourceType.Assembly.ManifestModule.FullyQualifiedName).GetHashCode(),
-                this.SourceType.FullName.GetHashCode(),
-                this.SourceId.GetHashCode(),
-                this.Version
-            };
-            return codes.Aggregate((x, y) => x ^ y);
-        }
+        ///// <summary>
+        ///// 返回此实例的哈希代码。
+        ///// </summary>
+        //public override int GetHashCode()
+        //{
+        //    var codes = new int[] {
+        //        Path.GetFileNameWithoutExtension(this.SourceType.Assembly.ManifestModule.FullyQualifiedName).GetHashCode(),
+        //        this.SourceType.FullName.GetHashCode(),
+        //        this.SourceId.GetHashCode(),
+        //        this.Version
+        //    };
+        //    return codes.Aggregate((x, y) => x ^ y);
+        //}
 
         /// <summary>
         /// 输出领域事件流的字符串格式

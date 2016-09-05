@@ -25,7 +25,7 @@ namespace ThinkNet.Infrastructure
 
         private void AddOrUpdatePublishedVersionToMemory(DataKey sourceKey, int version)
         {
-            var sourceTypeCode = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName).GetHashCode();
+            var sourceTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 
             _versionCache.GetOrAdd(sourceTypeCode, typeCode => new ConcurrentDictionary<string, int>())
                 .AddOrUpdate(sourceKey.SourceId,
@@ -44,7 +44,7 @@ namespace ThinkNet.Infrastructure
         private int GetPublishedVersionFromMemory(DataKey sourceKey)
         {
             ConcurrentDictionary<string, int> dict;
-            var sourceTypeCode = string.Concat(sourceKey.Namespace, ".", sourceKey.TypeName).GetHashCode();
+            var sourceTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
             if (_versionCache.TryGetValue(sourceTypeCode, out dict)) {
                 int version;
                 if (dict.TryGetValue(sourceKey.SourceId, out version)) {

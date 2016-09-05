@@ -55,7 +55,8 @@ namespace ThinkNet.Infrastructure
         {
             return new int[] {
                 AggregateRootTypeCode.GetHashCode(),
-                AggregateRootId.GetHashCode()
+                AggregateRootId.GetHashCode(),
+                Version
             }.Aggregate((x, y) => x ^ y);
         }
 
@@ -65,12 +66,16 @@ namespace ThinkNet.Infrastructure
         public override bool Equals(object obj)
         {
             var other = obj as Snapshot;
-            if (other == null) {
+            if (ReferenceEquals(null, other)) {
                 return false;
+            }
+            if (ReferenceEquals(this, other)) {
+                return true;
             }
 
             return other.AggregateRootTypeCode == this.AggregateRootTypeCode
-                && other.AggregateRootId == this.AggregateRootId;
+                && other.AggregateRootId == this.AggregateRootId
+                && other.Version == this.Version;
         }
 
         /// <summary>
@@ -78,7 +83,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}@{1}", AggregateRootTypeName, AggregateRootId);
+            return string.Format("{0}@{1}:{2}", AggregateRootTypeName, AggregateRootId, Version);
         }
     }
 }

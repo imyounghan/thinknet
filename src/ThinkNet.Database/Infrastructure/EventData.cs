@@ -56,8 +56,11 @@ namespace ThinkNet.Infrastructure
         public override bool Equals(object obj)
         {
             var other = obj as EventData;
-            if (other == null) {
+            if (ReferenceEquals(null, other)) {
                 return false;
+            }
+            if (ReferenceEquals(this, other)) {
+                return true;
             }
 
             return other.AggregateRootTypeCode == this.AggregateRootTypeCode

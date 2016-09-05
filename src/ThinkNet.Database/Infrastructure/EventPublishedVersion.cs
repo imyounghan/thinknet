@@ -66,8 +66,11 @@ namespace ThinkNet.Infrastructure
         public override bool Equals(object obj)
         {
             var other = obj as EventPublishedVersion;
-            if (other == null) {
+            if (ReferenceEquals(null, other)) {
                 return false;
+            }
+            if (ReferenceEquals(this, other)) {
+                return true;
             }
 
             return other.AggregateRootTypeCode == this.AggregateRootTypeCode &&
@@ -79,7 +82,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}_{1}_{2}", AggregateRootTypeCode, AggregateRootId, Version);
+            return string.Format("{0}@{1}:{2}", AggregateRootTypeName, AggregateRootId, Version);
         }
     }
 }
