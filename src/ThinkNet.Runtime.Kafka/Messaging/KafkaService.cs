@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ThinkNet.Configurations;
@@ -9,18 +9,18 @@ using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
-    public class KafkaService : EnvelopeHub, IProcessor, IInitializer
+    public class KafkaService : EnvelopeHub, IProcessor
     {
-        public const string OffsetPositionFile = "kafka.consumer.offset";
+       // public const string OffsetPositionFile = "kafka.consumer.offset";
 
         private readonly ISerializer _serializer;
         private readonly ITopicProvider _topicProvider;
 
         private readonly object lockObject;
         private readonly KafkaClient kafka;
+        private readonly ConcurrentDictionary<string, TopicOffsetPosition> offsetPositions;
         private CancellationTokenSource cancellationSource;
         private bool started;
-        private Timer timer;
 
         public KafkaService(ISerializer serializer, ITopicProvider topicProvider, IRoutingKeyProvider routingKeyProvider)
             : base(routingKeyProvider)
@@ -28,7 +28,8 @@ namespace ThinkNet.Messaging
             this._serializer = serializer;
             this._topicProvider = topicProvider;
             this.lockObject = new object();
-            this.kafka = new KafkaClient(OffsetPositionFile, KafkaSettings.Current.KafkaUris);
+            this.kafka = new KafkaClient(KafkaSettings.Current.ZookeeperAddress);
+            this.offsetPositions = new ConcurrentDictionary<string, TopicOffsetPosition>();
         }
 
         protected override void Dispose(bool disposing)
@@ -47,30 +48,16 @@ namespace ThinkNet.Messaging
             };
         }
 
-        private EventStream Transform(VersionedEvent @event)
-        {
-            @event.Events.ForEach(item => item.SourceId = string.Empty);
-            var events = @event.Events.Select(Transform).ToArray();
-            return new EventStream(@event.SourceId, @event.SourceType) {
-                Id = @event.Id,
-                CommandId = @event.CommandId,
-                CreatedTime = @event.CreatedTime,
-                Version = @event.Version,
-                Events = events
-            };
-        }
-
-        private string Serialize(Envelope envelope)
+        private byte[] Serialize(Envelope envelope)
         {
             var kind = envelope.GetMetadata(StandardMetadata.Kind);
             switch (kind) {
                 case StandardMetadata.VersionedEventKind:
-                    var @event = envelope.Body as VersionedEvent;
-                    return _serializer.Serialize(Transform(@event));
+                    return _serializer.SerializeToBinary(envelope.Body, true);
                 case StandardMetadata.RepliedCommandKind:
-                    return _serializer.Serialize(envelope.Body);
+                    return _serializer.SerializeToBinary(envelope.Body);
                 default:
-                    return _serializer.Serialize(Transform(envelope.Body));
+                    return _serializer.SerializeToBinary(Transform(envelope.Body));
             }
         }
 
@@ -81,12 +68,13 @@ namespace ThinkNet.Messaging
 
         public override Task SendAsync(Envelope envelope)
         {
-            return kafka.Push(envelope, GetTopic, Serialize);
+            //return this.SendAsync(new[] { envelope });
+            return kafka.Push(GetTopic(envelope), new[] { envelope }, this.Serialize);
         }
 
         public override Task SendAsync(IEnumerable<Envelope> envelopes)
         {
-            return kafka.Push(envelopes, GetTopic, Serialize);
+            return kafka.Push(envelopes, GetTopic, this.Serialize);
         }
 
         private void PullThenForward(object state)
@@ -94,84 +82,85 @@ namespace ThinkNet.Messaging
             string topic = state as string;
 
             while(!cancellationSource.IsCancellationRequested) {
-                kafka.Consume(topic, _topicProvider.GetType, this.Deserialize, this.GetIdentifierId, this.Distribute);
+                var type = _topicProvider.GetType(topic);
+                kafka.Consume(cancellationSource.Token, topic, type, this.Deserialize, this.Distribute);
             }
         }
 
-        private string GetIdentifierId(Envelope envelope)
+        private void Distribute(Envelope envelope, TopicOffsetPosition offset)
         {
-            return envelope.GetMetadata(StandardMetadata.IdentifierId)
-                .IfEmpty(() => {
-                    var message = envelope.Body as IMessage;
-                    if(message != null)
-                        return message.Id;
+            var id = envelope.GetMetadata(StandardMetadata.IdentifierId);
 
-                    return string.Empty;
-                });
+            if(offsetPositions.TryAdd(id, offset))
+                base.Distribute(envelope);
         }
+        
+        //private VersionedEvent Transform(EventStream @event)
+        //{
+        //    var stream = new VersionedEvent(@event.Id, @event.CreatedTime) {
+        //        SourceId = @event.SourceId,
+        //        SourceType = @event.GetSourceType(),
+        //        CommandId = @event.CommandId,
+        //        Version = @event.Version,
+        //        Events = @event.Events.Select(Transform).Cast<IEvent>().ToArray()
+        //    };
 
+        //    stream.Events.ForEach(item => item.SourceId = @event.SourceId);
 
-        private VersionedEvent Transform(EventStream @event)
-        {
-            var stream = new VersionedEvent(@event.Id, @event.CreatedTime) {
-                SourceId = @event.SourceId,
-                SourceType = @event.GetSourceType(),
-                CommandId = @event.CommandId,
-                Version = @event.Version,
-                Events = @event.Events.Select(Transform).Cast<IEvent>().ToArray()
-            };
-
-            stream.Events.ForEach(item => item.SourceId = @event.SourceId);
-
-            return stream;
-        }
+        //    return stream;
+        //}
 
         private object Transform(GeneralData data)
         {
             return _serializer.Deserialize(data.Metadata, data.GetMetadataType());
         }
-        private Envelope Deserialize(string serialized, Type type)
+        private Envelope Deserialize(byte[] serialized, Type type)
         {
+            var envelope = new Envelope();
             IMessage message;
-            if(type == typeof(EventStream)) {
-                var @event = _serializer.Deserialize<EventStream>(serialized);
-                message = this.Transform(@event);
-            }
-            else if(type == typeof(RepliedCommand)) {
-                message = _serializer.Deserialize<RepliedCommand>(serialized);
-            }
-            else {
-                var data = _serializer.Deserialize<GeneralData>(serialized);
-                message = (IMessage)this.Transform(data);
-            }
-
-
-            var envelope = new Envelope(message);
-            envelope.Metadata[StandardMetadata.IdentifierId] = message.Id;
-            if (type == typeof(EventStream)) {
+            if(type == typeof(VersionedEvent)) {
+                envelope.Body = message = _serializer.DeserializeFromBinary<VersionedEvent>(serialized);
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.VersionedEventKind;
                 envelope.Metadata[StandardMetadata.SourceId] = ((VersionedEvent)message).SourceId;
             }
-            else if (type == typeof(RepliedCommand)) {
+            else if(type == typeof(RepliedCommand)) {
+                envelope.Body = message = _serializer.DeserializeFromBinary<RepliedCommand>(serialized);
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.RepliedCommandKind;
                 envelope.Metadata[StandardMetadata.SourceId] = ((RepliedCommand)message).CommandId;
             }
-            else if (TypeHelper.IsCommand(type)) {
-                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
-                envelope.Metadata[StandardMetadata.SourceId] = ((ICommand)message).AggregateRootId;
+            else {
+                var data = _serializer.DeserializeFromBinary<GeneralData>(serialized);
+                envelope.Body = message = this.Transform(data) as IMessage;
+
+                if(TypeHelper.IsCommand(type)) {
+                    envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
+                    envelope.Metadata[StandardMetadata.SourceId] = ((ICommand)message).AggregateRootId;
+                }
+                else if(TypeHelper.IsEvent(type)) {
+                    envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
+                    envelope.Metadata[StandardMetadata.SourceId] = ((IEvent)message).SourceId;
+                }
             }
-            else if (TypeHelper.IsEvent(type)) {
-                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
-                envelope.Metadata[StandardMetadata.SourceId] = ((IEvent)message).SourceId;
+           
+            if(message == null) {
+                envelope.Metadata[StandardMetadata.IdentifierId] = ObjectId.GenerateNewStringId();
             }
+            else {
+                envelope.Metadata[StandardMetadata.IdentifierId] = message.Id;
+            }
+            
+            
 
             return envelope;
         }
 
         private void OnEnvelopeCompleted(object sender, Envelope envelope)
         {
-            var topic = _topicProvider.GetTopic(envelope.Body);
-            kafka.RemoveOffset(topic, envelope.GetMetadata(StandardMetadata.IdentifierId));
+            var id = envelope.GetMetadata(StandardMetadata.IdentifierId);
+            TopicOffsetPosition offset;
+
+            if(!string.IsNullOrEmpty(id) && offsetPositions.TryRemove(id, out offset))
+                kafka.CommitOffset(offset);
         }
 
         private void StartingKafka()
@@ -188,15 +177,13 @@ namespace ThinkNet.Messaging
                         TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness,
                         TaskScheduler.Current);
                 }
-            }
-
-            this.timer = new Timer(kafka.PersistConsumerOffset, null, 5000, 2000);
+            }            
         }
 
         private void StoppingKafka()
         {
-            this.timer.Dispose();
-            this.timer = null;
+            //this.timer.Dispose();
+            //this.timer = null;
 
             Envelope.EnvelopeCompleted -= OnEnvelopeCompleted;
             if (this.cancellationSource != null) {
@@ -228,15 +215,6 @@ namespace ThinkNet.Messaging
                     this.started = false;
                 }
             }
-        }
-
-        #endregion
-
-        #region IInitializer 成员
-
-        public void Initialize(IEnumerable<Type> types)
-        {
-            kafka.InitConsumers(KafkaSettings.Current.SubscriptionTopics);
         }
 
         #endregion

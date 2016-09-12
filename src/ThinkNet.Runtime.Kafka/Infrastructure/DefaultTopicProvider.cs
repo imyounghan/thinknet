@@ -48,7 +48,7 @@ namespace ThinkNet.Infrastructure
         {
             switch(topic) {
                 case "EventStreams":
-                    return typeof(EventStream);
+                    return typeof(VersionedEvent);
                 case "CommandResults":
                     return typeof(RepliedCommand);
                 case "Commands":

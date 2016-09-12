@@ -1,47 +1,63 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using KafkaNet;
-using KafkaNet.Common;
-using KafkaNet.Model;
-using KafkaNet.Protocol;
+using Kafka.Client.Cfg;
+using Kafka.Client.Consumers;
+using Kafka.Client.Helper;
+using Kafka.Client.Messages;
+using Kafka.Client.Producers;
+using Kafka.Client.Requests;
+using Kafka.Client.Serialization;
 
 namespace ThinkNet.Infrastructure
 {
     public class KafkaClient : DisposableObject
     {
-        private readonly string _kafkaOffsetFile;
-        private readonly KafkaOptions _kafkaOption;
         private readonly Lazy<Producer> _kafkaProducer;
-        private readonly ConcurrentDictionary<string, Consumer> _kafkaConsumers;
+        private readonly Lazy<ZookeeperConsumerConnector> _kafkaConsumer;
 
-        private readonly Dictionary<string, ConcurrentDictionary<string, MessageMetadata>> metadatas;
-        private readonly Dictionary<string, ConcurrentDictionary<int, long>> lasted;
-        private readonly Dictionary<string, OffsetPosition[]> final;
+        
+        private readonly ZooKeeperConfiguration _zooKeeperConfiguration;
 
-
-        public KafkaClient(string offsetFile, params Uri[] kafkaUris)
+        public KafkaClient(string zkConnectionString)
         {
-            offsetFile.NotNullOrEmpty("offsetFile");
-            if (kafkaUris == null || kafkaUris.Length == 0) {
-                throw new ArgumentNullException("kafkaUris");
-            }
+            this._zooKeeperConfiguration = new ZooKeeperConfiguration(zkConnectionString, 3000, 4000, 8000);
 
-            this._kafkaOffsetFile = offsetFile; 
-            this._kafkaOption = new KafkaOptions(kafkaUris) {
-                Log = KafkaLog.Instance
+            this._kafkaProducer = new Lazy<Producer>(CreateProducer, true);
+            this._kafkaConsumer = new Lazy<ZookeeperConsumerConnector>(CreateConsumer, true);
+        }
+
+        private Producer CreateProducer()
+        {
+            var producerConfiguration = new ProducerConfiguration(new List<BrokerConfiguration>()) {
+                AckTimeout = 30000,
+                RequiredAcks = -1,
+                ZooKeeper = _zooKeeperConfiguration
             };
 
-            this._kafkaProducer = new Lazy<Producer>(() => new Producer(new BrokerRouter(_kafkaOption)), true);
-            this._kafkaConsumers = new ConcurrentDictionary<string, Consumer>();
-
-            this.metadatas = new Dictionary<string, ConcurrentDictionary<string, MessageMetadata>>();
-            this.lasted = new Dictionary<string, ConcurrentDictionary<int, long>>();
-            this.final = new Dictionary<string, OffsetPosition[]>();
+            return new Producer(producerConfiguration);
         }
+
+        private ZookeeperConsumerConnector CreateConsumer()
+        {
+            var consumerConfiguration = new ConsumerConfiguration {
+                //BackOffIncrement = 30,
+                AutoCommit = false,
+                GroupId = "thinknet",
+               // ConsumerId = consumerId,
+                BufferSize = ConsumerConfiguration.DefaultBufferSize,
+                MaxFetchBufferLength = ConsumerConfiguration.DefaultMaxFetchBufferLength,
+                FetchSize = ConsumerConfiguration.DefaultFetchSize,
+                AutoOffsetReset = OffsetRequest.LargestTime,
+                ZooKeeper = _zooKeeperConfiguration,
+                ShutdownTimeout = 100
+            };
+
+            return new ZookeeperConsumerConnector(consumerConfiguration, true);
+        }
+
 
         protected override void Dispose(bool disposing)
         {
@@ -50,215 +66,125 @@ namespace ThinkNet.Infrastructure
                 if (_kafkaProducer.IsValueCreated)
                     _kafkaProducer.Value.Dispose();
 
-                foreach (var consumer in _kafkaConsumers) {
-                    consumer.Value.Dispose();
-                }
-                _kafkaConsumers.Clear();
+                if(_kafkaConsumer.IsValueCreated)
+                    _kafkaConsumer.Value.Dispose();
             }
         }
 
-        //public void EnsureProducerTopic(params string[] topics)
-        //{
-        //    foreach(var topic in topics) {
-        //        int count = -1;
-        //        while(count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
-        //            try {
-        //                Topic result = producer.Value.GetTopic(topic);
-        //                if(result.ErrorCode == (short)ErrorResponseCode.NoError) {
-        //                    break;
-        //                }
-
-        //                Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
-        //            }
-        //            catch(Exception) {
-        //            }
-        //        }
-        //    }
-        //}
-
-        //public void EnsureConsumerTopic(params string[] topics)
-        //{
-        //    foreach(var topic in topics) {
-        //        int count = -1;
-        //        var consumer = new Consumer(new ConsumerOptions(topic, router));
-        //        while(count++ < KafkaSettings.Current.EnsureTopicRetrycount) {
-        //            try {
-        //                Topic result = consumer.GetTopic(topic);
-        //                if(result.ErrorCode == (short)ErrorResponseCode.NoError) {
-        //                    consumers.TryAdd(topic, new KafkaConsumer(consumer, topic));
-        //                    break;
-        //                }
-
-        //                if(LogManager.Default.IsDebugEnabled)
-        //                    LogManager.Default.DebugFormat("get the topic('{0}') of status is {1}", topic, (ErrorResponseCode)result.ErrorCode);
-
-        //                Thread.Sleep(KafkaSettings.Current.EnsureTopicRetryInterval);
-        //            }
-        //            catch(Exception) {
-        //            }
-        //        }
-        //    }
-        //}
-
-        private Task PushToKafka(string topic , IEnumerable<Message> messages)
+        public void CreateTopicIfNotExists(string topic)
         {
-            if(LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("ready to send a message to kafka in topic('{0}').", topic);
-            }
-
-            return _kafkaProducer.Value.SendMessageAsync(topic, messages).ContinueWith(task => {
-                if (task.IsFaulted) {
-                    if (LogManager.Default.IsErrorEnabled) {
-                        LogManager.Default.Error("send to kafka encountered error.", task.Exception);
-                    }
-                }
-            });
-        }
-
-        public Task Push<T>(T element, Func<T, string> topicGetter, Func<T, string> serializer)
-        {
-            return this.Push(topicGetter(element), element, serializer);
-        }
-        public Task Push<T>(string topic, T element, Func<T, string> serializer)
-        {
-            return this.PushToKafka(topic, new[] { new Message(serializer(element)) });
-        }
-        public Task Push<T>(string topic, IEnumerable<T> elements, Func<T, string> serializer)
-        {
-            return this.PushToKafka(topic, elements.Select(item => new Message(serializer(item))).ToArray());
-        }
-        public Task Push<T>(IEnumerable<T> elements, Func<T, string> topicGetter, Func<T, string> serializer)
-        {
-            return Task.Factory.StartNew(() => {
-                var tasks = elements.AsParallel()
-                    .GroupBy(item => topicGetter(item))
-                    .Select(group => {
-                        var messages = group.Select(item => new Message(serializer(item))).ToArray();
-                        return this.PushToKafka(group.Key, messages);
-                    }).ToArray();
-                Task.WaitAll(tasks);
-            });
-        }
-
-
-        private void UpdateOffset(string topic, string correlationId, MessageMetadata meta)
-        {
-            lasted[topic].AddOrUpdate(meta.PartitionId, meta.Offset, (key, value) => meta.Offset);
-            if(!string.IsNullOrEmpty(correlationId)) {
-                metadatas[topic].TryAdd(correlationId, meta);
+            if(!TopicExsits(topic)) {
+                CreateTopic(topic);
             }
         }
 
-        public void RemoveOffset(string topic, string correlationId)
+        bool TopicExsits(string topic)
         {
-            if(!string.IsNullOrEmpty(correlationId)) {
-                metadatas[topic].Remove(correlationId);
-            }
-        }
-
-        private IDictionary<string, OffsetPosition[]> GetOffsetPositions()
-        {
-            if(metadatas.All(p => p.Value.Count == 0) && lasted.All(p => p.Value.Count == 0)) {
-                final.Clear();
-                return final;
-            }
-
-            foreach (var topic in _kafkaConsumers.Keys) {
-                OffsetPosition[] positions;
-                if (metadatas[topic].Count == 0) {
-                    positions = lasted[topic].Select(p => new OffsetPosition(p.Key, p.Value + 1)).ToArray();
-                }
-                else {
-                    positions = metadatas[topic].Values
-                        .GroupBy(p => p.PartitionId, p => p.Offset)
-                        .Select(p => new OffsetPosition(p.Key, p.Min() + 1))
-                        .ToArray();
-                }
-
-                final[topic] = positions;
-            }
-
-            return final;
-        }
-
-        public void Consume<T>(string topic, 
-            Func<string, Type> typeGetter,
-            Func<string, Type, T> deserializer, 
-            Func<T, string> identifierGetter, 
-            Action<T> consumer)
-        {
-            foreach(var message in _kafkaConsumers[topic].Consume()) {
+            var managerConfig = new KafkaSimpleManagerConfiguration() {
+                FetchSize = KafkaSimpleManagerConfiguration.DefaultFetchSize,
+                BufferSize = KafkaSimpleManagerConfiguration.DefaultBufferSize,
+                Zookeeper = _zooKeeperConfiguration.ZkConnect
+            };
+            using(var kafkaManager = new KafkaSimpleManager<string, Message>(managerConfig)) {
                 try {
-                    var serialized = message.Value.ToUtf8String();
-                    var type = typeGetter(topic);
-                    var result = deserializer(serialized, type);
-                    this.UpdateOffset(topic, identifierGetter(result), message.Meta);
-                    consumer(result);
+                    var allPartitions = kafkaManager.GetTopicPartitionsFromZK(topic);
+                    return allPartitions.Count > 0;
                 }
                 catch(Exception) {
-                    //TODO...LOG
+                    return false;
                 }
-                
             }
         }
 
-        public void PersistConsumerOffset(object state)
+        void CreateTopic(string topic)
         {
-            var offsetPositions = this.GetOffsetPositions();
-            if (offsetPositions.Count == 0)
-                return;
-
-            var xml = new XmlDocument();
-            xml.AppendChild(xml.CreateXmlDeclaration("1.0", "utf-8", null));
-            var root = xml.AppendChild(xml.CreateElement("root"));
-
-            foreach (var kvp in offsetPositions) {
-                var el = xml.CreateElement("topic");
-                el.SetAttribute("name", kvp.Key);
-                kvp.Value.ForEach(item => {
-                    var node = xml.CreateElement("offset");
-                    node.SetAttribute("partitionId", item.PartitionId.ToString());
-                    node.InnerText = item.Offset.ToString();
-                    el.AppendChild(node);
-                });
-                root.AppendChild(el);
-            }
-            xml.Save(_kafkaOffsetFile);
-        }
-
-        public void InitConsumers(params string[] topics)
-        {
-            if (topics == null || topics.Length == 0)
-                return;
-
-
-            var offsetPositions = new Dictionary<string, OffsetPosition[]>();
-
             try {
-                var xml = new XmlDocument();
-                xml.Load(_kafkaOffsetFile);
-
-                offsetPositions = xml.DocumentElement.ChildNodes.Cast<XmlElement>().AsParallel()
-                    .ToDictionary(topic => topic.GetAttribute("name"), topic => {
-                        return topic.ChildNodes.Cast<XmlElement>()
-                            .Select(offset => new OffsetPosition() {
-                                PartitionId = offset.GetAttribute("partitionId").ChangeIfError(0),
-                                Offset = offset.InnerText.ChangeIfError(0)
-                            }).ToArray();
-                    });
+                var data = new ProducerData<string, Message>(topic, string.Empty, new Message(new byte[0]));
+                _kafkaProducer.Value.Send(data);
             }
-            catch (Exception) {
-                //TODO...Write LOG
-            }
-
-            foreach (var topic in topics) {
-                metadatas[topic] = new ConcurrentDictionary<string, MessageMetadata>();
-                lasted[topic] = new ConcurrentDictionary<int, long>();
-
-                _kafkaConsumers[topic] = new Consumer(new ConsumerOptions(topic, new BrokerRouter(_kafkaOption)) {
-                    Log = KafkaLog.Instance
-                }, offsetPositions.ContainsKey(topic) ? offsetPositions[topic] : new OffsetPosition[0]);
+            catch(Exception ex) {
+                if(LogManager.Default.IsErrorEnabled)
+                    LogManager.Default.Error($"Create topic {topic} failed", ex);
             }
         }
+
+        private Task PushToKafka(IEnumerable<ProducerData<string, Message>> producerDatas)
+        {
+            if(LogManager.Default.IsDebugEnabled) {
+                var topics = producerDatas.Select(item => item.Topic).ToArray();
+                LogManager.Default.DebugFormat("ready to send a message to kafka in topic('{0}').", 
+                    string.Join("','", topics));
+            }
+            
+            return Task.Factory.StartNew(() => {
+                _kafkaProducer.Value.Send(producerDatas);
+            });
+        }
+
+
+        public Task Push<T>(string topic, IEnumerable<T> elements, Func<T, byte[]> serializer)
+        {
+            var producerDatas = elements
+                .Select(item => {
+                    var message = new Message(serializer(item));
+                    return new ProducerData<string, Message>(topic, message);
+                }).ToArray();
+
+            return this.PushToKafka(producerDatas);
+        }
+        public Task Push<T>(IEnumerable<T> elements, Func<T, string> topicGetter, Func<T, byte[]> serializer)
+        {
+            var producerDatas = elements.GroupBy(topicGetter)
+                .Select(group => {
+                    var messages = group.Select(item => new Message(serializer(item))).ToArray();
+                    return new ProducerData<string, Message>(group.Key, messages);
+                }).ToArray();
+
+            return this.PushToKafka(producerDatas);
+        }
+
+
+        public void CommitOffset(TopicOffsetPosition topicOffsetPosition)
+        {
+            _kafkaConsumer.Value.CommitOffset(topicOffsetPosition.Topic,
+                topicOffsetPosition.PartitionId,
+                topicOffsetPosition.Offset, 
+                false);
+        }
+
+        
+        public void Consume<T>(CancellationToken cancellationToken,
+            string topic,            
+            Type type,
+            Func<byte[], Type, T> deserializer, 
+            Action<T, TopicOffsetPosition> consumer)
+        {
+            var topicDic = new Dictionary<string, int>() {
+                { topic, 1 }
+            };
+            var streams = _kafkaConsumer.Value.CreateMessageStreams(topicDic, new DefaultDecoder());
+
+            var KafkaMessageStream = streams[topic][0];
+
+            foreach(Message message in KafkaMessageStream.GetCancellable(cancellationToken)) {
+                var offset = new TopicOffsetPosition(topic, message.PartitionId.Value, message.Offset);
+                try {
+                    var result = deserializer(message.Payload, type);
+                    consumer(result, new TopicOffsetPosition(topic, message.PartitionId.Value, message.Offset));
+                }
+                catch(OperationCanceledException) {
+                    break;
+                }
+                catch(ThreadAbortException) {
+                    break;
+                }
+                catch(Exception ex) {
+                    this.CommitOffset(offset);
+
+                    if(LogManager.Default.IsErrorEnabled)
+                        LogManager.Default.Error(ex.GetBaseException().Message, ex);
+                }
+            }
+        }        
     }
 }

@@ -36,8 +36,13 @@
     <AssemblyOriginatorKeyFile>..\\sunsoft.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="kafka-net">
-      <HintPath>..\packages\kafka-net.0.9.0.65\lib\net45\kafka-net.dll</HintPath>
+    <Reference Include="KafkaNET.Library, Version=1.0.47.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CSharpClient-for-Kafka.1.0.47\lib\net45\KafkaNET.Library.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -47,6 +52,10 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="ZooKeeperNet, Version=3.4.6.1, Culture=neutral, PublicKeyToken=fefd2c046da35b56, processorArchitecture=MSIL">
+      <HintPath>..\packages\ZooKeeper.Net.3.4.6.2\lib\net40\ZooKeeperNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configurations\BootstrapperExtentions.cs" />
@@ -54,8 +63,7 @@
     <Compile Include="Infrastructure\DefaultTopicProvider.cs" />
     <Compile Include="Infrastructure\ITopicProvider.cs" />
     <Compile Include="Infrastructure\KafkaClient.cs" />
-    <Compile Include="Infrastructure\KafkaLog.cs" />
-    <Compile Include="Messaging\EventStream.cs" />
+    <Compile Include="Infrastructure\TopicOffsetPosition.cs" />
     <Compile Include="Messaging\GeneralData.cs" />
     <Compile Include="Messaging\KafkaService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -71,7 +79,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

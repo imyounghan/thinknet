@@ -1,9 +1,10 @@
 ﻿CREATE TABLE [dbo].[thinknet_events](
-    [AggregateId]        VARCHAR(36) NOT NULL,
+    [EventId]            BIGINT NOT NULL,
+	[AggregateId]        VARCHAR(32) NOT NULL,
 	[AggregateTypeCode]  INT NOT NULL,
     [Version]            INT NOT NULL,
     [Payload]            VARCHAR(MAX) NOT NULL,
-    [CorrelationId]      VARCHAR(36) NOT NULL,
+    [CorrelationId]      VARCHAR(32) NOT NULL,
 	[OnCreated]          DATETIME NOT NULL,
 CONSTRAINT [PK_Events] PRIMARY KEY CLUSTERED
 (

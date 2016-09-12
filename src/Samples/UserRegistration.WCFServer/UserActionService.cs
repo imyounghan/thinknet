@@ -24,7 +24,7 @@ namespace UserRegistration.Application
                 UserName = user.UserName,
                 Email = user.Email
             };
-            _commandService.Execute(registerUser, CommandReturnType.DomainEventHandled, );
+            _commandService.Execute(registerUser, CommandReturnType.DomainEventHandled);
         }
 
         #endregion

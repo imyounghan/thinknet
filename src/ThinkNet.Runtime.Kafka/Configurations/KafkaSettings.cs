@@ -15,10 +15,13 @@ namespace ThinkNet.Configurations
 
             this.KafkaUris = ConfigurationManager.AppSettings["thinkcfg.kafka_uri"].IfEmpty(string.Empty).Split(',').Select(str => new Uri(str)).ToArray();
             this.SubscriptionTopics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic"].IfEmpty(string.Empty).Split(',');
+            this.ZookeeperAddress = ConfigurationManager.AppSettings["thinkcfg.zookeeper_address"];
         }
 
 
         public Uri[] KafkaUris { get; set; }
+
+        public string ZookeeperAddress { get; set; }
 
         /// <summary>
         /// 订阅的Topic用于消费

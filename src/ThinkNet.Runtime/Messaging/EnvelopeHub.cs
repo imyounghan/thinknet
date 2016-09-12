@@ -56,7 +56,7 @@ namespace ThinkNet.Messaging
                 .IfEmpty(() => _routingKeyProvider.GetRoutingKey(envelope.Body));
         }
 
-        protected void Distribute(Envelope envelope)
+        protected virtual void Distribute(Envelope envelope)
         {
             this.GetBroker(this.GetKey(envelope)).Add(envelope);
         }
