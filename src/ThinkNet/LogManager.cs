@@ -311,9 +311,9 @@ namespace ThinkNet
                     log.Append(" Message:").Append(message);
                 }
                 if (exception != null) {
-                    log.Append(" Exception:").Append(exception.ToString());
+                    log.Append(" Exception:").Append(exception);
                     if (exception.InnerException != null) {
-                        log.AppendLine().Append("InnerException:").Append(exception.InnerException.ToString());
+                        log.AppendLine().Append("InnerException:").Append(exception.InnerException);
                     }
                 }
 

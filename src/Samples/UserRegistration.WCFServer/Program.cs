@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 using ThinkNet.Configurations;
 using ThinkNet.Database;
 using ThinkNet.Messaging;
@@ -13,8 +14,16 @@ namespace UserRegistration.Application
 
         static ServiceHost CreateServiceHost(Type type, string name, object instance)
         {
+            //var httpUri = new Uri(string.Concat("http://127.0.0.1:8082/", name));
+            var tcpUri = new Uri(string.Concat("net.tcp://localhost:8081/", name));
+
             var host = new ServiceHost(instance);
-            host.AddServiceEndpoint(type, new NetTcpBinding(), string.Concat("net.tcp://127.0.0.1:8081/", name));
+            //host.AddServiceEndpoint(type, new BasicHttpBinding(), string.Empty);
+            host.AddServiceEndpoint(type, new NetTcpBinding(), tcpUri);
+            //host.Description.Behaviors.Find<ServiceMetadataBehavior>()
+            //var behavior  = new ServiceMetadataBehavior();
+            //behavior.HttpGetEnabled = true;
+            //host.Description.Behaviors.Add(behavior);
             host.Opened += (sender, e) => {
                 Console.WriteLine("{0}服务已经启用。", name);
             };
@@ -29,14 +38,13 @@ namespace UserRegistration.Application
             Bootstrapper.Current.Register<IDataContextFactory, MemoryContextFactory>().UsingKafka().Done();
             
             var hosts = new List<ServiceHost>();
-            hosts.Add(CreateServiceHost(typeof(ICommandService), "CommandService", ObjectContainer.Instance.Resolve<ICommandService>()));
+            //hosts.Add(CreateServiceHost(typeof(ICommandService), "CommandService", ObjectContainer.Instance.Resolve<ICommandService>()));
             hosts.Add(CreateServiceHost(typeof(IAuthenticationService), "AuthenticationService", ObjectContainer.Instance.Resolve<IAuthenticationService>()));
             hosts.Add(CreateServiceHost(typeof(IUserActionService), "UserActionService", ObjectContainer.Instance.Resolve<IUserActionService>()));
             hosts.Add(CreateServiceHost(typeof(IUserQueryService), "UserQueryService", ObjectContainer.Instance.Resolve<IUserQueryService>()));
 
             //Console.WriteLine("输入任意键继续...");
             Console.ReadKey();
-
 
             //var commandService = ObjectContainer.Instance.Resolve<ICommandService>();
             //var command = new RegisterUser {

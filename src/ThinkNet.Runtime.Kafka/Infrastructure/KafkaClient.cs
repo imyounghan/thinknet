@@ -104,7 +104,7 @@ namespace ThinkNet.Infrastructure
             }
             catch(Exception ex) {
                 if(LogManager.Default.IsErrorEnabled)
-                    LogManager.Default.Error($"Create topic {topic} failed", ex);
+                    LogManager.Default.Error("Create topic {topic} failed", ex);
             }
         }
 

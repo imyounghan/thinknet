@@ -3,7 +3,7 @@ using System.ServiceModel;
 
 namespace UserRegistration.Contracts
 {
-    [ServiceContract(Name = "UserQueryService")]
+    [ServiceContract(Name = "UserQueryService")]    
     public interface IUserQueryService
     {
         [OperationContract]

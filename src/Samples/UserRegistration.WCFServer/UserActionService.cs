@@ -1,4 +1,5 @@
-﻿using ThinkNet;
+﻿using System.ServiceModel;
+using ThinkNet;
 using ThinkNet.Messaging;
 using UserRegistration.Commands;
 using UserRegistration.Contracts;
@@ -6,6 +7,7 @@ using UserRegistration.Contracts;
 namespace UserRegistration.Application
 {
     [Register(typeof(IUserActionService))]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class UserActionService : IUserActionService
     {
         private readonly ICommandService _commandService;

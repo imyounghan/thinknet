@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using ThinkNet;
 using UserRegistration.Contracts;
 using UserRegistration.ReadModel;
@@ -7,6 +8,7 @@ using UserRegistration.ReadModel;
 namespace UserRegistration.Application
 {
     [Register(typeof(IUserQueryService))]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class UserQueryService : IUserQueryService
     {
         private readonly IUserDao _userDao;

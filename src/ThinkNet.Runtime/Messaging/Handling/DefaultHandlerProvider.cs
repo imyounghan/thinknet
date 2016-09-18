@@ -41,7 +41,7 @@ namespace ThinkNet.Messaging.Handling
 
             public override int GetHashCode()
             {
-                return eventTypes.Select(type => type.GetHashCode()).Aggregate((x, y) => x ^ y);
+                return eventTypes.OrderBy(type => type.FullName).Select(type => type.GetHashCode()).Aggregate((x, y) => x ^ y);
             }
         }
 

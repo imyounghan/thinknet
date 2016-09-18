@@ -1,4 +1,5 @@
-﻿using ThinkNet;
+﻿using System.ServiceModel;
+using ThinkNet;
 using ThinkNet.Messaging;
 using UserRegistration.Contracts;
 using UserRegistration.ReadModel;
@@ -6,6 +7,7 @@ using UserRegistration.ReadModel;
 namespace UserRegistration.Application
 {
     [Register(typeof(IAuthenticationService))]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IUserDao userDao;
