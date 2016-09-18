@@ -24,6 +24,8 @@ namespace UserRegistration.Handlers
             var user = new UserRegisterService(_uniqueService, command.Id)
                 .Register(command.LoginId, command.Password, command.UserName, command.Email);
             context.Add(user);
+
+            //Console.WriteLine("添加一个用户");
         }
 
 

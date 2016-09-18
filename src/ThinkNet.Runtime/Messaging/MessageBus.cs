@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkNet.Infrastructure;
 using ThinkNet.EventSourcing;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {

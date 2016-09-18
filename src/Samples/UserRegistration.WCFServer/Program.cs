@@ -15,7 +15,7 @@ namespace UserRegistration.Application
         static ServiceHost CreateServiceHost(Type type, string name, object instance)
         {
             //var httpUri = new Uri(string.Concat("http://127.0.0.1:8082/", name));
-            var tcpUri = new Uri(string.Concat("net.tcp://localhost:8081/", name));
+            var tcpUri = new Uri(string.Concat("net.tcp://127.0.0.1:8081/", name));
 
             var host = new ServiceHost(instance);
             //host.AddServiceEndpoint(type, new BasicHttpBinding(), string.Empty);
@@ -43,24 +43,14 @@ namespace UserRegistration.Application
             hosts.Add(CreateServiceHost(typeof(IUserActionService), "UserActionService", ObjectContainer.Instance.Resolve<IUserActionService>()));
             hosts.Add(CreateServiceHost(typeof(IUserQueryService), "UserQueryService", ObjectContainer.Instance.Resolve<IUserQueryService>()));
 
-            //Console.WriteLine("输入任意键继续...");
-            Console.ReadKey();
-
-            //var commandService = ObjectContainer.Instance.Resolve<ICommandService>();
-            //var command = new RegisterUser {
-            //    UserName = "hanyang",
-            //    Password = "123456",
-            //    LoginId = "young.han",
-            //    Email = "19126332@qq.com"
-            //};
-            //commandService.ExecuteAsync(command, CommandReturnType.DomainEventHandled)
-            //    .ContinueWith(task => {
-            //        Console.Write("创建客户：");
-            //        Console.WriteLine(task.Result.Status);
-            //    });
-            
-
-            //Console.ReadKey();
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("输入 'Exit' 退出服务 ...");
+            while(Console.ReadLine() == "Exit") {
+                foreach(var host in hosts) {
+                    using(host as IDisposable) { }
+                }
+            }
         }
     }
 }
