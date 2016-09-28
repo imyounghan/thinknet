@@ -37,6 +37,7 @@ namespace ThinkNet.Database
 
 
         [NonSerialized]
+        [IgnoreDataMember]
         private ICollection<Event<TIdentify>> pendingEvents;
         /// <summary>
         /// 引发事件并将其加入到待发布事件列表

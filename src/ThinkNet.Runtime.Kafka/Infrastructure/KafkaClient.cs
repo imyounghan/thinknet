@@ -103,8 +103,8 @@ namespace ThinkNet.Infrastructure
                 _kafkaProducer.Value.Send(data);
             }
             catch(Exception ex) {
-                if(LogManager.Default.IsErrorEnabled)
-                    LogManager.Default.Error($"Create topic {topic} failed", ex);
+                //if(LogManager.Default.IsErrorEnabled)
+                //    LogManager.Default.Error($"Create topic {topic} failed", ex);
             }
         }
 

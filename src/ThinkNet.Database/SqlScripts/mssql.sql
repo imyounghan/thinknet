@@ -4,7 +4,7 @@
 	[AggregateTypeCode]  INT NOT NULL,
     [Version]            INT NOT NULL,
     [Payload]            VARCHAR(MAX) NOT NULL,
-    [CorrelationId]      VARCHAR(32) NOT NULL,
+    [CorrelationId]      CHAR(32) NOT NULL,
 	[OnCreated]          DATETIME NOT NULL,
 CONSTRAINT [PK_Events] PRIMARY KEY CLUSTERED
 (
@@ -20,7 +20,7 @@ GO
 
 
 CREATE TABLE [dbo].[thinknet_handlers](
-    [CorrelationId]    VARCHAR(36) NOT NULL,
+    [CorrelationId]    CHAR(36) NOT NULL,
 	[MessageTypeCode]  INT NOT NULL,
     [HandlerTypeCode]  INT NOT NULL,
 	[OnCreated]        DATETIME NOT NULL,

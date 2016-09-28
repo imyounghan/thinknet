@@ -29,7 +29,12 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected Message(string id, DateTime time)
         {
-            this.CreatedTime = time.ToUniversalTime();
+            if (time.Kind == DateTimeKind.Utc) {
+                this.CreatedTime = time;
+            }
+            else {
+                this.CreatedTime = time.ToUniversalTime();
+            }            
             this.Id = id;
         }
 

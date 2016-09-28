@@ -305,7 +305,7 @@ namespace ThinkNet
                     return;
 
                 StringBuilder log = new StringBuilder()
-                    .Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"))
+                    .Append(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"))
                     .AppendFormat(" {0} [{1}]", logpriority, Thread.CurrentThread.Name.IfEmpty(Thread.CurrentThread.ManagedThreadId.ToString().PadRight(5)));
                 if (!string.IsNullOrWhiteSpace(message)) {
                     log.Append(" Message:").Append(message);

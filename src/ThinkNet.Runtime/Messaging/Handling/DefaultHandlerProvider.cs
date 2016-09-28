@@ -46,23 +46,13 @@ namespace ThinkNet.Messaging.Handling
         }
 
         private readonly ICommandContextFactory _commandContextFactory;
-        //private readonly IEventContextFactory _eventContextFactory;
 
         private readonly Dictionary<CompositeKey, Type> EventTypesMapServiceType;
-        //private readonly Dictionary<CompositeKey, IProxyHandler> eventHanderDict;
-        //private readonly Dictionary<Type, IProxyHandler> commandHandlerDict;
-
-        //private readonly Dictionary<Type, IProxyHandler> singleHandlerDict;
-        //private readonly Dictionary<Type, IEnumerable<IProxyHandler>> manyHandlerDict;
 
         public DefaultHandlerProvider(IEventSourcedRepository repository, IEventBus eventBus)
         {
             this._commandContextFactory = new CommandContextFactory(repository, eventBus);
             this.EventTypesMapServiceType = new Dictionary<CompositeKey, Type>();
-            //this._eventContextFactory = eventContextFactory;
-
-            //this.singleHandlerDict = new Dictionary<Type, IProxyHandler>();
-            //this.manyHandlerDict = new Dictionary<Type, IEnumerable<IProxyHandler>>();
         }
 
 
@@ -109,25 +99,6 @@ namespace ThinkNet.Messaging.Handling
             }
         }
 
-        //public IProxyHandler GetEventHandler(Type eventType)
-        //{
-        //    var handlerType = typeof(IEventHandler<>).MakeGenericType(eventType);
-        //    var handlers = ObjectContainer.Instance.ResolveAll(handlerType)
-        //        .Cast<IHandler>()
-        //        .Select(handler => new EventHandlerWrapper(handler, _eventContextFactory))
-        //        .Cast<IProxyHandler>()
-        //        .ToArray();
-
-        //    switch (handlers.Length) {
-        //        case 0:
-        //            return null;
-        //        case 1:
-        //            return handlers[0];
-        //        default:
-        //            throw new MessageHandlerTooManyException(eventType);
-        //    }
-        //}
-
         public IEnumerable<IProxyHandler> GetMessageHandlers(Type type)
         {
             var handlerType = typeof(IMessageHandler<>).MakeGenericType(type);
@@ -136,25 +107,6 @@ namespace ThinkNet.Messaging.Handling
                 .Select(handler => new MessageHandlerWrapper(handler))
                 .Cast<IProxyHandler>();
         }
-
-        //#region IHandlerProvider 成员
-
-        //IEnumerable<IProxyHandler> IHandlerProvider.GetHandlers(Type type)
-        //{
-        //    return manyHandlerDict[type];
-        //}
-
-        //IProxyHandler IHandlerProvider.GetCommandHandler(Type type)
-        //{
-        //    return singleHandlerDict[type];
-        //}
-
-        //IProxyHandler IHandlerProvider.GetEventHandler(Type type)
-        //{
-        //    return singleHandlerDict[type];
-        //}
-
-        //#endregion
 
         #region IInitializer 成员
 
@@ -177,29 +129,6 @@ namespace ThinkNet.Messaging.Handling
                     }
                 }
             }
-            //foreach (var type in types.Where(TypeHelper.IsHandlerType)) {
-            //    foreach(var interfaceType in type.GetInterfaces()) {
-            //        if(TypeHelper.IsCommandHandlerInterfaceType(interfaceType)) {
-            //            var commandType = type.GenericTypeArguments[0];
-            //            commandHandlerDict[commandType] = this.GetCommandHandler(commandType);
-            //        }
-            //        else if(TypeHelper.IsEventHandlerInterfaceType(type)) {
-            //            var eventTypes = new CompositeKey(type.GenericTypeArguments);
-            //            eventHanderTypeMap[eventTypes] = interfaceType;
-            //            //eventHanderDict[eventTypes] = 
-            //        }
-            //    }
-            //    if (TypeHelper.IsCommand(type)) {
-            //        singleHandlerDict[type] = this.GetCommandHandler(type);
-            //    }
-            //    if (TypeHelper.IsEvent(type)) {
-            //        //singleHandlerDict[type] = this.GetEventHandler(type);
-            //        manyHandlerDict[type] = this.GetHandlers(type).ToArray();
-            //    }
-            //    if(TypeHelper.IsEventHandlerType(type)) {
-            //        type.GetInterfaces().Where(TypeHelper.IsEventHandlerInterfaceType);
-            //    }
-            //}
         }
 
         #endregion

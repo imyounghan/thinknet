@@ -72,6 +72,10 @@
     <Compile Include="Lifecycle.cs" />
     <Compile Include="LifeCycleAttribute.cs" />
     <Compile Include="LogManager.cs" />
+    <Compile Include="Messaging\Handling\CommandFilterAttribute.cs" />
+    <Compile Include="Messaging\Handling\CommandHandlingContext.cs" />
+    <Compile Include="Messaging\Handling\CommandHandledContext.cs" />
+    <Compile Include="Messaging\Handling\ICommandFilter.cs" />
     <Compile Include="Messaging\Handling\IMessageHandler.cs" />
     <Compile Include="Messaging\ICommandBus.cs" />
     <Compile Include="Messaging\ICommandService.cs" />

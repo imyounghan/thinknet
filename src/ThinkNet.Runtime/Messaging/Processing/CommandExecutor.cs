@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging.Handling;
 
@@ -23,6 +25,12 @@ namespace ThinkNet.Messaging.Processing
             var handler = _handlerProvider.GetCommandHandler(commandType);
 
             if(_handlerStore.HandlerIsExecuted(command.Id, commandType, handler.HanderType)) {
+                 CommandHandlingContext preContext = new CommandHandlingContext();
+                Func<CommandHandledContext> continuation = () => new CommandHandledContext();
+
+                handler.HanderType.GetAttributes<CommandFilterAttribute>(false).Cast<ICommandFilter>()
+                    .Aggregate(continuation, (next, filter) => () => InvokeHandlerMethodFilter(filter, preContext, continuation));
+
                 handler.Handle(command);
                 return ExecutionStatus.Obsoleted;
             }
@@ -30,6 +38,32 @@ namespace ThinkNet.Messaging.Processing
             _handlerStore.AddHandlerInfo(command.Id, commandType, handler.HanderType);
 
             return ExecutionStatus.Completed;
+        }
+
+        private static CommandHandledContext InvokeHandlerMethodFilter(ICommandFilter filter,
+            CommandHandlingContext preContext, Func<CommandHandledContext> continuation)
+        {
+            filter.OnCommandHandling(preContext);
+
+            bool wasError = false;
+            CommandHandledContext postContext = null;
+            try {
+                postContext = continuation();
+            }
+            catch (ThreadAbortException) {
+                postContext = new CommandHandledContext();
+                filter.OnCommandHandled(postContext);
+                throw;
+            }
+            catch (Exception ex) {
+                wasError = true;
+                postContext = new CommandHandledContext();
+                filter.OnCommandHandled(postContext);
+            }
+            if (!wasError) {
+                filter.OnCommandHandled(postContext);
+            }
+            return postContext;
         }
 
 
