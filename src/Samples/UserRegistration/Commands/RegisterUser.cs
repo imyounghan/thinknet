@@ -6,7 +6,7 @@ namespace UserRegistration.Commands
 {
     [DataContract]
     [Serializable]
-    public class RegisterUser : Command
+    public class RegisterUser : Command, ThinkNet.Contracts.ICommand
     {
         [DataMember]
         public string LoginId { get; set; }

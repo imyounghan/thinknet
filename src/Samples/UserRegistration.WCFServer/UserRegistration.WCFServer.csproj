@@ -54,25 +54,9 @@
     <Compile Include="UserSigned.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ThinkNet.Database\ThinkNet.Database.csproj">
-      <Project>{1f193073-7698-455a-9516-3d6f4358ed35}</Project>
-      <Name>ThinkNet.Database</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\ThinkNet.Runtime.Kafka\ThinkNet.Runtime.Kafka.csproj">
       <Project>{05d9d063-323f-42b8-a8da-4d36980b99d3}</Project>
       <Name>ThinkNet.Runtime.Kafka</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ThinkNet.Runtime\ThinkNet.Runtime.csproj">
-      <Project>{7dd719e0-5aaa-4878-b259-5d8648d585fd}</Project>
-      <Name>ThinkNet.Runtime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ThinkNet\ThinkNet.csproj">
-      <Project>{a8fcd0bf-04fc-4628-b376-6861d63d9538}</Project>
-      <Name>ThinkNet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\UserRegistration.Contracts\UserRegistration.Contracts.csproj">
-      <Project>{d3324d2d-77d2-4202-b42f-1cf921c30d7b}</Project>
-      <Name>UserRegistration.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\UserRegistration\UserRegistration.csproj">
       <Project>{700afc24-7314-493f-a47d-afa41d756d28}</Project>

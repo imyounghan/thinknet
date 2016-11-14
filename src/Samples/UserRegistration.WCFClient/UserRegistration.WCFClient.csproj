@@ -50,9 +50,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\UserRegistration.Contracts\UserRegistration.Contracts.csproj">
-      <Project>{d3324d2d-77d2-4202-b42f-1cf921c30d7b}</Project>
-      <Name>UserRegistration.Contracts</Name>
+    <ProjectReference Include="..\..\ThinkNet\ThinkNet.csproj">
+      <Project>{3a400d75-9c72-43c5-8447-2070f333aae3}</Project>
+      <Name>ThinkNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UserRegistration\UserRegistration.csproj">
+      <Project>{700afc24-7314-493f-a47d-afa41d756d28}</Project>
+      <Name>UserRegistration</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

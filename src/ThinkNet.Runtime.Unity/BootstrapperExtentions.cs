@@ -2,29 +2,20 @@
 using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.Configuration;
-using Microsoft.Practices.Unity.InterceptionExtension;
-using ThinkNet.Caching;
+using ThinkNet.Configurations;
 
-namespace ThinkNet.Configurations
+namespace ThinkNet.Runtime
 {
     public static class BootstrapperExtentions
     {
-        public static void DoneWithUnity(this Bootstrapper that, bool enableInterception = false)
+        public static void DoneWithUnity(this Bootstrapper that)
         {
-            var container = new UnityContainer();
-            if (enableInterception)
-                container.AddNewExtension<Interception>();
-
-            that.DoneWithUnity(container);
+            that.DoneWithUnity(new UnityContainer());
         }
         
         private static void DoneWithUnity(this Bootstrapper that, IUnityContainer container)
         {
             container.NotNull("container");
-
-            if(!container.IsRegistered<ICacheProvider>()) {
-                container.RegisterType<ICacheProvider, MemoryCacheProvider>();
-            }
             ServiceLocator.SetLocatorProvider(() => new UnityServiceLocator(container));
 
             that.Done(new UnityObjectContainer(container));

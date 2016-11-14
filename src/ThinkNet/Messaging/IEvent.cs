@@ -1,4 +1,4 @@
-﻿using ThinkNet.Infrastructure;
+﻿
 
 namespace ThinkNet.Messaging
 {
@@ -8,8 +8,12 @@ namespace ThinkNet.Messaging
     public interface IEvent : IMessage
     {
         /// <summary>
-        /// 获取事件ID
+        /// 事件的唯一标识
         /// </summary>
-        string SourceId { get; set; }
+        string Id { get; }
+        /// <summary>
+        /// 生成事件的创建时间
+        /// </summary>
+        System.DateTime CreationTime { get; }
     }
 }

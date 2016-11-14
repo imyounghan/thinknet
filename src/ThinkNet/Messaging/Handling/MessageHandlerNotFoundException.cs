@@ -1,5 +1,6 @@
 ﻿using System;
-using ThinkNet.Infrastructure;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ThinkNet.Messaging.Handling
 {
@@ -11,9 +12,15 @@ namespace ThinkNet.Messaging.Handling
     {
         /// <summary>Parameterized constructor.
         /// </summary>
-        /// <param name="messageType">The message type.</param>
-        public MessageHandlerNotFoundException(Type messageType)
-            : base(string.Format("Message Handler not found for {0}.", messageType.FullName))
+        public MessageHandlerNotFoundException(Type type)
+            : base(string.Format("Message Handler not found for {0}.", type.FullName))
+        { }
+
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
+        public MessageHandlerNotFoundException(IEnumerable<Type> types)
+            : base(string.Format("Event Handler not found for '{0}'.", string.Join(",", types.Select(p => p.FullName).ToArray())))
         { }
     }
 }

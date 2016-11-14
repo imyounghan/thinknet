@@ -26,6 +26,14 @@ namespace ThinkNet
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
+        public ThinkNetException(string message, string code)
+            : base(message)
+        {
+            this.MessageCode = code;
+        }
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public ThinkNetException(string message, Exception innerException)
             : base(message, innerException)
         {
@@ -35,6 +43,6 @@ namespace ThinkNet
         /// <summary>
         /// 错误编码
         /// </summary>
-        public string MessageCode { get; set; }
+        public virtual string MessageCode { get; private set; }
     }
 }

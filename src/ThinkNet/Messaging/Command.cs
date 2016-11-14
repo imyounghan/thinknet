@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkNet.Infrastructure;
-using ThinkNet.Messaging.Handling;
+using ThinkNet.Common;
 
 
 namespace ThinkNet.Messaging
@@ -11,34 +10,47 @@ namespace ThinkNet.Messaging
     /// </summary>
     [DataContract]
     [Serializable]
-    public abstract class Command : Message, ICommand
+    public abstract class Command : ICommand
     {
 
         /// <summary>
         /// Default Constructor.
         /// </summary>
         protected Command()
+            : this(ObjectId.GenerateNewStringId())
         { }
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
         protected Command(string id)
-            : base(id)
-        { }
+        {
+            id.NotNullOrWhiteSpace("id");
+
+            this.Id = id;
+            this.Timestamp = DateTime.UtcNow;
+        }
+
+        [DataMember(Name = "id")]
+        public string Id { get; private set; }
+        /// <summary>
+        /// 生成当前命令的时间戳
+        /// </summary>
+        [DataMember(Name = "timestamp")]
+        public DateTime Timestamp { get; private set; }
 
         /// <summary>
         /// 获取聚合根标识的字符串形式
         /// </summary>
         protected virtual string GetAggregateRootStringId()
         {
-            return string.Empty;
+            return null;
         }
 
-        #region ICommand 成员
+        #region IMessage 成员
 
-        string ICommand.AggregateRootId
+        string IMessage.GetKey()
         {
-            get { return this.GetAggregateRootStringId(); }
+            return this.GetAggregateRootStringId();
         }
 
         #endregion
@@ -85,7 +97,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Concat(this.GetType().FullName, "@", this.AggregateRootId, "&", this.Id);
+            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.Id, this.AggregateRootId);
         }
     }
 }

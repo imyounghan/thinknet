@@ -1,5 +1,5 @@
 ﻿using System;
-using ThinkNet.EventSourcing;
+using ThinkNet.Domain;
 using UserRegistration.Events;
 
 namespace UserRegistration

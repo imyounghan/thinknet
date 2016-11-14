@@ -13,14 +13,14 @@ namespace ThinkNet.Messaging.Handling
         /// Parameterized constructor.
         /// </summary>
         public MessageHandlerTooManyException(Type type)
-            : base(string.Format("Found more than one message handler, messageType:{0}.", type.FullName)) 
+            : base(string.Format("Found more than one message handler for {0}.", type.FullName)) 
         { }
 
         /// <summary>
-        /// Default constructor.
+        /// Parameterized constructor.
         /// </summary>
         public MessageHandlerTooManyException(IEnumerable<Type> types)
-           : base(string.Format("Found more than one event handler, event types:{0}.", string.Join(",", types.Select(p => p.FullName).ToArray())))
+           : base(string.Format("Found more than one event handler form '{0}'.", string.Join(",", types.Select(p => p.FullName).ToArray())))
         { }
     }
 }

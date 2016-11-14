@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A8FCD0BF-04FC-4628-B376-6861D63D9538}</ProjectGuid>
+    <ProjectGuid>{3A400D75-9C72-43C5-8447-2070F333AAE3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ThinkNet</RootNamespace>
     <AssemblyName>ThinkNet</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -21,8 +21,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -32,102 +30,202 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\ThinkNet.XML</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\\sunsoft.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.Composition.Registration" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
+    <Reference Include="System.Reflection.Context" />
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheRegionAttribute.cs" />
-    <Compile Include="CachingAttribute.cs" />
-    <Compile Include="EventSourcing\EventSourced.cs" />
-    <Compile Include="EventSourcing\EventSourcedException.cs" />
-    <Compile Include="EventSourcing\EventSourcedRepository.cs" />
-    <Compile Include="EventSourcing\IEventSourced.cs" />
-    <Compile Include="EventSourcing\EventSourcedRepositoryExtensions.cs" />
-    <Compile Include="DisposableObject.cs" />
-    <Compile Include="IInitializer.cs" />
-    <Compile Include="Infrastructure\DefaultMemoryCache.cs" />
-    <Compile Include="Infrastructure\ICache.cs">
+    <Compile Include="Common\CacheRegionAttribute.cs" />
+    <Compile Include="Common\Interception\CachingAttribute.cs" />
+    <Compile Include="Common\Caching\CacheConfiguration.cs" />
+    <Compile Include="Common\Caching\CacheConfigurationSectionHandler.cs" />
+    <Compile Include="Common\Caching\HashtableCache\HashtableCache.cs" />
+    <Compile Include="Common\Caching\HashtableCache\HashtableCacheProvider.cs" />
+    <Compile Include="Common\Caching\ICache.cs" />
+    <Compile Include="Common\Caching\ICacheProvider.cs" />
+    <Compile Include="Common\Caching\MemoryCache\MemoryCache.cs" />
+    <Compile Include="Common\Caching\MemoryCache\MemoryCacheProvider.cs" />
+    <Compile Include="Common\Caching\WebCache\WebCache.cs" />
+    <Compile Include="Common\Caching\WebCache\WebCacheProvider.cs" />
+    <Compile Include="Common\Interception\GetNextInterceptorDelegate.cs" />
+    <Compile Include="Common\Interception\IInterceptor.cs" />
+    <Compile Include="Common\Interception\IMethodInvocation.cs" />
+    <Compile Include="Common\Interception\IMethodReturn.cs" />
+    <Compile Include="Common\Interception\InvokeInterceptorDelegate.cs" />
+    <Compile Include="Common\Interception\IParameterCollection.cs" />
+    <Compile Include="Common\Context\ContextManager.cs" />
+    <Compile Include="Common\Context\CurrentContext.cs" />
+    <Compile Include="Common\Context\IContext.cs" />
+    <Compile Include="Common\Context\IContextManager.cs" />
+    <Compile Include="Common\Context\ICurrentContext.cs" />
+    <Compile Include="Common\Interception\InterceptorAttribute.cs" />
+    <Compile Include="Common\Interception\MethodInvocation.cs" />
+    <Compile Include="Common\Interception\MethodReturn.cs" />
+    <Compile Include="Common\Interception\Pipeline\InterceptorPipeline.cs" />
+    <Compile Include="Common\Interception\Pipeline\InterceptorPipelineKey.cs" />
+    <Compile Include="Common\Interception\Pipeline\InterceptorPipelineManager.cs" />
+    <Compile Include="Common\Interception\ParameterCollection.cs" />
+    <Compile Include="Common\Interception\TransactionAttribute.cs" />
+    <Compile Include="Runtime\CommandService.cs" />
+    <Compile Include="Domain\EventSourcing\EventStreamInnerHandler.cs" />
+    <Compile Include="Messaging\Handling\CommandContext.cs" />
+    <Compile Include="Messaging\Handling\CommandHandlerWrapper.cs" />
+    <Compile Include="Messaging\Handling\DomainEventAsPendingException.cs" />
+    <Compile Include="Messaging\Handling\DomainEventObsoletedException.cs" />
+    <Compile Include="Messaging\Handling\EventHandlerWrapper.cs" />
+    <Compile Include="Messaging\Handling\IProxyHandler.cs" />
+    <Compile Include="Messaging\Handling\MessageHandlerProcessedException.cs" />
+    <Compile Include="Messaging\Handling\MessageHandlerWrapper.cs" />
+    <Compile Include="Messaging\Handling\VersionData.cs" />
+    <Compile Include="Runtime\Bootstrapper.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Infrastructure\ISerializer.cs" />
-    <Compile Include="Infrastructure\SerializerExtensions.cs" />
-    <Compile Include="Lifecycle.cs" />
-    <Compile Include="LifeCycleAttribute.cs" />
-    <Compile Include="LogManager.cs" />
-    <Compile Include="Messaging\Handling\CommandFilterAttribute.cs" />
-    <Compile Include="Messaging\Handling\CommandHandlingContext.cs" />
-    <Compile Include="Messaging\Handling\CommandHandledContext.cs" />
-    <Compile Include="Messaging\Handling\ICommandFilter.cs" />
-    <Compile Include="Messaging\Handling\IMessageHandler.cs" />
-    <Compile Include="Messaging\ICommandBus.cs" />
-    <Compile Include="Messaging\ICommandService.cs" />
-    <Compile Include="Messaging\IEventBus.cs" />
-    <Compile Include="EventSourcing\VersionedEvent.cs" />
-    <Compile Include="RegisterAttribute.cs" />
-    <Compile Include="Infrastructure\EventPublishedVersionInMemory.cs" />
-    <Compile Include="Infrastructure\IEventPublishedVersionStore.cs" />
-    <Compile Include="Infrastructure\IEventStore.cs" />
-    <Compile Include="Infrastructure\ISnapshotPolicy.cs" />
-    <Compile Include="Infrastructure\ISnapshotStore.cs" />
-    <Compile Include="Infrastructure\DataKey.cs" />
-    <Compile Include="Infrastructure\ObjectId.cs" />
-    <Compile Include="Database\AggregateRoot.cs" />
-    <Compile Include="Database\AggregateRootException.cs" />
-    <Compile Include="Database\IAggregateRoot.cs" />
-    <Compile Include="EventSourcing\EventSourcedInnerHandlerProvider.cs">
+    <Compile Include="Runtime\BootstrapperExtentions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Database\IRepository.cs" />
-    <Compile Include="Database\IRepositoryContext.cs" />
-    <Compile Include="Database\IRepositoryContextFactory.cs" />
-    <Compile Include="Database\IRepository`.cs" />
-    <Compile Include="Database\RepositoryExtensions.cs" />
-    <Compile Include="EventSourcing\IEventSourcedRepository.cs" />
-    <Compile Include="Infrastructure\HandlerRecordStoreException.cs" />
-    <Compile Include="Messaging\Handling\IHandler.cs" />
-    <Compile Include="EntityNotFoundException.cs" />
-    <Compile Include="Messaging\CommandReturnType.cs" />
-    <Compile Include="Messaging\CommandResult.cs" />
-    <Compile Include="Messaging\CommandService.cs" />
-    <Compile Include="Messaging\CommandStatus.cs" />
+    <Compile Include="Runtime\Executing\Processor.cs" />
+    <Compile Include="Runtime\Executing\CommandExecutor.cs" />
+    <Compile Include="Domain\EventSourcing\CommandResultRepliedInnerHandler.cs" />
+    <Compile Include="Runtime\Executing\EventExecutor.cs" />
+    <Compile Include="Runtime\Executing\Executor.cs" />
+    <Compile Include="Runtime\Executing\HandlerRecordInMemory.cs" />
+    <Compile Include="Contracts\ICommandResultNotification.cs" />
+    <Compile Include="Runtime\IInitializer.cs" />
+    <Compile Include="Common\Lifecycle.cs" />
+    <Compile Include="Common\LifeCycleAttribute.cs" />
+    <Compile Include="Common\ObjectId.cs" />
+    <Compile Include="Common\RegisterAttribute.cs" />
+    <Compile Include="Common\Serialization\DefaultBinarySerializer.cs" />
+    <Compile Include="Common\Serialization\DefaultTextSerializer.cs" />
+    <Compile Include="Common\Serialization\IBinarySerializer.cs" />
+    <Compile Include="Common\Serialization\ITextSerializer.cs" />
+    <Compile Include="Common\Serialization\SerializerExtensions.cs" />
+    <Compile Include="Contracts\CommandResult.cs" />
+    <Compile Include="Contracts\CommandReturnType.cs" />
+    <Compile Include="Contracts\CommandStatus.cs" />
+    <Compile Include="Contracts\ICommand.cs" />
+    <Compile Include="Contracts\ICommandService.cs" />
+    <Compile Include="Contracts\IDataTransferObject.cs" />
+    <Compile Include="Contracts\IQueryParameter.cs" />
+    <Compile Include="Contracts\IQueryService.cs" />
+    <Compile Include="Contracts\PageQueryResult.cs" />
+    <Compile Include="Contracts\QueryResult.cs" />
+    <Compile Include="Contracts\QueryStatus.cs" />
+    <Compile Include="Database\Criteria.cs" />
+    <Compile Include="Database\DataContextBase.cs" />
+    <Compile Include="Database\DataContextExtentions.cs" />
+    <Compile Include="Database\ExpressionExtensions.cs" />
+    <Compile Include="Database\ICriteria.cs" />
+    <Compile Include="Database\IDataContext.cs" />
+    <Compile Include="Database\IDataContextFactory.cs" />
+    <Compile Include="Database\ILifecycle.cs" />
+    <Compile Include="Database\ISortItem.cs" />
+    <Compile Include="Database\ISortSet.cs" />
+    <Compile Include="Database\IValidatable.cs" />
+    <Compile Include="Database\LifecycleVeto.cs" />
+    <Compile Include="Database\MemoryContextFactory.cs" />
+    <Compile Include="Database\SortSet.cs" />
+    <Compile Include="Domain\EventSourcing\NoneSnapshotPolicy.cs" />
+    <Compile Include="Domain\Repositories\Repository.cs" />
+    <Compile Include="Domain\AggregateRoot.cs" />
+    <Compile Include="Domain\IAggregateRoot.cs" />
+    <Compile Include="Domain\AggregateRootInnerHandler.cs" />
+    <Compile Include="Domain\EventSourced.cs" />
+    <Compile Include="Domain\Repositories\EventSourcedRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Domain\IEventSourced.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Domain\IEventSourcedRepository.cs" />
+    <Compile Include="Domain\EventSourcing\EventStream.cs" />
+    <Compile Include="Domain\IRepository.cs" />
+    <Compile Include="Domain\IRepository`.cs" />
+    <Compile Include="Domain\RepositoryExtensions.cs" />
+    <Compile Include="Domain\Repositories\Repository`.cs" />
+    <Compile Include="Runtime\MessageBus.cs" />
+    <Compile Include="Runtime\Writing\EventData.cs" />
+    <Compile Include="Runtime\Writing\EventDataItem.cs" />
+    <Compile Include="Runtime\Writing\EventStore.cs" />
+    <Compile Include="Runtime\Writing\HandlerRecord.cs" />
+    <Compile Include="Runtime\Writing\HandlerRecordStore.cs" />
+    <Compile Include="Runtime\Writing\Snapshot.cs" />
+    <Compile Include="Runtime\Writing\SnapshotStore.cs" />
     <Compile Include="Messaging\Handling\ICommandContext.cs" />
-    <Compile Include="ThinkNetExtensions.cs" />
-    <Compile Include="Infrastructure\ValueObject.cs" />
-    <Compile Include="Messaging\Message.cs" />
-    <Compile Include="Infrastructure\TypeHelper.cs" />
-    <Compile Include="Messaging\Command.cs" />
-    <Compile Include="Messaging\Event.cs" />
-    <Compile Include="Infrastructure\HandlerRecordInMemory.cs" />
-    <Compile Include="Infrastructure\IHandlerRecordStore.cs" />
-    <Compile Include="Messaging\ICommand.cs" />
     <Compile Include="Messaging\Handling\ICommandHandler.cs" />
-    <Compile Include="Messaging\IEvent.cs" />
     <Compile Include="Messaging\Handling\IEventHandler.cs" />
-    <Compile Include="Messaging\IEventPublisher.cs" />
+    <Compile Include="Messaging\Handling\IHandler.cs" />
+    <Compile Include="Messaging\Handling\IMessageHandler.cs" />
     <Compile Include="Messaging\Handling\MessageHandlerNotFoundException.cs" />
     <Compile Include="Messaging\Handling\MessageHandlerTooManyException.cs" />
-    <Compile Include="Messaging\IMessage.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Messaging\IMessage.cs" />
+    <Compile Include="Domain\EventSourcing\DataKey.cs" />
+    <Compile Include="Domain\EntityNotFoundException.cs" />
+    <Compile Include="Domain\ICache.cs" />
+    <Compile Include="Domain\LocalCache.cs" />
+    <Compile Include="Messaging\Command.cs" />
+    <Compile Include="Messaging\Event.cs" />
+    <Compile Include="Messaging\ICommand.cs" />
+    <Compile Include="Messaging\IEvent.cs" />
+    <Compile Include="Messaging\IMessageBus.cs" />
+    <Compile Include="Messaging\IEventPublisher.cs" />
+    <Compile Include="Domain\ValueObject.cs" />
+    <Compile Include="Domain\EventSourcing\IEventStore.cs" />
+    <Compile Include="Domain\EventSourcing\ISnapshotPolicy.cs" />
+    <Compile Include="Domain\EventSourcing\ISnapshotStore.cs" />
+    <Compile Include="DisposableObject.cs" />
+    <Compile Include="Extensions\ConcurrentDictionaryExtensions.cs" />
+    <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
+    <Compile Include="Extensions\DataReaderExtentions.cs" />
+    <Compile Include="Extensions\DbConnectionExtentions.cs" />
+    <Compile Include="Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Extensions\EnumerableExtentions.cs" />
+    <Compile Include="Extensions\ExpressionFuncExtender.cs" />
+    <Compile Include="Extensions\HttpRequestBaseExtensions.cs" />
+    <Compile Include="Extensions\ObjectExtentions.cs" />
+    <Compile Include="Extensions\ReaderWriterLockSlimExtensions.cs" />
+    <Compile Include="Extensions\ReflectionExtentions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="LogManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadData\IQueryExecutor.cs" />
+    <Compile Include="ReadData\IQueryParameter.cs" />
+    <Compile Include="ReadData\IQueryResult.cs" />
+    <Compile Include="ReadData\PageQueryParameter.cs" />
+    <Compile Include="ReadData\QueryParameter.cs" />
+    <Compile Include="Common\Composition\OwnObjectContainer.cs" />
+    <Compile Include="Runtime\ConfigurationSetting.cs" />
+    <Compile Include="Common\Composition\IObjectContainer.cs" />
+    <Compile Include="Runtime\Executing\IExecutor.cs" />
+    <Compile Include="Runtime\Executing\IHandlerRecordStore.cs" />
+    <Compile Include="Runtime\IProcessor.cs" />
+    <Compile Include="Common\Composition\ObjectContainer.cs" />
+    <Compile Include="Common\Composition\ObjectContainerExtentions.cs" />
+    <Compile Include="Domain\EventSourcing\CommandResultReplied.cs" />
+    <Compile Include="Runtime\Executing\MessageExecutor.cs" />
+    <Compile Include="Runtime\Routing\DefaultRoutingKeyProvider.cs" />
+    <Compile Include="Runtime\Routing\Envelope.cs" />
+    <Compile Include="Runtime\Routing\EnvelopeHub.cs" />
+    <Compile Include="Runtime\Routing\IEnvelopeReceivercs.cs" />
+    <Compile Include="Runtime\Routing\IEnvelopeSender.cs" />
+    <Compile Include="Runtime\Routing\IRoutingKeyProvider.cs" />
+    <Compile Include="Runtime\Routing\StandardMetadata.cs" />
     <Compile Include="ThinkNetException.cs" />
   </ItemGroup>
   <ItemGroup />

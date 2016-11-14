@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinkNet;
 
 namespace UserRegistration
 {
@@ -16,7 +17,7 @@ namespace UserRegistration
         public User Register(string loginId, string password, string userName, string email)
         {
             if (!_uniqueService.Validate(loginId, _commandId)) {
-                throw new AggregateException("用户名已存在！");
+                throw new ThinkNetException("用户名已存在！");
             }
 
             return new User(loginId, password, userName, email);

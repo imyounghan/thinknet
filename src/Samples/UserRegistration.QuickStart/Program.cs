@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using ThinkNet.Configurations;
-using ThinkNet.Database;
-using ThinkNet.Messaging;
+using ThinkNet.Common.Composition;
+using ThinkNet.Contracts;
+using ThinkNet.Runtime;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
 
@@ -14,7 +12,7 @@ namespace UserRegistration.QuickStart
     {
         static void Main(string[] args)
         {
-            Bootstrapper.Current.Register<IDataContextFactory, MemoryContextFactory>().Done();
+            Bootstrapper.Current.Done();
 
            
 

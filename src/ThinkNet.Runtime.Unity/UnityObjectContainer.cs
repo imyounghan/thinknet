@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Practices.Unity;
-using Microsoft.Practices.Unity.InterceptionExtension;
+using ThinkNet.Common;
+using ThinkNet.Common.Composition;
 
 
 namespace ThinkNet.Configurations
@@ -44,30 +44,30 @@ namespace ThinkNet.Configurations
         {
             var lifetime = GetLifetimeManager(lifecycle);
 
-            var injectionMembers = InterceptionBehaviorMap.Instance.GetBehaviorTypes(type)
-                .Select(behaviorType => new InterceptionBehavior(behaviorType))
-                .Cast<InterceptionMember>().ToList();
+            //var injectionMembers = InterceptionBehaviorMap.Instance.GetBehaviorTypes(type)
+            //    .Select(behaviorType => new InterceptionBehavior(behaviorType))
+            //    .Cast<InterceptionMember>().ToList();
 
-            if(injectionMembers.Count > 0) {
-                if(type.IsSubclassOf(typeof(MarshalByRefObject))) {
-                    injectionMembers.Insert(0, new Interceptor<TransparentProxyInterceptor>());
-                }
-                else {
-                    injectionMembers.Insert(0, new Interceptor<VirtualMethodInterceptor>());
-                }
-            }
+            //if(injectionMembers.Count > 0) {
+            //    if(type.IsSubclassOf(typeof(MarshalByRefObject))) {
+            //        injectionMembers.Insert(0, new Interceptor<TransparentProxyInterceptor>());
+            //    }
+            //    else {
+            //        injectionMembers.Insert(0, new Interceptor<VirtualMethodInterceptor>());
+            //    }
+            //}
 
-            if(type.IsDefined(typeof(HandlerAttribute), false) ||
-                type.GetMembers().Any(item => item.IsDefined(typeof(HandlerAttribute), false))) {
-                int position = injectionMembers.Count > 0 ? 1 : 0;
-                injectionMembers.Insert(position, new InterceptionBehavior<PolicyInjectionBehavior>());
-            }
+            //if(type.IsDefined(typeof(HandlerAttribute), false) ||
+            //    type.GetMembers().Any(item => item.IsDefined(typeof(HandlerAttribute), false))) {
+            //    int position = injectionMembers.Count > 0 ? 1 : 0;
+            //    injectionMembers.Insert(position, new InterceptionBehavior<PolicyInjectionBehavior>());
+            //}
 
             if(string.IsNullOrWhiteSpace(name)) {
-                _container.RegisterType(type, lifetime, injectionMembers.ToArray());
+                _container.RegisterType(type, lifetime);
             }
             else {
-                _container.RegisterType(type, name, lifetime, injectionMembers.ToArray());
+                _container.RegisterType(type, name, lifetime);
             }
         }
 
@@ -75,37 +75,37 @@ namespace ThinkNet.Configurations
         {
             var lifetimeManager = GetLifetimeManager(lifecycle);
 
-            var serviceBehaviorTypes = InterceptionBehaviorMap.Instance.GetBehaviorTypes(from);
-            var implBehaviorTypes = InterceptionBehaviorMap.Instance.GetBehaviorTypes(to);
+            //var serviceBehaviorTypes = InterceptionBehaviorMap.Instance.GetBehaviorTypes(from);
+            //var implBehaviorTypes = InterceptionBehaviorMap.Instance.GetBehaviorTypes(to);
 
-            var injectionMembers = serviceBehaviorTypes.Union(implBehaviorTypes)
-                .Select(behaviorType => new InterceptionBehavior(behaviorType))
-                .Cast<InterceptionMember>().ToList();
-            if(injectionMembers.Count > 0) {
-                if(implBehaviorTypes.Length > 0) {
-                    if(to.IsSubclassOf(typeof(MarshalByRefObject))) {
-                        injectionMembers.Insert(0, new Interceptor<TransparentProxyInterceptor>());
-                    }
-                    else {
-                        injectionMembers.Insert(0, new Interceptor<VirtualMethodInterceptor>());
-                    }
-                }
-                if(serviceBehaviorTypes.Length > 0 && from.IsInterface) {
-                    injectionMembers.Insert(0, new Interceptor<InterfaceInterceptor>());
-                }
-            }
+            //var injectionMembers = serviceBehaviorTypes.Union(implBehaviorTypes)
+            //    .Select(behaviorType => new InterceptionBehavior(behaviorType))
+            //    .Cast<InterceptionMember>().ToList();
+            //if(injectionMembers.Count > 0) {
+            //    if(implBehaviorTypes.Length > 0) {
+            //        if(to.IsSubclassOf(typeof(MarshalByRefObject))) {
+            //            injectionMembers.Insert(0, new Interceptor<TransparentProxyInterceptor>());
+            //        }
+            //        else {
+            //            injectionMembers.Insert(0, new Interceptor<VirtualMethodInterceptor>());
+            //        }
+            //    }
+            //    if(serviceBehaviorTypes.Length > 0 && from.IsInterface) {
+            //        injectionMembers.Insert(0, new Interceptor<InterfaceInterceptor>());
+            //    }
+            //}
 
-            if(to.IsDefined(typeof(HandlerAttribute), false) ||
-                to.GetMembers().Any(item => item.IsDefined(typeof(HandlerAttribute), false))) {
-                int position = injectionMembers.Count > 0 ? 1 : 0;
-                injectionMembers.Insert(position, new InterceptionBehavior<PolicyInjectionBehavior>());
-            }
+            //if(to.IsDefined(typeof(HandlerAttribute), false) ||
+            //    to.GetMembers().Any(item => item.IsDefined(typeof(HandlerAttribute), false))) {
+            //    int position = injectionMembers.Count > 0 ? 1 : 0;
+            //    injectionMembers.Insert(position, new InterceptionBehavior<PolicyInjectionBehavior>());
+            //}
 
             if(string.IsNullOrWhiteSpace(name)) {
-                _container.RegisterType(from, to, lifetimeManager, injectionMembers.ToArray());
+                _container.RegisterType(from, to, lifetimeManager);
             }
             else {
-                _container.RegisterType(from, to, name, lifetimeManager, injectionMembers.ToArray());
+                _container.RegisterType(from, to, name, lifetimeManager);
             }
         }
 

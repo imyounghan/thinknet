@@ -1,5 +1,5 @@
 ﻿using System;
-using ThinkNet;
+using ThinkNet.Common;
 using ThinkNet.Database;
 
 namespace UserRegistration
@@ -16,7 +16,7 @@ namespace UserRegistration
 
         public bool Validate(string loginName, string correlationId)
         {
-            using(var context = _dataContextFactory.CreateDataContext()) {
+            using(var context = _dataContextFactory.Create()) {
                 try {
                     var data = context.Find<LoginNameData>(loginName);
                     if(data == null) {

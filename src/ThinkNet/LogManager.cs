@@ -698,4 +698,82 @@ namespace ThinkNet
             Interlocked.CompareExchange(ref loggerFactory, factory, null);
         }
     }
+
+    public static class LogExtensions
+    {
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Debug(this LogManager.ILogger log, Exception ex)
+        {
+            log.Debug(ex.Message, ex);
+        }
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Debug(this LogManager.ILogger log, Exception ex, string format, params object[] args)
+        {
+            log.Debug(string.Format(format, args), ex);
+        }
+
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Info(this LogManager.ILogger log, Exception ex)
+        {
+            log.Info(ex.Message, ex);
+        }
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Info(this LogManager.ILogger log, Exception ex, string format, params object[] args)
+        {
+            log.Info(string.Format(format, args), ex);
+        }
+
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Warn(this LogManager.ILogger log, Exception ex)
+        {
+            log.Warn(ex.Message, ex);
+        }
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Warn(this LogManager.ILogger log, Exception ex, string format, params object[] args)
+        {
+            log.Warn(string.Format(format, args), ex);
+        }
+
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Error(this LogManager.ILogger log, Exception ex)
+        {
+            log.Error(ex.Message, ex);
+        }
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Error(this LogManager.ILogger log, Exception ex, string format, params object[] args)
+        {
+            log.Error(string.Format(format, args), ex);
+        }
+
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Fatal(this LogManager.ILogger log, Exception ex)
+        {
+            log.Fatal(ex.Message, ex);
+        }
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        public static void Fatal(this LogManager.ILogger log, Exception ex, string format, params object[] args)
+        {
+            log.Fatal(string.Format(format, args), ex);
+        }
+    }
 }

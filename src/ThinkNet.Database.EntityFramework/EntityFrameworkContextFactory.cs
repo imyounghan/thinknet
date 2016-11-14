@@ -2,11 +2,13 @@
 using System.Configuration;
 using System.Data.Common;
 using System.Data.Entity;
+using ThinkNet.Common;
+using ThinkNet.Common.Context;
 
 namespace ThinkNet.Database.EntityFramework
 {
     [Register(typeof(IDataContextFactory))]
-    public class EntityFrameworkContextFactory : IDataContextFactory
+    public class EntityFrameworkContextFactory : ContextManager, IDataContextFactory
     {
         //private readonly Func<DbContext> _contextFactory;
         private readonly Type _dbContextType;
@@ -30,19 +32,19 @@ namespace ThinkNet.Database.EntityFramework
 
             var dbContextType = Type.GetType(typeName);
             if (dbContextType.IsAssignableFrom(typeof(DbContext)))
-                throw new InvalidCastException("");
+                throw new InvalidCastException();
 
             this._dbContextType = dbContextType;
         }
 
-        public IDataContext CreateDataContext()
+        public IDataContext Create()
         {
             var dbContext = (DbContext)Activator.CreateInstance(_dbContextType);
             return new EntityFrameworkContext(dbContext);
         }
 
 
-        public IDataContext CreateDataContext(string nameOrConnectionString)
+        public IDataContext Create(string nameOrConnectionString)
         {
             var constructor = _dbContextType.GetConstructor(new[] { typeof(string) });
             if (constructor == null) {
@@ -54,7 +56,7 @@ namespace ThinkNet.Database.EntityFramework
             return new EntityFrameworkContext(dbContext);
         }
 
-        public IDataContext CreateDataContext(DbConnection connection)
+        public IDataContext Create(DbConnection connection)
         {
             var constructor = _dbContextType.GetConstructor(new[] { typeof(DbConnection) });
             if (constructor == null) {
@@ -64,6 +66,11 @@ namespace ThinkNet.Database.EntityFramework
 
             var dbContext = (DbContext)constructor.Invoke(new object[] { connection });
             return new EntityFrameworkContext(dbContext);
+        }
+        
+        public IDataContext GetCurrent()
+        {
+            return CurrentContext.GetContext() as IDataContext;
         }
     }
 }

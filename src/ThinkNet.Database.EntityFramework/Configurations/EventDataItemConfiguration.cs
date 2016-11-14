@@ -1,4 +1,5 @@
 ﻿using System.Data.Entity.ModelConfiguration;
+using ThinkNet.Runtime.Writing;
 
 namespace ThinkNet.Infrastructure
 {

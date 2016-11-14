@@ -29,7 +29,7 @@ namespace UserRegistration.Handlers
         }
 
 
-        public void Handle(int version, UserCreated @event)
+        public void Handle(VersionData versionKey, UserCreated @event)
         {
             _userDao.Save(new UserModel {
                 UserID = @event.SourceId,

@@ -4,7 +4,7 @@ using System.Linq;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
-using UserRegistration.Contracts;
+using ThinkNet.Contracts;
 
 namespace UserRegistration.WCFClient
 {
@@ -15,7 +15,7 @@ namespace UserRegistration.WCFClient
             Console.WriteLine("输入任意键开始演示...");
             Console.ReadKey();
 
-            using(var channelFactory = new ChannelFactory<IUserActionService>("UserActionService")) {
+            using(var channelFactory = new ChannelFactory<ICommandService>("CommandService")) {
                 var userActionService = channelFactory.CreateChannel();
                 userActionService.RegisterUser(new UserInfo() {
                     UserName = "hanyang",
@@ -28,7 +28,7 @@ namespace UserRegistration.WCFClient
             Console.WriteLine("创建一个用户。");
             System.Threading.Thread.Sleep(2000);
 
-            using(var channelFactory = new ChannelFactory<IUserQueryService>("UserQueryService")) {
+            using(var channelFactory = new ChannelFactory<IQueryService>("UserQueryService")) {
                 var userQueryService = channelFactory.CreateChannel();
                 Console.WriteLine("共有 {0} 个用户。", userQueryService.FindAll().Count());
             }
