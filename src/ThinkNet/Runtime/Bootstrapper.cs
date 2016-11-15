@@ -14,7 +14,6 @@ using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Domain.Repositories;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
-using ThinkNet.Runtime.Executing;
 using ThinkNet.Runtime.Routing;
 using ThinkNet.Runtime.Writing;
 
@@ -301,7 +300,7 @@ namespace ThinkNet.Runtime
         public Bootstrapper Register(Type type, string name, Lifecycle lifecycle)
         {
             if (_running) {
-                throw new ApplicationException("system is running, can not register type, please execute before 'done' method.");
+                throw new ApplicationException("system is running, can not register type, please execute before 'Done' method.");
             }
             type.NotNull("type");
 
@@ -393,10 +392,10 @@ namespace ThinkNet.Runtime
             this.Register<IMessageBus, MessageBus>();
             this.Register<ICommandService, CommandService>();
             this.Register<ICommandResultNotification, CommandService>();
-            this.Register<IHandlerRecordStore, HandlerRecordInMemory>(); 
+            this.Register<IMessageHandlerRecordStore, MessageHandlerRecordInMemory>(); 
             this.Register<IEnvelopeSender, EnvelopeHub>();
             this.Register<IEnvelopeReceiver, EnvelopeHub>();
-            this.Register<IProcessor, Processor>("CoreProcessor");
+            this.Register<IProcessor, Processor>("core");
         }
         
     }

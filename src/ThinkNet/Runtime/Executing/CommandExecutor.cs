@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using ThinkNet.Common.Composition;
 using ThinkNet.Domain;
 using ThinkNet.Messaging;
@@ -11,12 +12,12 @@ namespace ThinkNet.Runtime.Executing
 
     public class CommandExecutor : Executor<ICommand>
     {
-        private readonly IHandlerRecordStore _handlerStore;
+        private readonly IMessageHandlerRecordStore _handlerStore;
         private readonly Func<CommandContext> _commandContextFactory;
         public CommandExecutor(IRepository repository, 
             IEventSourcedRepository eventSourcedRepository,
             IMessageBus messageBus, 
-            IHandlerRecordStore handlerStore)
+            IMessageHandlerRecordStore handlerStore)
         {
             this._commandContextFactory = () => new CommandContext(repository, eventSourcedRepository, messageBus);
             this._handlerStore = handlerStore;
@@ -50,9 +51,9 @@ namespace ThinkNet.Runtime.Executing
         {
             var commandType = command.GetType();
             if (_handlerStore.HandlerIsExecuted(command.Id, commandType, handlerType)) {
-                var errorMessage = string.Format("The command has been handled. commandHandlerType:{0}, commandType:{0}, commandId:{1}.",
+                var errorMessage = string.Format("The command has been handled. CommandHandlerType:{0}, CommandType:{1}, CommandId:{2}.",
                     handlerType.FullName, commandType.FullName, command.Id);
-                throw new MessageHandlerProcessedException();
+                throw new MessageHandlerProcessedException(errorMessage);
             }
         }
 
@@ -60,6 +61,37 @@ namespace ThinkNet.Runtime.Executing
         {
             if (ex != null)
                 _handlerStore.AddHandlerInfo(command.Id, command.GetType(), handlerType);
-        }        
+        }
+
+
+        private static CommandHandledContext InvokeHandlerMethodFilter(ICommandFilter filter,
+            CommandHandlingContext preContext, Func<CommandHandledContext> continuation)
+        {
+            filter.OnCommandHandling(preContext);
+
+            if(!preContext.WillExecute) {
+                return new CommandHandledContext();
+            }
+
+            bool wasError = false;
+            CommandHandledContext postContext = null;
+            try {
+                postContext = continuation();
+            }
+            catch(ThreadAbortException) {
+                postContext = new CommandHandledContext();
+                filter.OnCommandHandled(postContext);
+                throw;
+            }
+            catch(Exception ex) {
+                wasError = true;
+                postContext = new CommandHandledContext();
+                filter.OnCommandHandled(postContext);
+            }
+            if(!wasError) {
+                filter.OnCommandHandled(postContext);
+            }
+            return postContext;
+        }
     }
 }

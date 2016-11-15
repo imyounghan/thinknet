@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ThinkNet.Common;
 using ThinkNet.Contracts;
 using ThinkNet.Domain;
 using ThinkNet.Messaging;
+using ThinkNet.Messaging.Handling;
+using ThinkNet.Runtime.Executing;
 using ThinkNet.Runtime.Routing;
 
-namespace ThinkNet.Runtime.Executing
+namespace ThinkNet.Runtime
 {
+    //[Register("core", typeof(IProcessor))]
     public class Processor : DisposableObject, IProcessor, IInitializer
     {
         private readonly IEnvelopeReceiver _receiver;
@@ -16,11 +21,11 @@ namespace ThinkNet.Runtime.Executing
         private bool started;
 
         public Processor(IRepository repository,
-            IEventSourcedRepository eventSourcedRepository, 
+            IEventSourcedRepository eventSourcedRepository,
             IEnvelopeSender sender,
             IEnvelopeReceiver receiver,
-            ICommandResultNotification notification, 
-            IHandlerRecordStore handlerStore,
+            ICommandResultNotification notification,
+            IMessageHandlerRecordStore handlerStore,
             IMessageBus messageBus)
         {
             this._receiver = receiver;
@@ -35,7 +40,7 @@ namespace ThinkNet.Runtime.Executing
 
         protected void AddExecutor(string kind, IExecutor executor)
         {
-            if(executorDict.ContainsKey(kind))
+            if (executorDict.ContainsKey(kind))
                 return;
 
             executorDict[kind] = executor;
@@ -49,7 +54,7 @@ namespace ThinkNet.Runtime.Executing
             if (data is Messaging.ICommand)
                 return StandardMetadata.CommandKind;
 
-            if(data is IMessage)
+            if (data is IMessage)
                 return StandardMetadata.MessageKind;
 
             return string.Empty;
@@ -77,8 +82,8 @@ namespace ThinkNet.Runtime.Executing
         public void Start()
         {
             ThrowIfDisposed();
-            lock(this.lockObject) {
-                if(!this.started) {
+            lock (this.lockObject) {
+                if (!this.started) {
                     _receiver.EnvelopeReceived += OnEnvelopeReceived;
                     _receiver.Start();
                     this.started = true;
@@ -88,8 +93,8 @@ namespace ThinkNet.Runtime.Executing
 
         public void Stop()
         {
-            lock(this.lockObject) {
-                if(this.started) {
+            lock (this.lockObject) {
+                if (this.started) {
                     _receiver.EnvelopeReceived -= OnEnvelopeReceived;
                     _receiver.Stop();
                     this.started = false;
@@ -101,17 +106,15 @@ namespace ThinkNet.Runtime.Executing
         {
             ThrowIfDisposed();
 
-            if(disposing) {
+            if (disposing) {
                 this.Stop();
             }
         }
 
         public void Initialize(IEnumerable<Type> types)
         {
-            executorDict.Values.ForEach(delegate(IExecutor executor) {
-                var initializer = executor as IInitializer;
-                if(initializer != null)
-                    initializer.Initialize(types);
+            executorDict.Values.OfType<IInitializer>().ForEach(delegate(IInitializer initializer) {
+                initializer.Initialize(types);
             });
         }
     }

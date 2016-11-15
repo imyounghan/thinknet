@@ -4,8 +4,14 @@ namespace ThinkNet.Messaging.Handling
 {
     public class VersionData
     {
-        public DataKey Key { get; set; }
+        public VersionData(DataKey key, int version)
+        {
+            this.Key = key;
+            this.Version = version;
+        }
 
-        public int Version { get; set; }
+        public DataKey Key { get; private set; }
+
+        public int Version { get; private set; }
     }
 }

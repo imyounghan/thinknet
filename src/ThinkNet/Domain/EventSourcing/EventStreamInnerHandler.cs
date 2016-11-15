@@ -2,35 +2,65 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ThinkNet.Common;
 using ThinkNet.Common.Composition;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
-using ThinkNet.Runtime.Executing;
 using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Domain.EventSourcing
 {
-    public class EventStreamInnerHandler : IProxyHandler, IHandler
+    public class EventStreamInnerHandler : IProxyHandler, IHandler, IInitializer
     {
-        private readonly IHandlerRecordStore _handlerStore;
+        private readonly IMessageHandlerRecordStore _handlerStore;
         private readonly IMessageBus _bus;
         private readonly IEnvelopeSender _sender;
 
         private readonly Dictionary<CompositeKey, Type> _eventTypesMapContractType;
 
-        public Type ContractType { get { return typeof(IHandler); } }
 
-        public Type TargetType { get { return typeof(EventStreamInnerHandler); } }
+        public Type ContractType { get; private set; }
+
+        public Type TargetType { get; private set; }
+
+
+
+        public void Handle(params object[] args)
+        {
+            var eventStream = args[0] as EventStream;
+            if (eventStream == null) {
+                //TODO..
+                return;
+            }
+
+            if (_handlerStore.HandlerIsExecuted(eventStream.CorrelationId, eventStream.SourceType, TargetType)) {
+                var errorMessage = string.Format("The EventStream has been handled. AggregateRootType:{0}, AggregateRootId:{1}, CommandId:{2}.",
+                    eventStream.SourceType.FullName, eventStream.SourceId, eventStream.CorrelationId);
+                return;
+            }
+
+            this.Handle(eventStream);
+
+            _handlerStore.AddHandlerInfo(eventStream.CorrelationId, eventStream.SourceType, TargetType);
+        }
+
+        public IHandler GetTargetHandler()
+        {
+            return this;
+        }
 
         public EventStreamInnerHandler(IEnvelopeSender sender,
-            IMessageBus messageBus, 
-            IHandlerRecordStore handlerStore)
+            IMessageBus messageBus,
+            IMessageHandlerRecordStore handlerStore)
         {
             this._sender = sender;
             this._bus = messageBus;
             this._handlerStore = handlerStore;
             this._eventTypesMapContractType = new Dictionary<CompositeKey, Type>();
+
+            this.ContractType = typeof(IHandler);
+            this.TargetType = typeof(EventStreamInnerHandler);
         }
 
         private Envelope Transform(EventStream @event, Exception ex)
@@ -90,10 +120,7 @@ namespace ThinkNet.Domain.EventSourcing
         protected object[] GetParameter(EventStream @event)
         {
             var array = new ArrayList();
-            array.Add(new VersionData() {
-                Key = new DataKey(@event.SourceId, @event.SourceType),
-                Version = @event.Version
-            });
+            array.Add(new VersionData(new DataKey(@event.SourceId, @event.SourceType), @event.Version));
 
             var collection = @event.Events as ICollection;
             if (collection != null) {
@@ -131,18 +158,8 @@ namespace ThinkNet.Domain.EventSourcing
                 }
             }
         }
+        #endregion        
 
-        public void Handle(params object[] args)
-        {
-            this.Handle(args[0] as EventStream);
-        }
-
-        public IHandler GetTargetHandler()
-        {
-            return this;
-        }
-
-        #endregion
 
         class CompositeKey : IEnumerable<Type>
         {

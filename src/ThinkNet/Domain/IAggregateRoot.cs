@@ -10,15 +10,5 @@ namespace ThinkNet.Domain
         /// 主键标识
         /// </summary>
         object Id { get; }
-
-        ///// <summary>
-        ///// 版本号
-        ///// </summary>
-        //int Version { get; }
-
-        ///// <summary>
-        ///// 通过事件还原对象状态。
-        ///// </summary>
-        //void LoadFrom(IEnumerable<VersionedEvent> events);
     }
 }

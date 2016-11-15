@@ -10,7 +10,7 @@ namespace ThinkNet.Messaging
     /// </summary>
     [DataContract]
     [Serializable]
-    public abstract class Command : ICommand
+    public abstract class Command : ICommand, ThinkNet.Contracts.ICommand
     {
 
         /// <summary>

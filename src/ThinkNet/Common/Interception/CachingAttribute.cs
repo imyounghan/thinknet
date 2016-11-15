@@ -89,9 +89,7 @@ namespace ThinkNet.Common.Interception
 
             public IMethodReturn Invoke(IMethodInvocation input, GetNextInterceptorDelegate getNext)
             {
-                var method = input.TargetMethod;
-
-                string cacheRegion = GetCacheRegion(method);
+                string cacheRegion = GetCacheRegion(input.MethodBase);
                 string cacheKey = _cachingAttribute.CacheKey;
                 if (string.IsNullOrEmpty(cacheKey)) {
                     cacheKey = CreateCacheKey(input);
@@ -153,14 +151,14 @@ namespace ThinkNet.Common.Interception
 
             static bool TargetMethodReturnsVoid(IMethodInvocation input)
             {
-                MethodInfo targetMethod = input.TargetMethod as MethodInfo;
+                MethodInfo targetMethod = input.MethodBase as MethodInfo;
                 return targetMethod != null && targetMethod.ReturnType == typeof(void);
             }
 
             static string CreateCacheKey(IMethodInvocation input)
             {
                 StringBuilder sb = new StringBuilder();
-                var method = input.TargetMethod;
+                var method = input.MethodBase;
 
                 //sb.AppendFormat("{0}:", method.Name);
                 if (method.DeclaringType != null) {

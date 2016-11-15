@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using ThinkNet.Messaging;
 
@@ -33,24 +34,32 @@ namespace ThinkNet.Domain
         new protected void RaiseEvent<TEvent>(TEvent @event)
             where TEvent : Event<TIdentify>
         {
-            base.RaiseEvent(@event);
-        }
-
-
-        private void ApplyEvent(IEvent @event)
-        {
             var eventType = @event.GetType();
             var eventSourcedType = this.GetType();
-            var handler = AggregateRootInnerHandler.GetEventHandler(eventSourcedType, eventType);
-
-            if (handler == null) {
+            if (!AggregateRootInnerHandler.HasHandler(eventSourcedType, eventType)) {
                 var errorMessage = string.Format("Event handler not found on {0} for {1}.",
                     eventSourcedType.FullName, eventType.FullName);
                 throw new ThinkNetException(errorMessage);
             }
 
-            handler(this, @event);
+            base.RaiseEvent(@event);
         }
+
+
+        //private void ApplyEvent(IEvent @event)
+        //{
+        //    var eventType = @event.GetType();
+        //    var eventSourcedType = this.GetType();
+        //    var handler = AggregateRootInnerHandler.GetHandler(eventSourcedType, eventType);
+
+        //    if (handler == null) {
+        //        var errorMessage = string.Format("Event handler not found on {0} for {1}.",
+        //            eventSourcedType.FullName, eventType.FullName);
+        //        throw new ThinkNetException(errorMessage);
+        //    }
+
+        //    handler(this, @event);
+        //}
 
         #region IEventSourced 成员
         //[IgnoreDataMember]
@@ -103,7 +112,8 @@ namespace ThinkNet.Domain
         void IEventSourced.LoadFrom(IEnumerable<IEvent> events)
         {
             this.Version++;
-            events.ForEach(this.ApplyEvent);
+            events.Cast<Event<TIdentify>>().ForEach(this.RaiseEvent);
+            base.ClearEvents();
         }
         #endregion
     }

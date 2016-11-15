@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace ThinkNet.Runtime.Executing
+namespace ThinkNet.Messaging.Handling
 {
     /// <summary>
     /// 将已完成的处理程序信息记录在内存中。
     /// </summary>
-    public class HandlerRecordInMemory : IHandlerRecordStore
+    public class MessageHandlerRecordInMemory : IMessageHandlerRecordStore
     {
         private readonly HashSet<HandlerRecordData> _handlerInfoSet;
         private readonly Timer timer;
@@ -15,7 +15,7 @@ namespace ThinkNet.Runtime.Executing
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public HandlerRecordInMemory()
+        public MessageHandlerRecordInMemory()
         {
             timer = new Timer(RemoveHandleInfo, null, 5000, 2000);
             _handlerInfoSet = new HashSet<HandlerRecordData>();

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Domain
@@ -13,11 +11,11 @@ namespace ThinkNet.Domain
     /// </summary>
     public static class AggregateRootInnerHandler
     {
-        private readonly static ConcurrentDictionary<Type, IDictionary<Type, MethodInfo>> _innerHandlers;
+        private readonly static Dictionary<Type, IDictionary<Type, MethodInfo>> _innerHandlers;
 
         static AggregateRootInnerHandler()
         {
-            _innerHandlers = new ConcurrentDictionary<Type, IDictionary<Type, MethodInfo>>();
+            _innerHandlers = new Dictionary<Type, IDictionary<Type, MethodInfo>>();
         }
 
         private static IDictionary<Type, MethodInfo> FindInnerHandlers(Type type)
@@ -69,36 +67,53 @@ namespace ThinkNet.Domain
         /// <summary>
         /// 获取聚合内部事件处理器
         /// </summary>
-        public static Action<IAggregateRoot, IEvent> GetEventHandler(Type aggregateRootType, Type eventType)
+        private static Action<IAggregateRoot, IEvent> GetHandler(Type aggregateRootType, Type eventType)
         {
-            var eventHandlerDic = _innerHandlers.GetOrAdd(aggregateRootType, FindInnerHandlers);
+            IDictionary<Type, MethodInfo> eventHandlerDic;
+            MethodInfo targetMethod;
+            if (!_innerHandlers.TryGetValue(aggregateRootType, out eventHandlerDic) ||
+                eventHandlerDic == null || !eventHandlerDic.TryGetValue(eventType, out targetMethod)) {
+                return delegate { };
+            }
 
-            if (eventHandlerDic == null || eventHandlerDic.Count == 0)
-                return null;
+            return delegate(IAggregateRoot aggregateRoot, IEvent @event) {
+                targetMethod.Invoke(aggregateRoot, new[] { @event });
+            };
 
-
-            MethodInfo eventHandler;
-            return eventHandlerDic.TryGetValue(eventType, out eventHandler) ?
-                new Action<IAggregateRoot, IEvent>((aggregateRoot, @event) => eventHandler.Invoke(aggregateRoot, new[] { @event })) : null;
+            //MethodInfo eventHandler;
+            //return eventHandlerDic.TryGetValue(eventType, out eventHandler) ?
+            //    new Action<IAggregateRoot, IEvent>((aggregateRoot, @event) => eventHandler.Invoke(aggregateRoot, new[] { @event })) : null;
         }
 
+        /// <summary>
+        /// 判断聚合内部是否存在该事件处理器
+        /// </summary>
+        public static bool HasHandler(Type aggregateRootType, Type eventType)
+        {
+            IDictionary<Type, MethodInfo> eventHandlerDic;
 
+            return _innerHandlers.TryGetValue(aggregateRootType, out eventHandlerDic) &&
+                eventHandlerDic != null && eventHandlerDic.ContainsKey(eventType);
+        }
+
+        /// <summary>
+        /// 处理聚合内部事件
+        /// </summary>
         public static void Handle(IAggregateRoot aggregateRoot, IEvent @event)
         {
             var eventType = @event.GetType();
             var aggregateRootType = aggregateRoot.GetType();
-            var innerHandler = GetEventHandler(aggregateRootType, eventType);
 
-            if (innerHandler == null) {
-                if (!(aggregateRoot is IEventSourced))
-                    return;
+            GetHandler(aggregateRootType, eventType).Invoke(aggregateRoot, @event);
 
-                var errorMessage = string.Format("Event handler not found on {0} for {1}.",
-                    aggregateRootType.FullName, eventType.FullName);
-                throw new ThinkNetException(errorMessage);
-            }
+            //if (innerHandler == null) {
+            //    return;
+            //    var errorMessage = string.Format("Event handler not found on {0} for {1}.",
+            //        aggregateRootType.FullName, eventType.FullName);
+            //    throw new ThinkNetException(errorMessage);
+            //}
 
-            innerHandler.Invoke(aggregateRoot, @event);
+            //innerHandler.Invoke(aggregateRoot, @event);
         }
     }
 }

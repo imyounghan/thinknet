@@ -37,7 +37,7 @@ namespace ThinkNet.Domain
 
         [NonSerialized]
         [IgnoreDataMember]
-        private ICollection<IEvent> _pendingEvents;
+        private IList<IEvent> _pendingEvents;
         /// <summary>
         /// 引发事件并将其加入到待发布事件列表
         /// </summary>
@@ -66,10 +66,10 @@ namespace ThinkNet.Domain
         /// </summary>
         protected IEnumerable<IEvent> GetEvents()
         {
-            if (_pendingEvents == null) {
+            if (_pendingEvents == null || _pendingEvents.Count == 0) {
                 return emptyEventCollection;
             }
-            return _pendingEvents;
+            return new ReadOnlyCollection<IEvent>(_pendingEvents);
         }
 
         /// <summary>

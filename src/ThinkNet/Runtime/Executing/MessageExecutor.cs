@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ThinkNet.Common;
 using ThinkNet.Contracts;
 using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
@@ -13,7 +15,7 @@ namespace ThinkNet.Runtime.Executing
         private readonly Dictionary<string, IProxyHandler> handlers;
 
         public MessageExecutor(IEnvelopeSender sender,
-            IHandlerRecordStore handlerStore,
+            IMessageHandlerRecordStore handlerStore,
             IMessageBus messageBus,
             ICommandResultNotification notification)
             : base()
@@ -45,7 +47,9 @@ namespace ThinkNet.Runtime.Executing
 
         void IInitializer.Initialize(IEnumerable<Type> types)
         {
-            (handlers["EventStream"] as EventStreamInnerHandler).Initialize(types);
+            handlers.Values.OfType<IInitializer>().ForEach(delegate(IInitializer initializer) {
+                initializer.Initialize(types);
+            });
         }
 
         #endregion

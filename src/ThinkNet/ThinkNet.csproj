@@ -82,6 +82,10 @@
     <Compile Include="Common\Interception\Pipeline\InterceptorPipelineManager.cs" />
     <Compile Include="Common\Interception\ParameterCollection.cs" />
     <Compile Include="Common\Interception\TransactionAttribute.cs" />
+    <Compile Include="Messaging\Handling\CommandFilterAttribute.cs" />
+    <Compile Include="Messaging\Handling\CommandHandledContext.cs" />
+    <Compile Include="Messaging\Handling\CommandHandlingContext.cs" />
+    <Compile Include="Messaging\Handling\ICommandFilter.cs" />
     <Compile Include="Runtime\CommandService.cs" />
     <Compile Include="Domain\EventSourcing\EventStreamInnerHandler.cs" />
     <Compile Include="Messaging\Handling\CommandContext.cs" />
@@ -99,14 +103,14 @@
     <Compile Include="Runtime\BootstrapperExtentions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Runtime\Executing\Processor.cs" />
+    <Compile Include="Runtime\Processor.cs" />
     <Compile Include="Runtime\Executing\CommandExecutor.cs" />
     <Compile Include="Domain\EventSourcing\CommandResultRepliedInnerHandler.cs" />
     <Compile Include="Runtime\Executing\EventExecutor.cs" />
     <Compile Include="Runtime\Executing\Executor.cs" />
-    <Compile Include="Runtime\Executing\HandlerRecordInMemory.cs" />
+    <Compile Include="Messaging\Handling\MessageHandlerRecordInMemory.cs" />
     <Compile Include="Contracts\ICommandResultNotification.cs" />
-    <Compile Include="Runtime\IInitializer.cs" />
+    <Compile Include="Common\IInitializer.cs" />
     <Compile Include="Common\Lifecycle.cs" />
     <Compile Include="Common\LifeCycleAttribute.cs" />
     <Compile Include="Common\ObjectId.cs" />
@@ -213,7 +217,7 @@
     <Compile Include="Runtime\ConfigurationSetting.cs" />
     <Compile Include="Common\Composition\IObjectContainer.cs" />
     <Compile Include="Runtime\Executing\IExecutor.cs" />
-    <Compile Include="Runtime\Executing\IHandlerRecordStore.cs" />
+    <Compile Include="Messaging\Handling\IMessageHandlerRecordStore.cs" />
     <Compile Include="Runtime\IProcessor.cs" />
     <Compile Include="Common\Composition\ObjectContainer.cs" />
     <Compile Include="Common\Composition\ObjectContainerExtentions.cs" />

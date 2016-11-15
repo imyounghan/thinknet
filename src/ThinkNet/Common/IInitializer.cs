@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Common
 {
     /// <summary>
     /// 应用程序初始化接口

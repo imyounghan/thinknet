@@ -17,7 +17,7 @@ namespace ThinkNet.Common.Interception
 
         IDictionary<string, object> InvocationContext { get; }
 
-        MethodBase TargetMethod { get; }
+        MethodBase MethodBase { get; }
 
         object Target { get; }
 

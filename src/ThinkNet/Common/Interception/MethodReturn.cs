@@ -12,7 +12,7 @@ namespace ThinkNet.Common.Interception
 
             this.InvocationContext = originalInvocation.InvocationContext;
             this.ReturnValue = returnValue;
-            this.Outputs = new ParameterCollection(arguments, originalInvocation.TargetMethod.GetParameters(),
+            this.Outputs = new ParameterCollection(arguments, originalInvocation.MethodBase.GetParameters(),
                 delegate (ParameterInfo pi) { return pi.ParameterType.IsByRef; });
         }
 

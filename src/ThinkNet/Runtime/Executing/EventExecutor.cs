@@ -7,9 +7,9 @@ namespace ThinkNet.Runtime.Executing
 {
     public class EventExecutor : Executor<IEvent>
     {
-        private readonly IHandlerRecordStore _handlerStore;
+        private readonly IMessageHandlerRecordStore _handlerStore;
 
-        public EventExecutor(IHandlerRecordStore handlerStore)
+        public EventExecutor(IMessageHandlerRecordStore handlerStore)
         {
             this._handlerStore = handlerStore;
         }
@@ -18,9 +18,9 @@ namespace ThinkNet.Runtime.Executing
         {
             var eventType = @event.GetType();
             if (_handlerStore.HandlerIsExecuted(@event.Id, eventType, handlerType)) {
-                var errorMessage = string.Format("The event has been handled. eventHandlerType:{0}, eventType:{0}, eventId:{1}.",
-                    handlerType.FullName, eventType.FullName, @event.Id);                
-                throw new MessageHandlerProcessedException();
+                var errorMessage = string.Format("The event has been handled. EventHandlerType:{0}, EventType:{1}, EventId:{2}.",
+                    handlerType.FullName, eventType.FullName, @event.Id);
+                throw new MessageHandlerProcessedException(errorMessage);
             }
         }
 

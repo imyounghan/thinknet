@@ -2,14 +2,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using ThinkNet.Database;
-using ThinkNet.Runtime.Executing;
+using ThinkNet.Messaging.Handling;
 
 namespace ThinkNet.Runtime.Writing
 {
     /// <summary>
     /// 将已完成的处理消息的程序信息记录在数据库中。
     /// </summary>
-    public sealed class HandlerRecordStore : HandlerRecordInMemory
+    public sealed class HandlerRecordStore : MessageHandlerRecordInMemory
     {
         private readonly IDataContextFactory _dataContextFactory;
         /// <summary>

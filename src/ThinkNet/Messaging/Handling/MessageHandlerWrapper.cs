@@ -49,6 +49,19 @@ namespace ThinkNet.Messaging.Handling
             return targetType.GetMethod("Handle", parameterTypes);
         }
 
+        protected MethodInfo GetHandleMethodInfo()
+        {
+            var contractName = AttributedModelServices.GetContractName(this.ContractType);
+
+            var methodInfo = handleMethodCache.GetOrAdd(contractName, delegate (string key) {
+                var method = GetHandleMethodInfo(this.TargetType, this.ContractType.GenericTypeArguments);
+
+                return method;
+            });
+
+            return methodInfo;
+        }
+
         protected MethodInfo GetHandleMethodInfo(out InterceptorPipeline pipeline)
         {
             var contractName = AttributedModelServices.GetContractName(this.ContractType);

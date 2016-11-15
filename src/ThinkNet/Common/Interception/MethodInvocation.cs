@@ -6,16 +6,16 @@ namespace ThinkNet.Common.Interception
 {
     public class MethodInvocation : IMethodInvocation
     {
-        public MethodInvocation(object target, MethodBase targetMethod, params object[] parameterValues)
+        public MethodInvocation(object target, MethodBase methodBase, params object[] parameterValues)
         {
             target.NotNull("target");
-            targetMethod.NotNull("targetMethod");
+            methodBase.NotNull("methodBase");
 
             this.Target = target;
-            this.TargetMethod = targetMethod;
+            this.MethodBase = methodBase;
             this.InvocationContext = new Dictionary<string, object>();
 
-            ParameterInfo[] targetParameters = targetMethod.GetParameters();
+            ParameterInfo[] targetParameters = methodBase.GetParameters();
             this.Arguments = new ParameterCollection(parameterValues, targetParameters, param => true);
             this.Inputs = new ParameterCollection(parameterValues, targetParameters, param => !param.IsOut);
         }
@@ -26,7 +26,7 @@ namespace ThinkNet.Common.Interception
 
         public IDictionary<string, object> InvocationContext { get; private set; }
 
-        public MethodBase TargetMethod { get; private set; }
+        public MethodBase MethodBase { get; private set; }
 
         public object Target { get; private set; }
 
