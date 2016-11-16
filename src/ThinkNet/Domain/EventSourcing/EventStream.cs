@@ -71,7 +71,7 @@ namespace ThinkNet.Domain.EventSourcing
         /// </summary>
         public override string ToString()
         {
-            var events = this.Events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.Id));
+            var events = this.Events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.UniqueId));
 
             return string.Concat(this.SourceType.FullName, "@", this.SourceId,
                 "[", string.Join(",", events), "]", "#", this.CorrelationId);

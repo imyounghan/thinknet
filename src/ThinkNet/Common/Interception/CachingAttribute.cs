@@ -10,7 +10,7 @@ namespace ThinkNet.Common.Interception
     /// <summary>
     /// 表示由此特性所描述的方法，能够获得框架所提供的缓存功能。
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Property)]
     public class CachingAttribute : InterceptorAttribute
     {
         /// <summary>

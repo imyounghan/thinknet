@@ -1,16 +1,17 @@
 ﻿
 
+using ThinkNet.Common;
 namespace ThinkNet.Messaging
 {
     /// <summary>
     /// 表示继承该接口的类型是一个命令。
     /// </summary>
-    public interface ICommand : IMessage
+    public interface ICommand : IMessage, IUniquelyIdentifiable
     {
-        /// <summary>
-        /// 命令的唯一标识
-        /// </summary>
-        string Id { get; }
+        ///// <summary>
+        ///// 命令的唯一标识
+        ///// </summary>
+        //string Id { get; }
         /// <summary>
         /// 生成命令的时间戳
         /// </summary>

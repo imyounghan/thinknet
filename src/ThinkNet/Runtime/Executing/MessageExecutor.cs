@@ -10,7 +10,7 @@ using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime.Executing
 {
-    public class MessageExecutor : Executor<IMessage>, IInitializer
+    public class MessageExecutor : Executor, IInitializer
     {
         private readonly Dictionary<string, IProxyHandler> handlers;
 
@@ -27,7 +27,7 @@ namespace ThinkNet.Runtime.Executing
         }
 
 
-        protected override IEnumerable<IProxyHandler> GetHandlers(Type type)
+        protected override IEnumerable<IProxyHandler> GetProxyHandlers(Type type)
         {
             if(type == typeof(EventStream)) {
                 yield return handlers["EventStream"];
@@ -37,10 +37,7 @@ namespace ThinkNet.Runtime.Executing
                 yield return handlers["CommandResult"];
             }
 
-
-            foreach(var handler in base.GetHandlers(type)) {
-                yield return handler;
-            }
+            throw new NotImplementedException();
         }
 
         #region IInitializer 成员
@@ -66,46 +63,6 @@ namespace ThinkNet.Runtime.Executing
         //    if (LogManager.Default.IsErrorEnabled) {
         //        LogManager.Default.Error(ex, "Exception raised when handling {0}.", message);
         //    }
-        //}
-
-        //private void Execute(TMessage message, ref TimeSpan processTime)
-        //{
-        //    int count = 0;
-        //    var status = ExecutionStatus.Completed;
-        //    ThinkNetException exception = null;
-        //    while (count++ < _retryTimes) {
-        //        try {
-        //            var sw = Stopwatch.StartNew();
-        //            status = this.Execute(message);
-        //            sw.Stop();
-        //            processTime = sw.Elapsed;
-        //            break;
-        //        }
-        //        catch (ThinkNetException ex) {
-        //            exception = ex;
-        //            break;
-        //        }
-        //        catch (Exception ex) {
-        //            if (count == _retryTimes) {
-        //                exception = new ThinkNetException(ex.Message, ex);
-        //                break;
-        //            }
-
-        //            if (LogManager.Default.IsWarnEnabled) {
-        //                LogManager.Default.Warn(ex,
-        //                    "An exception happened while processing {0} through handler, Error will be ignored and retry again({1}).",
-        //                     message, count);
-        //            }
-        //            Thread.Sleep(ConfigurationSetting.Current.HandleRetryInterval);
-        //        }
-        //    }
-
-        //    if (exception == null) {
-        //        this.OnExecuted(message, status);                
-        //    }
-        //    else {
-        //        this.OnException(message, exception);
-        //    }
-        //}
+        //}        
     }
 }

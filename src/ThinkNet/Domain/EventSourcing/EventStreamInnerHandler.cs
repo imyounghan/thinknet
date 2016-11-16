@@ -1,30 +1,34 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
+using System.Reflection;
 using ThinkNet.Common;
 using ThinkNet.Common.Composition;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
+using ThinkNet.Messaging.Handling.Proxies;
 using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Domain.EventSourcing
 {
     public class EventStreamInnerHandler : IProxyHandler, IHandler, IInitializer
     {
+        private readonly static ConcurrentDictionary<string, MethodInfo> handleMethodCache = new ConcurrentDictionary<string, MethodInfo>();
+
         private readonly IMessageHandlerRecordStore _handlerStore;
         private readonly IMessageBus _bus;
         private readonly IEnvelopeSender _sender;
 
         private readonly Dictionary<CompositeKey, Type> _eventTypesMapContractType;
+        
 
+        public MethodInfo Method { get { return null; } }
 
-        public Type ContractType { get; private set; }
-
-        public Type TargetType { get; private set; }
-
-
+        public IHandler ReflectedHandler { get { return this; } }
 
         public void Handle(params object[] args)
         {
@@ -34,15 +38,15 @@ namespace ThinkNet.Domain.EventSourcing
                 return;
             }
 
-            if (_handlerStore.HandlerIsExecuted(eventStream.CorrelationId, eventStream.SourceType, TargetType)) {
+            if (_handlerStore.HandlerIsExecuted(eventStream.CorrelationId, eventStream.SourceType, typeof(EventStreamInnerHandler))) {
                 var errorMessage = string.Format("The EventStream has been handled. AggregateRootType:{0}, AggregateRootId:{1}, CommandId:{2}.",
                     eventStream.SourceType.FullName, eventStream.SourceId, eventStream.CorrelationId);
-                return;
+                throw new ThinkNetException(errorMessage);
             }
 
             this.Handle(eventStream);
 
-            _handlerStore.AddHandlerInfo(eventStream.CorrelationId, eventStream.SourceType, TargetType);
+            _handlerStore.AddHandlerInfo(eventStream.CorrelationId, eventStream.SourceType, typeof(EventStreamInnerHandler));
         }
 
         public IHandler GetTargetHandler()
@@ -58,9 +62,6 @@ namespace ThinkNet.Domain.EventSourcing
             this._bus = messageBus;
             this._handlerStore = handlerStore;
             this._eventTypesMapContractType = new Dictionary<CompositeKey, Type>();
-
-            this.ContractType = typeof(IHandler);
-            this.TargetType = typeof(EventStreamInnerHandler);
         }
 
         private Envelope Transform(EventStream @event, Exception ex)
@@ -99,12 +100,27 @@ namespace ThinkNet.Domain.EventSourcing
             }            
         }
 
+        private MethodInfo GetCachedHandleMethodInfo(Type contractType, Func<Type> targetType)
+        {
+            var contractName = AttributedModelServices.GetContractName(contractType);
+
+            return handleMethodCache.GetOrAdd(contractName, delegate (string key) {
+                List<Type> parameTypes = new List<Type>(contractType.GenericTypeArguments);
+                parameTypes.Insert(0, typeof(VersionData));
+                var method = targetType().GetMethod("Handle", parameTypes.ToArray());
+                return method;
+            });
+        }
+
         protected IProxyHandler GetEventHandler(IEnumerable<Type> types)
         {
             var handlerType = _eventTypesMapContractType[new CompositeKey(types)];
             var handlers = ObjectContainer.Instance.ResolveAll(handlerType)
                 .Cast<IHandler>()
-                .Select(handler => new EventHandlerWrapper(handler, handlerType))
+                .Select(handler => {
+                    var method = this.GetCachedHandleMethodInfo(handlerType, () => handler.GetType());
+                    return new EventHandlerProxy(handler, method, null);
+                })
                 .ToArray();
 
             switch (handlers.Length) {

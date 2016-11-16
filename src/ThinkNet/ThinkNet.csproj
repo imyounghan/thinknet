@@ -65,8 +65,10 @@
     <Compile Include="Common\Caching\WebCache\WebCacheProvider.cs" />
     <Compile Include="Common\Interception\GetNextInterceptorDelegate.cs" />
     <Compile Include="Common\Interception\IInterceptor.cs" />
+    <Compile Include="Common\Interception\IInterceptorProvider.cs" />
     <Compile Include="Common\Interception\IMethodInvocation.cs" />
     <Compile Include="Common\Interception\IMethodReturn.cs" />
+    <Compile Include="Common\Interception\InterceptorProvider.cs" />
     <Compile Include="Common\Interception\InvokeInterceptorDelegate.cs" />
     <Compile Include="Common\Interception\IParameterCollection.cs" />
     <Compile Include="Common\Context\ContextManager.cs" />
@@ -82,20 +84,19 @@
     <Compile Include="Common\Interception\Pipeline\InterceptorPipelineManager.cs" />
     <Compile Include="Common\Interception\ParameterCollection.cs" />
     <Compile Include="Common\Interception\TransactionAttribute.cs" />
-    <Compile Include="Messaging\Handling\CommandFilterAttribute.cs" />
-    <Compile Include="Messaging\Handling\CommandHandledContext.cs" />
-    <Compile Include="Messaging\Handling\CommandHandlingContext.cs" />
-    <Compile Include="Messaging\Handling\ICommandFilter.cs" />
+    <Compile Include="Common\IUniquelyIdentifiable.cs" />
+    <Compile Include="Messaging\Handling\CommandContext.cs" />
+    <Compile Include="Messaging\Handling\IMessageHandler.cs" />
+    <Compile Include="Messaging\Handling\Proxies\CommandHandlerProxy.cs" />
+    <Compile Include="Messaging\Handling\Proxies\EventHandlerProxy.cs" />
+    <Compile Include="Messaging\Handling\Proxies\IHandlerMethodProvider.cs" />
+    <Compile Include="Messaging\Handling\IMessageHandlerRecordStore.cs" />
+    <Compile Include="Messaging\Handling\Proxies\IProxyHandler.cs" />
+    <Compile Include="Messaging\Handling\Proxies\MessageHandlerProxy.cs" />
     <Compile Include="Runtime\CommandService.cs" />
     <Compile Include="Domain\EventSourcing\EventStreamInnerHandler.cs" />
-    <Compile Include="Messaging\Handling\CommandContext.cs" />
-    <Compile Include="Messaging\Handling\CommandHandlerWrapper.cs" />
     <Compile Include="Messaging\Handling\DomainEventAsPendingException.cs" />
     <Compile Include="Messaging\Handling\DomainEventObsoletedException.cs" />
-    <Compile Include="Messaging\Handling\EventHandlerWrapper.cs" />
-    <Compile Include="Messaging\Handling\IProxyHandler.cs" />
-    <Compile Include="Messaging\Handling\MessageHandlerProcessedException.cs" />
-    <Compile Include="Messaging\Handling\MessageHandlerWrapper.cs" />
     <Compile Include="Messaging\Handling\VersionData.cs" />
     <Compile Include="Runtime\Bootstrapper.cs">
       <SubType>Code</SubType>
@@ -175,7 +176,6 @@
     <Compile Include="Messaging\Handling\ICommandHandler.cs" />
     <Compile Include="Messaging\Handling\IEventHandler.cs" />
     <Compile Include="Messaging\Handling\IHandler.cs" />
-    <Compile Include="Messaging\Handling\IMessageHandler.cs" />
     <Compile Include="Messaging\Handling\MessageHandlerNotFoundException.cs" />
     <Compile Include="Messaging\Handling\MessageHandlerTooManyException.cs" />
     <Compile Include="Messaging\IMessage.cs" />
@@ -217,7 +217,6 @@
     <Compile Include="Runtime\ConfigurationSetting.cs" />
     <Compile Include="Common\Composition\IObjectContainer.cs" />
     <Compile Include="Runtime\Executing\IExecutor.cs" />
-    <Compile Include="Messaging\Handling\IMessageHandlerRecordStore.cs" />
     <Compile Include="Runtime\IProcessor.cs" />
     <Compile Include="Common\Composition\ObjectContainer.cs" />
     <Compile Include="Common\Composition\ObjectContainerExtentions.cs" />

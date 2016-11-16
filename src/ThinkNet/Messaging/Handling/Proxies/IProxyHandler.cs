@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace ThinkNet.Messaging.Handling
 {
@@ -16,12 +17,16 @@ namespace ThinkNet.Messaging.Handling
         /// <remarks>
         /// 如IMessageHandler<>, ICommandHandler<>,, IEventHandler<>
         /// </remarks>
-        Type ContractType { get; }
+        //Type ContractType { get; }
         /// <summary>
         /// 表示处理器的实现类型
         /// </summary>
-        Type TargetType { get; }
+        //Type TargetType { get; }
 
-        IHandler GetTargetHandler();
+        //IHandler GetTargetHandler();
+
+        MethodInfo Method { get; }
+
+        IHandler ReflectedHandler { get; }
     }
 }

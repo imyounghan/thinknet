@@ -36,31 +36,30 @@ namespace ThinkNet.Messaging
         {
             id.NotNullOrWhiteSpace("id");
 
-            this.Id = id;
+            this.UniqueId = id;
             this.CreationTime = time.Kind == DateTimeKind.Utc ? time : time.ToUniversalTime();
         }
 
         [DataMember(Name = "id")]
-        public string Id { get; private set; }
+        public string UniqueId { get; private set; }
         [DataMember(Name = "creationTime")]
         public DateTime CreationTime { get; set; }
 
         /// <summary>
-        /// 获取源标识的字符串形式
+        /// 获取该事件的Key
         /// </summary>
-        protected virtual string GetSourceStringId()
+        public virtual string GetKey()
         {
             return null;
         }
 
-        #region IMessage 成员
-
-        string IMessage.GetKey()
+        /// <summary>
+        /// 输出字符串信息
+        /// </summary>
+        public override string ToString()
         {
-            return this.GetSourceStringId();
+            return string.Format("{0}@{1}", this.GetType().FullName, this.UniqueId);
         }
-
-        #endregion
     }
 
     /// <summary>
@@ -93,13 +92,13 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.Id, this.SourceId);
+            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.UniqueId, this.SourceId);
         }
 
         /// <summary>
-        /// 获取源标识的字符串形式
+        /// 获取该事件的Key
         /// </summary>
-        protected override string GetSourceStringId()
+        public override string GetKey()
         {
             return this.SourceId.ToString();
         }

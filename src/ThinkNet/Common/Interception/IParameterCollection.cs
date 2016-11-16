@@ -9,9 +9,13 @@ namespace ThinkNet.Common.Interception
     public interface IParameterCollection : ICollection
     {
         /// <summary>
-        /// 获取该参数的值
+        /// 通过参数名称获取该参数的值
         /// </summary>
         object this[string parameterName] { get; }
+        ///// <summary>
+        ///// 通过参数位置获取该参数的值
+        ///// </summary>
+        //object this[int index] { get; }
 
         /// <summary>
         /// 检查是否包含该参数名称。

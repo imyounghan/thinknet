@@ -26,12 +26,12 @@ namespace ThinkNet.Messaging
         {
             id.NotNullOrWhiteSpace("id");
 
-            this.Id = id;
+            this.UniqueId = id;
             this.Timestamp = DateTime.UtcNow;
         }
 
         [DataMember(Name = "id")]
-        public string Id { get; private set; }
+        public string UniqueId { get; private set; }
         /// <summary>
         /// 生成当前命令的时间戳
         /// </summary>
@@ -39,21 +39,20 @@ namespace ThinkNet.Messaging
         public DateTime Timestamp { get; private set; }
 
         /// <summary>
-        /// 获取聚合根标识的字符串形式
+        /// 获取该命令的Key
         /// </summary>
-        protected virtual string GetAggregateRootStringId()
+        public virtual string GetKey()
         {
             return null;
         }
 
-        #region IMessage 成员
-
-        string IMessage.GetKey()
+        /// <summary>
+        /// 输出字符串信息
+        /// </summary>
+        public override string ToString()
         {
-            return this.GetAggregateRootStringId();
+            return string.Format("{0}@{1}", this.GetType().FullName, this.UniqueId);
         }
-
-        #endregion
     }
 
     /// <summary>
@@ -81,13 +80,15 @@ namespace ThinkNet.Messaging
         protected Command(string commandId, TAggregateRootId aggregateRootId)
             : base(commandId)
         {
+            aggregateRootId.NotNull("aggregateRootId");
+
             this.AggregateRootId = aggregateRootId;
         }
 
         /// <summary>
         /// 获取处理聚合命令的聚合根ID的字符串形式
         /// </summary>
-        protected override string GetAggregateRootStringId()
+        public override string GetKey()
         {
             return this.AggregateRootId.ToString();
         }
@@ -97,7 +98,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.Id, this.AggregateRootId);
+            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.UniqueId, this.AggregateRootId);
         }
     }
 }

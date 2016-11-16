@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging.Handling;
 
@@ -13,9 +14,25 @@ namespace ThinkNet.Domain.EventSourcing
             this._notification = notification;
         }
 
-        public Type ContractType { get { return typeof(IHandler); } }
+        public MethodInfo Method
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
 
-        public Type TargetType { get { return typeof(CommandResultRepliedInnerHandler); } }
+        public IHandler ReflectedHandler
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        //public Type ContractType { get { return typeof(IHandler); } }
+
+        //public Type TargetType { get { return typeof(CommandResultRepliedInnerHandler); } }
 
         public IHandler GetTargetHandler()
         {

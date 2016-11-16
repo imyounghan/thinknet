@@ -70,7 +70,7 @@ namespace ThinkNet.Messaging.Handling
 
         public void PendingEvent(IEvent @event)
         {
-            if(pendingEvents.Any(p => p.Id == @event.Id))
+            if(pendingEvents.Any(p => p.UniqueId == @event.UniqueId))
                 return;
 
             pendingEvents.Add(@event);

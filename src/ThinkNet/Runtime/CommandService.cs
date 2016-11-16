@@ -39,7 +39,7 @@ namespace ThinkNet.Runtime
 
             var envelope = new Envelope(command);
             envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
-            envelope.Metadata[StandardMetadata.SourceId] = command.Id;
+            envelope.Metadata[StandardMetadata.SourceId] = command.UniqueId;
             var attribute = command.GetType().GetAttribute<DataContractAttribute>(false);
             if(attribute != null) {
                 bool clearAssemblyName = false;
@@ -86,7 +86,7 @@ namespace ThinkNet.Runtime
             var task = this.ExecuteAsync(command, returnType);
 
             if(timeout > TimeSpan.Zero && !task.Wait(timeout)) {
-                this.NotifyCommandCompleted(new CommandResult(command.Id, new TimeoutException(), CommandStatus.Timeout));
+                this.NotifyCommandCompleted(new CommandResult(command.UniqueId, new TimeoutException(), CommandStatus.Timeout));
             }
             return task.Result;
         }
@@ -96,10 +96,10 @@ namespace ThinkNet.Runtime
         /// </summary>
         public Task<CommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType)
         {
-            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, key => new CommandTaskCompletionSource(returnType));
+            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.UniqueId, key => new CommandTaskCompletionSource(returnType));
             this.SendAsync(command).ContinueWith(task => {
                 if(task.Status == TaskStatus.Faulted) {
-                    this.NotifyCommandCompleted(new CommandResult(command.Id, task.Exception, CommandStatus.Failed));
+                    this.NotifyCommandCompleted(new CommandResult(command.UniqueId, task.Exception, CommandStatus.Failed));
                 }
             });
 
