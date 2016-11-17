@@ -15,7 +15,6 @@ namespace ThinkNet.Messaging
         /// Default Constructor.
         /// </summary>
         protected Event()
-            : this(ObjectId.GenerateNewStringId())
         { }
         /// <summary>
         /// Parameterized constructor.
@@ -27,21 +26,25 @@ namespace ThinkNet.Messaging
         /// Parameterized constructor.
         /// </summary>
         protected Event(DateTime time)
-            : this(ObjectId.GenerateNewStringId(), time)
+            : this(null, time)
         { }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
         protected Event(string id, DateTime time)
         {
-            id.NotNullOrWhiteSpace("id");
-
-            this.UniqueId = id;
+            this.UniqueId = id.IfEmpty(Common.UniqueId.GenerateNewStringId);
             this.CreationTime = time.Kind == DateTimeKind.Utc ? time : time.ToUniversalTime();
         }
 
+        /// <summary>
+        /// 事件标识
+        /// </summary>
         [DataMember(Name = "id")]
         public string UniqueId { get; private set; }
+        /// <summary>
+        /// 创建时间
+        /// </summary>
         [DataMember(Name = "creationTime")]
         public DateTime CreationTime { get; set; }
 

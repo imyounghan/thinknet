@@ -26,7 +26,7 @@ namespace ThinkNet.Common.Serialization
 
         #region IBinarySerializer 成员
         /// <summary>
-        /// 序列化一个对象到 <see cref="DataStream"/>。
+        /// 序列化一个对象到 <see cref="Stream"/>。
         /// </summary>
         public void Serialize(Stream stream, object obj, bool formatType)
         {
@@ -39,14 +39,14 @@ namespace ThinkNet.Common.Serialization
             }
         }
         /// <summary>
-        /// 反序列化一个对象从一个 <see cref="DataStream"/>。
+        /// 反序列化一个对象从一个 <see cref="Stream"/>。
         /// </summary>
         public object Deserialize(Stream stream)
         {
             return _binaryFormatter.Deserialize(stream);
         }
         /// <summary>
-        /// 反序列化一个对象从一个 <see cref="DataStream"/>。
+        /// 反序列化一个对象从一个 <see cref="Stream"/>。
         /// </summary>
         public object Deserialize(Stream stream, Type type)
         {

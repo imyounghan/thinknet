@@ -15,14 +15,12 @@ namespace ThinkNet.Common.Caching
             return this.BuildCache(regionName);
         }
 
-
-        #region ICacheProvider 成员
-
+        /// <summary>
+        /// 创建区域缓存
+        /// </summary>
         public ICache BuildCache(string regionName)
         {
             return new HashtableCache(regionName);
         }
-
-        #endregion
     }
 }

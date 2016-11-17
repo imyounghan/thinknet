@@ -10,6 +10,9 @@ using Caching = ThinkNet.Common.Caching;
 
 namespace ThinkNet.Domain
 {
+    /// <summary>
+    /// <see cref="ICache"/> 的本机缓存
+    /// </summary>
     public class LocalCache : ICache
     {
         private readonly Caching.ICacheProvider _cacheProivder;

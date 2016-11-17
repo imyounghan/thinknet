@@ -76,7 +76,7 @@ namespace ThinkNet.Domain.Repositories
             //IEventSourced eventSourced = null;
             var sourceKey = new DataKey(eventSourcedId, eventSourcedType);
             try {
-                eventSourced = _snapshotStore.GetLastest(sourceKey);
+                eventSourced = _snapshotStore.GetLastest<IEventSourced>(sourceKey);
                 if (eventSourced != null) {
                     if (LogManager.Default.IsDebugEnabled)
                         LogManager.Default.DebugFormat("Find the aggregate root '{0}' of id '{1}' from snapshot. current version:{2}.",

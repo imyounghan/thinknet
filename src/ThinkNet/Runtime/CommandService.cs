@@ -7,6 +7,9 @@ using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime
 {
+    /// <summary>
+    /// <see cref="ICommandService"/> 的实现类
+    /// </summary>
     public class CommandService : ICommandService, ICommandResultNotification
     {
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;

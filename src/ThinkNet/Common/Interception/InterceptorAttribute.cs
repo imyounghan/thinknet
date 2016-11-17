@@ -6,6 +6,9 @@ using ThinkNet.Common.Interception.Pipeline;
 
 namespace ThinkNet.Common.Interception
 {
+    /// <summary>
+    /// 表示拦截器的特性
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public abstract class InterceptorAttribute : Attribute
     {
@@ -23,6 +26,9 @@ namespace ThinkNet.Common.Interception
             );
         }
 
+        /// <summary>
+        /// 允许多个相同的拦截器
+        /// </summary>
         public bool AllowMultiple
         {
             get
@@ -31,6 +37,9 @@ namespace ThinkNet.Common.Interception
             }
         }
 
+        /// <summary>
+        /// 排序
+        /// </summary>
         public int Order
         {
             get
@@ -46,6 +55,9 @@ namespace ThinkNet.Common.Interception
             }
         }
 
+        /// <summary>
+        /// 创建拦截器
+        /// </summary>
         public abstract IInterceptor CreateInterceptor(IObjectContainer container);
     }
 }

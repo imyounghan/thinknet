@@ -2,9 +2,9 @@
 namespace ThinkNet.Messaging.Handling
 {
     /// <summary>
-    /// 表示继承此接口的是一个命令处理器。
+    /// 继承此接口的是一个命令处理器。
     /// </summary>
-    public interface ICommandHandler<TCommand> : IHandler
+    public interface ICommandHandler<TCommand>
         where TCommand : class, ICommand
     {
         /// <summary>

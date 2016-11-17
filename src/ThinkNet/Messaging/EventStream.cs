@@ -2,41 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ThinkNet.Messaging;
+using ThinkNet.Common;
+using ThinkNet.Domain;
 
-namespace ThinkNet.Domain.EventSourcing
+namespace ThinkNet.Messaging
 {
     /// <summary>
     /// 表示这是一个可溯源的有序事件流。
     /// </summary>
-    public sealed class EventStream : IMessage
+    public sealed class EventStream : SourceDataKey, IMessage, IUniquelyIdentifiable
     {
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public EventStream()
-        { }
-
-        /// <summary>
-        /// 产生事件的相关标识(如命令的id)
-        /// </summary>
-        public string CorrelationId { get; set; }
-        /// <summary>
-        /// 版本号
-        /// </summary>
-        public int Version { get; set; }
         /// <summary>
         /// 事件源
         /// </summary>
-        public IEnumerable<IEvent> Events { get; set; }
-        /// <summary>
-        /// 事件源的标识id(如聚合根ID)
-        /// </summary>
-        public string SourceId { get; set; }
-        /// <summary>
-        /// 事件源的类型(如聚合根类型)
-        /// </summary>
-        public Type SourceType { get; set; }
+        public IEnumerable<IEvent> Events { get; set; }       
 
 
         /// <summary>
@@ -76,14 +55,19 @@ namespace ThinkNet.Domain.EventSourcing
             return string.Concat(this.SourceType.FullName, "@", this.SourceId,
                 "[", string.Join(",", events), "]", "#", this.CorrelationId);
         }
-
-        #region IMessage 成员
+        
 
         string IMessage.GetKey()
         {
             return this.SourceId;
         }
 
-        #endregion
+        string IUniquelyIdentifiable.UniqueId
+        {
+            get
+            {
+                return this.CorrelationId;
+            }
+        }
     }
 }

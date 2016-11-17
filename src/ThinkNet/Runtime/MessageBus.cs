@@ -7,9 +7,15 @@ using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime
 {
+    /// <summary>
+    /// <see cref="IMessageBus"/> 的实现类
+    /// </summary>
     public class MessageBus : IMessageBus
     {
         private readonly IEnvelopeSender _sender;
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
         public MessageBus(IEnvelopeSender sender)
         {
             this._sender = sender;
@@ -48,12 +54,16 @@ namespace ThinkNet.Runtime
         }
         
         #region IMessageBus 成员
-
+        /// <summary>
+        /// 发布消息
+        /// </summary>
         public void Publish(IMessage message)
         {
             _sender.SendAsync(Transform(message));
         }
-
+        /// <summary>
+        /// 发布一组消息
+        /// </summary>
         public void Publish(IEnumerable<IMessage> messages)
         {
             _sender.SendAsync(messages.Select(Transform));

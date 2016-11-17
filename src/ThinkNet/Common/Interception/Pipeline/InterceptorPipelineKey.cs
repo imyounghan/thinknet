@@ -3,6 +3,9 @@ using System.Reflection;
 
 namespace ThinkNet.Common.Interception.Pipeline
 {
+    /// <summary>
+    /// 拦截器管理的标识
+    /// </summary>
     public struct InterceptorPipelineKey : IEquatable<InterceptorPipelineKey>
     {
         private readonly Module module;
@@ -14,6 +17,9 @@ namespace ThinkNet.Common.Interception.Pipeline
             this.methodMetadataToken = methodMetadataToken;
         }
 
+        /// <summary>
+        /// 比较该实例是否与当前实例相同
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (!(obj is InterceptorPipelineKey))
@@ -22,16 +28,25 @@ namespace ThinkNet.Common.Interception.Pipeline
             return this == (InterceptorPipelineKey)obj;
         }
 
+        /// <summary>
+        /// 获取此实例的哈希代码
+        /// </summary>
         public override int GetHashCode()
         {
             return this.module.GetHashCode() ^ methodMetadataToken;
         }
 
+        /// <summary>
+        /// 比较两个实例相等
+        /// </summary>
         public static bool operator ==(InterceptorPipelineKey left, InterceptorPipelineKey right)
         {
             return left.module == right.module && left.methodMetadataToken == right.methodMetadataToken;
         }
 
+        /// <summary>
+        /// 比较两个实例不相等
+        /// </summary>
         public static bool operator !=(InterceptorPipelineKey left, InterceptorPipelineKey right)
         {
             return !(left == right);
@@ -45,7 +60,9 @@ namespace ThinkNet.Common.Interception.Pipeline
         }
 
         #endregion
-
+        /// <summary>
+        /// 获取该方法的标识
+        /// </summary>
         public static InterceptorPipelineKey ForMethod(MethodBase method)
         {
             method.NotNull("method");

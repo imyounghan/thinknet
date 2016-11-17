@@ -5,6 +5,9 @@ using System.Runtime.Serialization;
 
 namespace ThinkNet.Contracts
 {
+    /// <summary>
+    /// 分页数据
+    /// </summary>
     [DataContract]
     public class PageQueryResult<T> : QueryResult
     {

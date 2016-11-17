@@ -9,16 +9,31 @@ namespace ThinkNet.Common.Composition
     /// </summary>
     public abstract class ObjectContainer : DisposableObject, IObjectContainer
     {
+        /// <summary>
+        /// 类型注册
+        /// </summary>
         public sealed class TypeRegistration
         {
             private readonly int _hashCode;
 
+            /// <summary>
+            /// 类型
+            /// </summary>
             public Type Type { get; private set; }
+            /// <summary>
+            /// 名称
+            /// </summary>
             public string Name { get; private set; }
 
+            /// <summary>
+            /// Parameterized Constructor.
+            /// </summary>
             public TypeRegistration(Type type)
                 : this(type, string.Empty)
             { }
+            /// <summary>
+            /// Parameterized Constructor.
+            /// </summary>
             public TypeRegistration(Type type, string name)
             {
                 this.Type = type;
@@ -32,6 +47,9 @@ namespace ThinkNet.Common.Composition
                 }
             }
 
+            /// <summary>
+            /// 判断该实例与当前实例是否相同
+            /// </summary>
             public override bool Equals(object obj)
             {
                 var other = obj as TypeRegistration;
@@ -48,6 +66,9 @@ namespace ThinkNet.Common.Composition
                 return true;
             }
 
+            /// <summary>
+            /// 获取该实例的哈希代码
+            /// </summary>
             public override int GetHashCode()
             {
                 return this._hashCode;
@@ -65,11 +86,17 @@ namespace ThinkNet.Common.Composition
 
         private readonly List<TypeRegistration> _registeredTypes;
 
+        /// <summary>
+        /// Default Constructor.
+        /// </summary>
         protected ObjectContainer()
         {
             this._registeredTypes = new List<TypeRegistration>();
         }
 
+        /// <summary>
+        /// 获取已注册的类型列表
+        /// </summary>
         public IReadOnlyCollection<TypeRegistration> RegisteredTypes
         {
             get

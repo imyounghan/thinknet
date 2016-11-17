@@ -11,13 +11,13 @@ namespace ThinkNet.Common
     /// <summary>Represents an ObjectId
     /// </summary>
     [Serializable]
-    public struct ObjectId : IComparable<ObjectId>, IEquatable<ObjectId>
+    public struct UniqueId : IComparable<UniqueId>, IEquatable<UniqueId>
     {
         // private static fields
         private static readonly DateTime __unixEpoch;
         private static readonly long __dateTimeMaxValueMillisecondsSinceEpoch;
         private static readonly long __dateTimeMinValueMillisecondsSinceEpoch;
-        private static ObjectId __emptyInstance = default(ObjectId);
+        private static UniqueId __emptyInstance = default(UniqueId);
         private static int __staticMachine;
         private static short __staticPid;
         private static int __staticIncrement; // high byte will be masked out when generating new ObjectId
@@ -32,7 +32,7 @@ namespace ThinkNet.Common
         private int _increment;
 
         // static constructor
-        static ObjectId()
+        static UniqueId()
         {
             __unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             __dateTimeMaxValueMillisecondsSinceEpoch = (DateTime.MaxValue - __unixEpoch).Ticks / 10000;
@@ -51,7 +51,7 @@ namespace ThinkNet.Common
         /// Initializes a new instance of the ObjectId class.
         /// </summary>
         /// <param name="bytes">The bytes.</param>
-        public ObjectId(byte[] bytes)
+        public UniqueId(byte[] bytes)
         {
             if (bytes == null) {
                 throw new ArgumentNullException("bytes");
@@ -66,7 +66,7 @@ namespace ThinkNet.Common
         /// <param name="machine">The machine hash.</param>
         /// <param name="pid">The PID.</param>
         /// <param name="increment">The increment.</param>
-        public ObjectId(DateTime timestamp, int machine, short pid, int increment)
+        public UniqueId(DateTime timestamp, int machine, short pid, int increment)
             : this(GetTimestampFromDateTime(timestamp), machine, pid, increment)
         { }
 
@@ -77,7 +77,7 @@ namespace ThinkNet.Common
         /// <param name="machine">The machine hash.</param>
         /// <param name="pid">The PID.</param>
         /// <param name="increment">The increment.</param>
-        public ObjectId(int timestamp, int machine, short pid, int increment)
+        public UniqueId(int timestamp, int machine, short pid, int increment)
         {
             if ((machine & 0xff000000) != 0) {
                 throw new ArgumentOutOfRangeException("machine", "The machine value must be between 0 and 16777215 (it must fit in 3 bytes).");
@@ -96,7 +96,7 @@ namespace ThinkNet.Common
         /// Initializes a new instance of the ObjectId class.
         /// </summary>
         /// <param name="value">The value.</param>
-        public ObjectId(string value)
+        public UniqueId(string value)
         {
             if (value == null) {
                 throw new ArgumentNullException("value");
@@ -108,7 +108,7 @@ namespace ThinkNet.Common
         /// <summary>
         /// Gets an instance of ObjectId where the value is empty.
         /// </summary>
-        public static ObjectId Empty
+        public static UniqueId Empty
         {
             get { return __emptyInstance; }
         }
@@ -161,7 +161,7 @@ namespace ThinkNet.Common
         /// <param name="lhs">The first ObjectId.</param>
         /// <param name="rhs">The other ObjectId</param>
         /// <returns>True if the first ObjectId is less than the second ObjectId.</returns>
-        public static bool operator <(ObjectId lhs, ObjectId rhs)
+        public static bool operator <(UniqueId lhs, UniqueId rhs)
         {
             return lhs.CompareTo(rhs) < 0;
         }
@@ -172,7 +172,7 @@ namespace ThinkNet.Common
         /// <param name="lhs">The first ObjectId.</param>
         /// <param name="rhs">The other ObjectId</param>
         /// <returns>True if the first ObjectId is less than or equal to the second ObjectId.</returns>
-        public static bool operator <=(ObjectId lhs, ObjectId rhs)
+        public static bool operator <=(UniqueId lhs, UniqueId rhs)
         {
             return lhs.CompareTo(rhs) <= 0;
         }
@@ -183,7 +183,7 @@ namespace ThinkNet.Common
         /// <param name="lhs">The first ObjectId.</param>
         /// <param name="rhs">The other ObjectId.</param>
         /// <returns>True if the two ObjectIds are equal.</returns>
-        public static bool operator ==(ObjectId lhs, ObjectId rhs)
+        public static bool operator ==(UniqueId lhs, UniqueId rhs)
         {
             return lhs.Equals(rhs);
         }
@@ -194,7 +194,7 @@ namespace ThinkNet.Common
         /// <param name="lhs">The first ObjectId.</param>
         /// <param name="rhs">The other ObjectId.</param>
         /// <returns>True if the two ObjectIds are not equal.</returns>
-        public static bool operator !=(ObjectId lhs, ObjectId rhs)
+        public static bool operator !=(UniqueId lhs, UniqueId rhs)
         {
             return !(lhs == rhs);
         }
@@ -205,7 +205,7 @@ namespace ThinkNet.Common
         /// <param name="lhs">The first ObjectId.</param>
         /// <param name="rhs">The other ObjectId</param>
         /// <returns>True if the first ObjectId is greather than or equal to the second ObjectId.</returns>
-        public static bool operator >=(ObjectId lhs, ObjectId rhs)
+        public static bool operator >=(UniqueId lhs, UniqueId rhs)
         {
             return lhs.CompareTo(rhs) >= 0;
         }
@@ -216,7 +216,7 @@ namespace ThinkNet.Common
         /// <param name="lhs">The first ObjectId.</param>
         /// <param name="rhs">The other ObjectId</param>
         /// <returns>True if the first ObjectId is greather than the second ObjectId.</returns>
-        public static bool operator >(ObjectId lhs, ObjectId rhs)
+        public static bool operator >(UniqueId lhs, UniqueId rhs)
         {
             return lhs.CompareTo(rhs) > 0;
         }
@@ -226,7 +226,7 @@ namespace ThinkNet.Common
         /// Generates a new ObjectId with a unique value.
         /// </summary>
         /// <returns>An ObjectId.</returns>
-        public static ObjectId GenerateNewId()
+        public static UniqueId GenerateNewId()
         {
             return GenerateNewId(GetTimestampFromDateTime(DateTime.UtcNow));
         }
@@ -236,7 +236,7 @@ namespace ThinkNet.Common
         /// </summary>
         /// <param name="timestamp">The timestamp component (expressed as a DateTime).</param>
         /// <returns>An ObjectId.</returns>
-        public static ObjectId GenerateNewId(DateTime timestamp)
+        public static UniqueId GenerateNewId(DateTime timestamp)
         {
             return GenerateNewId(GetTimestampFromDateTime(timestamp));
         }
@@ -246,10 +246,10 @@ namespace ThinkNet.Common
         /// </summary>
         /// <param name="timestamp">The timestamp component.</param>
         /// <returns>An ObjectId.</returns>
-        public static ObjectId GenerateNewId(int timestamp)
+        public static UniqueId GenerateNewId(int timestamp)
         {
             int increment = Interlocked.Increment(ref __staticIncrement) & 0x00ffffff; // only use low order 3 bytes
-            return new ObjectId(timestamp, __staticMachine, __staticPid, increment);
+            return new UniqueId(timestamp, __staticMachine, __staticPid, increment);
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace ThinkNet.Common
         /// </summary>
         /// <param name="other">The other ObjectId.</param>
         /// <returns>A 32-bit signed integer that indicates whether this ObjectId is less than, equal to, or greather than the other.</returns>
-        public int CompareTo(ObjectId other)
+        public int CompareTo(UniqueId other)
         {
             int r = _timestamp.CompareTo(other._timestamp);
             if (r != 0) { return r; }
@@ -348,7 +348,7 @@ namespace ThinkNet.Common
         /// </summary>
         /// <param name="rhs">The other ObjectId.</param>
         /// <returns>True if the two ObjectIds are equal.</returns>
-        public bool Equals(ObjectId rhs)
+        public bool Equals(UniqueId rhs)
         {
             return
                 _timestamp == rhs._timestamp &&
@@ -364,8 +364,8 @@ namespace ThinkNet.Common
         /// <returns>True if the other object is an ObjectId and equal to this one.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is ObjectId) {
-                return Equals((ObjectId)obj);
+            if (obj is UniqueId) {
+                return Equals((UniqueId)obj);
             }
             else {
                 return false;
@@ -409,7 +409,7 @@ namespace ThinkNet.Common
         /// </summary>
         /// <param name="s">The string value.</param>
         /// <returns>A ObjectId.</returns>
-        public static ObjectId Parse(string s)
+        public static UniqueId Parse(string s)
         {
             if (s == null) {
                 throw new ArgumentNullException("s");
@@ -417,7 +417,7 @@ namespace ThinkNet.Common
             if (s.Length != 24) {
                 throw new ArgumentOutOfRangeException("s", "ObjectId string value must be 24 characters.");
             }
-            return new ObjectId(ParseHexString(s));
+            return new UniqueId(ParseHexString(s));
         }
 
         private static byte[] ParseHexString(string s)

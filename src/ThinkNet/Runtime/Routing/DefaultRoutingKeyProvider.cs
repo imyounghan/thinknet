@@ -2,11 +2,16 @@
 
 namespace ThinkNet.Runtime.Routing
 {
+    /// <summary>
+    /// <see cref="IRoutingKeyProvider"/> 的默认实现
+    /// </summary>
     public class DefaultRoutingKeyProvider : IRoutingKeyProvider
     {
 
         #region IRoutingKeyProvider 成员
-
+        /// <summary>
+        /// 获取路由的Key
+        /// </summary>
         public virtual string GetRoutingKey(object payload)
         {
             //var reply = payload as RepliedCommand;

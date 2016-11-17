@@ -41,13 +41,12 @@ namespace ThinkNet.Common.Caching
             return new MemoryCache(regionName, properties);
         }
 
-        #region ICacheProvider 成员
-
+        /// <summary>
+        /// 创建区域缓存
+        /// </summary>
         public ICache BuildCache(string regionName)
         {
             return this.BuildCache(regionName, null);
         }
-
-        #endregion
     }
 }

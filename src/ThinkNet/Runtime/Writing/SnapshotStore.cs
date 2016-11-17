@@ -37,8 +37,11 @@ namespace ThinkNet.Runtime.Writing
             get { return this._persistent; }
         }
 
-
-        public IEventSourced GetLastest(DataKey sourceKey)
+        /// <summary>
+        /// 获取最新的快照
+        /// </summary>
+        public T GetLastest<T>(DataKey sourceKey)
+            where T : class, IAggregateRoot
         {
             if (!_persistent)
                 return null;
@@ -58,11 +61,14 @@ namespace ThinkNet.Runtime.Writing
             if (snapshot == null)
                 return null;
 
-            return (IEventSourced)_serializer.DeserializeFromBinary(snapshot.Data, sourceKey.GetSourceType());
+            return (T)_serializer.DeserializeFromBinary(snapshot.Data, sourceKey.GetSourceType());
             
         }
 
-        public void Save(IEventSourced aggregateRoot)
+        /// <summary>
+        /// 生成聚合快照
+        /// </summary>
+        public void Save(IAggregateRoot aggregateRoot)
         {
             if (!_persistent)
                 return;
@@ -70,9 +76,13 @@ namespace ThinkNet.Runtime.Writing
             var aggregateRootType = aggregateRoot.GetType();
 
             var snapshot = new Snapshot(aggregateRootType, aggregateRoot.Id.ToString()) {
-                Data = _serializer.SerializeToBinary(aggregateRoot),
-                Version = aggregateRoot.Version
+                Data = _serializer.SerializeToBinary(aggregateRoot)
             };
+
+            var eventSourced = aggregateRoot as IEventSourced;
+            if (eventSourced != null) {
+                snapshot.Version = eventSourced.Version;
+            }
 
             Task.Factory.StartNew(() => {
                 using (var context = _dataContextFactory.Create()) {
@@ -84,16 +94,19 @@ namespace ThinkNet.Runtime.Writing
                     if(LogManager.Default.IsWarnEnabled)
                         LogManager.Default.Warn(task.Exception,
                             "snapshot persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
-                            aggregateRoot.Id, aggregateRootType.FullName, aggregateRoot.Version);
+                            aggregateRoot.Id, aggregateRootType.FullName, snapshot.Version);
                 }
                 else {
                     if(LogManager.Default.IsDebugEnabled)
                         LogManager.Default.DebugFormat("make snapshot completed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
-                           aggregateRoot.Id, aggregateRootType.FullName, aggregateRoot.Version);
+                           aggregateRoot.Id, aggregateRootType.FullName, snapshot.Version);
                 }
             });
         }
 
+        /// <summary>
+        /// 删除快照
+        /// </summary>
         public void Remove(DataKey sourceKey)
         {
             if (!_persistent)

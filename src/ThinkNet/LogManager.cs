@@ -699,6 +699,9 @@ namespace ThinkNet
         }
     }
 
+    /// <summary>
+    /// <see cref="LogManager.ILogger"/>的扩展方法类
+    /// </summary>
     public static class LogExtensions
     {
         /// <summary>

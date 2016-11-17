@@ -27,6 +27,9 @@ namespace ThinkNet.Runtime.Writing
             this.Items = new List<EventDataItem>();
         }
 
+        /// <summary>
+        /// 用于数据库的自增主键
+        /// </summary>
         public long EventId { get; set; }
         /// <summary>
         /// 聚合根标识。
@@ -53,8 +56,14 @@ namespace ThinkNet.Runtime.Writing
         /// </summary>
         public DateTime Timestamp { get; set; }
 
+        /// <summary>
+        /// 事件项
+        /// </summary>
         public ICollection<EventDataItem> Items { get; set; }
-
+        /// <summary>
+        /// 添加一个事件
+        /// </summary>
+        /// <param name="item"></param>
         public void AddItem(EventDataItem item)
         {
             item.Order = Items.Count + 1;

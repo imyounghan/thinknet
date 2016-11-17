@@ -18,6 +18,9 @@ namespace ThinkNet.Common.Serialization
     {
         private readonly ITextSerializer serializer;
 
+        /// <summary>
+        /// Default Constructor.
+        /// </summary>
         public DefaultTextSerializer()
         {
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -34,17 +37,23 @@ namespace ThinkNet.Common.Serialization
         }
 
         #region ISerializer 成员
-
+        /// <summary>
+        /// 序列化一个对象
+        /// </summary>
         public string Serialize(object obj, bool containType)
         {
             return serializer.Serialize(obj, containType);
         }
-
+        /// <summary>
+        /// 从 <param name="serialized" /> 反序列化一个对象。
+        /// </summary>
         public object Deserialize(string serialized)
         {
             return serializer.Deserialize(serialized);
         }
-
+        /// <summary>
+        /// 根据 <param name="type" /> 从 <param name="serialized" /> 反序列化一个对象。
+        /// </summary>
         public object Deserialize(string serialized, Type type)
         {
             return serializer.Deserialize(serialized, type);
@@ -52,7 +61,7 @@ namespace ThinkNet.Common.Serialization
 
         #endregion
 
-        public class DateTimeConverter : JavaScriptConverter
+        class DateTimeConverter : JavaScriptConverter
         {
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {

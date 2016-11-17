@@ -5,12 +5,18 @@ using ThinkNet.Messaging;
 
 namespace ThinkNet.Domain.Repositories
 {
+    /// <summary>
+    /// <see cref="IRepository"/> 的实现类
+    /// </summary>
     public sealed class Repository : IRepository
     {
         private readonly IDataContextFactory _dataContextFactory;
         private readonly IMessageBus _messageBus;
         private readonly ICache _cache;
 
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public Repository(IDataContextFactory dataContextFactory, IMessageBus messageBus, ICache cache)
         {
             this._dataContextFactory = dataContextFactory;
@@ -25,7 +31,9 @@ namespace ThinkNet.Domain.Repositories
         }
 
         #region IRepository 成员
-
+        /// <summary>
+        /// 查找聚合。如果不存在返回null，存在返回实例
+        /// </summary>
         public IAggregateRoot Find(Type aggregateRootType, object id)
         {
             if(!IsAggregateRoot(aggregateRootType)) {
@@ -60,6 +68,9 @@ namespace ThinkNet.Domain.Repositories
             return result as IAggregateRoot;
         }
 
+        /// <summary>
+        /// 保存聚合根。
+        /// </summary>
         public void Save(IAggregateRoot aggregateRoot)
         {
             Task.Factory.StartNew(delegate {
@@ -83,7 +94,10 @@ namespace ThinkNet.Domain.Repositories
             _messageBus.Publish(eventPublisher.Events);
         }
 
-        void IRepository.Delete(IAggregateRoot aggregateRoot)
+        /// <summary>
+        /// 删除聚合根。
+        /// </summary>
+        public void Delete(IAggregateRoot aggregateRoot)
         {
             var aggregateRootType = aggregateRoot.GetType();
             _cache.Remove(aggregateRootType, aggregateRoot.Id);

@@ -22,8 +22,13 @@ namespace ThinkNet.Common.Interception
         /// </summary>
         bool ContainsParameter(string parameterName);
 
+        /// <summary>
+        /// 通过参数索引获取参数信息
+        /// </summary>
         ParameterInfo GetParameterInfo(int index);
-
+        /// <summary>
+        /// 通过参数名称获取参数信息
+        /// </summary>
         ParameterInfo GetParameterInfo(string parameterName);
     }
 }

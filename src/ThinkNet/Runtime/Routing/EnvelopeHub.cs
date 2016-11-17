@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace ThinkNet.Runtime.Routing
 {
+    /// <summary>
+    /// <see cref="IEnvelopeSender"/> 和 <see cref="IEnvelopeReceiver"/> 的实现类
+    /// </summary>
     public class EnvelopeHub : DisposableObject, IEnvelopeSender, IEnvelopeReceiver
     {
         //private readonly ConcurrentDictionary<string, SemaphoreSlim> semaphores;
@@ -16,11 +19,16 @@ namespace ThinkNet.Runtime.Routing
 
         private CancellationTokenSource cancellationSource;
 
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
         [ImportingConstructor]
         public EnvelopeHub(IRoutingKeyProvider routingKeyProvider)
             : this(routingKeyProvider, ConfigurationSetting.Current.QueueCount, ConfigurationSetting.Current.QueueCapacity)
         { }
-
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
         protected EnvelopeHub(IRoutingKeyProvider routingKeyProvider, int queueCount, int queueCapacity)
         {
             this._routingKeyProvider = routingKeyProvider;
@@ -31,6 +39,9 @@ namespace ThinkNet.Runtime.Routing
             }
         }
 
+        /// <summary>
+        /// 释放资源
+        /// </summary>
         protected override void Dispose(bool disposing)
         { }
 
@@ -48,17 +59,26 @@ namespace ThinkNet.Runtime.Routing
             return brokers[index];
         }
 
+        /// <summary>
+        /// 获取关键字
+        /// </summary>
         protected virtual string GetKey(Envelope envelope)
         {
             return envelope.GetMetadata(StandardMetadata.SourceId)
                 .IfEmpty(() => _routingKeyProvider.GetRoutingKey(envelope.Body));
         }
 
+        /// <summary>
+        /// 分发信件
+        /// </summary>
         protected virtual void Distribute(Envelope envelope)
         {
             this.GetBroker(this.GetKey(envelope)).Add(envelope);
         }
 
+        /// <summary>
+        /// 收到信件后的处理方式
+        /// </summary>
         public event EventHandler<Envelope> EnvelopeReceived = (sender, args) => { };
 
         private void ReceiveMessages(object state)
@@ -100,11 +120,16 @@ namespace ThinkNet.Runtime.Routing
             }
         }
 
+        /// <summary>
+        /// Sends an envelope.
+        /// </summary>
         public virtual Task SendAsync(Envelope envelope)
         {
             return Task.Factory.StartNew(() => this.Distribute(envelope));
         }
-
+        /// <summary>
+        /// Sends a batch of envelopes.
+        /// </summary>
         public virtual Task SendAsync(IEnumerable<Envelope> envelopes)
         {
             return Task.Factory.StartNew(() => envelopes.ForEach(this.Distribute));

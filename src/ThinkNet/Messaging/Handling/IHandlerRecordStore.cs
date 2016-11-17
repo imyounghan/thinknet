@@ -5,7 +5,7 @@ namespace ThinkNet.Messaging.Handling
     /// <summary>
     /// 存储处理程序信息的接口
     /// </summary>
-    public interface IMessageHandlerRecordStore
+    public interface IHandlerRecordStore
     {
         /// <summary>
         /// 添加处理程序信息

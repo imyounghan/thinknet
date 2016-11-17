@@ -3,7 +3,7 @@
     /// <summary>
     /// 表示继承此接口的是一个消息处理器。
     /// </summary>
-    public interface IMessageHandler<TMessage> : IHandler
+    public interface IMessageHandler<TMessage>
         where TMessage : class, IMessage
     {
         /// <summary>

@@ -2,8 +2,14 @@
 
 namespace ThinkNet.Runtime
 {
+    /// <summary>
+    /// 配置项
+    /// </summary>
     public class ConfigurationSetting
     {
+        /// <summary>
+        /// 当前的一个实例
+        /// </summary>
         public static readonly ConfigurationSetting Current = new ConfigurationSetting();
 
 

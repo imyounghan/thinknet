@@ -11,14 +11,22 @@ namespace ThinkNet.Runtime.Routing
     public class Envelope
     {
         private readonly Dictionary<string, object> dict;
+        /// <summary>
+        /// Default Constructor.
+        /// </summary>
         public Envelope()
         {
             this.dict = new Dictionary<string, object>();
         }
-
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
         public Envelope(object body)
             : this(body, body.GetType())
         { }
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
         public Envelope(object body, Type type)
         {
             this.Body = body;
@@ -29,17 +37,28 @@ namespace ThinkNet.Runtime.Routing
                 { StandardMetadata.AssemblyName, Path.GetFileNameWithoutExtension(type.Assembly.ManifestModule.FullyQualifiedName) }
             };
         }
+        /// <summary>
+        /// 元数据
+        /// </summary>
         public object Body { get; set; }
+        /// <summary>
+        /// 元数据信息
+        /// </summary>
         public IDictionary Metadata
         {
             get { return this.dict; }
         }
-
+        /// <summary>
+        /// 完成后的操作
+        /// </summary>
         public void Complete(object source)
         {
             EnvelopeCompleted.Invoke(source, this);
         }
 
+        /// <summary>
+        /// 获取元数据的信息
+        /// </summary>
         public string GetMetadata(string key)
         {
             object value;
@@ -50,6 +69,9 @@ namespace ThinkNet.Runtime.Routing
             return string.Empty;
         }
 
+        /// <summary>
+        /// 信件完成后的处理方式
+        /// </summary>
         public static event EventHandler<Envelope> EnvelopeCompleted = (sender, args) => { };
 
 

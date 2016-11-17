@@ -17,19 +17,19 @@ namespace ThinkNet.Messaging
         /// Default Constructor.
         /// </summary>
         protected Command()
-            : this(ObjectId.GenerateNewStringId())
         { }
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
         protected Command(string id)
         {
-            id.NotNullOrWhiteSpace("id");
-
-            this.UniqueId = id;
+            this.UniqueId = id.IfEmpty(Common.UniqueId.GenerateNewStringId);
             this.Timestamp = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// 命令标识
+        /// </summary>
         [DataMember(Name = "id")]
         public string UniqueId { get; private set; }
         /// <summary>

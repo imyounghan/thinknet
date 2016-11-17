@@ -75,7 +75,9 @@ namespace ThinkNet.Database
             this.DataCommitted(this, EventArgs.Empty);
         }
 
-
+        /// <summary>
+        /// 保存或更新实体数据
+        /// </summary>
         protected virtual void SaveOrUpdate(object entity, Func<object, bool> beforeSave, Func<object, bool> beforeUpdate)
         {
             if (this.Contains(entity)) {
@@ -85,7 +87,9 @@ namespace ThinkNet.Database
                 this.Save(entity, beforeSave);
             }
         }
-
+        /// <summary>
+        /// 保存或更新实体数据
+        /// </summary>
         public void SaveOrUpdate(object entity)
         {
             this.Validate(entity);
@@ -95,7 +99,9 @@ namespace ThinkNet.Database
                 (state) => this.Callback(state, OnUpdating) == LifecycleVeto.Accept);
         }
 
-        
+        /// <summary>
+        /// 保存实体数据
+        /// </summary>
         protected abstract void Save(object entity, Func<object, bool> beforeSave);
         /// <summary>
         /// 新增一个新对象到当前上下文
@@ -108,7 +114,9 @@ namespace ThinkNet.Database
                 (state) => this.Callback(state, OnSaving) == LifecycleVeto.Accept);
         }
 
-        
+        /// <summary>
+        /// 更新实体数据
+        /// </summary>
         protected abstract void Update(object entity, Func<object, bool> beforeUpdate);
 
         /// <summary>
@@ -122,6 +130,9 @@ namespace ThinkNet.Database
                 (state) => this.Callback(state, OnUpdating) == LifecycleVeto.Accept);
         }
         
+        /// <summary>
+        /// 删除实体数据
+        /// </summary>
         protected abstract void Delete(object entity, Func<object, bool> beforeDelete);
         /// <summary>
         /// 删除一个对象到当前上下文

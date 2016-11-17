@@ -155,7 +155,13 @@ namespace ThinkNet.Runtime
         /// </summary>
         public enum Status
         {
+            /// <summary>
+            /// 运行中
+            /// </summary>
             Running,
+            /// <summary>
+            /// 已停止
+            /// </summary>
             Stopped
         }
         
@@ -211,7 +217,9 @@ namespace ThinkNet.Runtime
             return this.LoadAssemblies(assemblies);
         }
 
-
+        /// <summary>
+        /// 启动程序
+        /// </summary>
         public void Start()
         {
             if (!_running)
@@ -220,6 +228,9 @@ namespace ThinkNet.Runtime
             ObjectContainer.Instance.ResolveAll<IProcessor>().ForEach(p => p.Start());
         }
 
+        /// <summary>
+        /// 停止程序
+        /// </summary>
         public void Stop()
         {
             if (!_running)
@@ -392,7 +403,7 @@ namespace ThinkNet.Runtime
             this.Register<IMessageBus, MessageBus>();
             this.Register<ICommandService, CommandService>();
             this.Register<ICommandResultNotification, CommandService>();
-            this.Register<IMessageHandlerRecordStore, MessageHandlerRecordInMemory>(); 
+            this.Register<IHandlerRecordStore, HandlerRecordInMemory>(); 
             this.Register<IEnvelopeSender, EnvelopeHub>();
             this.Register<IEnvelopeReceiver, EnvelopeHub>();
             this.Register<IProcessor, Processor>("core");

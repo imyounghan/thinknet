@@ -7,7 +7,7 @@ namespace ThinkNet.Messaging.Handling
     /// <summary>
     /// 将已完成的处理程序信息记录在内存中。
     /// </summary>
-    public class MessageHandlerRecordInMemory : IMessageHandlerRecordStore
+    public class HandlerRecordInMemory : IHandlerRecordStore
     {
         private readonly HashSet<HandlerRecordData> _handlerInfoSet;
         private readonly Timer timer;
@@ -15,7 +15,7 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public MessageHandlerRecordInMemory()
+        public HandlerRecordInMemory()
         {
             timer = new Timer(RemoveHandleInfo, null, 5000, 2000);
             _handlerInfoSet = new HashSet<HandlerRecordData>();

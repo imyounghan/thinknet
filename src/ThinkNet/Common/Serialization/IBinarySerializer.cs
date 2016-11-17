@@ -9,15 +9,15 @@ namespace ThinkNet.Common.Serialization
     public interface IBinarySerializer
     {
         /// <summary>
-        /// 序列化一个对象到 <see cref="DataStream"/>。
+        /// 序列化一个对象到 <see cref="Stream"/>。
         /// </summary>
         void Serialize(Stream stream, object obj, bool containType = false);
         /// <summary>
-        /// 反序列化一个对象从一个 <see cref="DataStream"/>。
+        /// 反序列化一个对象从一个 <see cref="Stream"/>。
         /// </summary>
         object Deserialize(Stream stream);
         /// <summary>
-        /// 反序列化一个对象从一个 <see cref="DataStream"/>。
+        /// 反序列化一个对象从一个 <see cref="Stream"/>。
         /// </summary>
         object Deserialize(Stream stream, Type type);
     }

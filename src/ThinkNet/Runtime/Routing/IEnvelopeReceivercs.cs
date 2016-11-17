@@ -2,8 +2,14 @@
 
 namespace ThinkNet.Runtime.Routing
 {
+    /// <summary>
+    /// 表示接收者的接口
+    /// </summary>
     public interface IEnvelopeReceiver
     {
+        /// <summary>
+        /// 收到信件后的处理方式
+        /// </summary>
         event EventHandler<Envelope> EnvelopeReceived;
 
         /// <summary>

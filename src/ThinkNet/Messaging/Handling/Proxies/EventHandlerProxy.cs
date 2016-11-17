@@ -6,10 +6,16 @@ using ThinkNet.Common.Interception.Pipeline;
 
 namespace ThinkNet.Messaging.Handling.Proxies
 {
+    /// <summary>
+    /// 处理事件的代理程序
+    /// </summary>
     public class EventHandlerProxy : MessageHandlerProxy
     {
-        public EventHandlerProxy(IHandler handler, MethodInfo method, InterceptorPipeline pipeline)
-            : base(handler, method, pipeline)
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
+        public EventHandlerProxy(object handler, MethodInfo method)
+            : base(handler, method, null)
         { }
 
         private object GetParameter(object[] args, Type type)
@@ -17,12 +23,15 @@ namespace ThinkNet.Messaging.Handling.Proxies
             return args.Skip(1).First(p => p.GetType() == type);
         }
         
+        /// <summary>
+        /// 处理一组事件
+        /// </summary>
         public override void Handle(object[] args)
         {
             var parames = new ArrayList();
             parames.Add(args[0]);
 
-            var parameters = Method.GetParameters();
+            var parameters = ReflectedMethod.GetParameters();
             switch (args.Length - 1) {
                 case 1:
                     parames.Add(args[1]);

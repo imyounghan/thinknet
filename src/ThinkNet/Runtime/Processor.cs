@@ -2,50 +2,63 @@
 using System.Collections.Generic;
 using System.Linq;
 using ThinkNet.Common;
+using ThinkNet.Common.Interception;
 using ThinkNet.Contracts;
 using ThinkNet.Domain;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
-using ThinkNet.Runtime.Executing;
+using ThinkNet.Runtime.Dispatching;
 using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime
 {
-    //[Register("core", typeof(IProcessor))]
+    /// <summary>
+    /// 框架内处理消息的核心进程
+    /// </summary>
     public class Processor : DisposableObject, IProcessor, IInitializer
     {
         private readonly IEnvelopeReceiver _receiver;
+        private readonly Dictionary<string, IDispatcher> _dispatcherDict;
 
-        private readonly Dictionary<string, IExecutor> executorDict;
         private readonly object lockObject;
         private bool started;
 
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
         public Processor(IRepository repository,
             IEventSourcedRepository eventSourcedRepository,
-            IEnvelopeSender sender,
             IEnvelopeReceiver receiver,
             ICommandResultNotification notification,
-            IMessageHandlerRecordStore handlerStore,
+            IInterceptorProvider interceptorProvider,
+            IHandlerRecordStore handlerStore,
+            IHandlerMethodProvider handlerMethodProvider,
             IMessageBus messageBus)
         {
             this._receiver = receiver;
 
-            this.executorDict = new Dictionary<string, IExecutor>(StringComparer.CurrentCulture) {
-                { StandardMetadata.CommandKind, new CommandExecutor(repository, eventSourcedRepository,messageBus, handlerStore) },
-                { StandardMetadata.EventKind, new EventExecutor(handlerStore) },
-                { StandardMetadata.MessageKind, new MessageExecutor(sender, handlerStore, messageBus, notification) }
+            this._dispatcherDict = new Dictionary<string, IDispatcher>(StringComparer.CurrentCulture) {
+                { StandardMetadata.CommandKind, new CommandDispatcher(repository, eventSourcedRepository,messageBus, handlerStore, interceptorProvider, handlerMethodProvider) },
+                { StandardMetadata.EventKind, new EventDispatcher(handlerStore, handlerMethodProvider) },
+                { StandardMetadata.MessageKind, new MessageDispatcher(handlerMethodProvider, handlerStore, messageBus, notification) }
             };
             this.lockObject = new object();
         }
 
-        protected void AddExecutor(string kind, IExecutor executor)
+        /// <summary>
+        /// 添加一个调度器
+        /// </summary>
+        protected void AddDispatcher(string kind, IDispatcher dispatcher)
         {
-            if (executorDict.ContainsKey(kind))
+            if (_dispatcherDict.ContainsKey(kind))
                 return;
 
-            executorDict[kind] = executor;
+            _dispatcherDict[kind] = dispatcher;
         }
 
+        /// <summary>
+        /// 获取消息分类
+        /// </summary>
         protected virtual string GetKind(object data)
         {
             if (data is IEvent)
@@ -72,13 +85,18 @@ namespace ThinkNet.Runtime
                 return;
             }
 
-            TimeSpan processTime;
-            executorDict[kind].Execute(envelope.Body, out processTime);
-            envelope.ProcessTime = processTime;
+            var message = envelope.Body as IMessage; 
+
+            TimeSpan executionTime;
+            _dispatcherDict[kind].Execute(message, out executionTime);
+            envelope.ProcessTime = executionTime;
 
             envelope.Complete(sender);
         }
 
+        /// <summary>
+        /// 启动进程
+        /// </summary>
         public void Start()
         {
             ThrowIfDisposed();
@@ -91,6 +109,9 @@ namespace ThinkNet.Runtime
             }
         }
 
+        /// <summary>
+        /// 停止进程
+        /// </summary>
         public void Stop()
         {
             lock (this.lockObject) {
@@ -102,6 +123,9 @@ namespace ThinkNet.Runtime
             }
         }
 
+        /// <summary>
+        /// 释放资源
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             ThrowIfDisposed();
@@ -111,11 +135,15 @@ namespace ThinkNet.Runtime
             }
         }
 
+        /// <summary>
+        /// 初始化进程
+        /// </summary>
         public void Initialize(IEnumerable<Type> types)
         {
-            executorDict.Values.OfType<IInitializer>().ForEach(delegate(IInitializer initializer) {
-                initializer.Initialize(types);
-            });
+            _dispatcherDict.Values.OfType<IInitializer>()
+                .ForEach(delegate(IInitializer initializer) {
+                    initializer.Initialize(types);
+                });
         }
     }
 }

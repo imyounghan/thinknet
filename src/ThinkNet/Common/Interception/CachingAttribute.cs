@@ -8,7 +8,7 @@ using ThinkNet.Common.Composition;
 namespace ThinkNet.Common.Interception
 {
     /// <summary>
-    /// 表示由此特性所描述的方法，能够获得框架所提供的缓存功能。
+    /// 表示此特性能够获得框架所提供的缓存功能。
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Property)]
     public class CachingAttribute : InterceptorAttribute
@@ -62,6 +62,9 @@ namespace ThinkNet.Common.Interception
         /// </summary>
         public string[] RelatedAreas { get; private set; }
 
+        /// <summary>
+        /// 创建一个可用于缓存的拦截器
+        /// </summary>
         public override IInterceptor CreateInterceptor(IObjectContainer container)
         {
             var cacheProvider = container.Resolve<ICacheProvider>();

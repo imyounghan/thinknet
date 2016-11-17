@@ -2,22 +2,36 @@
 
 namespace ThinkNet.Common.Interception.Pipeline
 {
+    /// <summary>
+    /// 拦截器的管道
+    /// </summary>
     public class InterceptorPipeline
     {
         private readonly IList<IInterceptor> _interceptors;
 
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public InterceptorPipeline()
         {
             this._interceptors = new List<IInterceptor>();
         }
-
+        /// <summary>
+        ///  Parameterized constructor.
+        /// </summary>
         public InterceptorPipeline(IEnumerable<IInterceptor> interceptors)
         {
             this._interceptors = new List<IInterceptor>(interceptors);
         }
 
+        /// <summary>
+        /// 拦截器数据
+        /// </summary>
         public int Count { get { return _interceptors.Count; } }
 
+        /// <summary>
+        /// 调用结果
+        /// </summary>
         public IMethodReturn Invoke(IMethodInvocation input, InvokeInterceptorDelegate target)
         {
             if (this.Count == 0)

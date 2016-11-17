@@ -5,6 +5,9 @@ using ThinkNet.Domain;
 
 namespace ThinkNet.Messaging.Handling
 {
+    /// <summary>
+    /// <see cref="ICommandContext"/> 的实现类
+    /// </summary>
     public class CommandContext : ICommandContext
     {
         private readonly IRepository _repository;
@@ -14,6 +17,9 @@ namespace ThinkNet.Messaging.Handling
         private readonly Dictionary<string, IAggregateRoot> dict;
         private readonly IList<IEvent> pendingEvents;
 
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public CommandContext(IRepository repository, IEventSourcedRepository eventSourcedRepository, IMessageBus bus)
         {
             this._repository = repository;
@@ -28,7 +34,9 @@ namespace ThinkNet.Messaging.Handling
         {
             return type.IsClass && !type.IsAbstract && typeof(IEventSourced).IsAssignableFrom(type);
         }
-
+        /// <summary>
+        /// 添加该聚合根到当前上下文中。
+        /// </summary>
         public void Add(IAggregateRoot aggregateRoot)
         {
             aggregateRoot.NotNull("aggregateRoot");
@@ -36,7 +44,9 @@ namespace ThinkNet.Messaging.Handling
             string key = string.Concat(aggregateRoot.GetType().FullName, "@", aggregateRoot.Id);
             dict.TryAdd(key, aggregateRoot);
         }
-
+        /// <summary>
+        /// 从当前上下文获取聚合根
+        /// </summary>
         public T Get<T>(object id) where T : class, IAggregateRoot
         {
             var aggregate = this.Find<T>(id);
@@ -46,6 +56,9 @@ namespace ThinkNet.Messaging.Handling
             return aggregate as T;
         }
 
+        /// <summary>
+        /// 从当前上下文获取聚合根
+        /// </summary>
         public T Find<T>(object id) where T : class, IAggregateRoot
         {
             var type = typeof(T);
@@ -68,7 +81,10 @@ namespace ThinkNet.Messaging.Handling
             return aggregateRoot as T;
         }
 
-        public void PendingEvent(IEvent @event)
+        /// <summary>
+        /// 添加待处理的事件。
+        /// </summary>
+        public void AppendEvent(IEvent @event)
         {
             if(pendingEvents.Any(p => p.UniqueId == @event.UniqueId))
                 return;
@@ -76,6 +92,9 @@ namespace ThinkNet.Messaging.Handling
             pendingEvents.Add(@event);
         }
 
+        /// <summary>
+        /// 提交修改结果。
+        /// </summary>
         public void Commit(string commandId)
         {
 

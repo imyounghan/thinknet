@@ -6,29 +6,42 @@ using ThinkNet.Common.Interception.Pipeline;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Messaging.Handling.Proxies;
 
-namespace ThinkNet.Runtime.Executing
+namespace ThinkNet.Runtime.Dispatching
 {
-    public class EventExecutor : Executor
+    /// <summary>
+    /// 事件处理程序的代理类
+    /// </summary>
+    public class EventDispatcher : MessageDispatcher
     {
-        private readonly IMessageHandlerRecordStore _handlerStore;
         private readonly InterceptorPipeline _pipeline;
+        private readonly IHandlerMethodProvider _handlerMethodProvider;
 
-        public EventExecutor(IMessageHandlerRecordStore handlerStore)
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
+        public EventDispatcher(IHandlerRecordStore handlerStore,
+            IHandlerMethodProvider handlerMethodProvider)
         {
-            this._handlerStore = handlerStore;
-            //this._firstInterceptor = new MessageHandlerRecordInterceptor(handlerStore);
-            this._pipeline = new InterceptorPipeline(new[] { new MessageHandledInterceptor(handlerStore) });
+            this._handlerMethodProvider = handlerMethodProvider;
+            this._pipeline = new InterceptorPipeline(new[] { new FilterHandledMessageInterceptor(handlerStore) });
         }
 
 
-        protected override IEnumerable<IProxyHandler> GetProxyHandlers(Type type)
+
+        private IHandlerProxy BuildMessageHandler(object handler, Type contractType)
+        {
+            var method = _handlerMethodProvider.GetCachedMethodInfo(handler.GetType(), contractType);
+            return new MessageHandlerProxy(handler, method, _pipeline);
+        }
+
+        /// <summary>
+        /// 获取事件类型的Handler
+        /// </summary>
+        protected override IEnumerable<IHandlerProxy> GetProxyHandlers(Type type)
         {
             var contractType = typeof(IMessageHandler<>).MakeGenericType(type);
-            return ObjectContainer.Instance.ResolveAll(contractType).Cast<IHandler>()
-                    .Select(handler => {
-                        var method = base.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
-                        return new MessageHandlerProxy(handler, method, _pipeline);
-                    })
+            return ObjectContainer.Instance.ResolveAll(contractType)
+                    .Select(handler => BuildMessageHandler(handler, contractType))
                     .ToArray();
         }
 

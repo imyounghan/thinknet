@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
 namespace ThinkNet
 {
@@ -54,6 +55,46 @@ namespace ThinkNet
             }
 
             return default(TValue);
+        }
+
+        /// <summary>
+        /// 获取key的元素
+        /// </summary>
+        public static TValue GetOrDefault<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key, TValue value)
+        {
+            TValue originalValue;
+            if (dict.TryGetValue(key, out originalValue)) {
+                return originalValue;
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// 获取key的元素
+        /// </summary>
+        public static TValue GetOrDefault<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key, Func<TValue> valueFactory)
+        {
+            TValue value;
+            if (dict.TryGetValue(key, out value)) {
+                return value;
+            }
+
+            return valueFactory.Invoke();
+        }
+
+        /// <summary>
+        /// 如果指定的键尚不存在，则将键/值对添加到字典中。
+        /// </summary>
+        public static TValue GetOrAdd<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key, Func<TValue> valueFactory)
+        {
+            TValue value;
+            if (!dict.TryGetValue(key, out value)) {
+                value = valueFactory.Invoke();
+                dict.TryAdd(key, value);
+            }
+
+            return value;
         }
     }
 }

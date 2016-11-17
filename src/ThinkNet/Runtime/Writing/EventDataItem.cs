@@ -2,6 +2,9 @@
 
 namespace ThinkNet.Runtime.Writing
 {
+    /// <summary>
+    /// 事件包里的项
+    /// </summary>
     public class EventDataItem
     {
         /// <summary>

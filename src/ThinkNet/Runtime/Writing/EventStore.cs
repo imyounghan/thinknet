@@ -12,7 +12,7 @@ using ThinkNet.Messaging;
 namespace ThinkNet.Runtime.Writing
 {
     /// <summary>
-    /// 事件存储器
+    /// <see cref="IEventStore"/>的实现类
     /// </summary>
     public sealed class EventStore : IEventStore
     {
@@ -67,6 +67,9 @@ namespace ThinkNet.Runtime.Writing
             };
         }
 
+        /// <summary>
+        /// 保存事件流数据
+        /// </summary>
         public void Save(EventStream @event)
         {
             Task.Factory.StartNew(delegate {
@@ -98,6 +101,9 @@ namespace ThinkNet.Runtime.Writing
             }).Wait();
         }
 
+        /// <summary>
+        /// 查找与该命令相关的事件流数据
+        /// </summary>
         public EventStream Find(DataKey sourceKey, string correlationId)
         {
             correlationId.NotNullOrWhiteSpace("correlationId");
@@ -127,6 +133,9 @@ namespace ThinkNet.Runtime.Writing
             };
         }
 
+        /// <summary>
+        /// 查找大于该版本号的所有事件流数据
+        /// </summary>
         public IEnumerable<EventStream> FindAll(DataKey sourceKey, int version)
         {
             var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
@@ -145,6 +154,9 @@ namespace ThinkNet.Runtime.Writing
             return events.Select(this.Transform).ToArray();
         }
 
+        /// <summary>
+        /// 删除相关的事件流数据
+        /// </summary>
         public void RemoveAll(DataKey sourceKey)
         {
             var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();

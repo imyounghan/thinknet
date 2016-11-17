@@ -10,11 +10,11 @@ namespace ThinkNet.Domain.EventSourcing
         /// <summary>
         /// 获取最新的快照。
         /// </summary>
-        IEventSourced GetLastest(DataKey sourceKey);
+        T GetLastest<T>(DataKey sourceKey) where T : class, IAggregateRoot;
         /// <summary>
         /// 存储聚合快照。
         /// </summary>
-        void Save(IEventSourced snapshot);
+        void Save(IAggregateRoot aggregateRoot);
         /// <summary>
         /// 从存储中删除快照。
         /// </summary>

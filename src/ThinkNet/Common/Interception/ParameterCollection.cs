@@ -6,6 +6,9 @@ using System.Reflection;
 
 namespace ThinkNet.Common.Interception
 {
+    /// <summary>
+    /// <see cref="IParameterCollection"/> 的实现类
+    /// </summary>
     public class ParameterCollection : IParameterCollection
     {
         struct ArgumentInfo
@@ -25,6 +28,9 @@ namespace ThinkNet.Common.Interception
         private readonly List<ArgumentInfo> parameters;
         private readonly object[] arguments;
 
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public ParameterCollection(object[] arguments, ParameterInfo[] parameters, Predicate<ParameterInfo> isArgumentPartOfCollection)
         {
             arguments.NotNull("arguments");
@@ -50,7 +56,9 @@ namespace ThinkNet.Common.Interception
         }
 
         #region IParameterCollection 成员
-
+        /// <summary>
+        /// 通过参数名称获取该参数的值
+        /// </summary>
         public object this[string parameterName]
         {
             get
@@ -59,16 +67,23 @@ namespace ThinkNet.Common.Interception
             }
         }
 
+        /// <summary>
+        /// 检查是否包含该参数名称。
+        /// </summary>
         public bool ContainsParameter(string parameterName)
         {
             return parameters.Any(p => p.Name == parameterName);
         }
-
+        /// <summary>
+        /// 通过参数位置获取参数信息
+        /// </summary>
         public ParameterInfo GetParameterInfo(int index)
         {
             return parameters[index].ParameterInfo;
         }
-
+        /// <summary>
+        /// 通过参数名称获取参数信息
+        /// </summary>
         public ParameterInfo GetParameterInfo(string parameterName)
         {
             return this.GetParameterInfo(IndexForInputParameterName(parameterName));
@@ -77,7 +92,9 @@ namespace ThinkNet.Common.Interception
         #endregion        
 
         #region ICollection 成员
-
+        /// <summary>
+        /// 从特定的索引处开始，将当前的元素复制到一个 <see cref="Array"/> 中
+        /// </summary>
         public void CopyTo(Array array, int index)
         {
             int destIndex = 0;
@@ -87,16 +104,24 @@ namespace ThinkNet.Common.Interception
                 });
         }
 
+        /// <summary>
+        /// 获取包含的元素数。
+        /// </summary>
         public int Count
         {
             get { return parameters.Count; }
         }
 
+        /// <summary>
+        /// 非线程安全的集合
+        /// </summary>
         public bool IsSynchronized
         {
             get { return false; }
         }
-
+        /// <summary>
+        /// 获取可用于同步访问的对象。
+        /// </summary>
         public object SyncRoot
         {
             get { return this; }
@@ -105,7 +130,9 @@ namespace ThinkNet.Common.Interception
         #endregion
 
         #region IEnumerable 成员
-
+        /// <summary>
+        /// 返回一个循环访问集合的枚举数。
+        /// </summary>
         public IEnumerator GetEnumerator()
         {
             for(int i = 0; i < parameters.Count; ++i) {

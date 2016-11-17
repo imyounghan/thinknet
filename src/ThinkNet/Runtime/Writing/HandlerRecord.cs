@@ -67,7 +67,7 @@ namespace ThinkNet.Runtime.Writing
         }
 
         /// <summary>
-        /// 确定此实例是否与指定的对象（也必须是 <see cref="HandlerRecordData"/> 对象）相同。
+        /// 确定此实例是否与指定的对象（也必须是 <see cref="HandlerRecord"/> 对象）相同。
         /// </summary>
         public override bool Equals(object obj)
         {

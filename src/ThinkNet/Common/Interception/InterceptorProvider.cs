@@ -6,6 +6,9 @@ using ThinkNet.Common.Composition;
 
 namespace ThinkNet.Common.Interception
 {
+    /// <summary>
+    /// <see cref="IInterceptorProvider"/> 的实现类
+    /// </summary>
     public class InterceptorProvider : IInterceptorProvider
     {
 
@@ -13,6 +16,9 @@ namespace ThinkNet.Common.Interception
 
         #region IInterceptorProvider 成员
 
+        /// <summary>
+        /// 获取该方法上的拦截器
+        /// </summary>
         public IEnumerable<IInterceptor> GetInterceptors(MethodInfo method)
         {
             IEnumerable<Filter> combinedFilters =

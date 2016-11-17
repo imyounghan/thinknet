@@ -5,6 +5,9 @@ using ThinkNet.Database;
 
 namespace ThinkNet.Common.Interception
 {
+    /// <summary>
+    /// 事务
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class TransactionAttribute : InterceptorAttribute
     {
@@ -34,6 +37,9 @@ namespace ThinkNet.Common.Interception
             #endregion
         }
 
+        /// <summary>
+        /// 创建事务的拦截器
+        /// </summary>
         public override IInterceptor CreateInterceptor(IObjectContainer container)
         {
             var dataContextFactory = container.Resolve<IDataContextFactory>();
