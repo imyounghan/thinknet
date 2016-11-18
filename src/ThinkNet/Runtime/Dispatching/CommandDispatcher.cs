@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ThinkNet.Common;
-using ThinkNet.Common.Composition;
 using ThinkNet.Common.Interception;
 using ThinkNet.Common.Interception.Pipeline;
 using ThinkNet.Domain;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
-using ThinkNet.Messaging.Handling.Proxies;
+using ThinkNet.Messaging.Handling.Agent;
 
 namespace ThinkNet.Runtime.Dispatching
 {
@@ -20,8 +19,8 @@ namespace ThinkNet.Runtime.Dispatching
     {
         private readonly Func<CommandContext> _commandContextFactory;
         private readonly IInterceptor _firstInterceptor;
+        private readonly IInterceptor _lastInterceptor;
         private readonly IInterceptorProvider _interceptorProvider;
-        private readonly IHandlerMethodProvider _handlerMethodProvider;
 
         /// <summary>
         /// Parameterized Constructor.
@@ -30,51 +29,52 @@ namespace ThinkNet.Runtime.Dispatching
             IEventSourcedRepository eventSourcedRepository,
             IMessageBus messageBus, 
             IHandlerRecordStore handlerStore,
-            IInterceptorProvider interceptorProvider,
-            IHandlerMethodProvider handlerMethodProvider)
+            IInterceptorProvider interceptorProvider)
         {
             this._commandContextFactory = () => new CommandContext(repository, eventSourcedRepository, messageBus);
             this._firstInterceptor = new FilterHandledMessageInterceptor(handlerStore);
+            this._lastInterceptor = new NotifyCommandResultInterceptor(messageBus);
             this._interceptorProvider = interceptorProvider;
-            this._handlerMethodProvider = handlerMethodProvider;
         }
 
         private InterceptorPipeline GetInterceptorPipeline(MethodInfo method)
         {
             Func<IEnumerable<IInterceptor>> getInterceptors = delegate {
-                var interceptors = _interceptorProvider.GetInterceptors(method);
-                return new[] { _firstInterceptor }.Concat(interceptors);
+                List<IInterceptor> interceptors = new List<IInterceptor>();
+                interceptors.Add(_firstInterceptor);
+                interceptors.AddRange(_interceptorProvider.GetInterceptors(method));
+                interceptors.Add(_lastInterceptor);
+
+                return interceptors;
             };
 
             return InterceptorPipelineManager.Instance.CreatePipeline(method, getInterceptors);
         }
 
-        private IHandlerProxy BuildCommandHandler(object handler, Type contractType)
+        private IHandlerAgent BuildCommandHandler(object handler, Type contractType)
         {
-            var method = _handlerMethodProvider.GetCachedMethodInfo(handler.GetType(), contractType);
+            var method = HandlerMethodProvider.Instance.GetCachedMethodInfo(contractType, () => handler.GetType());
             var pipeline = GetInterceptorPipeline(method);
             var commandContext = _commandContextFactory.Invoke();
-            return new CommandHandlerProxy(handler, method, pipeline, commandContext);
+            return new CommandHandlerAgent(handler, method, pipeline, commandContext);
         }
 
-        private IHandlerProxy BuildMessageHandler(object handler, Type contractType)
+        private IHandlerAgent BuildMessageHandler(object handler, Type contractType)
         {
-            var method = _handlerMethodProvider.GetCachedMethodInfo(handler.GetType(), contractType);
+            var method = HandlerMethodProvider.Instance.GetCachedMethodInfo(contractType, () => handler.GetType());
             var pipeline = GetInterceptorPipeline(method);
-            return new MessageHandlerProxy(handler, method, pipeline);
+            return new MessageHandlerAgent(handler, method, pipeline);
         }
 
-        private IHandlerProxy GetProxyHandler(Type type)
+        private IHandlerAgent GetHandlerAgent(Type type)
         {
-            var contractType = typeof(ICommandHandler<>).MakeGenericType(type);
-
-            var handlers = ObjectContainer.Instance.ResolveAll(contractType)
+            Type contractType;
+            var handlers = HandlerFetchedProvider.Instance.GetCommandHandlers(type, out contractType)
                 .Select(handler => BuildCommandHandler(handler, contractType))
                 .ToArray();
 
             if (handlers.IsEmpty()) {
-                contractType = typeof(IMessageHandler<>).MakeGenericType(type);
-                handlers = ObjectContainer.Instance.ResolveAll(contractType)
+                handlers = HandlerFetchedProvider.Instance.GetMessageHandlers(type, out contractType)
                     .Select(handler => BuildMessageHandler(handler, contractType))
                     .ToArray();
             }
@@ -90,37 +90,16 @@ namespace ThinkNet.Runtime.Dispatching
         }
 
         /// <summary>
-        /// 获取命令处理程序
+        /// 构造命令处理程序
         /// </summary>
-        protected override IEnumerable<IHandlerProxy> GetProxyHandlers(Type type)
+        protected override IEnumerable<IHandlerAgent> BuildHandlerAgents(Type type)
         {
-            var handler = GetCachedHandler(type.FullName);
-            if (handler == null) {
-                handler = GetProxyHandler(type);
-                var lifecycle = LifeCycleAttribute.GetLifecycle(handler.ReflectedMethod.DeclaringType);
-                if (lifecycle == Lifecycle.Singleton)
-                    AddHandler(type.FullName, handler);
-            }
+            var handler = this.GetHandlerAgent(type);
+            var lifecycle = LifeCycleAttribute.GetLifecycle(handler.ReflectedMethod.DeclaringType);
+            if (lifecycle == Lifecycle.Singleton)
+                AddCachedHandler(type.FullName, handler);
 
             yield return handler;
         }
-
-        
-
-        //protected override void OnExecuting(ICommand command, Type handlerType)
-        //{
-        //    var commandType = command.GetType();
-        //    if (_handlerStore.HandlerIsExecuted(command.Id, commandType, handlerType)) {
-        //        var errorMessage = string.Format("The command has been handled. CommandHandlerType:{0}, CommandType:{1}, CommandId:{2}.",
-        //            handlerType.FullName, commandType.FullName, command.Id);
-        //        throw new MessageHandlerProcessedException(errorMessage);
-        //    }
-        //}
-
-        //protected override void OnExecuted(ICommand command, Type handlerType, Exception ex)
-        //{
-        //    if (ex != null)
-        //        _handlerStore.AddHandlerInfo(command.Id, command.GetType(), handlerType);
-        //}
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using ThinkNet.Common;
 using ThinkNet.Common.Composition;
+using ThinkNet.Common.Interception;
 using ThinkNet.Common.Serialization;
 using ThinkNet.Contracts;
 using ThinkNet.Database;
@@ -277,6 +278,8 @@ namespace ThinkNet.Runtime
 
             this.RegisterComponentsAndHanders(allTypes);
             this.RegisterFrameworkComponents();
+            AggregateRootInnerHandlerProvider.Instance.Initialize(allTypes);
+            HandlerFetchedProvider.Instance.Initialize(allTypes);
 
             _components.ForEach(Component.Register);
 
@@ -288,7 +291,7 @@ namespace ThinkNet.Runtime
                 .Select(Component.GetInstance)
                 .Distinct()
                 .Cast<IInitializer>()
-                .ForEach(item => item.Initialize(allTypes));
+                .ForEach(item => item.Initialize(container, _assemblies));
 
             _assemblies.Clear();
             _components.Clear();
@@ -396,6 +399,7 @@ namespace ThinkNet.Runtime
             this.Register<ISnapshotPolicy, NoneSnapshotPolicy>();
             this.Register<ISnapshotStore, SnapshotStore>();
             this.Register<ITextSerializer, DefaultTextSerializer>();
+            this.Register<IInterceptorProvider, InterceptorProvider>();
             this.Register<ICache, LocalCache>();            
             this.Register<IRoutingKeyProvider, DefaultRoutingKeyProvider>();
             this.Register<IEventSourcedRepository, EventSourcedRepository>();

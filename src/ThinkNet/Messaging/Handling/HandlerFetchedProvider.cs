@@ -6,8 +6,14 @@ using ThinkNet.Common.Composition;
 
 namespace ThinkNet.Messaging.Handling
 {
+    /// <summary>
+    /// 获取消息处理器的提供者
+    /// </summary>
     public class HandlerFetchedProvider
     {
+        /// <summary>
+        /// <see cref="HandlerFetchedProvider"/> 的一个实例
+        /// </summary>
         public static readonly HandlerFetchedProvider Instance = new HandlerFetchedProvider();
 
         private readonly Dictionary<CompositeKey, Type> _eventTypesMapContractType;
@@ -17,20 +23,29 @@ namespace ThinkNet.Messaging.Handling
             this._eventTypesMapContractType = new Dictionary<CompositeKey, Type>();
         }
 
-        public IEnumerable<object> GetCommandHandlers(Type commandType)
+        /// <summary>
+        /// 获取命令处理器
+        /// </summary>
+        public IEnumerable<object> GetCommandHandlers(Type commandType, out Type contractType)
         {
-            var contractType = typeof(ICommandHandler<>).MakeGenericType(commandType);
+            contractType = typeof(ICommandHandler<>).MakeGenericType(commandType);
 
             return ObjectContainer.Instance.ResolveAll(contractType);
         }
 
-        public IEnumerable<object> GetMessageHandlers(Type commandType)
+        /// <summary>
+        /// 获取消息处理器
+        /// </summary>
+        public IEnumerable<object> GetMessageHandlers(Type messageType, out Type contractType)
         {
-            var contractType = typeof(IMessageHandler<>).MakeGenericType(commandType);
+            contractType = typeof(IMessageHandler<>).MakeGenericType(messageType);
 
             return ObjectContainer.Instance.ResolveAll(contractType);
         }
 
+        /// <summary>
+        /// 获取事件对应的处理器接口类型
+        /// </summary>
         public Type GetEventHandlerType(Type[] eventTypes)
         {
             switch(eventTypes.Length) {
@@ -43,11 +58,17 @@ namespace ThinkNet.Messaging.Handling
             }
         }
 
+        /// <summary>
+        /// 通过事件处理器接口类型获取相应的处理器实例
+        /// </summary>
         public IEnumerable<object> GetEventHandlers(Type contractType)
         {
             return ObjectContainer.Instance.ResolveAll(contractType);
         }
 
+        /// <summary>
+        /// 获取事件处理器并输出处理器接口类型
+        /// </summary>
         public IEnumerable<object> GetEventHandlers(Type[] eventTypes, out Type contractType)
         {
             contractType = GetEventHandlerType(eventTypes);

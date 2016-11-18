@@ -1,8 +1,11 @@
 ﻿using System;
 
-namespace ThinkNet.Domain
+namespace ThinkNet.Messaging.Handling
 {
-    public class SourceDataKey
+    /// <summary>
+    /// 元数据
+    /// </summary>
+    public class SourceMetadata
     {
         /// <summary>
         /// 产生事件的相关标识(如命令的id)
@@ -19,6 +22,6 @@ namespace ThinkNet.Domain
         /// <summary>
         /// 事件源的类型(如聚合根类型)
         /// </summary>
-        public Type SourceType { get; set; }
+        public string SourceTypeName { get; set; }
     }
 }

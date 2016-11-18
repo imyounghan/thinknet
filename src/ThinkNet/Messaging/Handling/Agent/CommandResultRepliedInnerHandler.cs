@@ -1,14 +1,17 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using ThinkNet.Contracts;
 
-namespace ThinkNet.Messaging.Handling.Proxies
+namespace ThinkNet.Messaging.Handling.Agent
 {
     /// <summary>
     /// 命令结果的内部处理器
     /// </summary>
-    public class CommandResultRepliedInnerHandler : IHandlerProxy
+    public class CommandResultRepliedInnerHandler : IHandlerAgent
     {
         private readonly ICommandResultNotification _notification;
+        private readonly Lazy<MethodInfo> _method;
+
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
@@ -16,18 +19,18 @@ namespace ThinkNet.Messaging.Handling.Proxies
         public CommandResultRepliedInnerHandler(ICommandResultNotification notification)
         {
             this._notification = notification;
+            this._method = new Lazy<MethodInfo>(GetMethodInfo);
+        }
+
+        private static MethodInfo GetMethodInfo()
+        {
+            return typeof(CommandResultRepliedInnerHandler).GetMethod("Handle");
         }
 
         /// <summary>
         /// 反射方法
         /// </summary>
-        public MethodInfo ReflectedMethod
-        {
-            get
-            {
-                return typeof(CommandResultRepliedInnerHandler).GetMethod("Handle");
-            }
-        }
+        public MethodInfo ReflectedMethod { get { return _method.Value; } }
         /// <summary>
         /// 处理器实例
         /// </summary>

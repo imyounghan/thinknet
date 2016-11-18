@@ -51,7 +51,8 @@ namespace ThinkNet.Runtime.Writing
             var snapshot = Task.Factory.StartNew(() => {
                 using (var context = _dataContextFactory.Create()) {
                     return context.CreateQuery<Snapshot>()
-                        .Where(p => p.AggregateRootId == sourceKey.SourceId && p.AggregateRootTypeCode == aggregateRootTypeCode)
+                        .Where(p => p.AggregateRootId == sourceKey.UniqueId && 
+                            p.AggregateRootTypeCode == aggregateRootTypeCode)
                         .OrderByDescending(p => p.Version)
                         .FirstOrDefault();
                 }
@@ -118,7 +119,7 @@ namespace ThinkNet.Runtime.Writing
             var task = Task.Factory.StartNew(() => {
                 using (var context = _dataContextFactory.Create()) {
                     context.CreateQuery<Snapshot>()
-                        .Where(p => p.AggregateRootId == sourceKey.SourceId &&
+                        .Where(p => p.AggregateRootId == sourceKey.UniqueId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode)
                         .ToList()
                         .ForEach(context.Delete);

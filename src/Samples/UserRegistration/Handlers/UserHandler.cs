@@ -21,7 +21,7 @@ namespace UserRegistration.Handlers
 
         public void Handle(ICommandContext context, RegisterUser command)
         {
-            var user = new UserRegisterService(_uniqueService, command.Id)
+            var user = new UserRegisterService(_uniqueService, command.UniqueId)
                 .Register(command.LoginId, command.Password, command.UserName, command.Email);
             context.Add(user);
 
@@ -29,7 +29,7 @@ namespace UserRegistration.Handlers
         }
 
 
-        public void Handle(VersionData versionKey, UserCreated @event)
+        public void Handle(SourceMetadata metadata, UserCreated @event)
         {
             _userDao.Save(new UserModel {
                 UserID = @event.SourceId,

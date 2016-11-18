@@ -9,16 +9,21 @@ namespace ThinkNet.Domain
     /// <summary>
     /// 表示这是一个获取聚合根内部处理器的提供者
     /// </summary>
-    public static class AggregateRootInnerHandler
+    public sealed class AggregateRootInnerHandlerProvider
     {
-        private readonly static Dictionary<Type, IDictionary<Type, MethodInfo>> _innerHandlers;
+        /// <summary>
+        /// <see cref="AggregateRootInnerHandlerProvider"/> 的一个实例
+        /// </summary>
+        public static readonly AggregateRootInnerHandlerProvider Instance = new AggregateRootInnerHandlerProvider();
 
-        static AggregateRootInnerHandler()
+        private readonly Dictionary<Type, IDictionary<Type, MethodInfo>> _innerHandlers;
+
+        private AggregateRootInnerHandlerProvider()
         {
-            _innerHandlers = new Dictionary<Type, IDictionary<Type, MethodInfo>>();
+            this._innerHandlers = new Dictionary<Type, IDictionary<Type, MethodInfo>>();
         }
 
-        private static IDictionary<Type, MethodInfo> FindInnerHandlers(Type type)
+        private IDictionary<Type, MethodInfo> FindInnerHandlers(Type type)
         {
             var eventHandlerDic = new Dictionary<Type, MethodInfo>();
 
@@ -51,7 +56,7 @@ namespace ThinkNet.Domain
         /// <summary>
         /// 初始化聚合根内部处理器并提供缓存能力。
         /// </summary>
-        public static void Initialize(IEnumerable<Type> types)
+        public void Initialize(IEnumerable<Type> types)
         {
             foreach (var type in types.Where(IsAggregateRoot)) {
                 if (!type.IsSerializable) {
@@ -67,7 +72,7 @@ namespace ThinkNet.Domain
         /// <summary>
         /// 获取聚合内部事件处理器
         /// </summary>
-        private static Action<IAggregateRoot, IEvent> GetHandler(Type aggregateRootType, Type eventType)
+        private Action<IAggregateRoot, IEvent> GetHandler(Type aggregateRootType, Type eventType)
         {
             IDictionary<Type, MethodInfo> eventHandlerDic;
             MethodInfo targetMethod;
@@ -88,7 +93,7 @@ namespace ThinkNet.Domain
         /// <summary>
         /// 判断聚合内部是否存在该事件处理器
         /// </summary>
-        public static bool HasHandler(Type aggregateRootType, Type eventType)
+        public bool HasHandler(Type aggregateRootType, Type eventType)
         {
             IDictionary<Type, MethodInfo> eventHandlerDic;
 
@@ -99,7 +104,7 @@ namespace ThinkNet.Domain
         /// <summary>
         /// 处理聚合内部事件
         /// </summary>
-        public static void Handle(IAggregateRoot aggregateRoot, IEvent @event)
+        public void Handle(IAggregateRoot aggregateRoot, IEvent @event)
         {
             var eventType = @event.GetType();
             var aggregateRootType = aggregateRoot.GetType();

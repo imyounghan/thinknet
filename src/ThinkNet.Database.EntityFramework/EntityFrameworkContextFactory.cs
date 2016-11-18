@@ -3,7 +3,7 @@ using System.Configuration;
 using System.Data.Common;
 using System.Data.Entity;
 using ThinkNet.Common;
-using ThinkNet.Common.Context;
+using ThinkNet.Database.Context;
 
 namespace ThinkNet.Database.EntityFramework
 {

@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using ThinkNet.Common.Composition;
 
 namespace ThinkNet.Common
 {
@@ -11,6 +12,6 @@ namespace ThinkNet.Common
         /// <summary>
         /// 初始化
         /// </summary>
-        void Initialize(IEnumerable<Type> types);
+        void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies);
     }
 }

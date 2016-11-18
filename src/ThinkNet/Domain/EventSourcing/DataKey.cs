@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
+using ThinkNet.Common;
 
 namespace ThinkNet.Domain.EventSourcing
 {
@@ -9,7 +11,7 @@ namespace ThinkNet.Domain.EventSourcing
     /// 表示一个完整的数据主键
     /// </summary>
     [Serializable]
-    public struct DataKey : IEquatable<DataKey>
+    public struct DataKey : IEquatable<DataKey>, IUniquelyIdentifiable, ISerializable
     {
         /// <summary>
         /// 空的主键
@@ -21,7 +23,7 @@ namespace ThinkNet.Domain.EventSourcing
         /// </summary>
         public DataKey(string str)
         {
-            var match = Regex.Match(str, @"^([\w-\.]+)\.([\w-]+),\s([\w-]+)@([\w-]+)$");
+            var match = Regex.Match(str, @"^([\w-\.]+)\.([\w-]+),\s?([\w-]+)@([\w-]+)$");
             if (!match.Success) {
                 throw new FormatException(str);
             }
@@ -29,7 +31,7 @@ namespace ThinkNet.Domain.EventSourcing
             this.@namespace = match.Groups[1].Value;
             this.typeName = match.Groups[2].Value;
             this.assemblyName = match.Groups[3].Value;
-            this.sourceId = match.Groups[4].Value;
+            this.uniqueId = match.Groups[4].Value;
         }
         /// <summary>
         /// Parameterized constructor.
@@ -40,6 +42,21 @@ namespace ThinkNet.Domain.EventSourcing
             sourceType.Name,
             sourceType.GetAssemblyName())
         { }
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
+        public DataKey(string sourceId, string sourceTypeName)
+        {
+            var match = Regex.Match(sourceTypeName, @"^([\w-\.]+)\.([\w-]+),\s?([\w-]+)$");
+            if (!match.Success) {
+                throw new FormatException(sourceTypeName);
+            }
+
+            this.@namespace = match.Groups[1].Value;
+            this.typeName = match.Groups[2].Value;
+            this.assemblyName = match.Groups[3].Value;
+            this.uniqueId = sourceId;
+        }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
@@ -56,7 +73,7 @@ namespace ThinkNet.Domain.EventSourcing
             sourceTypeName.NotNullOrWhiteSpace("sourceTypeName");
             //sourceAssemblyName.NotNullOrWhiteSpace("sourceAssemblyName");
 
-            this.sourceId = sourceId;
+            this.uniqueId = sourceId;
             this.@namespace = sourceNamespace;
             this.typeName = sourceTypeName;            
             this.assemblyName = sourceAssemblyName;
@@ -89,14 +106,14 @@ namespace ThinkNet.Domain.EventSourcing
             get { return this.typeName; }
             private set { this.typeName = value; }
         }
-        private string sourceId;
+        private string uniqueId;
         /// <summary>
         /// 源标识。
         /// </summary>
-        public string SourceId
+        public string UniqueId
         {
-            get { return this.sourceId; }
-            private set { this.sourceId = value; }
+            get { return this.uniqueId; }
+            private set { this.uniqueId = value; }
         }
 
         /// <summary>
@@ -111,8 +128,8 @@ namespace ThinkNet.Domain.EventSourcing
                 sb.Append(this.TypeName);
             if (!string.IsNullOrWhiteSpace(this.AssemblyName))
                 sb.Append(", ").Append(this.AssemblyName);
-            if (!string.IsNullOrWhiteSpace(this.SourceId))
-                sb.Append("@").Append(this.SourceId);
+            if (!string.IsNullOrWhiteSpace(this.UniqueId))
+                sb.Append("@").Append(this.UniqueId);
 
             return sb.ToString();
         }
@@ -136,9 +153,10 @@ namespace ThinkNet.Domain.EventSourcing
         public override int GetHashCode()
         {
             var codes = new int[] {
-                string.Concat(this.Namespace, ".", this.TypeName).GetHashCode(),
                 this.AssemblyName.GetHashCode(),
-                this.SourceId.GetHashCode()
+                this.Namespace.GetHashCode(),
+                this.TypeName.GetHashCode(),
+                this.UniqueId.GetHashCode()
             };
             return codes.Aggregate((x, y) => x ^ y);
         }
@@ -194,7 +212,7 @@ namespace ThinkNet.Domain.EventSourcing
 
         bool IEquatable<DataKey>.Equals(DataKey other)
         {
-            return this.SourceId == other.SourceId &&
+            return this.UniqueId == other.UniqueId &&
                 this.TypeName == other.TypeName &&
                 this.Namespace == other.Namespace &&
                 this.AssemblyName == other.AssemblyName;
@@ -223,6 +241,15 @@ namespace ThinkNet.Domain.EventSourcing
 
             result = Parse(input);
             return true;
+        }
+
+
+        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("UniqueId", this.UniqueId);
+            info.AddValue("AssemblyName", this.AssemblyName);
+            info.AddValue("Namespace", this.Namespace);
+            info.AddValue("TypeName", this.TypeName);
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Web;
 
-namespace ThinkNet.Common.Context
+namespace ThinkNet.Database.Context
 {
     /// <summary>
     /// <see cref="ICurrentContext"/> 的抽象实现。
@@ -39,7 +39,7 @@ namespace ThinkNet.Common.Context
                     return null;
                 }
                 else {
-                    return (IContext)map[_contextManager.Id];
+                    return (IContext)map[_contextManager.UniqueId];
                 }
             }
             set
@@ -49,7 +49,7 @@ namespace ThinkNet.Common.Context
                     map = Hashtable.Synchronized(new Hashtable());
                     SetMap(map);
                 }
-                map[_contextManager.Id] = value;
+                map[_contextManager.UniqueId] = value;
             }
         }
 

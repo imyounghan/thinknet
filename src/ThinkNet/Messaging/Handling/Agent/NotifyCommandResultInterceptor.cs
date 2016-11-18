@@ -2,12 +2,18 @@
 using ThinkNet.Common.Interception;
 using ThinkNet.Contracts;
 
-namespace ThinkNet.Messaging.Handling.Proxies
+namespace ThinkNet.Messaging.Handling.Agent
 {
+    /// <summary>
+    /// 通知命令结果的拦截器
+    /// </summary>
     public class NotifyCommandResultInterceptor : IInterceptor
     {
         private readonly IMessageBus _bus;
 
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public NotifyCommandResultInterceptor(IMessageBus bus)
         {
             this._bus = bus;
@@ -48,6 +54,9 @@ namespace ThinkNet.Messaging.Handling.Proxies
             _bus.Publish(commandResult);
         }
 
+        /// <summary>
+        /// 发送命令结果
+        /// </summary>
         public IMethodReturn Invoke(IMethodInvocation input, GetNextInterceptorDelegate getNext)
         {
             var methodReturn = getNext().Invoke(input, getNext);

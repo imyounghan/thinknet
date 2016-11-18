@@ -12,9 +12,13 @@ namespace ThinkNet.Messaging.Handling
         /// 通过 <param name="contractType" /> 上的泛型类型列表获取 <param name="targetType" /> 的 Handle 方法
         /// </summary>
         MethodInfo GetMethodInfo(Type targetType, Type contractType);
+        ///// <summary>
+        ///// 通过 <param name="contractType" /> 上的泛型类型列表从缓存中获取 <param name="targetType" /> 的 Handle 方法
+        ///// </summary>
+        //MethodInfo GetCachedMethodInfo(Type targetType, Type contractType);
         /// <summary>
         /// 通过 <param name="contractType" /> 上的泛型类型列表从缓存中获取 <param name="targetType" /> 的 Handle 方法
         /// </summary>
-        MethodInfo GetCachedMethodInfo(Type targetType, Type contractType);        
+        MethodInfo GetCachedMethodInfo(Type contractType, Func<Type> targetType);
     } 
 }

@@ -1,21 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using ThinkNet.Common;
-using ThinkNet.Domain;
+using ThinkNet.Domain.EventSourcing;
 
 namespace ThinkNet.Messaging
 {
     /// <summary>
     /// 表示这是一个可溯源的有序事件流。
     /// </summary>
-    public sealed class EventStream : SourceDataKey, IMessage, IUniquelyIdentifiable
+    [DataContract]
+    [Serializable]
+    public sealed class EventStream : IMessage, IUniquelyIdentifiable
     {
+        /// <summary>
+        /// 源ID
+        /// </summary>
+        [DataMember(Name = "sourceId")]
+        public DataKey SourceId { get; set; }
+
+        /// <summary>
+        /// 产生事件的相关标识(如命令的id)
+        /// </summary>
+        [DataMember(Name = "correlationId")]
+        public string CorrelationId { get; set; }
+        /// <summary>
+        /// 版本号
+        /// </summary>
+        [DataMember(Name = "version")]
+        public int Version { get; set; }
+
         /// <summary>
         /// 事件源
         /// </summary>
-        public IEnumerable<IEvent> Events { get; set; }       
+        [DataMember(Name = "events")]
+        public IEnumerable<IEvent> Events { get; set; }
 
 
         /// <summary>
@@ -28,7 +48,7 @@ namespace ThinkNet.Messaging
                 return false;
             }
 
-            return other.SourceType == this.SourceType && other.Version == this.Version;
+            return other.SourceId == this.SourceId && other.Version == this.Version;
         }
 
         /// <summary>
@@ -36,13 +56,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override int GetHashCode()
         {
-            var codes = new int[] {
-                Path.GetFileNameWithoutExtension(this.SourceType.Assembly.ManifestModule.FullyQualifiedName).GetHashCode(),
-                this.SourceType.FullName.GetHashCode(),
-                this.SourceId.GetHashCode(),
-                this.Version.GetHashCode()
-            };
-            return codes.Aggregate((x, y) => x ^ y);
+            return SourceId.GetHashCode() ^ Version.GetHashCode();
         }
 
         /// <summary>
@@ -52,16 +66,17 @@ namespace ThinkNet.Messaging
         {
             var events = this.Events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.UniqueId));
 
-            return string.Concat(this.SourceType.FullName, "@", this.SourceId,
+            return string.Concat(this.SourceId.GetSourceTypeName(), "@", this.SourceId,
                 "[", string.Join(",", events), "]", "#", this.CorrelationId);
         }
         
 
         string IMessage.GetKey()
         {
-            return this.SourceId;
+            return this.SourceId.UniqueId;
         }
 
+        [IgnoreDataMember]
         string IUniquelyIdentifiable.UniqueId
         {
             get

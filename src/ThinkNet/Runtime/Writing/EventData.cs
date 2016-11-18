@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ThinkNet.Domain.EventSourcing;
 
 namespace ThinkNet.Runtime.Writing
 {
@@ -23,6 +24,18 @@ namespace ThinkNet.Runtime.Writing
             this.AggregateRootId = aggregateRootId;
             this.AggregateRootTypeCode = aggregateRootType.FullName.GetHashCode();
             this.AggregateRootTypeName = aggregateRootType.GetFullName();
+            this.Timestamp = DateTime.UtcNow;
+            this.Items = new List<EventDataItem>();
+        }
+
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
+        public EventData(DataKey dataKey)
+        {
+            this.AggregateRootId = dataKey.UniqueId;
+            this.AggregateRootTypeCode = dataKey.GetSourceTypeName().GetHashCode();
+            this.AggregateRootTypeName = dataKey.GetSourceTypeFullName();
             this.Timestamp = DateTime.UtcNow;
             this.Items = new List<EventDataItem>();
         }

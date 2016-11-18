@@ -3,38 +3,39 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using ThinkNet.Common;
-using ThinkNet.Common.Composition;
+using ThinkNet.Common.Interception;
+using ThinkNet.Common.Interception.Pipeline;
 using ThinkNet.Contracts;
-using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
-using ThinkNet.Messaging.Handling.Proxies;
+using ThinkNet.Messaging.Handling.Agent;
 
 namespace ThinkNet.Runtime.Dispatching
 {
     /// <summary>
     /// 处理消息的代码程序
     /// </summary>
-    public class MessageDispatcher : IDispatcher, IInitializer
+    public class MessageDispatcher : IDispatcher
     {
-        private readonly ConcurrentDictionary<string, IHandlerProxy> _cachedHandlers;
-        private readonly IHandlerMethodProvider _handlerMethodProvider;
+        private readonly ConcurrentDictionary<string, IHandlerAgent> _cachedHandlers;
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public MessageDispatcher(IHandlerMethodProvider handlerMethodProvider,
-            IHandlerRecordStore handlerStore,
+        public MessageDispatcher(IHandlerRecordStore handlerStore,
             IMessageBus messageBus,
             ICommandResultNotification notification)
             : this()
         {
-            this._handlerMethodProvider = handlerMethodProvider;
-
-            this.AddHandler(typeof(EventStream).FullName, new EventStreamInnerHandler(handlerMethodProvider));
-            this.AddHandler(typeof(CommandResultReplied).FullName, new CommandResultRepliedInnerHandler(notification));
+            this.AddCachedHandler(typeof(EventStream).FullName, 
+                new EventStreamInnerHandler(
+                    new InterceptorPipeline(new IInterceptor[] { 
+                        new FilterHandledMessageInterceptor(handlerStore), 
+                        new NotifyCommandResultInterceptor(messageBus) 
+                    })
+                )
+            );
+            this.AddCachedHandler(typeof(CommandResultReplied).FullName, new CommandResultRepliedInnerHandler(notification));
         }
 
         /// <summary>
@@ -42,69 +43,63 @@ namespace ThinkNet.Runtime.Dispatching
         /// </summary>
         protected MessageDispatcher()
         {
-            this._cachedHandlers = new ConcurrentDictionary<string, IHandlerProxy>();
+            this._cachedHandlers = new ConcurrentDictionary<string, IHandlerAgent>();
         }
         /// <summary>
-        /// 添加一个Handler
+        /// 添加一个缓存的Handler
         /// </summary>
-        protected void AddHandler(string key, IHandlerProxy handler)
+        protected void AddCachedHandler(string key, IHandlerAgent handler)
         {
             _cachedHandlers.TryAdd(key, handler);
         }
-        /// <summary>
-        /// 获取一个Hanlder,如果不存在则添加一个Handler
-        /// </summary>
-        protected IHandlerProxy GetOrAddHandler(string key, Func<IHandlerProxy> handlerFactory)
+        ///// <summary>
+        ///// 获取一个Hanlder,如果不存在则添加一个Handler
+        ///// </summary>
+        //protected IHandlerProxy GetOrAddHandler(string key, Func<IHandlerProxy> handlerFactory)
+        //{
+        //    return _cachedHandlers.GetOrAdd(key, handlerFactory);
+        //}
+        ///// <summary>
+        ///// 从缓存中获取一个Handler
+        ///// </summary>
+        //protected IHandlerProxy GetCachedHandler(string key)
+        //{
+        //    return _cachedHandlers.GetOrDefault(key, (IHandlerProxy)null);
+        //}
+
+
+        private IHandlerAgent BuildMessageHandler(object handler, Type contractType)
         {
-            return _cachedHandlers.GetOrAdd(key, handlerFactory);
-        }
-        /// <summary>
-        /// 从缓存中获取一个Handler
-        /// </summary>
-        protected IHandlerProxy GetCachedHandler(string key)
-        {
-            return _cachedHandlers.GetOrDefault(key, (IHandlerProxy)null);
+            var method = HandlerMethodProvider.Instance.GetCachedMethodInfo(contractType, () => handler.GetType());
+            return new MessageHandlerAgent(handler, method, null);
         }
 
-       
-        private IHandlerProxy BuildMessageHandler(object handler, Type contractType)
+        /// <summary>
+        /// 构造消息的处理程序
+        /// </summary>
+        protected virtual IEnumerable<IHandlerAgent> BuildHandlerAgents(Type type)
         {
-            var method = _handlerMethodProvider.GetCachedMethodInfo(handler.GetType(), contractType);
-            return new MessageHandlerProxy(handler, method, null);
+            Type contractType;
+            var handlers = HandlerFetchedProvider.Instance.GetMessageHandlers(type, out contractType);
+            return handlers.Select(handler => BuildMessageHandler(handler, contractType)); ;
         }
 
         /// <summary>
         /// 获取消息的处理程序
         /// </summary>
-        protected virtual IEnumerable<IHandlerProxy> GetProxyHandlers(Type type)
+        private IEnumerable<IHandlerAgent> GetProxyHandlers(Type type)
         {
             var key = type.FullName;
-            IHandlerProxy cachedHandler;
+            IHandlerAgent cachedHandler;
             if (_cachedHandlers.TryGetValue(key, out cachedHandler))
                 yield return cachedHandler;
 
-            var contractType = typeof(IMessageHandler<>).MakeGenericType(type);
-            var handlers = ObjectContainer.Instance.ResolveAll(contractType)
-                .Select(handler => BuildMessageHandler(handler, contractType));
+            var handlers = BuildHandlerAgents(type);
             foreach (var handler in handlers) {
                 yield return handler;
             }
         }
-
-        #region IInitializer 成员
-        /// <summary>
-        /// 初始化程序
-        /// </summary>
-        public virtual void Initialize(IEnumerable<Type> types)
-        {
-            _cachedHandlers.Values.OfType<IInitializer>()
-                .ForEach(delegate(IInitializer initializer) {
-                    initializer.Initialize(types);
-                });
-        }
-
-        #endregion
-
+        
 
         /// <summary>
         /// 执行消息结果
@@ -127,8 +122,9 @@ namespace ThinkNet.Runtime.Dispatching
                     executionTime += stopwatch.Elapsed;
                 }
                 catch (Exception ex) {
-                    //TODO....WriteLog
-                    //this.OnException(ex);
+                    if (LogManager.Default.IsErrorEnabled) {
+                        LogManager.Default.Error(ex, "Exception raised when handling {0}.", message);
+                    }
                 }
             }
         }

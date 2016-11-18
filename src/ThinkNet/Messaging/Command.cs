@@ -17,6 +17,7 @@ namespace ThinkNet.Messaging
         /// Default Constructor.
         /// </summary>
         protected Command()
+            : this(null)
         { }
         /// <summary>
         /// Parameterized Constructor.

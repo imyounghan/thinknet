@@ -124,12 +124,12 @@ namespace ThinkNet.Domain.Repositories
                     LogManager.Default.Warn("Not use command to modify the state of the aggregate root.");
             }
 
+            var aggregateRootType = eventSourced.GetType();
 
             var eventStream = new EventStream() {
                 Events = eventSourced.Events,
                 CorrelationId = correlationId,
-                SourceId = eventSourced.Id.ToString(),
-                SourceType = eventSourced.GetType(),
+                SourceId = new DataKey(eventSourced.Id, aggregateRootType),
                 Version = eventSourced.Version + 1,
                 //CreationTime = DateTime.UtcNow
             };
@@ -139,13 +139,13 @@ namespace ThinkNet.Domain.Repositories
 
                 if (LogManager.Default.IsDebugEnabled)
                     LogManager.Default.DebugFormat("Domain events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}.",
-                        eventStream.SourceId, eventStream.SourceType.FullName, correlationId);
+                        eventStream.SourceId, aggregateRootType.FullName, correlationId);
             }
             catch (Exception ex) {
                 if(LogManager.Default.IsErrorEnabled)
                     LogManager.Default.Error(ex,
                         "Domain events persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
-                        eventStream.SourceId, eventStream.SourceType.FullName, eventSourced.Version);
+                        eventStream.SourceId, aggregateRootType.FullName, eventSourced.Version);
                 throw ex;
             }
 

@@ -7,26 +7,29 @@ using ThinkNet.Common.Interception;
 using ThinkNet.Common.Interception.Pipeline;
 using ThinkNet.Runtime;
 
-namespace ThinkNet.Messaging.Handling.Proxies
+namespace ThinkNet.Messaging.Handling.Agent
 {
     /// <summary>
     /// 处理消息的代理程序
     /// </summary>
-    public class MessageHandlerProxy : DisposableObject, IHandlerProxy
+    public class MessageHandlerAgent : DisposableObject, IHandlerAgent
     {
         private static readonly int retryTimes = ConfigurationSetting.Current.HandleRetrytimes;
         private static readonly int retryInterval = ConfigurationSetting.Current.HandleRetryInterval;
 
         private readonly InterceptorPipeline pipeline;
 
-        protected MessageHandlerProxy(InterceptorPipeline pipeline)
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
+        protected MessageHandlerAgent(InterceptorPipeline pipeline)
         {
             this.pipeline = pipeline;
         }
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public MessageHandlerProxy(object handler, MethodInfo method, InterceptorPipeline pipeline)
+        public MessageHandlerAgent(object handler, MethodInfo method, InterceptorPipeline pipeline)
         {
             this.HandlerInstance = handler;
             this.ReflectedMethod = method;
@@ -44,6 +47,7 @@ namespace ThinkNet.Messaging.Handling.Proxies
             while(count++ < retryTimes) {
                 try {
                     TryMultipleHandle(input, args);
+                    break;
                 }
                 catch(ThinkNetException) {
                     throw;
@@ -52,17 +56,23 @@ namespace ThinkNet.Messaging.Handling.Proxies
                     if(count == retryTimes) {
                         throw new ThinkNetException(ex.Message, ex);
                     }
-
                     if(LogManager.Default.IsWarnEnabled) {
                         LogManager.Default.Warn(ex,
-                            "An exception happened while processing '{0}' through handler on '{1}', Error will be ignored and retry again({2}).",
-                             args.Last(), ReflectedMethod.DeclaringType.FullName, count);
+                            "An exception happened while handling '{0}' through handler on '{1}', Error will be ignored and retry again({2}).",
+                             args.Last(), HandlerInstance.GetType().FullName, count);
                     }
                     Thread.Sleep(retryInterval);
                 }
             }
+
+            if (LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.DebugFormat("Handle '{0}' on '{1}' success.", args.Last(), HandlerInstance.GetType().FullName);
+            }
         }
 
+        /// <summary>
+        /// 不经过拦截器管道的处理方式
+        /// </summary>
         protected virtual void TryHandleWithoutPipeline(object[] args)
         {
             ReflectedMethod.Invoke(HandlerInstance, args);
@@ -72,17 +82,22 @@ namespace ThinkNet.Messaging.Handling.Proxies
         private void TryMultipleHandle(Lazy<MethodInvocation> input, object[] args)
         {
             if(pipeline == null || pipeline.Count == 0) {
-                ReflectedMethod.Invoke(HandlerInstance, args);
+                TryHandleWithoutPipeline(args);
+                return;
             }
-            else {
-                var methodReturn = pipeline.Invoke(input.Value, delegate {
-                    ReflectedMethod.Invoke(HandlerInstance, args);
-                    return new MethodReturn(input.Value, null, args);
-                });
 
-                if(methodReturn.Exception != null)
-                    throw methodReturn.Exception;
-            }
+            var methodReturn = pipeline.Invoke(input.Value, delegate {
+                try {
+                    TryHandleWithoutPipeline(args);
+                    return new MethodReturn(input.Value, null, args);
+                }
+                catch (Exception ex) {
+                    return new MethodReturn(input.Value, ex);
+                }
+            });
+
+            if (methodReturn.Exception != null)
+                throw methodReturn.Exception;
         }
 
         /// <summary>
@@ -105,6 +120,6 @@ namespace ThinkNet.Messaging.Handling.Proxies
         /// <summary>
         /// 获取处理器的实例
         /// </summary>
-        public object HandlerInstance { get; protected set; }
+        public virtual object HandlerInstance { get; private set; }
     }
 }

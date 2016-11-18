@@ -50,11 +50,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Format("CommandId:{0},CommandReturnType:{1},Status:{2},Error:{3}.",
-                CommandId,
-                CommandReturnType,
-                Status,
-                ErrorMessage.IfEmpty("N/A"));
+            return string.Format("{0}@{1}#{2},{3}", this.GetType().FullName, this.CommandId, this.CommandReturnType.ToString(), this.Status.ToString());
         }
 
         #region IMessage 成员

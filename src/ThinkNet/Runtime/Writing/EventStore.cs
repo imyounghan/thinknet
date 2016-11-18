@@ -60,8 +60,7 @@ namespace ThinkNet.Runtime.Writing
         {
             return new EventStream() {
                 CorrelationId = @event.CorrelationId,
-                SourceId = @event.AggregateRootId,
-                SourceType = Type.GetType(@event.AggregateRootTypeName),
+                SourceId = new DataKey(@event.AggregateRootId, @event.AggregateRootTypeName),
                 Version = @event.Version,
                 Events = @event.Items.OrderBy(p => p.Order).Select(this.Transform).ToArray()
             };
@@ -74,7 +73,7 @@ namespace ThinkNet.Runtime.Writing
         {
             Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
-                    var eventData = new EventData(@event.SourceType, @event.SourceId) {
+                    var eventData = new EventData(@event.SourceId) {
                         CorrelationId = @event.CorrelationId,
                         Version = @event.Version
                     };
@@ -114,7 +113,7 @@ namespace ThinkNet.Runtime.Writing
                 using (var context = _dataContextFactory.Create()) {
                     return context.CreateQuery<EventData>()
                         .Where(p => p.CorrelationId == correlationId &&
-                            p.AggregateRootId == sourceKey.SourceId &&
+                            p.AggregateRootId == sourceKey.UniqueId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode)
                         .FirstOrDefault();
                 }
@@ -126,8 +125,7 @@ namespace ThinkNet.Runtime.Writing
 
             return new EventStream() {
                 CorrelationId = correlationId,
-                SourceId = @event.AggregateRootId,
-                SourceType = Type.GetType(@event.AggregateRootTypeName),
+                SourceId = new DataKey(@event.AggregateRootId, @event.AggregateRootTypeName),
                 Version = @event.Version,
                 Events = @event.Items.Select(this.Transform).ToArray()
             };
@@ -143,7 +141,7 @@ namespace ThinkNet.Runtime.Writing
             var events = Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
                     return context.CreateQuery<EventData>()
-                        .Where(p => p.AggregateRootId == sourceKey.SourceId &&
+                        .Where(p => p.AggregateRootId == sourceKey.UniqueId &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode &&
                             p.Version > version)
                         .OrderBy(p => p.Version)//.ThenBy(p => p.Order)
@@ -164,7 +162,7 @@ namespace ThinkNet.Runtime.Writing
             Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
                     context.CreateQuery<EventData>()
-                     .Where(p => p.AggregateRootId == sourceKey.SourceId &&
+                     .Where(p => p.AggregateRootId == sourceKey.UniqueId &&
                          p.AggregateRootTypeCode == aggregateRootTypeCode)
                      .ToList()
                      .ForEach(context.Delete);

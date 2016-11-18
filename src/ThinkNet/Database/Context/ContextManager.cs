@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 
-namespace ThinkNet.Common.Context
+namespace ThinkNet.Database.Context
 {
     /// <summary>
     /// <see cref="IContextManager"/> 的抽象实现类
@@ -19,14 +19,14 @@ namespace ThinkNet.Common.Context
         /// </summary>
         protected ContextManager(string contextType)
         {
-            this.Id = Guid.NewGuid();
+            this.UniqueId = Guid.NewGuid().ToString();
             this.ContextType = contextType.IfEmpty(ConfigurationManager.AppSettings["thinkcfg.context_type"]).IfEmpty("web");
         }
 
         /// <summary>
         /// 标识
         /// </summary>
-        public Guid Id
+        public string UniqueId
         {
             get;
             private set;

@@ -3,7 +3,7 @@ using ThinkNet.Common.Interception;
 using ThinkNet.Contracts;
 using ThinkNet.Domain.EventSourcing;
 
-namespace ThinkNet.Messaging.Handling.Proxies
+namespace ThinkNet.Messaging.Handling.Agent
 {
     /// <summary>
     /// 过滤处理过的消息的拦截器

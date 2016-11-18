@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Linq;
-using ThinkNet.Common.Composition;
 using ThinkNet.Contracts;
 using ThinkNet.Runtime;
 using UserRegistration.Commands;
-using UserRegistration.ReadModel;
 
 namespace UserRegistration.QuickStart
 {
@@ -20,7 +17,7 @@ namespace UserRegistration.QuickStart
             Console.ReadKey();
 
             
-            var commandService = ObjectContainer.Instance.Resolve<ICommandService>();
+            var commandService = ClientProxy.CreateService<ICommandService>();
             var command = new RegisterUser {
                 UserName = "hanyang",
                 Password = "123456",
@@ -49,11 +46,11 @@ namespace UserRegistration.QuickStart
 
             System.Threading.Thread.Sleep(2000);
 
-            var userDao = ObjectContainer.Instance.Resolve<IUserDao>();
+            //var userDao = ObjectContainer.Instance.Resolve<IUserDao>();
 
-            var count = userDao.GetAll().Count();
-            Console.ResetColor();
-            Console.WriteLine("共有 " + count + " 个用户。");
+            //var count = userDao.GetAll().Count();
+            //Console.ResetColor();
+            //Console.WriteLine("共有 " + count + " 个用户。");
 
             //var authenticationService = ObjectContainer.Instance.Resolve<IAuthenticationService>();
             //if (!authenticationService.Authenticate("young.han", "123456", "127.0.0.1")) {

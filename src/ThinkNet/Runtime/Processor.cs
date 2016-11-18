@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using ThinkNet.Common;
 using ThinkNet.Common.Interception;
 using ThinkNet.Contracts;
 using ThinkNet.Domain;
@@ -15,7 +13,7 @@ namespace ThinkNet.Runtime
     /// <summary>
     /// 框架内处理消息的核心进程
     /// </summary>
-    public class Processor : DisposableObject, IProcessor, IInitializer
+    public class Processor : DisposableObject, IProcessor
     {
         private readonly IEnvelopeReceiver _receiver;
         private readonly Dictionary<string, IDispatcher> _dispatcherDict;
@@ -32,15 +30,14 @@ namespace ThinkNet.Runtime
             ICommandResultNotification notification,
             IInterceptorProvider interceptorProvider,
             IHandlerRecordStore handlerStore,
-            IHandlerMethodProvider handlerMethodProvider,
             IMessageBus messageBus)
         {
             this._receiver = receiver;
 
             this._dispatcherDict = new Dictionary<string, IDispatcher>(StringComparer.CurrentCulture) {
-                { StandardMetadata.CommandKind, new CommandDispatcher(repository, eventSourcedRepository,messageBus, handlerStore, interceptorProvider, handlerMethodProvider) },
-                { StandardMetadata.EventKind, new EventDispatcher(handlerStore, handlerMethodProvider) },
-                { StandardMetadata.MessageKind, new MessageDispatcher(handlerMethodProvider, handlerStore, messageBus, notification) }
+                { StandardMetadata.CommandKind, new CommandDispatcher(repository, eventSourcedRepository, messageBus, handlerStore, interceptorProvider) },
+                { StandardMetadata.EventKind, new EventDispatcher(handlerStore) },
+                { StandardMetadata.MessageKind, new MessageDispatcher(handlerStore, messageBus, notification) }
             };
             this.lockObject = new object();
         }
@@ -107,6 +104,8 @@ namespace ThinkNet.Runtime
                     this.started = true;
                 }
             }
+
+            Console.WriteLine("Core Processor Started!");
         }
 
         /// <summary>
@@ -121,6 +120,8 @@ namespace ThinkNet.Runtime
                     this.started = false;
                 }
             }
+
+            Console.WriteLine("Core Processor Stopped!");
         }
 
         /// <summary>
@@ -133,17 +134,6 @@ namespace ThinkNet.Runtime
             if (disposing) {
                 this.Stop();
             }
-        }
-
-        /// <summary>
-        /// 初始化进程
-        /// </summary>
-        public void Initialize(IEnumerable<Type> types)
-        {
-            _dispatcherDict.Values.OfType<IInitializer>()
-                .ForEach(delegate(IInitializer initializer) {
-                    initializer.Initialize(types);
-                });
         }
     }
 }

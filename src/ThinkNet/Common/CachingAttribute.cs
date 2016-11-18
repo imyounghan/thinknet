@@ -4,8 +4,9 @@ using System.Reflection;
 using System.Text;
 using ThinkNet.Common.Caching;
 using ThinkNet.Common.Composition;
+using ThinkNet.Common.Interception;
 
-namespace ThinkNet.Common.Interception
+namespace ThinkNet.Common
 {
     /// <summary>
     /// 表示此特性能够获得框架所提供的缓存功能。

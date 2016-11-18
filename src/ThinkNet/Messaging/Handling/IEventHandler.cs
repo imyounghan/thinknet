@@ -1,4 +1,4 @@
-﻿using ThinkNet.Domain;
+﻿
 
 namespace ThinkNet.Messaging.Handling
 {
@@ -14,7 +14,7 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 处理事件。
         /// </summary>
-        void Handle(SourceDataKey dataKey, TEvent @event);
+        void Handle(SourceMetadata metadata, TEvent @event);
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 处理事件。
         /// </summary>
-        void Handle(SourceDataKey dataKey, TEvent1 event1, TEvent2 event2);
+        void Handle(SourceMetadata metadata, TEvent1 event1, TEvent2 event2);
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 处理事件。
         /// </summary>
-        void Handle(SourceDataKey dataKey, TEvent1 event1, TEvent2 event2, TEvent3 event3);
+        void Handle(SourceMetadata metadata, TEvent1 event1, TEvent2 event2, TEvent3 event3);
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 处理事件。
         /// </summary>
-        void Handle(SourceDataKey dataKey, TEvent1 event1, TEvent2 event2, TEvent3 event3, TEvent4 event4);
+        void Handle(SourceMetadata metadata, TEvent1 event1, TEvent2 event2, TEvent3 event3, TEvent4 event4);
     }
 
     /// <summary>
@@ -84,6 +84,6 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 处理事件。
         /// </summary>
-        void Handle(SourceDataKey dataKey, TEvent1 event1, TEvent2 event2, TEvent3 event3, TEvent4 event4, TEvent5 event5);
+        void Handle(SourceMetadata metadata, TEvent1 event1, TEvent2 event2, TEvent3 event3, TEvent4 event4, TEvent5 event5);
     }
 }

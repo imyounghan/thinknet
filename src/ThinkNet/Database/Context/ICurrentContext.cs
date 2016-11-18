@@ -1,5 +1,5 @@
 ﻿
-namespace ThinkNet.Common.Context
+namespace ThinkNet.Database.Context
 {
     /// <summary>
     /// 当前访问的上下文接口

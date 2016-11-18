@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Reflection;
 
-namespace ThinkNet.Messaging.Handling.Proxies
+namespace ThinkNet.Messaging.Handling.Agent
 {
     /// <summary>
     /// 继承该接口的是一个消息处理器的代码
     /// </summary>
-    public interface IHandlerProxy
+    public interface IHandlerAgent
     {
         /// <summary>
         /// 处理消息

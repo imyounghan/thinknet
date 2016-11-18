@@ -55,7 +55,7 @@ namespace ThinkNet.Domain
             _pendingEvents.Add(@event);
 
             //this.ApplyEvent(@event);
-            AggregateRootInnerHandler.Handle(this, @event);
+            AggregateRootInnerHandlerProvider.Instance.Handle(this, @event);
         }
 
         [NonSerialized]

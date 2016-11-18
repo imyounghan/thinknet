@@ -1,9 +1,10 @@
 ﻿using System;
 using ThinkNet.Common.Composition;
-using ThinkNet.Common.Context;
+using ThinkNet.Common.Interception;
 using ThinkNet.Database;
+using ThinkNet.Database.Context;
 
-namespace ThinkNet.Common.Interception
+namespace ThinkNet.Common
 {
     /// <summary>
     /// 事务
