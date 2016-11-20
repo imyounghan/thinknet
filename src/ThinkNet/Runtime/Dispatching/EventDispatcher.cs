@@ -17,7 +17,7 @@ namespace ThinkNet.Runtime.Dispatching
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public EventDispatcher(IHandlerRecordStore handlerStore)
+        public EventDispatcher(IMessageHandlerRecordStore handlerStore)
         {
             this._pipeline = new InterceptorPipeline(new[] { new FilterHandledMessageInterceptor(handlerStore) });
         }
@@ -26,7 +26,7 @@ namespace ThinkNet.Runtime.Dispatching
 
         private IHandlerAgent BuildMessageHandler(object handler, Type contractType)
         {
-            var method = HandlerMethodProvider.Instance.GetCachedMethodInfo(contractType, () => handler.GetType());
+            var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
             return new MessageHandlerAgent(handler, method, _pipeline);
         }
 
@@ -36,7 +36,7 @@ namespace ThinkNet.Runtime.Dispatching
         protected override IEnumerable<IHandlerAgent> BuildHandlerAgents(Type type)
         {
             Type contractType;
-            var handlers = HandlerFetchedProvider.Instance.GetMessageHandlers(type, out contractType);
+            var handlers = MessageHandlerProvider.Instance.GetMessageHandlers(type, out contractType);
             return handlers.Select(handler => BuildMessageHandler(handler, contractType));
         }
     }

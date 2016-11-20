@@ -279,7 +279,7 @@ namespace ThinkNet.Runtime
             this.RegisterComponentsAndHanders(allTypes);
             this.RegisterFrameworkComponents();
             AggregateRootInnerHandlerProvider.Instance.Initialize(allTypes);
-            HandlerFetchedProvider.Instance.Initialize(allTypes);
+            MessageHandlerProvider.Instance.Initialize(allTypes);
 
             _components.ForEach(Component.Register);
 
@@ -407,7 +407,7 @@ namespace ThinkNet.Runtime
             this.Register<IMessageBus, MessageBus>();
             this.Register<ICommandService, CommandService>();
             this.Register<ICommandResultNotification, CommandService>();
-            this.Register<IHandlerRecordStore, HandlerRecordInMemory>(); 
+            this.Register<IMessageHandlerRecordStore, MessageHandlerRecordInMemory>(); 
             this.Register<IEnvelopeSender, EnvelopeHub>();
             this.Register<IEnvelopeReceiver, EnvelopeHub>();
             this.Register<IProcessor, Processor>("core");

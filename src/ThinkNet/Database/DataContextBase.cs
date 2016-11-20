@@ -2,22 +2,29 @@
 using System.Collections;
 using System.Data;
 using System.Linq;
-
-
+using ThinkNet.Database.Context;
 
 namespace ThinkNet.Database
 {
     /// <summary>
     /// 实现 <see cref="IDataContext"/> 的抽象类
     /// </summary>
-    public abstract class DataContextBase : DisposableObject, IDataContext
+    public abstract class DataContextBase : DisposableObject, IDataContext, IContext
     {
         /// <summary>
         /// Default constructor.
         /// </summary>
         protected DataContextBase()
         { }
-        
+
+        private readonly IContextManager _contextManager;
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
+        protected DataContextBase(IContextManager contextManager)
+        {
+            this._contextManager = contextManager;
+        }
 
         /// <summary>
         /// 当前的数据连接
@@ -196,5 +203,10 @@ namespace ThinkNet.Database
         /// 在数据提交成功后执行
         /// </summary>
         public event EventHandler DataCommitted = (sender, args) => { };
+
+        IContextManager IContext.ContextManager
+        {
+            get { return this._contextManager; }
+        }
     }
 }

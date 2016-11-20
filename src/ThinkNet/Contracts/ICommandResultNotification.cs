@@ -10,12 +10,12 @@ namespace ThinkNet.Contracts
         /// <summary>
         /// 通知命令已完成
         /// </summary>
-        void NotifyCommandHandled(CommandResult commandResult);
+        void NotifyCommandHandled(ICommandResult commandResult);
 
         /// <summary>
         /// 通知由命令产生的事件已处理
         /// </summary>
-        void NotifyEventHandled(CommandResult commandResult);
+        void NotifyEventHandled(ICommandResult commandResult);
 
         ///// <summary>
         ///// 通知命令未有修改聚合的操作

@@ -228,12 +228,11 @@ namespace ThinkNet.Database
                     lock (lockObj) {
                         clone = entities.Clone() as Hashtable;
                     }
-                    return clone.Values.Cast<TEntity>().AsQueryable();
-                    //return entities.Values.Cast<TEntity>().AsQueryable();
+                    return clone.Values.AsParallel().Cast<TEntity>().AsQueryable();
                     
                 }
 
-                return new EnumerableQuery<TEntity>(new TEntity[0]);
+                return Enumerable.Empty<TEntity>().AsQueryable();
             }
         }        
     }

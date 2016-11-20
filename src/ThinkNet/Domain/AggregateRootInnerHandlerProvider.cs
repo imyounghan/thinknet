@@ -34,7 +34,7 @@ namespace ThinkNet.Domain
                           where method.Name.ToLower() == "handle"
                             && returnType == typeof(void)
                             && parameters.Length == 1
-                            && typeof(IEvent).IsAssignableFrom(parameter.ParameterType)
+                            && typeof(Event).IsAssignableFrom(parameter.ParameterType)
                           select new { Method = method, EventType = parameter.ParameterType };
             foreach (var entry in entries) {
                 if (eventHandlerDic.ContainsKey(entry.EventType)) {
@@ -72,53 +72,24 @@ namespace ThinkNet.Domain
         /// <summary>
         /// 获取聚合内部事件处理器
         /// </summary>
-        private Action<IAggregateRoot, IEvent> GetHandler(Type aggregateRootType, Type eventType)
+        public bool TryGetHandler(Type aggregateRootType, Type eventType, out Action<IAggregateRoot, Event> innerHandler)
         {
             IDictionary<Type, MethodInfo> eventHandlerDic;
             MethodInfo targetMethod;
             if (!_innerHandlers.TryGetValue(aggregateRootType, out eventHandlerDic) ||
                 eventHandlerDic == null || !eventHandlerDic.TryGetValue(eventType, out targetMethod)) {
-                return delegate { };
+                innerHandler = delegate { };
+                return false;
             }
 
-            return delegate(IAggregateRoot aggregateRoot, IEvent @event) {
+            innerHandler = delegate (IAggregateRoot aggregateRoot, Event @event) {
                 targetMethod.Invoke(aggregateRoot, new[] { @event });
             };
+            return true;
 
             //MethodInfo eventHandler;
             //return eventHandlerDic.TryGetValue(eventType, out eventHandler) ?
             //    new Action<IAggregateRoot, IEvent>((aggregateRoot, @event) => eventHandler.Invoke(aggregateRoot, new[] { @event })) : null;
-        }
-
-        /// <summary>
-        /// 判断聚合内部是否存在该事件处理器
-        /// </summary>
-        public bool HasHandler(Type aggregateRootType, Type eventType)
-        {
-            IDictionary<Type, MethodInfo> eventHandlerDic;
-
-            return _innerHandlers.TryGetValue(aggregateRootType, out eventHandlerDic) &&
-                eventHandlerDic != null && eventHandlerDic.ContainsKey(eventType);
-        }
-
-        /// <summary>
-        /// 处理聚合内部事件
-        /// </summary>
-        public void Handle(IAggregateRoot aggregateRoot, IEvent @event)
-        {
-            var eventType = @event.GetType();
-            var aggregateRootType = aggregateRoot.GetType();
-
-            GetHandler(aggregateRootType, eventType).Invoke(aggregateRoot, @event);
-
-            //if (innerHandler == null) {
-            //    return;
-            //    var errorMessage = string.Format("Event handler not found on {0} for {1}.",
-            //        aggregateRootType.FullName, eventType.FullName);
-            //    throw new ThinkNetException(errorMessage);
-            //}
-
-            //innerHandler.Invoke(aggregateRoot, @event);
-        }
+        }        
     }
 }

@@ -9,7 +9,7 @@ namespace ThinkNet.Messaging
     /// </summary>
     [DataContract]
     [Serializable]
-    public abstract class Event : IEvent
+    public abstract class Event : IMessage, IUniquelyIdentifiable
     {
         /// <summary>
         /// Default Constructor.

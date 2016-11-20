@@ -6,9 +6,9 @@ namespace ThinkNet.Contracts
     /// </summary>
     public interface IQueryParameter : IDataTransferObject
     {
-        /// <summary>
-        /// 查询参数的标识
-        /// </summary>
-        string Id { get; }
+        ///// <summary>
+        ///// 查询参数的标识
+        ///// </summary>
+        //string Id { get; }
     }
 }

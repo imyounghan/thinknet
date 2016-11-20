@@ -9,7 +9,7 @@ namespace ThinkNet.Runtime.Writing
     /// <summary>
     /// 将已完成的处理消息的程序信息记录在数据库中。
     /// </summary>
-    public sealed class HandlerRecordStore : HandlerRecordInMemory
+    public sealed class HandlerRecordStore : MessageHandlerRecordInMemory
     {
         private readonly IDataContextFactory _dataContextFactory;
         /// <summary>

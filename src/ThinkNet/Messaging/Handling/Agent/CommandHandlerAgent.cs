@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using ThinkNet.Common.Interception.Pipeline;
 
 namespace ThinkNet.Messaging.Handling.Agent
@@ -8,14 +9,16 @@ namespace ThinkNet.Messaging.Handling.Agent
     /// </summary>
     public class CommandHandlerAgent : MessageHandlerAgent
     {
-        private readonly CommandContext commandContext;
+        private readonly Func<CommandContext> commandContextFactory;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public CommandHandlerAgent(object handler, MethodInfo method, InterceptorPipeline pipeline, CommandContext commandContext)
+        public CommandHandlerAgent(object handler, MethodInfo method, 
+            InterceptorPipeline pipeline,
+            Func<CommandContext> commandContextFactory)
             : base(handler, method, pipeline)
         {
-            this.commandContext = commandContext;
+            this.commandContextFactory = commandContextFactory;
         }
 
         /// <summary>
@@ -24,11 +27,23 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// <param name="args"></param>
         public override void Handle(object[] args)
         {
-            if (commandContext != null) {
-                args = new object[] { commandContext, args[0] };
+            if (commandContextFactory != null) {
+                args = new object[] { commandContextFactory.Invoke(), args[0] };
             }
 
             base.Handle(args);
+        }
+
+        protected override void TryHandle(object[] args)
+        {
+            base.TryHandle(args);
+
+            if(args.Length == 2) {
+                var commandContext = args[0] as CommandContext;
+                var command = args[1] as Command;
+
+                commandContext.Commit(command.UniqueId);
+            }
         }
     }
 }

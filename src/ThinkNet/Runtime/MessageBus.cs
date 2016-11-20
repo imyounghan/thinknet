@@ -33,18 +33,18 @@ namespace ThinkNet.Runtime
                 envelope.Metadata[StandardMetadata.SourceId] = eventStream.SourceId;
             }
 
-            var commandResult = message as CommandResultReplied;
+            var commandResult = message as CommandResult;
             if(commandResult != null) {
                 envelope.Metadata[StandardMetadata.SourceId] = commandResult.CommandId;
             }
 
-            var command = message as Messaging.ICommand;
+            var command = message as Command;
             if(command != null) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
                 envelope.Metadata[StandardMetadata.SourceId] = command.UniqueId;
             }
 
-            var @event = message as IEvent;
+            var @event = message as Event;
             if(@event != null) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
                 envelope.Metadata[StandardMetadata.SourceId] = @event.UniqueId;

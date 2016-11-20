@@ -5,14 +5,13 @@ using System.Linq;
 using System.Reflection;
 using ThinkNet.Common;
 using ThinkNet.Common.Interception.Pipeline;
-using ThinkNet.Domain;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
     /// <summary>
     /// <see cref="EventStream"/> 的内部处理程序
     /// </summary>
-    public class EventStreamInnerHandler : MessageHandlerAgent
+    public class EventStreamInnerHandler : HandlerAgent
     {
         private readonly ConcurrentDictionary<Type, IHandlerAgent> _cachedHandlers;
         private readonly Lazy<MethodInfo> _method;
@@ -30,7 +29,11 @@ namespace ThinkNet.Messaging.Handling.Agent
 
         private static MethodInfo GetMethodInfo()
         {
-            return typeof(EventStreamInnerHandler).GetMethod("Handle", new[] { typeof(EventStream) });
+            return typeof(EventStreamInnerHandler).GetMethod("Handle", 
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly,
+                null,
+                new[] { typeof(EventStream) },
+                null);
         }
 
         /// <summary>
@@ -43,10 +46,8 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// </summary>
         public override object HandlerInstance { get { return this; } }
 
-        /// <summary>
-        /// 不经过拦截器管道的处理方式
-        /// </summary>
-        protected override void TryHandleWithoutPipeline(object[] args)
+
+        protected override void TryMultipleHandle(object[] args)
         {
             var eventStream = args[0] as EventStream;
 
@@ -69,7 +70,7 @@ namespace ThinkNet.Messaging.Handling.Agent
 
         private IHandlerAgent BuildEventHandler(object handler, Type contractType)
         {
-            var method = HandlerMethodProvider.Instance.GetCachedMethodInfo(contractType, () => handler.GetType());
+            var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
             return new EventHandlerAgent(handler, method);
         }
 
@@ -78,13 +79,13 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// </summary>
         protected IHandlerAgent GetEventHandler(Type[] types)
         {
-            var contractType = HandlerFetchedProvider.Instance.GetEventHandlerType(types);
+            var contractType = MessageHandlerProvider.Instance.GetEventHandlerType(types);
 
             IHandlerAgent cachedHandler;
             if(_cachedHandlers.TryGetValue(contractType, out cachedHandler))
                 return cachedHandler;
             
-            var handlers = HandlerFetchedProvider.Instance.GetEventHandlers(contractType)
+            var handlers = MessageHandlerProvider.Instance.GetEventHandlers(contractType)
                 .Select(handler => BuildEventHandler(handler, contractType))
                 .ToArray();
 

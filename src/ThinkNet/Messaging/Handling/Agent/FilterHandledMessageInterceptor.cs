@@ -1,7 +1,6 @@
 ﻿using ThinkNet.Common;
 using ThinkNet.Common.Interception;
 using ThinkNet.Contracts;
-using ThinkNet.Domain.EventSourcing;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
@@ -10,12 +9,12 @@ namespace ThinkNet.Messaging.Handling.Agent
     /// </summary>
     public class FilterHandledMessageInterceptor : IInterceptor
     {
-        private readonly IHandlerRecordStore _handlerStore;
+        private readonly IMessageHandlerRecordStore _handlerStore;
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public FilterHandledMessageInterceptor(IHandlerRecordStore handlerStore)
+        public FilterHandledMessageInterceptor(IMessageHandlerRecordStore handlerStore)
         {
             this._handlerStore = handlerStore;
         }
@@ -28,12 +27,20 @@ namespace ThinkNet.Messaging.Handling.Agent
         public IMethodReturn Invoke(IMethodInvocation input, GetNextInterceptorDelegate getNext)
         {
             var parameter = input.Arguments.GetParameterInfo(input.Arguments.Count - 1);
-            var uniquely = input.Arguments[parameter.Name] as IUniquelyIdentifiable;            
+            var argument = input.Arguments[parameter.Name];            
+
+            var uniquely = argument as IUniquelyIdentifiable;            
             
-            if(uniquely == null) {
+            if(uniquely == null || !(argument is IMessage)) {
                 return getNext().Invoke(input, getNext);
-            }
-            
+            }            
+
+            var eventStream = argument as EventStream;
+            if(eventStream != null && eventStream.Events.IsEmpty()) {
+                input.InvocationContext["CommandReturnType"] = CommandReturnType.DomainEventHandled;
+                input.InvocationContext["CommandStatus"] = CommandStatus.NothingChanged;
+                input.InvocationContext["CommandId"] = eventStream.CorrelationId;
+            }            
 
             var messageType = parameter.GetType();
             var handlerType = input.Target.GetType();

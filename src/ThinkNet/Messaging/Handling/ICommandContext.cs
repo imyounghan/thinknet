@@ -27,6 +27,6 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 添加待处理的事件。
         /// </summary>
-        void AppendEvent(IEvent @event);
+        void AppendEvent(Event @event);
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 using System.ServiceModel;
 using ThinkNet.Common.Composition;
 
-namespace ThinkNet.Contracts.Host
+namespace ThinkNet.Contracts.Communication
 {
     public class WcfService
     {
@@ -28,11 +30,34 @@ namespace ThinkNet.Contracts.Host
             return host;
         }
 
+        static ServiceHost CreateServiceHost(Type serviceType)
+        {
+            var instance = ObjectContainer.Instance.Resolve(serviceType);
+            var attribute = serviceType.GetAttribute<DataContractAttribute>(false);
+            var name = attribute == null ? serviceType.Name.Substring(1) : attribute.Name;
+
+            return CreateServiceHost(serviceType, name, instance);
+        }
+
+        private readonly List<Type> serviceTypes;
+        public WcfService()
+        {
+            this.serviceTypes = new List<Type>() {
+                { typeof(ICommandService) },
+                { typeof(IQueryService) }
+            };
+        }
+
+        public WcfService(IEnumerable<Type> types)
+        {
+            var filteredTypes = types.Where(type => type.IsInterface && type.IsDefined<DataContractAttribute>(false));
+            this.serviceTypes = new List<Type>(filteredTypes);
+        }
+        
+
         public void Run()
         {
-            var hosts = new List<ServiceHost>();
-            hosts.Add(CreateServiceHost(typeof(ICommandService), "CommandService", ObjectContainer.Instance.Resolve<ICommandService>()));
-            hosts.Add(CreateServiceHost(typeof(IQueryService), "QueryService", ObjectContainer.Instance.Resolve<IQueryService>()));
+            var hosts = serviceTypes.Select(CreateServiceHost).ToArray();
 
             Console.WriteLine();
             Console.WriteLine();
@@ -41,6 +66,8 @@ namespace ThinkNet.Contracts.Host
                 foreach (var host in hosts) {
                     using (host as IDisposable) { }
                 }
+
+                break;
             }
         }
     }

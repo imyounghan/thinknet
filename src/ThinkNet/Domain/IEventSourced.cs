@@ -16,6 +16,6 @@ namespace ThinkNet.Domain
         /// <summary>
         /// 通过事件还原对象状态。
         /// </summary>
-        void LoadFrom(IEnumerable<IEvent> events);
+        void LoadFrom(IEnumerable<Event> events);
     }
 }

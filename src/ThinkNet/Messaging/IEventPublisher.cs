@@ -1,4 +1,4 @@
-﻿
+﻿using System.Collections.Generic;
 
 namespace ThinkNet.Messaging
 {
@@ -10,6 +10,6 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 获取待发布的事件。
         /// </summary>
-        System.Collections.Generic.IEnumerable<IEvent> Events { get; }
+        IEnumerable<Event> Events { get; }
     }
 }

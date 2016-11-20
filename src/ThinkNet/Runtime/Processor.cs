@@ -29,7 +29,7 @@ namespace ThinkNet.Runtime
             IEnvelopeReceiver receiver,
             ICommandResultNotification notification,
             IInterceptorProvider interceptorProvider,
-            IHandlerRecordStore handlerStore,
+            IMessageHandlerRecordStore handlerStore,
             IMessageBus messageBus)
         {
             this._receiver = receiver;
@@ -58,10 +58,10 @@ namespace ThinkNet.Runtime
         /// </summary>
         protected virtual string GetKind(object data)
         {
-            if (data is IEvent)
+            if (data is Event)
                 return StandardMetadata.EventKind;
 
-            if (data is Messaging.ICommand)
+            if (data is Command)
                 return StandardMetadata.CommandKind;
 
             if (data is IMessage)

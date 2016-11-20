@@ -53,6 +53,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ReadModel\UserModel.cs" />
+    <Compile Include="ReadModel\UserQueryExecutor.cs" />
     <Compile Include="UniqueLoginNameService.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Events\UserCreated.cs" />

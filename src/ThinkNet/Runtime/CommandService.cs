@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ThinkNet.Contracts;
+using ThinkNet.Messaging;
 using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime
@@ -67,7 +68,7 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// 执行一个命令并返回处理结果
         /// </summary>
-        public CommandResult Execute(ICommand command, CommandReturnType returnType)
+        public ICommandResult Execute(ICommand command, CommandReturnType returnType)
         {
             return this.ExecuteAsync(command, returnType).Result;
         }
@@ -75,7 +76,7 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// 在规定时间内执行一个命令并返回处理结果
         /// </summary>
-        public CommandResult Execute(ICommand command, CommandReturnType returnType, int millisecondsTimeout)
+        public ICommandResult Execute(ICommand command, CommandReturnType returnType, int millisecondsTimeout)
         {
             return this.Execute(command, returnType,
                 millisecondsTimeout <= 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(millisecondsTimeout));
@@ -84,12 +85,12 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// 在规定时间内执行一个命令并返回处理结果
         /// </summary>
-        public CommandResult Execute(ICommand command, CommandReturnType returnType, TimeSpan timeout)
+        public ICommandResult Execute(ICommand command, CommandReturnType returnType, TimeSpan timeout)
         {
             var task = this.ExecuteAsync(command, returnType);
 
             if(timeout > TimeSpan.Zero && !task.Wait(timeout)) {
-                this.NotifyCommandCompleted(new CommandResult(command.UniqueId, new TimeoutException(), CommandStatus.Timeout));
+                this.NotifyEventHandled(new CommandResult(command.UniqueId, new TimeoutException(), CommandStatus.Timeout));
             }
             return task.Result;
         }
@@ -97,12 +98,12 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// 异步执行一个命令
         /// </summary>
-        public Task<CommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType)
+        public Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType)
         {
-            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.UniqueId, key => new CommandTaskCompletionSource(returnType));
+            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.UniqueId, () => new CommandTaskCompletionSource(returnType));
             this.SendAsync(command).ContinueWith(task => {
                 if(task.Status == TaskStatus.Faulted) {
-                    this.NotifyCommandCompleted(new CommandResult(command.UniqueId, task.Exception, CommandStatus.Failed));
+                    this.NotifyEventHandled(new CommandResult(command.UniqueId, task.Exception));
                 }
             });
 
@@ -112,7 +113,7 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// 通知命令已处理
         /// </summary>
-        public void NotifyCommandHandled(CommandResult commandResult)
+        public void NotifyCommandHandled(ICommandResult commandResult)
         {
             if(_commandTaskDict.Count == 0)
                 return;
@@ -129,23 +130,14 @@ namespace ThinkNet.Runtime
             }
 
             if(completed) {
-                this.NotifyCommandCompleted(commandResult);
+                this.NotifyEventHandled(commandResult);
             }
         }
 
         /// <summary>
         /// 通知由命令产生的领域事件已处理
         /// </summary>
-        public void NotifyEventHandled(CommandResult commandResult)
-        {
-            this.NotifyCommandCompleted(commandResult);
-        }
-
-
-        /// <summary>
-        /// 通知命令处理完成
-        /// </summary>
-        protected void NotifyCommandCompleted(CommandResult commandResult)
+        public void NotifyEventHandled(ICommandResult commandResult)
         {
             if(_commandTaskDict.Count == 0)
                 return;
@@ -161,10 +153,10 @@ namespace ThinkNet.Runtime
             public CommandTaskCompletionSource(CommandReturnType commandReplyType)
             {
                 this.CommandReplyType = commandReplyType;
-                this.TaskCompletionSource = new TaskCompletionSource<CommandResult>();
+                this.TaskCompletionSource = new TaskCompletionSource<ICommandResult>();
             }
 
-            public TaskCompletionSource<CommandResult> TaskCompletionSource { get; set; }
+            public TaskCompletionSource<ICommandResult> TaskCompletionSource { get; set; }
             public CommandReturnType CommandReplyType { get; set; }
         }
     }

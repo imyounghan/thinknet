@@ -15,7 +15,7 @@ namespace ThinkNet.Messaging.Handling
         private readonly IMessageBus _bus;
 
         private readonly Dictionary<string, IAggregateRoot> dict;
-        private readonly IList<IEvent> pendingEvents;
+        private readonly IList<Event> pendingEvents;
 
         /// <summary>
         /// Parameterized constructor.
@@ -27,7 +27,7 @@ namespace ThinkNet.Messaging.Handling
             this._bus = bus;
 
             this.dict = new Dictionary<string, IAggregateRoot>();
-            this.pendingEvents = new List<IEvent>();
+            this.pendingEvents = new List<Event>();
         }
 
         private static bool IsEventSourced(Type type)
@@ -84,7 +84,7 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 添加待处理的事件。
         /// </summary>
-        public void AppendEvent(IEvent @event)
+        public void AppendEvent(Event @event)
         {
             if(pendingEvents.Any(p => p.UniqueId == @event.UniqueId))
                 return;
@@ -92,24 +92,37 @@ namespace ThinkNet.Messaging.Handling
             pendingEvents.Add(@event);
         }
 
+        private void SendEvents()
+        {
+            if(pendingEvents.Count > 0)
+                _bus.Publish(pendingEvents);
+        }
         /// <summary>
         /// 提交修改结果。
         /// </summary>
         public void Commit(string commandId)
         {
+            var aggregateRoots = dict.Values.OfType<IEventSourced>().Where(p => p.Events.IsEmpty() == false);
+            var count = aggregateRoots.Count();
+            if(count > 1) {
+                throw new ThinkNetException("Detected more than one aggregate root created or modified by command.");
+            }
+            if(count == 1) {
+                _eventSourcedRepository.Save(aggregateRoots.First(), commandId);
+                SendEvents();
+                return;
+            }
 
-            //switch (dict.Count) {
-            //    case 0:
-            //        break;
-            //    case 1:
-            //        aggregateRootStore(dict.Values.First(), commandId);
-            //        break;
-            //    default:
-            //        throw new ThinkNetException("Detected more than one aggregate created or modified by command.");
-            //}
+            if(dict.Values.Count > 1) {
+                throw new ThinkNetException("Detected more than one aggregate root created or modified by command.");
+            }
+            if(dict.Values.Count == 1) {
+                _eventSourcedRepository.Save(aggregateRoots.First(), commandId);
+                SendEvents();
+                return;
+            }
 
-            if(pendingEvents.Count > 0)
-                _bus.Publish(pendingEvents);
+            throw new ThinkNetException("No aggregate root found to be created or modified ");
         }
     }
 }

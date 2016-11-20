@@ -18,6 +18,58 @@ namespace ThinkNet
     public static class ObjectExtentions
     {
         /// <summary>
+        /// 返回 HTML 字符串的编码结果
+        /// </summary>
+        public static string HtmlEncode(this string str)
+        {
+            if(string.IsNullOrEmpty(str))
+                return str;
+
+            return HttpUtility.HtmlEncode(str).Replace("'", "&dot");
+        }
+
+        /// <summary>
+        /// 返回 HTML 字符串的解码结果
+        /// </summary>
+        public static string HtmlDecode(this string str)
+        {
+            if(string.IsNullOrEmpty(str))
+                return str;
+
+            return HttpUtility.HtmlDecode(str).Replace("&dot", "'");
+        }
+
+        /// <summary>
+        /// 返回 URL 字符串的编码结果
+        /// </summary>
+        public static string UrlEncode(this string str, string charset = "utf-8")
+        {
+            return str.UrlEncode(Encoding.GetEncoding(charset));
+        }
+        /// <summary>
+        /// 返回 URL 字符串的编码结果
+        /// </summary>
+        public static string UrlEncode(this string str, Encoding encoding)
+        {
+            return HttpUtility.UrlEncode(str, encoding);
+        }
+
+        /// <summary>
+        /// 返回 URL 字符串的解码结果
+        /// </summary>
+        public static string UrlDecode(this string str, string charset = "utf-8")
+        {
+            return str.UrlDecode(Encoding.GetEncoding(charset));
+        }
+        /// <summary>
+        /// 返回 URL 字符串的解码结果
+        /// </summary>
+        public static string UrlDecode(this string str, Encoding encoding)
+        {
+            return HttpUtility.UrlDecode(str, encoding);
+        }
+
+        /// <summary>
         /// 验证模型的正确性
         /// </summary>
         public static bool IsValid<TModel>(this TModel model, out IEnumerable<ValidationResult> errors)

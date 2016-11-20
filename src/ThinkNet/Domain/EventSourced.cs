@@ -47,7 +47,7 @@ namespace ThinkNet.Domain
 
         #region IEventSourced 成员        
 
-        void IEventSourced.LoadFrom(IEnumerable<IEvent> events)
+        void IEventSourced.LoadFrom(IEnumerable<Event> events)
         {
             this.Version++;
             events.Cast<Event<TIdentify>>().ForEach(this.RaiseEvent);

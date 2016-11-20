@@ -41,19 +41,19 @@ namespace ThinkNet.Runtime.Writing
                     p.Version == version);
         }
 
-        private EventDataItem Transform(IEvent @event)
+        private EventDataItem Transform(Event @event)
         {
             var eventDataItem = new EventDataItem(@event.GetType());
             eventDataItem.Payload = _serializer.SerializeToBinary(@event);
             return eventDataItem;
         }
 
-        private IEvent Transform(EventDataItem @event)
+        private Event Transform(EventDataItem @event)
         {
             var typeName = string.Concat(@event.Namespace, ".", @event.TypeName, ", ", @event.AssemblyName);
             var type = Type.GetType(typeName);
 
-            return (IEvent)_serializer.DeserializeFromBinary(@event.Payload, type);
+            return (Event)_serializer.DeserializeFromBinary(@event.Payload, type);
         }
 
         private EventStream Transform(EventData @event)
@@ -79,16 +79,27 @@ namespace ThinkNet.Runtime.Writing
                     };
 
                     var queryable = context.CreateQuery<EventData>();
-                    if (queryable.Where(p => p.AggregateRootId == eventData.AggregateRootId &&
-                        p.AggregateRootTypeCode == eventData.AggregateRootTypeCode).Max(p => p.Version) != eventData.Version) {
-                        //TODO..表示修改聚合时产生了并发
+
+                    queryable = queryable.Where(p => p.AggregateRootId == eventData.AggregateRootId &&
+                        p.AggregateRootTypeCode == eventData.AggregateRootTypeCode);
+                    int version = !queryable.Any() ? 0 : queryable.Max(p => p.Version);
+                    if(version + 1 < eventData.Version) {
+                        if(LogManager.Default.IsWarnEnabled)
+                            LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is less than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
+                                eventData.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.UniqueId);
+                        return;
+                    }
+                    else if(version + 1 > eventData.Version) {
+                        if(LogManager.Default.IsWarnEnabled)
+                            LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is greater than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
+                                eventData.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.UniqueId);
                         throw new ThinkNetException("");
                     }
 
-                    if (queryable.Any(p => p.CorrelationId == eventData.CorrelationId &&
-                        p.AggregateRootId == eventData.AggregateRootId &&
-                        p.AggregateRootTypeCode == eventData.AggregateRootTypeCode)) {
-                        //TODO..表示该命令产生的相关领域事件已保存，写相关警告日志
+                    if(queryable.Any(p => p.CorrelationId == eventData.CorrelationId)) {
+                        if(LogManager.Default.IsWarnEnabled)
+                            LogManager.Default.WarnFormat("This eventstream was abandoned because the correlationId '{0}' is saved.",
+                                eventData.CorrelationId);
                         return;
                     }
 

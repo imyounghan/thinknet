@@ -9,7 +9,7 @@ namespace ThinkNet.Messaging.Handling
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
     public interface IEventHandler<TEvent>
-        where TEvent : class, IEvent
+        where TEvent : Event
     {
         /// <summary>
         /// 处理事件。
@@ -24,8 +24,8 @@ namespace ThinkNet.Messaging.Handling
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
     public interface IEventHandler<TEvent1, TEvent2>
-        where TEvent1 : class, IEvent
-        where TEvent2 : class, IEvent
+        where TEvent1 : Event
+        where TEvent2 : Event
     {
         /// <summary>
         /// 处理事件。
@@ -40,9 +40,9 @@ namespace ThinkNet.Messaging.Handling
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
     public interface IEventHandler<TEvent1, TEvent2, TEvent3>
-        where TEvent1 : class, IEvent
-        where TEvent2 : class, IEvent
-        where TEvent3 : class, IEvent
+        where TEvent1 : Event
+        where TEvent2 : Event
+        where TEvent3 : Event
     {
         /// <summary>
         /// 处理事件。
@@ -57,10 +57,10 @@ namespace ThinkNet.Messaging.Handling
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
     public interface IEventHandler<TEvent1, TEvent2, TEvent3, TEvent4>
-        where TEvent1 : class, IEvent
-        where TEvent2 : class, IEvent
-        where TEvent3 : class, IEvent
-        where TEvent4 : class, IEvent
+        where TEvent1 : Event
+        where TEvent2 : Event
+        where TEvent3 : Event
+        where TEvent4 : Event
     {
         /// <summary>
         /// 处理事件。
@@ -75,11 +75,11 @@ namespace ThinkNet.Messaging.Handling
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
     public interface IEventHandler<TEvent1, TEvent2, TEvent3, TEvent4, TEvent5>
-        where TEvent1 : class, IEvent
-        where TEvent2 : class, IEvent
-        where TEvent3 : class, IEvent
-        where TEvent4 : class, IEvent
-        where TEvent5 : class, IEvent
+        where TEvent1 : Event
+        where TEvent2 : Event
+        where TEvent3 : Event
+        where TEvent4 : Event
+        where TEvent5 : Event
     {
         /// <summary>
         /// 处理事件。

@@ -13,15 +13,25 @@ namespace ThinkNet.Contracts
         /// 读取数据
         /// </summary>
         [OperationContract]
-        TResult Read<TResult>(IQueryParameter queryParameter)
-            where TResult : QueryResult;
+        IQueryResult Execute(IQueryParameter queryParameter);
+
+        ///// <summary>
+        ///// 读取数据
+        ///// </summary>
+        //[OperationContract]
+        //IQueryResult Read(IPageQueryParameter queryParameter);
 
         /// <summary>
         /// 异步读取数据
         /// </summary>
         [OperationContract]
-        Task<TResult> ReadAsync<TResult>(IQueryParameter queryParameter) 
-            where TResult : QueryResult;
+        Task<IQueryResult> ExecuteAsync(IQueryParameter queryParameter);
+
+        ///// <summary>
+        ///// 异步读取数据
+        ///// </summary>
+        //[OperationContract]
+        //Task<IQueryResult> ReadAsync(IPageQueryParameter queryParameter);
 
     }
 }

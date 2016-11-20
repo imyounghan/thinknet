@@ -7,7 +7,7 @@ namespace ThinkNet.Messaging.Handling
     /// <summary>
     /// 将已完成的处理程序信息记录在内存中。
     /// </summary>
-    public class HandlerRecordInMemory : IHandlerRecordStore
+    public class MessageHandlerRecordInMemory : IMessageHandlerRecordStore
     {
         private readonly HashSet<HandlerRecordData> _handlerInfoSet;
         private readonly Timer timer;
@@ -15,7 +15,7 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public HandlerRecordInMemory()
+        public MessageHandlerRecordInMemory()
         {
             timer = new Timer(RemoveHandleInfo, null, 5000, 2000);
             _handlerInfoSet = new HashSet<HandlerRecordData>();
@@ -26,7 +26,7 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         protected void RemoveHandleInfo(object state)
         {
-            _handlerInfoSet.RemoveWhere(item => item.Timestamp.AddMinutes(1) < DateTime.UtcNow);
+            _handlerInfoSet.RemoveWhere(item => item.Timestamp.AddMinutes(5) < DateTime.UtcNow);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace ThinkNet.Messaging.Handling
         }
 
 
-        class HandlerRecordData
+        struct HandlerRecordData
         {
             /// <summary>
             /// Parameterized constructor.
@@ -91,9 +91,7 @@ namespace ThinkNet.Messaging.Handling
             /// 处理器类型编码
             /// </summary>
             public int HandlerTypeCode { get; set; }
-
-            public bool Finished { get; set; }
-
+            
             /// <summary>
             /// 创建时间
             /// </summary>
@@ -112,13 +110,10 @@ namespace ThinkNet.Messaging.Handling
             /// </summary>
             public override bool Equals(object obj)
             {
-                var other = obj as HandlerRecordData;           
-                if (ReferenceEquals(null, other)) {
+                if(obj == null)
                     return false;
-                }
-                if (ReferenceEquals(this, other)) {
-                    return true;
-                }
+
+                var other = (HandlerRecordData)obj;
 
                 return other.MessageId == this.MessageId
                     && other.HandlerTypeCode == this.HandlerTypeCode

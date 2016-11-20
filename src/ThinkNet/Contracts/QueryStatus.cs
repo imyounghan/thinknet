@@ -16,8 +16,8 @@ namespace ThinkNet.Contracts
         /// </summary>
         Success = 1,
         /// <summary>
-        /// 没有变化
+        /// 超时
         /// </summary>
-        NothingChanged = 2,
+        Timeout = 2,
     }
 }

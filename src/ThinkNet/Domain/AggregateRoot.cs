@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.Serialization;
 using ThinkNet.Messaging;
 
@@ -12,7 +13,7 @@ namespace ThinkNet.Domain
     /// </summary>
     [DataContract]
     [Serializable]
-    public abstract class AggregateRoot<TIdentify> : IAggregateRoot, IEventPublisher
+    public abstract class AggregateRoot<TIdentify> : Entity<TIdentify>, IEventSourced
     {
         /// <summary>
         /// Default constructor.
@@ -24,52 +25,54 @@ namespace ThinkNet.Domain
         /// Parameterized constructor.
         /// </summary>
         protected AggregateRoot(TIdentify id)
-        {
-            this.Id = id;
-        }
+            : base(id)
+        { }
 
         /// <summary>
-        /// 标识ID
+        /// 版本号
         /// </summary>
-        [DataMember(Name = "id")]
-        public virtual TIdentify Id { get; protected set; }
+        [DataMember(Name = "version")]
+        public int Version { get; private set; }
 
 
         [NonSerialized]
         [IgnoreDataMember]
-        private IList<IEvent> _pendingEvents;
+        private IList<Event> _pendingEvents;
         /// <summary>
         /// 引发事件并将其加入到待发布事件列表
         /// </summary>
         protected void RaiseEvent<TEvent>(TEvent @event)
-            where TEvent : class, IEvent
+            where TEvent : Event<TIdentify>
         {
-            var domainEvent = @event as Event<TIdentify>;
-            if (domainEvent != null) {
-                domainEvent.SourceId = this.Id;
-            }
-            
+            @event.SourceId = this.Id;
+
             if (_pendingEvents == null) {
-                _pendingEvents = new List<IEvent>();
+                _pendingEvents = new List<Event>();
             }
             _pendingEvents.Add(@event);
 
-            //this.ApplyEvent(@event);
-            AggregateRootInnerHandlerProvider.Instance.Handle(this, @event);
+            var eventType = @event.GetType();
+            var aggregateRootType = this.GetType();
+            Action<IAggregateRoot, Event> innerHandler;
+            if(AggregateRootInnerHandlerProvider.Instance.TryGetHandler(aggregateRootType, eventType, out innerHandler)) {
+                innerHandler.Invoke(this, @event);
+            }
+            else {
+                var errorMessage = string.Format("Event handler not found on {0} for {1}.",
+                    aggregateRootType.FullName, eventType.FullName);
+                throw new ThinkNetException(errorMessage);
+            }
         }
 
-        [NonSerialized]
-        [IgnoreDataMember]
-        private readonly static ReadOnlyCollection<IEvent> emptyEventCollection = new ReadOnlyCollection<IEvent>(new List<IEvent>());
         /// <summary>
         /// 获取待发布的事件列表。
         /// </summary>
-        protected IEnumerable<IEvent> GetEvents()
+        protected IEnumerable<Event> GetEvents()
         {
             if (_pendingEvents == null || _pendingEvents.Count == 0) {
-                return emptyEventCollection;
+                return Enumerable.Empty<Event>();
             }
-            return new ReadOnlyCollection<IEvent>(_pendingEvents);
+            return new ReadOnlyCollection<Event>(_pendingEvents);
         }
 
         /// <summary>
@@ -81,93 +84,13 @@ namespace ThinkNet.Domain
                 _pendingEvents.Clear();
                 _pendingEvents = null;
             }
-        }
-
-        /// <summary>
-        /// 将该对象演译成<typeparam name="TRole" />。
-        /// </summary>
-        public TRole ActAs<TRole>() where TRole : class
-        {
-            if (!typeof(TRole).IsInterface) {
-                throw new ThinkNetException(string.Format("'{0}' is not an interface type.", typeof(TRole).FullName));
-            }
-
-            var actor = this as TRole;
-
-            if (actor == null) {
-                throw new ThinkNetException(string.Format("'{0}' cannot act as role '{1}'.",
-                    this.GetType().FullName, typeof(TRole).FullName));
-            }
-
-            return actor;
-        }
-
-
-        /// <summary>
-        /// 确定此实例是否与指定的对象相同。
-        /// </summary>
-        public override bool Equals(object obj)
-        {
-            if (obj == null || obj.GetType() != this.GetType())
-            {
-                return false;
-            }
-
-            if (Object.ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            return (obj as AggregateRoot<TIdentify>).Id.Equals(this.Id);
-        }
-
-        /// <summary>
-        /// 返回此实例的哈希代码
-        /// </summary>
-        public override int GetHashCode()
-        {
-            return this.Id.GetHashCode();
-        }
-
-        /// <summary>
-        /// 输出字符串格式
-        /// </summary>
-        public override string ToString()
-        {
-            return string.Format("{0}@{1}", this.GetType().FullName, this.Id);
-        }
-
-        /// <summary>
-        /// 判断两个实例是否相同
-        /// </summary>
-        public static bool operator ==(AggregateRoot<TIdentify> left, AggregateRoot<TIdentify> right)
-        {
-            return IsEqual(left, right);
-        }
-
-        /// <summary>
-        /// 判断两个实例是否不相同
-        /// </summary>
-        public static bool operator !=(AggregateRoot<TIdentify> left, AggregateRoot<TIdentify> right)
-        {
-            return !(left == right);
-        }
-
-
-        private static bool IsEqual(AggregateRoot<TIdentify> left, AggregateRoot<TIdentify> right)
-        {
-            if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null)) {
-                return false;
-            }
-            return ReferenceEquals(left, null) || left.Equals(right);
-        }
-
+        }       
         
 
        
         #region IEventPublisher 成员
         [IgnoreDataMember]
-        IEnumerable<IEvent> IEventPublisher.Events
+        IEnumerable<Event> IEventPublisher.Events
         {
             get { return this.GetEvents(); }
         }
@@ -180,7 +103,15 @@ namespace ThinkNet.Domain
         {
             get { return this.Id; }
         }
+        #endregion
 
+        #region IEventSourced 成员
+        void IEventSourced.LoadFrom(IEnumerable<Event> events)
+        {
+            this.Version++;
+            events.Cast<Event<TIdentify>>().ForEach(this.RaiseEvent);
+            this.ClearEvents();
+        }
         #endregion
     }
 }

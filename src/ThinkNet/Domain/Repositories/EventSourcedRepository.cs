@@ -139,13 +139,13 @@ namespace ThinkNet.Domain.Repositories
 
                 if (LogManager.Default.IsDebugEnabled)
                     LogManager.Default.DebugFormat("Domain events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}.",
-                        eventStream.SourceId, aggregateRootType.FullName, correlationId);
+                        eventSourced.Id, aggregateRootType.FullName, correlationId);
             }
             catch (Exception ex) {
                 if(LogManager.Default.IsErrorEnabled)
                     LogManager.Default.Error(ex,
                         "Domain events persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
-                        eventStream.SourceId, aggregateRootType.FullName, eventSourced.Version);
+                        eventSourced.Id, aggregateRootType.FullName, eventSourced.Version);
                 throw ex;
             }
 

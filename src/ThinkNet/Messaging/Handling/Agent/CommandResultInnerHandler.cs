@@ -7,7 +7,7 @@ namespace ThinkNet.Messaging.Handling.Agent
     /// <summary>
     /// 命令结果的内部处理器
     /// </summary>
-    public class CommandResultRepliedInnerHandler : IHandlerAgent
+    public class CommandResultInnerHandler : HandlerAgent
     {
         private readonly ICommandResultNotification _notification;
         private readonly Lazy<MethodInfo> _method;
@@ -16,7 +16,8 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// Parameterized constructor.
         /// </summary>
         /// <param name="notification"></param>
-        public CommandResultRepliedInnerHandler(ICommandResultNotification notification)
+        public CommandResultInnerHandler(ICommandResultNotification notification)
+            : base(null)
         {
             this._notification = notification;
             this._method = new Lazy<MethodInfo>(GetMethodInfo);
@@ -24,26 +25,23 @@ namespace ThinkNet.Messaging.Handling.Agent
 
         private static MethodInfo GetMethodInfo()
         {
-            return typeof(CommandResultRepliedInnerHandler).GetMethod("Handle");
+            return typeof(CommandResultInnerHandler).GetMethod("Handle");
         }
 
         /// <summary>
         /// 反射方法
         /// </summary>
-        public MethodInfo ReflectedMethod { get { return _method.Value; } }
+        public override MethodInfo ReflectedMethod { get { return _method.Value; } }
         /// <summary>
         /// 处理器实例
         /// </summary>
-        public object HandlerInstance { get { return this; } }
+        public override object HandlerInstance { get { return this; } }
 
-        /// <summary>
-        /// 处理数据
-        /// </summary>
-        public void Handle(params object[] args)
+        protected override void TryMultipleHandle(object[] args)
         {
-            var reply = args[0] as CommandResultReplied;
+            var reply = args[0] as CommandResult;
 
-            switch (reply.CommandReturnType) {
+            switch(reply.CommandReturnType) {
                 case CommandReturnType.CommandExecuted:
                     _notification.NotifyCommandHandled(reply);
                     break;

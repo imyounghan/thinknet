@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkNet.Common;
-
+using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging
 {
@@ -10,7 +9,7 @@ namespace ThinkNet.Messaging
     /// </summary>
     [DataContract]
     [Serializable]
-    public abstract class Command : ICommand, ThinkNet.Contracts.ICommand
+    public abstract class Command : ICommand, IMessage
     {
 
         /// <summary>

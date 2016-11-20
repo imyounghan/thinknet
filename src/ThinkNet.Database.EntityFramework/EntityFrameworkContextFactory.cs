@@ -10,20 +10,19 @@ namespace ThinkNet.Database.EntityFramework
     [Register(typeof(IDataContextFactory))]
     public class EntityFrameworkContextFactory : ContextManager, IDataContextFactory
     {
-        //private readonly Func<DbContext> _contextFactory;
-        private readonly Type _dbContextType;
-        //public EntityFrameworkContextFactory(Func<DbContext> contextFactory)
-        //    : this(contextFactory, null)
-        //{ }
-                //public EntityFrameworkContextFactory(Type dbContextType)
-        //    : this(null, dbContextType)
-        //{ }
-        //public EntityFrameworkContextFactory(Func<DbContext> contextFactory, Type dbContextType)
-        //{
-        //    this._contextFactory = contextFactory;
-        //    this._dbContextType = dbContextType;
-        //}
+        private readonly Func<DbContext> _contextFactory;
+        public EntityFrameworkContextFactory(Func<DbContext> contextFactory, string contextType)
+            : base(contextType)
+        {
+            this._contextFactory = contextFactory;
+        }
 
+        public EntityFrameworkContextFactory(Func<DbContext> contextFactory)
+            : this(contextFactory, null)
+        { }
+
+
+        private readonly Type _dbContextType;
         public EntityFrameworkContextFactory()
         {
             var typeName = ConfigurationManager.AppSettings["thinkcfg.ef_dbtype"];

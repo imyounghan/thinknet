@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
+using System.Reflection;
 using ThinkNet.Common.Composition;
 
 namespace ThinkNet.Messaging.Handling
@@ -9,18 +12,20 @@ namespace ThinkNet.Messaging.Handling
     /// <summary>
     /// 获取消息处理器的提供者
     /// </summary>
-    public class HandlerFetchedProvider
+    public class MessageHandlerProvider
     {
         /// <summary>
-        /// <see cref="HandlerFetchedProvider"/> 的一个实例
+        /// <see cref="MessageHandlerProvider"/> 的一个实例
         /// </summary>
-        public static readonly HandlerFetchedProvider Instance = new HandlerFetchedProvider();
+        public static readonly MessageHandlerProvider Instance = new MessageHandlerProvider();
 
         private readonly Dictionary<CompositeKey, Type> _eventTypesMapContractType;
+        private readonly ConcurrentDictionary<string, MethodInfo> _handleMethodCache;
 
-        private HandlerFetchedProvider()
+        private MessageHandlerProvider()
         {
             this._eventTypesMapContractType = new Dictionary<CompositeKey, Type>();
+            this._handleMethodCache = new ConcurrentDictionary<string, MethodInfo>();
         }
 
         /// <summary>
@@ -140,6 +145,61 @@ namespace ThinkNet.Messaging.Handling
             {
                 return types.OrderBy(type => type.FullName).Select(type => type.GetHashCode()).Aggregate((x, y) => x ^ y);
             }
+        }
+
+
+        /// <summary>
+        /// 通过 <param name="contractType" /> 上的泛型类型列表获取 <param name="targetType" /> 的 Handle 方法
+        /// </summary>
+        public MethodInfo GetHandleMethodInfo(Type targetType, Type contractType)
+        {
+            if(!contractType.IsInterface || !contractType.IsGenericType) {
+                var errorMessage = string.Format("{0} is not a interface or generic type.", contractType.FullName);
+                throw new ThinkNetException(errorMessage);
+            }
+
+            List<Type> parameTypes = new List<Type>(contractType.GenericTypeArguments);
+
+            var genericType = contractType.GetGenericTypeDefinition();
+            if(genericType == typeof(ICommandHandler<>)) {
+                parameTypes.Insert(0, typeof(ICommandContext));
+            }
+            else if(genericType == typeof(IEventHandler<>) ||
+                genericType == typeof(IEventHandler<,>) ||
+                genericType == typeof(IEventHandler<,,>) ||
+                genericType == typeof(IEventHandler<,,,>) ||
+                genericType == typeof(IEventHandler<,,,,>)) {
+                parameTypes.Insert(0, typeof(SourceMetadata));
+            }
+            else if(genericType == typeof(IMessageHandler<>)) {
+            }
+            else {
+                var errorMessage = string.Format("{0} is unknown type.", contractType.FullName);
+                throw new ThinkNetException(errorMessage);
+            }
+
+            var method = targetType.GetMethod("Handle", parameTypes.ToArray());
+            if(method == null) {
+                var errorMessage = string.Format("Cannot find the method 'Handle({0})' on '{1}'.",
+                    string.Join(", ", parameTypes.Select(p => p.FullName).ToArray()),
+                    targetType.FullName);
+                throw new ThinkNetException(errorMessage);
+            }
+
+            return method;
+        }
+
+        /// <summary>
+        /// 通过 <param name="contractType" /> 上的泛型类型列表从缓存中获取 <param name="targetType" /> 的 Handle 方法
+        /// </summary>
+        public MethodInfo GetCachedHandleMethodInfo(Type contractType, Func<Type> targetType)
+        {
+            var contractName = AttributedModelServices.GetContractName(contractType);
+
+            return _handleMethodCache.GetOrAdd(contractName, delegate (string key) {
+                var method = this.GetHandleMethodInfo(targetType(), contractType);
+                return method;
+            });
         }
     }
 }

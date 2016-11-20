@@ -22,7 +22,7 @@ namespace ThinkNet.Runtime.Dispatching
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public MessageDispatcher(IHandlerRecordStore handlerStore,
+        public MessageDispatcher(IMessageHandlerRecordStore handlerStore,
             IMessageBus messageBus,
             ICommandResultNotification notification)
             : this()
@@ -35,7 +35,7 @@ namespace ThinkNet.Runtime.Dispatching
                     })
                 )
             );
-            this.AddCachedHandler(typeof(CommandResultReplied).FullName, new CommandResultRepliedInnerHandler(notification));
+            this.AddCachedHandler(typeof(CommandResult).FullName, new CommandResultInnerHandler(notification));
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace ThinkNet.Runtime.Dispatching
 
         private IHandlerAgent BuildMessageHandler(object handler, Type contractType)
         {
-            var method = HandlerMethodProvider.Instance.GetCachedMethodInfo(contractType, () => handler.GetType());
+            var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
             return new MessageHandlerAgent(handler, method, null);
         }
 
@@ -80,7 +80,7 @@ namespace ThinkNet.Runtime.Dispatching
         protected virtual IEnumerable<IHandlerAgent> BuildHandlerAgents(Type type)
         {
             Type contractType;
-            var handlers = HandlerFetchedProvider.Instance.GetMessageHandlers(type, out contractType);
+            var handlers = MessageHandlerProvider.Instance.GetMessageHandlers(type, out contractType);
             return handlers.Select(handler => BuildMessageHandler(handler, contractType)); ;
         }
 

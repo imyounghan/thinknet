@@ -3,7 +3,7 @@ namespace ThinkNet.Domain.EventSourcing
 {
     internal class NoneSnapshotPolicy : ISnapshotPolicy
     {
-        public bool ShouldbeCreateSnapshot(IEventSourced snapshot)
+        public bool ShouldbeCreateSnapshot(IAggregateRoot snapshot)
         {
             return false;
         }

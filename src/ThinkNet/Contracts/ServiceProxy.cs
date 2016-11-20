@@ -7,7 +7,7 @@ using ThinkNet.Common.Composition;
 
 namespace ThinkNet.Contracts
 {
-    public class ClientProxy
+    public class ServiceProxy
     {
         public static TService CreateService<TService>()
         {

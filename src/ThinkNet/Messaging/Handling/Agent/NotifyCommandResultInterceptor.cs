@@ -45,12 +45,12 @@ namespace ThinkNet.Messaging.Handling.Agent
             if(command != null) {
                 commandReturnType = CommandReturnType.CommandExecuted;
                 commandId = command.UniqueId;
-            }                        
+            }
 
             if(!commandReturnType.HasValue || string.IsNullOrEmpty(commandId))
                 return;
 
-            var commandResult = new CommandResultReplied(commandId, commandReturnType.Value, ex);
+            var commandResult = new CommandResult(commandId, ex, null, commandReturnType.Value);
             _bus.Publish(commandResult);
         }
 
@@ -59,6 +59,15 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// </summary>
         public IMethodReturn Invoke(IMethodInvocation input, GetNextInterceptorDelegate getNext)
         {
+            if(input.InvocationContext.ContainsKey("CommandStatus")) {
+                var commandResult = new CommandResult((string)input.InvocationContext["CommandId"], 
+                    (CommandReturnType)input.InvocationContext["CommandReturnType"], 
+                    (CommandStatus)input.InvocationContext["CommandStatus"]);
+                _bus.Publish(commandResult);
+
+                return input.CreateExceptionMethodReturn(new ThinkNetException(""));
+            }
+
             var methodReturn = getNext().Invoke(input, getNext);
 
             SendCommandResult(input, methodReturn.Exception);

@@ -10,6 +10,6 @@ namespace ThinkNet.Domain.EventSourcing
         /// <summary>
         /// 创建快照
         /// </summary>
-        bool ShouldbeCreateSnapshot(IEventSourced snapshot);
+        bool ShouldbeCreateSnapshot(IAggregateRoot snapshot);
     }    
 }

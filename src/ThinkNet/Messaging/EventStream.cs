@@ -35,7 +35,7 @@ namespace ThinkNet.Messaging
         /// 事件源
         /// </summary>
         [DataMember(Name = "events")]
-        public IEnumerable<IEvent> Events { get; set; }
+        public IEnumerable<Event> Events { get; set; }
 
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace ThinkNet.Messaging
         {
             var events = this.Events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.UniqueId));
 
-            return string.Concat(this.SourceId.GetSourceTypeName(), "@", this.SourceId,
+            return string.Concat(this.SourceId.GetSourceTypeName(), "@", this.SourceId.UniqueId,
                 "[", string.Join(",", events), "]", "#", this.CorrelationId);
         }
         

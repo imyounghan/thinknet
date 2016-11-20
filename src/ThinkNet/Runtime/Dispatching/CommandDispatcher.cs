@@ -28,7 +28,7 @@ namespace ThinkNet.Runtime.Dispatching
         public CommandDispatcher(IRepository repository, 
             IEventSourcedRepository eventSourcedRepository,
             IMessageBus messageBus, 
-            IHandlerRecordStore handlerStore,
+            IMessageHandlerRecordStore handlerStore,
             IInterceptorProvider interceptorProvider)
         {
             this._commandContextFactory = () => new CommandContext(repository, eventSourcedRepository, messageBus);
@@ -53,15 +53,14 @@ namespace ThinkNet.Runtime.Dispatching
 
         private IHandlerAgent BuildCommandHandler(object handler, Type contractType)
         {
-            var method = HandlerMethodProvider.Instance.GetCachedMethodInfo(contractType, () => handler.GetType());
+            var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
             var pipeline = GetInterceptorPipeline(method);
-            var commandContext = _commandContextFactory.Invoke();
-            return new CommandHandlerAgent(handler, method, pipeline, commandContext);
+            return new CommandHandlerAgent(handler, method, pipeline, _commandContextFactory);
         }
 
         private IHandlerAgent BuildMessageHandler(object handler, Type contractType)
         {
-            var method = HandlerMethodProvider.Instance.GetCachedMethodInfo(contractType, () => handler.GetType());
+            var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
             var pipeline = GetInterceptorPipeline(method);
             return new MessageHandlerAgent(handler, method, pipeline);
         }
@@ -69,12 +68,12 @@ namespace ThinkNet.Runtime.Dispatching
         private IHandlerAgent GetHandlerAgent(Type type)
         {
             Type contractType;
-            var handlers = HandlerFetchedProvider.Instance.GetCommandHandlers(type, out contractType)
+            var handlers = MessageHandlerProvider.Instance.GetCommandHandlers(type, out contractType)
                 .Select(handler => BuildCommandHandler(handler, contractType))
                 .ToArray();
 
             if (handlers.IsEmpty()) {
-                handlers = HandlerFetchedProvider.Instance.GetMessageHandlers(type, out contractType)
+                handlers = MessageHandlerProvider.Instance.GetMessageHandlers(type, out contractType)
                     .Select(handler => BuildMessageHandler(handler, contractType))
                     .ToArray();
             }
