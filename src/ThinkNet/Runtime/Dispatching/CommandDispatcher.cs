@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ThinkNet.Common;
-using ThinkNet.Common.Interception;
-using ThinkNet.Common.Interception.Pipeline;
+using ThinkLib;
+using ThinkLib.Annotation;
+using ThinkLib.Composition;
+using ThinkLib.Interception;
+using ThinkLib.Interception.Pipeline;
 using ThinkNet.Domain;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;

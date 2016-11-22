@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reflection;
-using ThinkNet.Common.Composition;
+using ThinkLib;
+using ThinkLib.Composition;
 
 namespace ThinkNet.Messaging.Handling
 {

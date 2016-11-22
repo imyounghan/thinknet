@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using ThinkNet.Common.Interception.Pipeline;
+using ThinkLib.Interception.Pipeline;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
@@ -42,7 +42,7 @@ namespace ThinkNet.Messaging.Handling.Agent
                 var commandContext = args[0] as CommandContext;
                 var command = args[1] as Command;
 
-                commandContext.Commit(command.UniqueId);
+                commandContext.Commit(command.Id);
             }
         }
     }

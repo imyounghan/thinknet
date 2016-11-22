@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ThinkNet.Common.Interception;
+using ThinkLib;
+using ThinkLib.Interception;
 using ThinkNet.Contracts;
 using ThinkNet.Domain;
 using ThinkNet.Messaging;

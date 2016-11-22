@@ -1,5 +1,5 @@
 ﻿
-namespace ThinkNet.Common
+namespace ThinkNet
 {
     /// <summary>
     /// 表示继续该接口的是一个有标识的对象
@@ -9,6 +9,6 @@ namespace ThinkNet.Common
         /// <summary>
         /// 标识ID
         /// </summary>
-        string UniqueId { get; }
+        string Id { get; }
     }
 }

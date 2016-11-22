@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Reflection;
-using ThinkNet.Common;
-using ThinkNet.Common.Interception;
-using ThinkNet.Common.Interception.Pipeline;
+using ThinkLib;
+using ThinkLib.Annotation;
+using ThinkLib.Composition;
+using ThinkLib.Interception;
+using ThinkLib.Interception.Pipeline;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {

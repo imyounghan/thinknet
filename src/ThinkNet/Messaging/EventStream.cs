@@ -64,20 +64,20 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            var events = this.Events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.UniqueId));
+            var events = this.Events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.Id));
 
-            return string.Concat(this.SourceId.GetSourceTypeName(), "@", this.SourceId.UniqueId,
+            return string.Concat(this.SourceId.GetSourceTypeName(), "@", this.SourceId.Id,
                 "[", string.Join(",", events), "]", "#", this.CorrelationId);
         }
         
 
         string IMessage.GetKey()
         {
-            return this.SourceId.UniqueId;
+            return this.SourceId.Id;
         }
 
         [IgnoreDataMember]
-        string IUniquelyIdentifiable.UniqueId
+        string IUniquelyIdentifiable.Id
         {
             get
             {

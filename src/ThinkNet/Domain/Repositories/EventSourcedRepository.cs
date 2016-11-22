@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.Serialization;
+using ThinkLib;
 using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
 

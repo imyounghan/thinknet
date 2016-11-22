@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using ThinkNet.Common.Interception.Pipeline;
+using ThinkLib;
+using ThinkLib.Interception.Pipeline;
 using ThinkNet.Runtime;
 
 namespace ThinkNet.Messaging.Handling.Agent

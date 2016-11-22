@@ -134,7 +134,7 @@ namespace ThinkNet.Messaging
             return string.Format("{0}@{1}#{2},{3}", this.GetType().FullName, this.CommandId, this.CommandReturnType.ToString(), this.Status.ToString());
         }
 
-        string IUniquelyIdentifiable.UniqueId
+        string IUniquelyIdentifiable.Id
         {
             get
             {

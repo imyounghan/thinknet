@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkNet.Common.Composition;
+using ThinkLib.Composition;
 
 namespace ThinkNet.Messaging.Fetching
 {

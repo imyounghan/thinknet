@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using ThinkLib;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging;
 using ThinkNet.Runtime.Routing;
@@ -43,8 +44,8 @@ namespace ThinkNet.Runtime
 
             var envelope = new Envelope(command);
             envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
-            envelope.Metadata[StandardMetadata.SourceId] = command.UniqueId;
-            var attribute = command.GetType().GetAttribute<DataContractAttribute>(false);
+            envelope.Metadata[StandardMetadata.SourceId] = command.Id;
+            var attribute = command.GetType().GetCustomAttribute<DataContractAttribute>(false);
             if(attribute != null) {
                 bool clearAssemblyName = false;
 
@@ -90,7 +91,7 @@ namespace ThinkNet.Runtime
             var task = this.ExecuteAsync(command, returnType);
 
             if(timeout > TimeSpan.Zero && !task.Wait(timeout)) {
-                this.NotifyEventHandled(new CommandResult(command.UniqueId, new TimeoutException(), CommandStatus.Timeout));
+                this.NotifyEventHandled(new CommandResult(command.Id, new TimeoutException(), CommandStatus.Timeout));
             }
             return task.Result;
         }
@@ -100,10 +101,10 @@ namespace ThinkNet.Runtime
         /// </summary>
         public Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType)
         {
-            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.UniqueId, () => new CommandTaskCompletionSource(returnType));
+            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, () => new CommandTaskCompletionSource(returnType));
             this.SendAsync(command).ContinueWith(task => {
                 if(task.Status == TaskStatus.Faulted) {
-                    this.NotifyEventHandled(new CommandResult(command.UniqueId, task.Exception));
+                    this.NotifyEventHandled(new CommandResult(command.Id, task.Exception));
                 }
             });
 

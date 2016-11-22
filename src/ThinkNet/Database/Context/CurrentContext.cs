@@ -39,7 +39,7 @@ namespace ThinkNet.Database.Context
                     return null;
                 }
                 else {
-                    return (IContext)map[_contextManager.UniqueId];
+                    return (IContext)map[_contextManager.Id];
                 }
             }
             set
@@ -49,7 +49,7 @@ namespace ThinkNet.Database.Context
                     map = Hashtable.Synchronized(new Hashtable());
                     SetMap(map);
                 }
-                map[_contextManager.UniqueId] = value;
+                map[_contextManager.Id] = value;
             }
         }
 

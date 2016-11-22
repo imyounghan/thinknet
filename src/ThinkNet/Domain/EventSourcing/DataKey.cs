@@ -3,7 +3,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
-using ThinkNet.Common;
+using ThinkLib;
 
 namespace ThinkNet.Domain.EventSourcing
 {
@@ -110,7 +110,7 @@ namespace ThinkNet.Domain.EventSourcing
         /// <summary>
         /// 源标识。
         /// </summary>
-        public string UniqueId
+        public string Id
         {
             get { return this.uniqueId; }
             private set { this.uniqueId = value; }
@@ -128,8 +128,8 @@ namespace ThinkNet.Domain.EventSourcing
                 sb.Append(this.TypeName);
             if (!string.IsNullOrWhiteSpace(this.AssemblyName))
                 sb.Append(", ").Append(this.AssemblyName);
-            if (!string.IsNullOrWhiteSpace(this.UniqueId))
-                sb.Append("@").Append(this.UniqueId);
+            if (!string.IsNullOrWhiteSpace(this.Id))
+                sb.Append("@").Append(this.Id);
 
             return sb.ToString();
         }
@@ -156,7 +156,7 @@ namespace ThinkNet.Domain.EventSourcing
                 this.AssemblyName.GetHashCode(),
                 this.Namespace.GetHashCode(),
                 this.TypeName.GetHashCode(),
-                this.UniqueId.GetHashCode()
+                this.Id.GetHashCode()
             };
             return codes.Aggregate((x, y) => x ^ y);
         }
@@ -212,7 +212,7 @@ namespace ThinkNet.Domain.EventSourcing
 
         bool IEquatable<DataKey>.Equals(DataKey other)
         {
-            return this.UniqueId == other.UniqueId &&
+            return this.Id == other.Id &&
                 this.TypeName == other.TypeName &&
                 this.Namespace == other.Namespace &&
                 this.AssemblyName == other.AssemblyName;
@@ -246,7 +246,7 @@ namespace ThinkNet.Domain.EventSourcing
 
         void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue("UniqueId", this.UniqueId);
+            info.AddValue("Id", this.Id);
             info.AddValue("AssemblyName", this.AssemblyName);
             info.AddValue("Namespace", this.Namespace);
             info.AddValue("TypeName", this.TypeName);

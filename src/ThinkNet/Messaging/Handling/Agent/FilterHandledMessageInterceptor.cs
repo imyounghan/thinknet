@@ -1,5 +1,5 @@
-﻿using ThinkNet.Common;
-using ThinkNet.Common.Interception;
+﻿using ThinkLib;
+using ThinkLib.Interception;
 using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging.Handling.Agent
@@ -45,9 +45,9 @@ namespace ThinkNet.Messaging.Handling.Agent
             var messageType = parameter.GetType();
             var handlerType = input.Target.GetType();
 
-            if (_handlerStore.HandlerIsExecuted(uniquely.UniqueId, messageType, handlerType)) {
+            if (_handlerStore.HandlerIsExecuted(uniquely.Id, messageType, handlerType)) {
                 var errorMessage = string.Format("The message has been handled. MessageHandlerType:{0}, MessageType:{1}, MessageId:{2}.",
-                    handlerType.FullName, messageType.FullName, uniquely.UniqueId);
+                    handlerType.FullName, messageType.FullName, uniquely.Id);
                 //throw new ThinkNetException(errorMessage);
                 return new MethodReturn(input, new ThinkNetException(errorMessage));
             }
@@ -55,7 +55,7 @@ namespace ThinkNet.Messaging.Handling.Agent
             var methodReturn = getNext().Invoke(input, getNext);
 
             if (methodReturn.Exception != null)
-                _handlerStore.AddHandlerInfo(uniquely.UniqueId, messageType, handlerType);
+                _handlerStore.AddHandlerInfo(uniquely.Id, messageType, handlerType);
 
             return methodReturn;
         }

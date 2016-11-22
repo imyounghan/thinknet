@@ -24,7 +24,7 @@ namespace ThinkNet.Runtime
 
         public Task<IQueryResult> ExecuteAsync(IQueryParameter queryParameter)
         {
-            return Task.Factory.StartNew(FetchQueryResult, queryParameter);
+            return Task.Factory.StartNew<IQueryResult>(FetchQueryResult, queryParameter);
         }
 
         private IQueryResult FetchQueryResult(object parameter)

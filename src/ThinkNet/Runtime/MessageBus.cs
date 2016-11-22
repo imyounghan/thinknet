@@ -41,13 +41,13 @@ namespace ThinkNet.Runtime
             var command = message as Command;
             if(command != null) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
-                envelope.Metadata[StandardMetadata.SourceId] = command.UniqueId;
+                envelope.Metadata[StandardMetadata.SourceId] = command.Id;
             }
 
             var @event = message as Event;
             if(@event != null) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
-                envelope.Metadata[StandardMetadata.SourceId] = @event.UniqueId;
+                envelope.Metadata[StandardMetadata.SourceId] = @event.Id;
             }
 
             return envelope;

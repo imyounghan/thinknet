@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
-using ThinkNet.Common;
-using ThinkNet.Common.Interception.Pipeline;
+using ThinkLib.Annotation;
+using ThinkLib.Composition;
+using ThinkLib.Interception.Pipeline;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
@@ -111,7 +112,7 @@ namespace ThinkNet.Messaging.Handling.Agent
             var array = new ArrayList();
             array.Add(new SourceMetadata {
                 CorrelationId = eventStream.CorrelationId,
-                SourceId = eventStream.SourceId.UniqueId,
+                SourceId = eventStream.SourceId.Id,
                 SourceTypeName = eventStream.SourceId.GetSourceTypeFullName(),
                 Version = eventStream.Version
             });

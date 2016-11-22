@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using ThinkLib;
+using ThinkLib.Utilities;
 using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging
@@ -23,7 +25,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected Command(string id)
         {
-            this.UniqueId = id.IfEmpty(Common.UniqueId.GenerateNewStringId);
+            this.Id = id.IfEmpty(UniqueId.GenerateNewStringId);
             this.Timestamp = DateTime.UtcNow;
         }
 
@@ -31,7 +33,7 @@ namespace ThinkNet.Messaging
         /// 命令标识
         /// </summary>
         [DataMember(Name = "id")]
-        public string UniqueId { get; private set; }
+        public string Id { get; private set; }
         /// <summary>
         /// 生成当前命令的时间戳
         /// </summary>
@@ -51,7 +53,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}@{1}", this.GetType().FullName, this.UniqueId);
+            return string.Format("{0}@{1}", this.GetType().FullName, this.Id);
         }
     }
 
@@ -98,7 +100,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.UniqueId, this.AggregateRootId);
+            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.Id, this.AggregateRootId);
         }
     }
 }

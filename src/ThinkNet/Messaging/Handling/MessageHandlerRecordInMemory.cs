@@ -66,7 +66,7 @@ namespace ThinkNet.Messaging.Handling
         }
 
 
-        struct HandlerRecordData
+        class HandlerRecordData
         {
             /// <summary>
             /// Parameterized constructor.

@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using ThinkNet.Common;
-using Caching = ThinkNet.Common.Caching;
+using ThinkLib;
+using ThinkLib.Annotation;
+using Caching = ThinkLib.Caching;
+using ThinkLib.Serialization;
 
 namespace ThinkNet.Domain
 {
@@ -17,16 +19,16 @@ namespace ThinkNet.Domain
     {
         private readonly Caching.ICacheProvider _cacheProivder;
         private readonly ConcurrentDictionary<string, Caching.ICache> _caches;
-        private readonly BinaryFormatter _serializer;
+        private readonly IBinarySerializer _serializer;
         private readonly bool _enabled;
         private readonly HashSet<string> _keys;
 
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public LocalCache()
+        public LocalCache(IBinarySerializer serializer)
         {
-            this._serializer = new BinaryFormatter();
+            this._serializer = serializer;
             this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].ChangeIfError(false);
 
             this._cacheProivder = new Caching.MemoryCacheProvider();
@@ -34,21 +36,6 @@ namespace ThinkNet.Domain
             this._keys = new HashSet<string>();
         }
 
-
-        private byte[] Serialize(object obj)
-        {
-            using (var stream = new MemoryStream()) {
-                _serializer.Serialize(stream, obj);
-                return stream.ToArray();
-            }
-        }
-
-        private object Deserialize(byte[] data)
-        {
-            using (var stream = new MemoryStream(data)) {
-                return _serializer.Deserialize(stream);
-            }
-        }
 
         /// <summary>
         /// 从缓存中获取该类型的实例。
@@ -77,7 +64,7 @@ namespace ThinkNet.Domain
 
             var de = (DictionaryEntry)data;
             if (modelId.ToString() == de.Key.ToString()) {
-                model = (T)this.Deserialize((byte[])de.Value);
+                model = (T)_serializer.Deserialize((byte[])de.Value);
                 return true;
             }
             else {
@@ -105,7 +92,7 @@ namespace ThinkNet.Domain
                 return;
             }
 
-            var data = new DictionaryEntry(modelId, this.Serialize(model));
+            var data = new DictionaryEntry(modelId, _serializer.Serialize(model, true));
             GetCache(cacheRegion).Put(cacheKey, data);
             //if (cache.Contains(cacheKey, cacheRegion)) {
             //    cache.Set(cacheKey, data, policy, cacheRegion);
@@ -141,7 +128,7 @@ namespace ThinkNet.Domain
         }
         private static string GetCacheRegion(Type type)
         {
-            var attr = type.GetAttribute<CacheRegionAttribute>(false);
+            var attr = type.GetCustomAttribute<CacheRegionAttribute>(false);
             if (attr == null)
                 return CacheRegionAttribute.DefaultRegionName;
 

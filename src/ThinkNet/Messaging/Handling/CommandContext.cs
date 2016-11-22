@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ThinkLib;
 using ThinkNet.Domain;
 
 namespace ThinkNet.Messaging.Handling
@@ -86,7 +87,7 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         public void AppendEvent(Event @event)
         {
-            if(pendingEvents.Any(p => p.UniqueId == @event.UniqueId))
+            if(pendingEvents.Any(p => p.Id == @event.Id))
                 return;
 
             pendingEvents.Add(@event);
@@ -102,7 +103,7 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         public void Commit(string commandId)
         {
-            var aggregateRoots = dict.Values.OfType<IEventSourced>().Where(p => p.Events.IsEmpty() == false);
+            var aggregateRoots = dict.Values.OfType<IEventSourced>().Where(p => !p.Events.IsEmpty());
             var count = aggregateRoots.Count();
             if(count > 1) {
                 throw new ThinkNetException("Detected more than one aggregate root created or modified by command.");

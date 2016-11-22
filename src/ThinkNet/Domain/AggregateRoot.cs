@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using ThinkLib;
 using ThinkNet.Messaging;
 
 
 namespace ThinkNet.Domain
 {
     /// <summary>
-    /// 实现 <see cref="IAggregateRoot"/> 的抽象类
+    /// 表示一个通过事件溯源的聚合根的抽象类
     /// </summary>
     [DataContract]
     [Serializable]

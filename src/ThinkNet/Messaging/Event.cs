@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkNet.Common;
+using ThinkLib;
+using ThinkLib.Utilities;
 
 namespace ThinkNet.Messaging
 {
     /// <summary>
-    /// 实现 <see cref="IEvent"/> 的抽象类
+    /// 表示一个事件的抽象类
     /// </summary>
     [DataContract]
     [Serializable]
@@ -34,7 +35,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         protected Event(string id, DateTime time)
         {
-            this.UniqueId = id.IfEmpty(Common.UniqueId.GenerateNewStringId);
+            this.Id = id.IfEmpty(UniqueId.GenerateNewStringId);
             this.CreationTime = time.Kind == DateTimeKind.Utc ? time : time.ToUniversalTime();
         }
 
@@ -42,7 +43,7 @@ namespace ThinkNet.Messaging
         /// 事件标识
         /// </summary>
         [DataMember(Name = "id")]
-        public string UniqueId { get; private set; }
+        public string Id { get; private set; }
         /// <summary>
         /// 创建时间
         /// </summary>
@@ -62,7 +63,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}@{1}", this.GetType().FullName, this.UniqueId);
+            return string.Format("{0}@{1}", this.GetType().FullName, this.Id);
         }
     }
 
@@ -96,7 +97,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.UniqueId, this.SourceId);
+            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.Id, this.SourceId);
         }
 
         /// <summary>

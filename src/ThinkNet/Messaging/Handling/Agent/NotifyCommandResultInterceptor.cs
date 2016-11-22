@@ -1,5 +1,5 @@
 ﻿using System;
-using ThinkNet.Common.Interception;
+using ThinkLib.Interception;
 using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging.Handling.Agent
@@ -44,7 +44,7 @@ namespace ThinkNet.Messaging.Handling.Agent
             var command = argument as ICommand;
             if(command != null) {
                 commandReturnType = CommandReturnType.CommandExecuted;
-                commandId = command.UniqueId;
+                commandId = command.Id;
             }
 
             if(!commandReturnType.HasValue || string.IsNullOrEmpty(commandId))

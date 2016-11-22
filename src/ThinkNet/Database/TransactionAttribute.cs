@@ -1,6 +1,7 @@
 ﻿using System;
-using ThinkNet.Common.Composition;
-using ThinkNet.Common.Interception;
+using ThinkLib.Annotation;
+using ThinkLib.Composition;
+using ThinkLib.Interception;
 using ThinkNet.Database;
 using ThinkNet.Database.Context;
 
