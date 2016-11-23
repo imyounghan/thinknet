@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkNet.Common;
-using ThinkNet.Common.Serialization;
+using ThinkLib;
+using ThinkLib.Serialization;
 using ThinkNet.Database;
 using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
@@ -124,7 +124,7 @@ namespace ThinkNet.Runtime.Writing
                 using (var context = _dataContextFactory.Create()) {
                     return context.CreateQuery<EventData>()
                         .Where(p => p.CorrelationId == correlationId &&
-                            p.AggregateRootId == sourceKey.UniqueId &&
+                            p.AggregateRootId == sourceKey.Id &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode)
                         .FirstOrDefault();
                 }
@@ -152,7 +152,7 @@ namespace ThinkNet.Runtime.Writing
             var events = Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
                     return context.CreateQuery<EventData>()
-                        .Where(p => p.AggregateRootId == sourceKey.UniqueId &&
+                        .Where(p => p.AggregateRootId == sourceKey.Id &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode &&
                             p.Version > version)
                         .OrderBy(p => p.Version)//.ThenBy(p => p.Order)
@@ -173,7 +173,7 @@ namespace ThinkNet.Runtime.Writing
             Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
                     context.CreateQuery<EventData>()
-                     .Where(p => p.AggregateRootId == sourceKey.UniqueId &&
+                     .Where(p => p.AggregateRootId == sourceKey.Id &&
                          p.AggregateRootTypeCode == aggregateRootTypeCode)
                      .ToList()
                      .ForEach(context.Delete);

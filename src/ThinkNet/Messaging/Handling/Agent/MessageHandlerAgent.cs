@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using ThinkLib;
+using ThinkLib.Interception;
 using ThinkLib.Interception.Pipeline;
 using ThinkNet.Runtime;
 
@@ -64,6 +66,32 @@ namespace ThinkNet.Messaging.Handling.Agent
             if(LogManager.Default.IsDebugEnabled) {
                 LogManager.Default.DebugFormat("Handle '{0}' on '{1}' success.", args.Last(), HandlerInstance.GetType().FullName);
             }
-        }        
+        }
+    }
+
+    public class MessageHandlerAgent<TMessage> : HandlerAgent
+        where TMessage : class, IMessage
+    {
+        public MessageHandlerAgent(IMessageHandler<TMessage> handler)
+            : base(handler)
+        { }
+
+        protected override void TryHandle(object[] args)
+        {
+            var targetHandler = GetTargetHandler() as IMessageHandler<TMessage>;
+            targetHandler.NotNull("targetHandler");
+            var message = args[0] as TMessage;
+            message.NotNull("message");
+
+            targetHandler.Handle(message);
+        }
+
+        protected override Type HandlerInterfaceType
+        {
+            get
+            {
+                return typeof(IMessageHandler<TMessage>);
+            }
+        }
     }
 }

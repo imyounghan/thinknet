@@ -199,7 +199,15 @@
     <Compile Include="Messaging\Event.cs" />
     <Compile Include="Messaging\IMessageBus.cs" />
     <Compile Include="Messaging\IEventPublisher.cs" />
-    <Compile Include="Domain\ValueObject.cs" />
+    <Compile Include="Runtime\Writing\EventData.cs" />
+    <Compile Include="Runtime\Writing\EventDataItem.cs" />
+    <Compile Include="Runtime\Writing\EventStore.cs" />
+    <Compile Include="Runtime\Writing\HandlerRecord.cs" />
+    <Compile Include="Runtime\Writing\HandlerRecordStore.cs" />
+    <Compile Include="Runtime\Writing\Snapshot.cs" />
+    <Compile Include="Runtime\Writing\SnapshotStore.cs" />
+    <Compile Include="ThinkNetBootstrapper.cs" />
+    <Compile Include="ValueObject.cs" />
     <Compile Include="Domain\EventSourcing\IEventStore.cs" />
     <Compile Include="Domain\EventSourcing\ISnapshotPolicy.cs" />
     <Compile Include="Domain\EventSourcing\ISnapshotStore.cs" />

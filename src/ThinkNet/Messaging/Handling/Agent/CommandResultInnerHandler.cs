@@ -20,24 +20,10 @@ namespace ThinkNet.Messaging.Handling.Agent
             : base(null)
         {
             this._notification = notification;
-            this._method = new Lazy<MethodInfo>(GetMethodInfo);
+            //this._method = new Lazy<MethodInfo>(GetMethodInfo);
         }
 
-        private static MethodInfo GetMethodInfo()
-        {
-            return typeof(CommandResultInnerHandler).GetMethod("Handle");
-        }
-
-        /// <summary>
-        /// 反射方法
-        /// </summary>
-        public override MethodInfo ReflectedMethod { get { return _method.Value; } }
-        /// <summary>
-        /// 处理器实例
-        /// </summary>
-        public override object HandlerInstance { get { return this; } }
-
-        protected override void TryMultipleHandle(object[] args)
+        protected override void TryHandle(object[] args)
         {
             var reply = args[0] as CommandResult;
 
@@ -49,6 +35,29 @@ namespace ThinkNet.Messaging.Handling.Agent
                     _notification.NotifyEventHandled(reply);
                     break;
             }
-        }
+        }       
+
+        ///// <summary>
+        ///// 反射方法
+        ///// </summary>
+        //public override MethodInfo ReflectedMethod { get { return _method.Value; } }
+        ///// <summary>
+        ///// 处理器实例
+        ///// </summary>
+        //public override object HandlerInstance { get { return this; } }
+
+        //protected override void TryMultipleHandle(object[] args)
+        //{
+        //    var reply = args[0] as CommandResult;
+
+        //    switch(reply.CommandReturnType) {
+        //        case CommandReturnType.CommandExecuted:
+        //            _notification.NotifyCommandHandled(reply);
+        //            break;
+        //        case CommandReturnType.DomainEventHandled:
+        //            _notification.NotifyEventHandled(reply);
+        //            break;
+        //    }
+        //}
     }
 }

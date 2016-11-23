@@ -1,8 +1,8 @@
 ﻿using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkNet.Common;
-using ThinkNet.Common.Serialization;
+using ThinkLib;
+using ThinkLib.Serialization;
 using ThinkNet.Database;
 using ThinkNet.Domain;
 using ThinkNet.Domain.EventSourcing;
@@ -51,7 +51,7 @@ namespace ThinkNet.Runtime.Writing
             var snapshot = Task.Factory.StartNew(() => {
                 using (var context = _dataContextFactory.Create()) {
                     return context.CreateQuery<Snapshot>()
-                        .Where(p => p.AggregateRootId == sourceKey.UniqueId && 
+                        .Where(p => p.AggregateRootId == sourceKey.Id && 
                             p.AggregateRootTypeCode == aggregateRootTypeCode)
                         .OrderByDescending(p => p.Version)
                         .FirstOrDefault();
@@ -119,7 +119,7 @@ namespace ThinkNet.Runtime.Writing
             var task = Task.Factory.StartNew(() => {
                 using (var context = _dataContextFactory.Create()) {
                     context.CreateQuery<Snapshot>()
-                        .Where(p => p.AggregateRootId == sourceKey.UniqueId &&
+                        .Where(p => p.AggregateRootId == sourceKey.Id &&
                             p.AggregateRootTypeCode == aggregateRootTypeCode)
                         .ToList()
                         .ForEach(context.Delete);

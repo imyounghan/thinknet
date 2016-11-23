@@ -2,10 +2,9 @@
 using ThinkLib.Annotation;
 using ThinkLib.Composition;
 using ThinkLib.Interception;
-using ThinkNet.Database;
 using ThinkNet.Database.Context;
 
-namespace ThinkNet.Common
+namespace ThinkNet.Database
 {
     /// <summary>
     /// 事务
