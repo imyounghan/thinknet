@@ -1,87 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using ThinkNet.Domain.EventSourcing;
+using ThinkLib;
 
-namespace ThinkNet.Runtime.Writing
+namespace ThinkNet.Database.Storage
 {
     /// <summary>
-    /// 历史事件(用于还原溯源聚合的事件)
+    /// 聚合快照
     /// </summary>
     [Serializable]
-    public class EventData
+    public class Snapshot
     {
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public EventData()
+        public Snapshot()
         { }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public EventData(Type aggregateRootType, string aggregateRootId)
+        public Snapshot(Type aggregateRootType, string aggregateRootId)
         {
             this.AggregateRootId = aggregateRootId;
             this.AggregateRootTypeCode = aggregateRootType.FullName.GetHashCode();
             this.AggregateRootTypeName = aggregateRootType.GetFullName();
             this.Timestamp = DateTime.UtcNow;
-            this.Items = new List<EventDataItem>();
         }
 
         /// <summary>
-        /// Parameterized constructor.
-        /// </summary>
-        public EventData(DataKey dataKey)
-        {
-            this.AggregateRootId = dataKey.UniqueId;
-            this.AggregateRootTypeCode = dataKey.GetSourceTypeName().GetHashCode();
-            this.AggregateRootTypeName = dataKey.GetSourceTypeFullName();
-            this.Timestamp = DateTime.UtcNow;
-            this.Items = new List<EventDataItem>();
-        }
-
-        /// <summary>
-        /// 用于数据库的自增主键
-        /// </summary>
-        public long EventId { get; set; }
-        /// <summary>
-        /// 聚合根标识。
+        /// 聚合根标识
         /// </summary>
         public string AggregateRootId { get; set; }
         /// <summary>
-        /// 聚合根类型的完整名称且包括程序集名称
-        /// </summary>
-        public string AggregateRootTypeName { get; set; }
-        /// <summary>
-        /// 聚合根类型编码。
+        /// 聚合根类型名称
         /// </summary>
         public int AggregateRootTypeCode { get; set; }
         /// <summary>
-        /// 版本号。
+        /// 聚合根类型名称
+        /// </summary>
+        public string AggregateRootTypeName { get; set; }
+        /// <summary>
+        /// 创建该聚合快照的聚合根版本号
         /// </summary>
         public int Version { get; set; }        
         /// <summary>
-        /// 发布事件的相关id
+        /// 聚合根数据
         /// </summary>
-        public string CorrelationId { get; set; }
+        public byte[] Data { get; set; }
         /// <summary>
-        /// 生成事件的时间戳
+        /// 创建该快照的时间
         /// </summary>
         public DateTime Timestamp { get; set; }
-
-        /// <summary>
-        /// 事件项
-        /// </summary>
-        public ICollection<EventDataItem> Items { get; set; }
-        /// <summary>
-        /// 添加一个事件
-        /// </summary>
-        /// <param name="item"></param>
-        public void AddItem(EventDataItem item)
-        {
-            item.Order = Items.Count + 1;
-            this.Items.Add(item);
-        }
 
         /// <summary>
         /// 返回此实例的哈希代码
@@ -91,7 +59,7 @@ namespace ThinkNet.Runtime.Writing
             return new int[] {
                 AggregateRootTypeCode.GetHashCode(),
                 AggregateRootId.GetHashCode(),
-                Version.GetHashCode()
+                Version
             }.Aggregate((x, y) => x ^ y);
         }
 
@@ -100,7 +68,7 @@ namespace ThinkNet.Runtime.Writing
         /// </summary>
         public override bool Equals(object obj)
         {
-            var other = obj as EventData;
+            var other = obj as Snapshot;
             if (ReferenceEquals(null, other)) {
                 return false;
             }

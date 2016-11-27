@@ -4,12 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using ThinkLib;
 using ThinkLib.Serialization;
-using ThinkNet.Database;
 using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
 
 
-namespace ThinkNet.Runtime.Writing
+namespace ThinkNet.Database.Storage
 {
     /// <summary>
     /// <see cref="IEventStore"/>的实现类
@@ -73,9 +72,14 @@ namespace ThinkNet.Runtime.Writing
         {
             Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
-                    var eventData = new EventData(@event.SourceId) {
+                    var eventData = new EventData() {
+                        AggregateRootId = @event.SourceId.Id,
+                        AggregateRootTypeCode = @event.SourceId.GetSourceTypeName().GetHashCode(),
+                        AggregateRootTypeName = @event.SourceId.GetSourceTypeFullName(),
                         CorrelationId = @event.CorrelationId,
-                        Version = @event.Version
+                        Version = @event.Version,
+                        Timestamp = DateTime.UtcNow,
+                        Items = new List<EventDataItem>()
                     };
 
                     var queryable = context.CreateQuery<EventData>();
@@ -86,13 +90,13 @@ namespace ThinkNet.Runtime.Writing
                     if(version + 1 < eventData.Version) {
                         if(LogManager.Default.IsWarnEnabled)
                             LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is less than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
-                                eventData.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.UniqueId);
+                                eventData.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.Id);
                         return;
                     }
                     else if(version + 1 > eventData.Version) {
                         if(LogManager.Default.IsWarnEnabled)
                             LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is greater than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
-                                eventData.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.UniqueId);
+                                eventData.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.Id);
                         throw new ThinkNetException("");
                     }
 

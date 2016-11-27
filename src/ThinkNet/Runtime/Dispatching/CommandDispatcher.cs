@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using ThinkLib;
 using ThinkLib.Annotation;
 using ThinkLib.Composition;
 using ThinkLib.Interception;
-using ThinkLib.Interception.Pipeline;
+using ThinkNet.Contracts;
 using ThinkNet.Domain;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
@@ -17,76 +16,62 @@ namespace ThinkNet.Runtime.Dispatching
     /// <summary>
     /// 处理命令的代理程序
     /// </summary>
-    public class CommandDispatcher : MessageDispatcher
+    public class CommandDispatcher : Dispatcher
     {
         private readonly Func<CommandContext> _commandContextFactory;
-        private readonly IInterceptor _firstInterceptor;
-        private readonly IInterceptor _lastInterceptor;
+        private readonly IEnumerable<IInterceptor> _firstInterceptors;
+        private readonly IEnumerable<IInterceptor> _lastInterceptors;
         private readonly IInterceptorProvider _interceptorProvider;
+        //private readonly IObjectContainer _container;
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public CommandDispatcher(IRepository repository, 
+        public CommandDispatcher(IObjectContainer container,
+            IRepository repository, 
             IEventSourcedRepository eventSourcedRepository,
             IMessageBus messageBus, 
             IMessageHandlerRecordStore handlerStore,
+            ICommandResultNotification notification,
             IInterceptorProvider interceptorProvider)
+            : base(container)
         {
             this._commandContextFactory = () => new CommandContext(repository, eventSourcedRepository, messageBus);
-            this._firstInterceptor = new FilterHandledMessageInterceptor(handlerStore);
-            this._lastInterceptor = new NotifyCommandResultInterceptor(messageBus);
+            this._firstInterceptors = new IInterceptor[] { new FilterHandledMessageInterceptor(handlerStore) };
+            this._lastInterceptors = new IInterceptor[] { new NotifyCommandResultInterceptor(messageBus) };
             this._interceptorProvider = interceptorProvider;
-        }
+        }        
+        
 
-        private InterceptorPipeline GetInterceptorPipeline(MethodInfo method)
+        private IHandlerAgent GetHandlerAgent(Type commandType)
         {
-            Func<IEnumerable<IInterceptor>> getInterceptors = delegate {
-                List<IInterceptor> interceptors = new List<IInterceptor>();
-                interceptors.Add(_firstInterceptor);
-                interceptors.AddRange(_interceptorProvider.GetInterceptors(method));
-                interceptors.Add(_lastInterceptor);
+            var contractType = typeof(ICommandHandler<>).MakeGenericType(commandType);
+            var handlers = this.GetMessageHandlers(contractType);
 
-                return interceptors;
-            };
-
-            return InterceptorPipelineManager.Instance.CreatePipeline(method, getInterceptors);
-        }
-
-        private IHandlerAgent BuildCommandHandler(object handler, Type contractType)
-        {
-            var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
-            var pipeline = GetInterceptorPipeline(method);
-            return new CommandHandlerAgent(handler, method, pipeline, _commandContextFactory);
-        }
-
-        private IHandlerAgent BuildMessageHandler(object handler, Type contractType)
-        {
-            var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
-            var pipeline = GetInterceptorPipeline(method);
-            return new MessageHandlerAgent(handler, method, pipeline);
-        }
-
-        private IHandlerAgent GetHandlerAgent(Type type)
-        {
-            Type contractType;
-            var handlers = MessageHandlerProvider.Instance.GetCommandHandlers(type, out contractType)
-                .Select(handler => BuildCommandHandler(handler, contractType))
-                .ToArray();
-
-            if (handlers.IsEmpty()) {
-                handlers = MessageHandlerProvider.Instance.GetMessageHandlers(type, out contractType)
-                    .Select(handler => BuildMessageHandler(handler, contractType))
-                    .ToArray();
+            IHandlerAgent[] handlerAgents = new IHandlerAgent[0];
+            if(!handlers.IsEmpty()) {
+                var handlerAgentType = typeof(CommandHandlerAgent<>).MakeGenericType(commandType);
+                var constructor = handlerAgentType.GetConstructors().Single();
+                handlerAgents = handlers.Select(handler => constructor.Invoke(new object[] { handler, _commandContextFactory, _interceptorProvider, _firstInterceptors, _lastInterceptors })).Cast<IHandlerAgent>().ToArray();
             }
 
-            switch (handlers.Length) {
+            if(handlerAgents.Length == 0) {
+                contractType = typeof(IMessageHandler<>).MakeGenericType(commandType);
+                handlers = this.GetMessageHandlers(contractType);
+                if(!handlers.IsEmpty()) {
+                    var handlerAgentType = typeof(MessageHandlerAgent<>).MakeGenericType(commandType);
+                    var constructor = handlerAgentType.GetConstructor(new Type[] { contractType, typeof(IInterceptorProvider), typeof(IEnumerable<IInterceptor>), typeof(IEnumerable<IInterceptor>) });
+                    handlerAgents = handlers.Select(handler => constructor.Invoke(new object[] { handler, _interceptorProvider, _firstInterceptors, _lastInterceptors })).Cast<IHandlerAgent>().ToArray();
+                }
+            }
+
+            switch(handlerAgents.Length) {
                 case 0:
-                    throw new MessageHandlerNotFoundException(type);
+                    throw new MessageHandlerNotFoundException(commandType);
                 case 1:
-                    return handlers[0];
+                    return handlerAgents[0];
                 default:
-                    throw new MessageHandlerTooManyException(type);
+                    throw new MessageHandlerTooManyException(commandType);
             }
         }
 
@@ -96,7 +81,7 @@ namespace ThinkNet.Runtime.Dispatching
         protected override IEnumerable<IHandlerAgent> BuildHandlerAgents(Type type)
         {
             var handler = this.GetHandlerAgent(type);
-            var lifecycle = LifeCycleAttribute.GetLifecycle(handler.ReflectedMethod.DeclaringType);
+            var lifecycle = LifeCycleAttribute.GetLifecycle(handler.GetInnerHandler().GetType());
             if (lifecycle == Lifecycle.Singleton)
                 AddCachedHandler(type.FullName, handler);
 

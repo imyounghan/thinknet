@@ -22,5 +22,7 @@ namespace ThinkNet.Messaging.Handling.Agent
         ///// 表示处理器的实例
         ///// </summary>
         //object HandlerInstance { get; }
+
+        object GetInnerHandler();
     }
 }

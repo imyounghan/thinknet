@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using ThinkNet.Common;
 using ThinkNet.Domain.EventSourcing;
 
 namespace ThinkNet.Messaging

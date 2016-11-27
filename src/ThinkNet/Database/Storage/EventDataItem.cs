@@ -1,6 +1,7 @@
 ﻿using System;
+using ThinkLib;
 
-namespace ThinkNet.Runtime.Writing
+namespace ThinkNet.Database.Storage
 {
     /// <summary>
     /// 事件包里的项

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkNet.Database;
 using ThinkNet.Messaging.Handling;
 
-namespace ThinkNet.Runtime.Writing
+namespace ThinkNet.Database.Storage
 {
     /// <summary>
     /// 将已完成的处理消息的程序信息记录在数据库中。

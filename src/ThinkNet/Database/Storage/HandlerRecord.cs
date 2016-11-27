@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using ThinkLib;
 
-namespace ThinkNet.Runtime.Writing
+namespace ThinkNet.Database.Storage
 {
     /// <summary>
     /// 处理程序信息

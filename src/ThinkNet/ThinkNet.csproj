@@ -151,11 +151,11 @@
     <Compile Include="Messaging\Handling\MessageHandlerRecordInMemory.cs" />
     <Compile Include="Messaging\Fetching\QueryFetcherNotFoundException.cs" />
     <Compile Include="Messaging\Fetching\QueryFetcherTooManyException.cs" />
-    <Compile Include="Messaging\Fetching\QueryFetcherProvider.cs" />
     <Compile Include="Messaging\QueryPageResult.cs" />
     <Compile Include="Messaging\QueryMultipleResult.cs" />
     <Compile Include="Messaging\QueryResult.cs" />
     <Compile Include="Messaging\QuerySingleResult.cs" />
+    <Compile Include="Runtime\Dispatching\Dispatcher.cs" />
     <Compile Include="Runtime\Processor.cs" />
     <Compile Include="Runtime\Dispatching\CommandDispatcher.cs" />
     <Compile Include="Messaging\Handling\Agent\CommandResultInnerHandler.cs" />
@@ -199,13 +199,13 @@
     <Compile Include="Messaging\Event.cs" />
     <Compile Include="Messaging\IMessageBus.cs" />
     <Compile Include="Messaging\IEventPublisher.cs" />
-    <Compile Include="Runtime\Writing\EventData.cs" />
-    <Compile Include="Runtime\Writing\EventDataItem.cs" />
-    <Compile Include="Runtime\Writing\EventStore.cs" />
-    <Compile Include="Runtime\Writing\HandlerRecord.cs" />
-    <Compile Include="Runtime\Writing\HandlerRecordStore.cs" />
-    <Compile Include="Runtime\Writing\Snapshot.cs" />
-    <Compile Include="Runtime\Writing\SnapshotStore.cs" />
+    <Compile Include="Database\Storage\EventData.cs" />
+    <Compile Include="Database\Storage\EventDataItem.cs" />
+    <Compile Include="Database\Storage\EventStore.cs" />
+    <Compile Include="Database\Storage\HandlerRecord.cs" />
+    <Compile Include="Database\Storage\HandlerRecordStore.cs" />
+    <Compile Include="Database\Storage\Snapshot.cs" />
+    <Compile Include="Database\Storage\SnapshotStore.cs" />
     <Compile Include="ThinkNetBootstrapper.cs" />
     <Compile Include="ValueObject.cs" />
     <Compile Include="Domain\EventSourcing\IEventStore.cs" />
@@ -229,7 +229,9 @@
     <Compile Include="Runtime\Routing\StandardMetadata.cs" />
     <Compile Include="ThinkNetException.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="obj\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

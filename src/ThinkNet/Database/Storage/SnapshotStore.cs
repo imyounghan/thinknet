@@ -3,11 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using ThinkLib;
 using ThinkLib.Serialization;
-using ThinkNet.Database;
 using ThinkNet.Domain;
 using ThinkNet.Domain.EventSourcing;
 
-namespace ThinkNet.Runtime.Writing
+namespace ThinkNet.Database.Storage
 {
     /// <summary>
     /// 聚合快照存储器

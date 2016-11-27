@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Runtime.Serialization;
-using ThinkNet.Common;
 using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging

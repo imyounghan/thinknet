@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using ThinkLib;
-using ThinkLib.Interception;
-using ThinkLib.Interception.Pipeline;
+using ThinkLib.Composition;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
@@ -16,43 +13,26 @@ namespace ThinkNet.Runtime.Dispatching
     /// <summary>
     /// 处理消息的代码程序
     /// </summary>
-    public class MessageDispatcher : IDispatcher
+    public class MessageDispatcher : Dispatcher
     {
-        private readonly ConcurrentDictionary<string, IHandlerAgent> _cachedHandlers;
-
+        //private readonly FilterHandledMessageInterceptor _first;
+        //private readonly NotifyCommandResultInterceptor _last;
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public MessageDispatcher(IMessageHandlerRecordStore handlerStore,
+        public MessageDispatcher(IObjectContainer container,
+            IMessageHandlerRecordStore handlerStore,
             IMessageBus messageBus,
             ICommandResultNotification notification)
-            : this()
-        {
-            this.AddCachedHandler(typeof(EventStream).FullName, 
-                new EventStreamInnerHandler(
-                    new InterceptorPipeline(new IInterceptor[] { 
-                        new FilterHandledMessageInterceptor(handlerStore), 
-                        new NotifyCommandResultInterceptor(messageBus) 
-                    })
-                )
-            );
+            : base(container)
+       {
+            var first = new FilterHandledMessageInterceptor(handlerStore);
+            var last = new NotifyCommandResultInterceptor(messageBus);
+
+            this.AddCachedHandler(typeof(EventStream).FullName, new EventStreamInnerHandler(first, last));
             this.AddCachedHandler(typeof(CommandResult).FullName, new CommandResultInnerHandler(notification));
         }
 
-        /// <summary>
-        /// Default Constructor.
-        /// </summary>
-        protected MessageDispatcher()
-        {
-            this._cachedHandlers = new ConcurrentDictionary<string, IHandlerAgent>();
-        }
-        /// <summary>
-        /// 添加一个缓存的Handler
-        /// </summary>
-        protected void AddCachedHandler(string key, IHandlerAgent handler)
-        {
-            _cachedHandlers.TryAdd(key, handler);
-        }
         ///// <summary>
         ///// 获取一个Hanlder,如果不存在则添加一个Handler
         ///// </summary>
@@ -69,79 +49,32 @@ namespace ThinkNet.Runtime.Dispatching
         //}
 
 
-        private IHandlerAgent BuildMessageHandler(object handler, Type contractType)
-        {
-            var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
-            return new MessageHandlerAgent(handler, method, null);
-        }
+        //protected virtual IHandlerAgent BuildHandlerAgent(object handler, Type handlerInterfaceType)
+        //{
+        //    var handlerAgentType = typeof(MessageHandlerAgent<>)
+        //        .MakeGenericType(handlerInterfaceType.GetGenericArguments());
+
+        //    return (IHandlerAgent)Activator.CreateInstance(handlerAgentType, handler);
+        //    //var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
+        //    //return new MessageHandlerAgent(handler, method, null);
+        //}
 
         /// <summary>
         /// 构造消息的处理程序
         /// </summary>
-        protected virtual IEnumerable<IHandlerAgent> BuildHandlerAgents(Type type)
+        protected override IEnumerable<IHandlerAgent> BuildHandlerAgents(Type messageType)
         {
-            Type contractType;
-            var handlers = MessageHandlerProvider.Instance.GetMessageHandlers(type, out contractType);
-            return handlers.Select(handler => BuildMessageHandler(handler, contractType)); ;
-        }
+            var contractType = typeof(IMessageHandler<>).MakeGenericType(messageType);
 
-        /// <summary>
-        /// 获取消息的处理程序
-        /// </summary>
-        private IEnumerable<IHandlerAgent> GetProxyHandlers(Type type)
-        {
-            var key = type.FullName;
-            IHandlerAgent cachedHandler;
-            if (_cachedHandlers.TryGetValue(key, out cachedHandler))
-                yield return cachedHandler;
+            var handlers = this.GetMessageHandlers(contractType);
+            if(handlers.IsEmpty())
+                return Enumerable.Empty<IHandlerAgent>();
 
-            var handlers = BuildHandlerAgents(type);
-            foreach (var handler in handlers) {
-                yield return handler;
-            }
+            var handlerAgentType = typeof(MessageHandlerAgent<>).MakeGenericType(messageType);
+            var constructor = handlerAgentType.GetConstructor(new Type[] { contractType });
+
+            return handlers.Select(handler => constructor.Invoke(new object[] { handler })).Cast<IHandlerAgent>();
         }
         
-
-        /// <summary>
-        /// 执行消息结果
-        /// </summary>
-        public void Execute(IMessage message, out TimeSpan executionTime)
-        {
-            message.NotNull("message");
-
-            executionTime = TimeSpan.Zero;
-
-
-            var stopwatch = Stopwatch.StartNew();
-            var handlers = GetProxyHandlers(message.GetType());
-            foreach (var handler in handlers) {
-                try {
-                    stopwatch.Restart();
-                    handler.Handle(message);
-                    stopwatch.Stop();
-
-                    executionTime += stopwatch.Elapsed;
-                }
-                catch (Exception ex) {
-                    if (LogManager.Default.IsErrorEnabled) {
-                        LogManager.Default.Error(ex, "Exception raised when handling {0}.", message);
-                    }
-                }
-            }
-        }
-
-        //protected virtual void OnExecuted(TMessage message, ExecutionStatus status)
-        //{
-        //    if (LogManager.Default.IsDebugEnabled) {
-        //        LogManager.Default.DebugFormat("Handle {0} success.", message);
-        //    }
-        //}
-
-        //protected virtual void OnException(TMessage message, ThinkNetException ex)
-        //{
-        //    if (LogManager.Default.IsErrorEnabled) {
-        //        LogManager.Default.Error(ex, "Exception raised when handling {0}.", message);
-        //    }
-        //}        
     }
 }

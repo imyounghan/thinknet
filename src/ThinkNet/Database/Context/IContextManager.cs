@@ -1,5 +1,4 @@
-﻿using ThinkNet.Common;
-
+﻿
 namespace ThinkNet.Database.Context
 {
     /// <summary>

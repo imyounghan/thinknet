@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ThinkLib;
+using ThinkLib.Composition;
 using ThinkLib.Interception;
 using ThinkNet.Contracts;
 using ThinkNet.Domain;
@@ -25,7 +26,8 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public Processor(IRepository repository,
+        public Processor(IObjectContainer container,
+            IRepository repository,
             IEventSourcedRepository eventSourcedRepository,
             IEnvelopeReceiver receiver,
             ICommandResultNotification notification,
@@ -36,9 +38,9 @@ namespace ThinkNet.Runtime
             this._receiver = receiver;
 
             this._dispatcherDict = new Dictionary<string, IDispatcher>(StringComparer.CurrentCulture) {
-                { StandardMetadata.CommandKind, new CommandDispatcher(repository, eventSourcedRepository, messageBus, handlerStore, interceptorProvider) },
-                { StandardMetadata.EventKind, new EventDispatcher(handlerStore) },
-                { StandardMetadata.MessageKind, new MessageDispatcher(handlerStore, messageBus, notification) }
+                { StandardMetadata.CommandKind, new CommandDispatcher(container, repository, eventSourcedRepository, messageBus, handlerStore, notification, interceptorProvider) },
+                { StandardMetadata.EventKind, new EventDispatcher(container,handlerStore) },
+                { StandardMetadata.MessageKind, new MessageDispatcher(container, handlerStore, messageBus, notification) }
             };
             this.lockObject = new object();
         }

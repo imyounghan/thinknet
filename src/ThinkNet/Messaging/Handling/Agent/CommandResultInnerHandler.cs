@@ -1,63 +1,54 @@
-﻿using System;
-using System.Reflection;
-using ThinkNet.Contracts;
+﻿using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
     /// <summary>
     /// 命令结果的内部处理器
     /// </summary>
-    public class CommandResultInnerHandler : HandlerAgent
+    public class CommandResultInnerHandler : IHandlerAgent, IMessageHandler<CommandResult>
     {
         private readonly ICommandResultNotification _notification;
-        private readonly Lazy<MethodInfo> _method;
 
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
         /// <param name="notification"></param>
-        public CommandResultInnerHandler(ICommandResultNotification notification)
-            : base(null)
+        public CommandResultInnerHandler(ICommandResultNotification notification)            
         {
             this._notification = notification;
-            //this._method = new Lazy<MethodInfo>(GetMethodInfo);
         }
 
-        protected override void TryHandle(object[] args)
+        public object GetInnerHandler()
         {
+            return this;
+        }
+
+        public void Handle(object[] args)
+        {            
             var reply = args[0] as CommandResult;
 
-            switch(reply.CommandReturnType) {
-                case CommandReturnType.CommandExecuted:
-                    _notification.NotifyCommandHandled(reply);
-                    break;
-                case CommandReturnType.DomainEventHandled:
-                    _notification.NotifyEventHandled(reply);
-                    break;
-            }
+            this.Handle(reply);
         }       
 
-        ///// <summary>
-        ///// 反射方法
-        ///// </summary>
-        //public override MethodInfo ReflectedMethod { get { return _method.Value; } }
-        ///// <summary>
-        ///// 处理器实例
-        ///// </summary>
-        //public override object HandlerInstance { get { return this; } }
+        private void Handle(CommandResult result)
+        {
+            switch (result.CommandReturnType) {
+                case CommandReturnType.CommandExecuted:
+                    _notification.NotifyCommandHandled(result);
+                    break;
+                case CommandReturnType.DomainEventHandled:
+                    _notification.NotifyEventHandled(result);
+                    break;
+            }
+        }
 
-        //protected override void TryMultipleHandle(object[] args)
-        //{
-        //    var reply = args[0] as CommandResult;
+        #region IMessageHandler<CommandResult> 成员
 
-        //    switch(reply.CommandReturnType) {
-        //        case CommandReturnType.CommandExecuted:
-        //            _notification.NotifyCommandHandled(reply);
-        //            break;
-        //        case CommandReturnType.DomainEventHandled:
-        //            _notification.NotifyEventHandled(reply);
-        //            break;
-        //    }
-        //}
+        void IMessageHandler<CommandResult>.Handle(CommandResult commandResult)
+        {
+            this.Handle(commandResult);
+        }
+
+        #endregion
     }
 }

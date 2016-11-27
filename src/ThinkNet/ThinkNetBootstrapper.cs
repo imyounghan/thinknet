@@ -7,6 +7,7 @@ using ThinkLib.Annotation;
 using ThinkLib.Composition;
 using ThinkNet.Contracts;
 using ThinkNet.Database;
+using ThinkNet.Database.Storage;
 using ThinkNet.Domain;
 using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Domain.Repositories;
@@ -15,7 +16,6 @@ using ThinkNet.Messaging.Fetching;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Runtime;
 using ThinkNet.Runtime.Routing;
-using ThinkNet.Runtime.Writing;
 
 namespace ThinkNet
 {

@@ -319,32 +319,7 @@
             注册类型
             </summary>
         </member>
-        <member name="M:ThinkLib.BootstrapperExtentions.SetDefault(ThinkLib.Bootstrapper,System.Type,System.String)">
-            <summary>
-            注册类型
-            </summary>
-        </member>
-        <member name="M:ThinkLib.BootstrapperExtentions.SetDefault(ThinkLib.Bootstrapper,System.Type)">
-            <summary>
-            注册类型
-            </summary>
-        </member>
         <member name="M:ThinkLib.BootstrapperExtentions.SetDefault(ThinkLib.Bootstrapper,System.Type,System.Type,ThinkLib.Composition.Lifecycle)">
-            <summary>
-            注册类型
-            </summary>
-        </member>
-        <member name="M:ThinkLib.BootstrapperExtentions.SetDefault(ThinkLib.Bootstrapper,System.Type,System.Type,System.String)">
-            <summary>
-            注册类型
-            </summary>
-        </member>
-        <member name="M:ThinkLib.BootstrapperExtentions.SetDefault(ThinkLib.Bootstrapper,System.Type,System.Type)">
-            <summary>
-            注册类型
-            </summary>
-        </member>
-        <member name="M:ThinkLib.BootstrapperExtentions.SetDefault``1(ThinkLib.Bootstrapper)">
             <summary>
             注册类型
             </summary>
@@ -354,27 +329,12 @@
             注册类型
             </summary>
         </member>
-        <member name="M:ThinkLib.BootstrapperExtentions.SetDefault``1(ThinkLib.Bootstrapper,System.String)">
-            <summary>
-            注册类型
-            </summary>
-        </member>
         <member name="M:ThinkLib.BootstrapperExtentions.SetDefault``1(ThinkLib.Bootstrapper,System.String,ThinkLib.Composition.Lifecycle)">
             <summary>
             注册类型
             </summary>
         </member>
-        <member name="M:ThinkLib.BootstrapperExtentions.SetDefault``2(ThinkLib.Bootstrapper)">
-            <summary>
-            注册类型
-            </summary>
-        </member>
         <member name="M:ThinkLib.BootstrapperExtentions.SetDefault``2(ThinkLib.Bootstrapper,ThinkLib.Composition.Lifecycle)">
-            <summary>
-            注册类型
-            </summary>
-        </member>
-        <member name="M:ThinkLib.BootstrapperExtentions.SetDefault``2(ThinkLib.Bootstrapper,System.String)">
             <summary>
             注册类型
             </summary>
@@ -419,7 +379,7 @@
             判断此类型是否已注册
             </summary>
         </member>
-        <member name="M:ThinkLib.Composition.IObjectContainer.RegisterInstance(System.Type,System.String,System.Object)">
+        <member name="M:ThinkLib.Composition.IObjectContainer.RegisterInstance(System.Type,System.Object,System.String)">
             <summary>
             注册一个类型
             </summary>
@@ -539,17 +499,7 @@
             注册类型
             </summary>
         </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterMultiple(ThinkLib.Composition.IObjectContainer,System.Type,System.Collections.Generic.IEnumerable{System.Type})">
-            <summary>
-            注册类型
-            </summary>
-        </member>
         <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterMultiple(ThinkLib.Composition.IObjectContainer,System.Type,System.Collections.Generic.IEnumerable{System.Type},ThinkLib.Composition.Lifecycle)">
-            <summary>
-            注册类型
-            </summary>
-        </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterMultiple(ThinkLib.Composition.IObjectContainer,System.Collections.Generic.IEnumerable{System.Type},System.Type)">
             <summary>
             注册类型
             </summary>
@@ -559,37 +509,14 @@
             注册类型
             </summary>
         </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterInstance(ThinkLib.Composition.IObjectContainer,System.Type,System.Object)">
-            <summary>
-            注册一个实例
-            </summary>
-            <param name="that">容器</param>
-            <param name="type">注册类型</param>
-            <param name="instance">该类型的实例</param>
-        </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterInstance``1(ThinkLib.Composition.IObjectContainer,``0)">
+        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterInstance``1(ThinkLib.Composition.IObjectContainer,``0,System.String)">
             <summary>
             注册一个实例
             </summary>
             <typeparam name="T">注册类型</typeparam>
             <param name="that">容器</param>
             <param name="instance">该类型的实例</param>
-        </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterInstance``1(ThinkLib.Composition.IObjectContainer,System.String,``0)">
-            <summary>
-            注册一个实例
-            </summary>
-            <typeparam name="T">注册类型</typeparam>
-            <param name="that">容器</param>
             <param name="name">注册的名称</param>
-            <param name="instance">该类型的实例</param>
-        </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterType(ThinkLib.Composition.IObjectContainer,System.Type)">
-            <summary>
-            注册一个类型且生命周期为单例
-            </summary>
-            <param name="that">容器</param>
-            <param name="type">注册类型</param>
         </member>
         <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterType(ThinkLib.Composition.IObjectContainer,System.Type,ThinkLib.Composition.Lifecycle)">
             <summary>
@@ -599,14 +526,6 @@
             <param name="type">注册类型</param>
             <param name="lifetime">生命周期</param>
         </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterType(ThinkLib.Composition.IObjectContainer,System.Type,System.Type)">
-            <summary>
-            注册一个类型且生命周期为单例
-            </summary>
-            <param name="that">容器</param>
-            <param name="from">注册类型</param>
-            <param name="to">目标类型</param>
-        </member>
         <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterType(ThinkLib.Composition.IObjectContainer,System.Type,System.Type,ThinkLib.Composition.Lifecycle)">
             <summary>
             注册一个类型
@@ -615,13 +534,6 @@
             <param name="from">注册类型</param>
             <param name="to">目标类型</param>
             <param name="lifetime">生命周期</param>
-        </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterType``1(ThinkLib.Composition.IObjectContainer)">
-            <summary>
-            注册一个类型且生命周期为单例
-            </summary>
-            <typeparam name="T">注册类型</typeparam>
-            <param name="that">容器</param>
         </member>
         <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterType``1(ThinkLib.Composition.IObjectContainer,ThinkLib.Composition.Lifecycle)">
             <summary>
@@ -639,14 +551,6 @@
             <param name="that">容器</param>
             <param name="name">注册的名称</param>
             <param name="lifetime">生命周期</param>
-        </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterType``2(ThinkLib.Composition.IObjectContainer)">
-            <summary>
-            注册一个类型且生命周期为单例
-            </summary>
-            <typeparam name="TFrom">注册类型</typeparam>
-            <typeparam name="TTo">目标类型</typeparam>
-            <param name="that">容器</param>
         </member>
         <member name="M:ThinkLib.Composition.ObjectContainerExtentions.RegisterType``2(ThinkLib.Composition.IObjectContainer,ThinkLib.Composition.Lifecycle)">
             <summary>
@@ -667,20 +571,6 @@
             <param name="name">注册的名称</param>
             <param name="lifetime">生命周期类型</param>
         </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.IsRegistered(ThinkLib.Composition.IObjectContainer,System.Type)">
-            <summary>
-            判断此类型是否已注册
-            </summary>
-            <param name="that">容器</param>
-            <param name="type">类型</param>
-        </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.IsRegistered``1(ThinkLib.Composition.IObjectContainer)">
-            <summary>
-            判断此类型是否已注册
-            </summary>
-            <typeparam name="T">注册类型</typeparam>
-            <param name="that">容器</param>
-        </member>
         <member name="M:ThinkLib.Composition.ObjectContainerExtentions.IsRegistered``1(ThinkLib.Composition.IObjectContainer,System.String)">
             <summary>
             判断此类型是否已注册
@@ -688,20 +578,6 @@
             <typeparam name="T">注册类型</typeparam>
             <param name="that">容器</param>
             <param name="name">注册的名称</param>
-        </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.Resolve(ThinkLib.Composition.IObjectContainer,System.Type)">
-            <summary>
-            获取类型对应的实例
-            </summary>
-            <param name="that">容器</param>
-            <param name="type">类型</param>
-        </member>
-        <member name="M:ThinkLib.Composition.ObjectContainerExtentions.Resolve``1(ThinkLib.Composition.IObjectContainer)">
-            <summary>
-            获取类型对应的实例
-            </summary>
-            <typeparam name="T">注册类型</typeparam>
-            <param name="that">容器</param>
         </member>
         <member name="M:ThinkLib.Composition.ObjectContainerExtentions.Resolve``1(ThinkLib.Composition.IObjectContainer,System.String)">
             <summary>
@@ -742,6 +618,169 @@
         <member name="M:ThinkLib.DisposableObject.ThrowIfDisposed">
             <summary>
             表示该对象已释放的异常
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Scheduling.Worker">
+            <summary>
+            后台循环执行一个特定的方法的工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.#ctor(System.Action,System.Action,System.Action{System.Exception})">
+            <summary>Initialize a new Worker for the specified method to run.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.#ctor(System.Action,System.Action{System.Exception})">
+            <summary>Initialize a new Worker for the specified method to run.
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.Interval">
+            <summary>
+            间隔时间(毫秒数)
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.SuccessCallback">
+            <summary>
+            成功调用的函数
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.ExceptionCallback">
+            <summary>
+            失败调用的函数
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.Processor">
+            <summary>
+            要执行的函数。
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Working">
+            <summary>
+            表示一个持续工作的方法
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker.CancellationToken">
+            <summary>
+            获取取消操作的通知
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.SetInterval(System.Int32)">
+            <summary>
+            等待下一个任务的间隔时间
+            </summary>
+            <param name="interval">毫秒</param>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Start">
+            <summary>
+            Start the worker.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker.Stop">
+            <summary>
+            Stop the worker.
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Scheduling.Worker`1">
+            <summary>
+            后台循环执行一个特定的方法的工作器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker`1.#ctor(System.Func{`0},System.Action{`0},System.Action{`0,System.Exception})">
+            <summary>
+            constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker`1.#ctor(System.Func{`0},System.Action{`0},System.Action{`0},System.Action{`0,System.Exception})">
+            <summary>
+            constructor.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.Worker`1.Working">
+            <summary>
+            表示一个持续工作的方法
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker`1.Factory">
+            <summary>
+            获取该 <typeparamref name="T"/> 实例的工厂。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker`1.Processor">
+            <summary>
+            要执行的函数。
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker`1.SuccessCallback">
+            <summary>
+            成功调用的函数
+            </summary>
+        </member>
+        <member name="P:ThinkLib.Scheduling.Worker`1.ExceptionCallback">
+            <summary>
+            失败调用的函数
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Scheduling.TimeScheduler">
+            <summary>
+            定时调度程序
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.TimeScheduler.Create(System.String,System.Action)">
+            <summary>
+            创建一个定时器
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.TimeScheduler.SetInterval(System.Double)">
+            <summary>
+            重新设置任务间隔
+            </summary>
+            <param name="interval">间隔时间(毫秒)</param>
+        </member>
+        <member name="M:ThinkLib.Scheduling.TimeScheduler.Start">
+            <summary>
+            启动
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.TimeScheduler.Stop">
+            <summary>
+            停止
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Scheduling.TimeScheduler.Dispose(System.Boolean)">
+            <summary>
+            终止定时器
+            </summary>
+        </member>
+        <member name="T:ThinkLib.Utilities.ObjectUtils">
+            <summary>
+            Object工具类
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.ObjectUtils.GetCachedProperties(System.Type)">
+            <summary>
+            获取该类型下所有属性
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.ObjectUtils.GetCachedProperties(System.Type,System.Reflection.BindingFlags)">
+            <summary>
+            获取该类型下指定的所有属性
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.ObjectUtils.FindProperty(System.Type,System.String)">
+            <summary>
+            查找该类型下的属性
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.ObjectUtils.CreateObject``1(System.Object)">
+            <summary>Create an object from the source object, assign the properties by the same name.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.ObjectUtils.UpdateObject``2(``0,``1,System.Linq.Expressions.Expression{System.Func{``1,System.Object}}[])">
+            <summary>Update the target object by the source object, assign the properties by the same name.
+            </summary>
+        </member>
+        <member name="M:ThinkLib.Utilities.ObjectUtils.GetObjectString(System.Object)">
+            <summary>
+            获取对象的字符串格式
             </summary>
         </member>
         <member name="T:ThinkLib.Utilities.UniqueId">
@@ -1332,6 +1371,11 @@
             <see cref="T:ThinkLib.Interception.IInterceptorProvider"/> 的实现类
             </summary>
         </member>
+        <member name="M:ThinkLib.Interception.InterceptorProvider.#ctor(ThinkLib.Composition.IObjectContainer)">
+            <summary>
+            Parameterized Constructor.
+            </summary>
+        </member>
         <member name="M:ThinkLib.Interception.InterceptorProvider.GetInterceptors(System.Reflection.MethodInfo)">
             <summary>
             获取该方法上的拦截器
@@ -1452,6 +1496,11 @@
             拦截器的管道
             </summary>
         </member>
+        <member name="F:ThinkLib.Interception.Pipeline.InterceptorPipeline.Empty">
+            <summary>
+            一个空的拦截器的管道
+            </summary>
+        </member>
         <member name="M:ThinkLib.Interception.Pipeline.InterceptorPipeline.#ctor">
             <summary>
             Default constructor.
@@ -1539,7 +1588,7 @@
         </member>
         <member name="M:ThinkLib.Interception.ParameterCollection.#ctor(System.Object[],System.Reflection.ParameterInfo[],System.Predicate{System.Reflection.ParameterInfo})">
             <summary>
-            Parameterized constructor.
+            Parameterized Constructor.
             </summary>
         </member>
         <member name="P:ThinkLib.Interception.ParameterCollection.Item(System.String)">
