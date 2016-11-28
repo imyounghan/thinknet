@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
-using ThinkNet.Common;
-using ThinkNet.Common.Context;
+using ThinkLib.Annotation;
+using ThinkNet.Database.Context;
 
 namespace ThinkNet.Database.NHibernate
 {

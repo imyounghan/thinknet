@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using ThinkNet;
-using ThinkNet.Common;
+using ThinkLib.Annotation;
 using ThinkNet.Database;
 
 namespace UserRegistration.ReadModel

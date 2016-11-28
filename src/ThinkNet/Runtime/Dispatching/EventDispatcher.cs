@@ -33,10 +33,11 @@ namespace ThinkNet.Runtime.Dispatching
             if(handlers.IsEmpty())
                 return Enumerable.Empty<IHandlerAgent>();
 
-            var handlerAgentType = typeof(MessageHandlerAgent<>).MakeGenericType(eventType);
-            var constructor = handlerAgentType.GetConstructor(new Type[] { contractType, typeof(IEnumerable<IInterceptor>), typeof(IEnumerable<IInterceptor>) });
+            //var handlerAgentType = typeof(MessageHandlerAgent<>).MakeGenericType(eventType);
+            //var constructor = handlerAgentType.GetConstructor(new Type[] { contractType, typeof(IEnumerable<IInterceptor>), typeof(IEnumerable<IInterceptor>) });
 
-            return handlers.Select(handler => constructor.Invoke(new object[] { handler, _firstInterceptors, new IInterceptor[0] })).Cast<IHandlerAgent>();
+            //return handlers.Select(handler => constructor.Invoke(new object[] { handler, _firstInterceptors, new IInterceptor[0] })).Cast<IHandlerAgent>();
+            return handlers.Select(handler => new MessageHandlerAgent(contractType, handler, _firstInterceptors, new IInterceptor[0])).Cast<IHandlerAgent>();
         }
 
         //private IHandlerAgent BuildMessageHandler(object handler, Type contractType)

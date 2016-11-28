@@ -1,5 +1,5 @@
 ﻿using System;
-using ThinkNet.Common;
+using ThinkLib.Annotation;
 using ThinkNet.Database;
 
 namespace UserRegistration

@@ -8,7 +8,7 @@ namespace ThinkNet.Messaging.Handling
     /// <remarks>
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
-    public interface IEventHandler<TEvent>
+    public interface IEventHandler<TEvent> : IHandler
         where TEvent : Event
     {
         /// <summary>
@@ -23,7 +23,7 @@ namespace ThinkNet.Messaging.Handling
     /// <remarks>
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
-    public interface IEventHandler<TEvent1, TEvent2>
+    public interface IEventHandler<TEvent1, TEvent2> : IHandler
         where TEvent1 : Event
         where TEvent2 : Event
     {
@@ -39,7 +39,7 @@ namespace ThinkNet.Messaging.Handling
     /// <remarks>
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
-    public interface IEventHandler<TEvent1, TEvent2, TEvent3>
+    public interface IEventHandler<TEvent1, TEvent2, TEvent3> : IHandler
         where TEvent1 : Event
         where TEvent2 : Event
         where TEvent3 : Event
@@ -56,7 +56,7 @@ namespace ThinkNet.Messaging.Handling
     /// <remarks>
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
-    public interface IEventHandler<TEvent1, TEvent2, TEvent3, TEvent4>
+    public interface IEventHandler<TEvent1, TEvent2, TEvent3, TEvent4> : IHandler
         where TEvent1 : Event
         where TEvent2 : Event
         where TEvent3 : Event
@@ -74,7 +74,7 @@ namespace ThinkNet.Messaging.Handling
     /// <remarks>
     /// 用于同步数据，将匹配EventStream.Events的个数和类型。
     /// </remarks>
-    public interface IEventHandler<TEvent1, TEvent2, TEvent3, TEvent4, TEvent5>
+    public interface IEventHandler<TEvent1, TEvent2, TEvent3, TEvent4, TEvent5> : IHandler
         where TEvent1 : Event
         where TEvent2 : Event
         where TEvent3 : Event

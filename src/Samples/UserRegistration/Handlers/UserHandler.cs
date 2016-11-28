@@ -9,7 +9,8 @@ namespace UserRegistration.Handlers
 {
     public class UserHandler :
         ICommandHandler<RegisterUser>,
-        IEventHandler<UserCreated>
+        IEventHandler<UserCreated>,
+        IMessageHandler<UserCreated>
     {
         private readonly IUniqueLoginNameService _uniqueService;
         private readonly IUserDao _userDao;
@@ -19,9 +20,14 @@ namespace UserRegistration.Handlers
             this._uniqueService = uniqueService;
         }
 
+        public void Handle(UserCreated message)
+        {
+            Console.WriteLine("send email.");
+        }
+
         public void Handle(ICommandContext context, RegisterUser command)
         {
-            var user = new UserRegisterService(_uniqueService, command.UniqueId)
+            var user = new UserRegisterService(_uniqueService, command.Id)
                 .Register(command.LoginId, command.Password, command.UserName, command.Email);
             context.Add(user);
 

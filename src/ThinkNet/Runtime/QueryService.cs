@@ -35,7 +35,7 @@ namespace ThinkNet.Runtime
 
         public Task<IQueryResult> ExecuteAsync(IQueryParameter queryParameter)
         {
-            return Task.Factory.StartNew(FetchQueryResult, queryParameter);
+            return Task.Factory.StartNew<IQueryResult>(FetchQueryResult, queryParameter);
         }
 
         private object GetFetcher(Type parameterType, out Type contractType)
@@ -85,10 +85,10 @@ namespace ThinkNet.Runtime
 
         private IQueryResult QueryPageResult(object fetcher, QueryPageParameter parameter, Type contractType)
         {
-
             dynamic total;
+            var genericTypes = contractType.GetGenericArguments();
             var result = ((dynamic)fetcher).Fetch((dynamic)parameter, out total);
-            var resultContractType = typeof(QueryPageResult<>).MakeGenericType(contractType.GenericTypeArguments[1]);
+            var resultContractType = typeof(QueryPageResult<>).MakeGenericType(genericTypes[1]);
             var queryResult = Activator.CreateInstance(resultContractType, new object[] { total, parameter.PageSize, parameter.PageIndex, result });
             return queryResult as QueryResult;
         }
@@ -96,7 +96,8 @@ namespace ThinkNet.Runtime
         private IQueryResult QuerySingleResult(object fetcher, object parameter, Type contractType)
         {
             var result = ((dynamic)fetcher).Fetch((dynamic)parameter);
-            var resultContractType = typeof(QuerySingleResult<>).MakeGenericType(contractType.GenericTypeArguments[1]);
+            var genericTypes = contractType.GetGenericArguments();
+            var resultContractType = typeof(QuerySingleResult<>).MakeGenericType(genericTypes[1]);
             var queryResult = Activator.CreateInstance(resultContractType, new object[] { result });
             return queryResult as QueryResult;
         }
@@ -104,20 +105,23 @@ namespace ThinkNet.Runtime
         private IQueryResult QueryMultipleResult(object fetcher, object parameter, Type contractType)
         {
             var result = ((dynamic)fetcher).Fetch((dynamic)parameter);
-            var resultContractType = typeof(QueryMultipleResult<>).MakeGenericType(contractType.GenericTypeArguments[1]);
+            var genericTypes = contractType.GetGenericArguments();
+            var resultContractType = typeof(QueryMultipleResult<>).MakeGenericType(genericTypes[1]);
             var queryResult = Activator.CreateInstance(resultContractType, new object[] { result });
             return queryResult as QueryResult;
         }
 
         public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
         {
-            var queryFetcherInterfaceTypes = assemblies
+            var filteredTypes = assemblies
                 .SelectMany(assembly => assembly.GetTypes())
-                .Where(FilterType);//.ToArray();
+                .Where(FilterType)
+                .SelectMany(type => type.GetInterfaces())
+                .Where(FilterInterfaceType);
 
-            foreach(var type in queryFetcherInterfaceTypes) {
+            foreach(var type in filteredTypes) {
                 var parameterType = type.GetGenericArguments().First();
-                if(ParameterTypeMapFetcherType.ContainsKey(null)) {
+                if(ParameterTypeMapFetcherType.ContainsKey(parameterType)) {
                     string errorMessage = string.Format("There are have duplicate IQueryFetcher interface type for {0}.", parameterType.FullName);
                     throw new ThinkNetException(errorMessage);
                 }
@@ -126,9 +130,9 @@ namespace ThinkNet.Runtime
             }
         }
 
-        private static bool FilterType(Type type)
+        private static bool FilterInterfaceType(Type type)
         {
-            if(!type.IsInterface || !type.IsGenericType)
+            if(!type.IsGenericType)
                 return false;
 
             var genericType = type.GetGenericTypeDefinition();
@@ -136,6 +140,14 @@ namespace ThinkNet.Runtime
             return genericType == typeof(IQueryFetcher<,>) ||
                 genericType == typeof(IQueryMultipleFetcher<,>) ||
                 genericType == typeof(IQueryPageFetcher<,>);
+        }
+
+        private static bool FilterType(Type type)
+        {
+            if(!type.IsClass || type.IsAbstract)
+                return false;
+
+            return type.GetInterfaces().Any(FilterInterfaceType);
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Configuration;
 using System.Data.Common;
 using System.Data.Entity;
-using ThinkNet.Common;
+using ThinkLib.Annotation;
 using ThinkNet.Database.Context;
 
 namespace ThinkNet.Database.EntityFramework

@@ -22,19 +22,22 @@ namespace ThinkNet.Messaging.Handling.Agent
         private readonly ConcurrentDictionary<Type, IHandlerAgent> _cachedHandlers;
         private readonly MethodInfo _method;
         private readonly InterceptorPipeline _interceptorPipeline;
-
+        private readonly IObjectContainer _container;
 
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public EventStreamInnerHandler(FilterHandledMessageInterceptor filterInInterceptor,
+        public EventStreamInnerHandler(IObjectContainer container,
+            FilterHandledMessageInterceptor filterInInterceptor,
             NotifyCommandResultInterceptor notifyInterceptor)            
         {
-            this._method = this.GetType().GetMethod("TryHandle",
-                BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic,
-                null,
-                new[] { typeof(EventStream) },
-                null);
+            this._container = container;
+            this._method = this.GetType().GetMethod("Handle");
+            //this._method = this.GetType().GetMethod("Handle",
+            //    BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic,
+            //    null,
+            //    new[] { typeof(object[]) },
+            //    null);
             this._cachedHandlers = new ConcurrentDictionary<Type, IHandlerAgent>();
             this._interceptorPipeline = new InterceptorPipeline(new IInterceptor[] { filterInInterceptor, notifyInterceptor });
         }
@@ -45,14 +48,14 @@ namespace ThinkNet.Messaging.Handling.Agent
             return this;
         }
 
-        public void Handle(object[] args)
+        public void Handle(params object[] args)
         {           
             var input = new MethodInvocation(this, _method, args);
             var methodReturn = _interceptorPipeline.Invoke(input, delegate {
                 try {
                     this.TryHandle(args[0] as EventStream);
 
-                    return new MethodReturn(input, null, new object[] { args });
+                    return new MethodReturn(input, null, args);
                 }
                 catch(Exception ex) {
                     return new MethodReturn(input, ex);
@@ -72,33 +75,56 @@ namespace ThinkNet.Messaging.Handling.Agent
             eventHandler.Handle(parameters);
         }
 
-        private IHandlerAgent BuildEventHandler(object handler, Type eventHandlerType)
+        private IHandlerAgent BuildEventHandler(IHandler handler, Type eventHandlerType)
         {
             var eventTypes = eventHandlerType.GetGenericArguments();
-            Type eventHandlerAgentType;
+            Type contractType;
+            //Type eventHandlerAgentType;
             switch (eventTypes.Length) {
                 case 1:
-                    eventHandlerAgentType = typeof(EventHandlerAgent<>).MakeGenericType(eventTypes);
+                    //eventHandlerAgentType = typeof(EventHandlerAgent<>).MakeGenericType(eventTypes);
+                    contractType = typeof(IEventHandler<>).MakeGenericType(eventTypes);
                     break;
                 case 2:
-                    eventHandlerAgentType = typeof(EventHandlerAgent<,>).MakeGenericType(eventTypes);
+                    //eventHandlerAgentType = typeof(EventHandlerAgent<,>).MakeGenericType(eventTypes);
+                    contractType = typeof(IEventHandler<,>).MakeGenericType(eventTypes);
                     break;
                 case 3:
-                    eventHandlerAgentType = typeof(EventHandlerAgent<,,>).MakeGenericType(eventTypes);
+                    //eventHandlerAgentType = typeof(EventHandlerAgent<,,>).MakeGenericType(eventTypes);
+                    contractType = typeof(IEventHandler<,,>).MakeGenericType(eventTypes);
                     break;
                 case 4:
-                    eventHandlerAgentType = typeof(EventHandlerAgent<,,,>).MakeGenericType(eventTypes);
+                    //eventHandlerAgentType = typeof(EventHandlerAgent<,,,>).MakeGenericType(eventTypes);
+                    contractType = typeof(IEventHandler<,,,>).MakeGenericType(eventTypes);
                     break;
                 case 5:
-                    eventHandlerAgentType = typeof(EventHandlerAgent<,,,,>).MakeGenericType(eventTypes);
+                    //eventHandlerAgentType = typeof(EventHandlerAgent<,,,,>).MakeGenericType(eventTypes);
+                    contractType = typeof(IEventHandler<,,,,>).MakeGenericType(eventTypes);
                     break;
                 default:
                     throw new ThinkNetException();
             }
 
-            return (IHandlerAgent)Activator.CreateInstance(eventHandlerAgentType, handler);
+            //return (IHandlerAgent)Activator.CreateInstance(eventHandlerAgentType, handler);
             //var method = MessageHandlerProvider.Instance.GetCachedHandleMethodInfo(contractType, () => handler.GetType());
             //return new EventHandlerAgent(handler, method);
+
+            return new EventHandlerAgent(contractType, handler);
+        }
+
+        /// <summary>
+        /// 获取事件对应的处理器接口类型
+        /// </summary>
+        private static Type GetEventHandlerInterfaceType(Type[] eventTypes)
+        {
+            switch (eventTypes.Length) {
+                case 0:
+                    throw new ArgumentNullException("eventTypes", "An empty array.");
+                case 1:
+                    return typeof(IEventHandler<>).MakeGenericType(eventTypes[0]);
+                default:
+                    return EventTypesMapContractType[new CompositeKey(eventTypes)];
+            }
         }
 
         /// <summary>
@@ -106,13 +132,13 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// </summary>
         protected IHandlerAgent GetEventHandler(Type[] types)
         {
-            var contractType = MessageHandlerProvider.Instance.GetEventHandlerType(types);
+            var contractType = GetEventHandlerInterfaceType(types);
 
             IHandlerAgent cachedHandler;
             if(_cachedHandlers.TryGetValue(contractType, out cachedHandler))
                 return cachedHandler;
-            
-            var handlers = MessageHandlerProvider.Instance.GetEventHandlers(contractType)
+
+            var handlers = _container.ResolveAll(contractType).Cast<IHandler>()
                 .Select(handler => BuildEventHandler(handler, contractType))
                 .ToArray();
 
@@ -157,7 +183,15 @@ namespace ThinkNet.Messaging.Handling.Agent
 
         private static bool FilterType(Type type)
         {
-            if(!type.IsInterface || !type.IsGenericType)
+            if(!type.IsInterface)
+                return false;
+
+            return type.GetInterfaces().Any(FilterInterfaceType);
+        }
+
+        private static bool FilterInterfaceType(Type type)
+        {
+            if(!type.IsGenericType)
                 return false;
 
             var genericType = type.GetGenericTypeDefinition();
@@ -166,17 +200,17 @@ namespace ThinkNet.Messaging.Handling.Agent
                 genericType == typeof(IEventHandler<,,>) ||
                 genericType == typeof(IEventHandler<,,,>) ||
                 genericType == typeof(IEventHandler<,,,,>);
-        }
+        } 
 
         public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
         {
-            var queryFetcherInterfaceTypes = assemblies
+            var eventHandlerInterfaceTypes = assemblies
                 .SelectMany(assembly => assembly.GetTypes())
                 .Where(FilterType);//.ToArray();
 
-            foreach(var interfaceType in queryFetcherInterfaceTypes) {
-                var key = new CompositeKey(interfaceType.GenericTypeArguments);
-
+            foreach (var interfaceType in eventHandlerInterfaceTypes) {
+                var genericTypes = interfaceType.GetGenericArguments();
+                var key = new CompositeKey(genericTypes);
 
                 EventTypesMapContractType.TryAdd(key, interfaceType);
                 if(EventTypesMapContractType.ContainsKey(key)) {
@@ -195,7 +229,7 @@ namespace ThinkNet.Messaging.Handling.Agent
 
         //void IMessageHandler<EventStream>.Handle(EventStream eventStream)
         //{
-        //    this.Handle(eventStream);
+        //    this.TryHandle(eventStream);
         //}
 
         //#endregion

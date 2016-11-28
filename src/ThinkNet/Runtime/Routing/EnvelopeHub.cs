@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,8 +21,7 @@ namespace ThinkNet.Runtime.Routing
 
         /// <summary>
         /// Parameterized Constructor.
-        /// </summary>
-        [ImportingConstructor]
+        /// </summary>        
         public EnvelopeHub(IRoutingKeyProvider routingKeyProvider)
             : this(routingKeyProvider, ConfigurationSetting.Current.QueueCount, ConfigurationSetting.Current.QueueCapacity)
         { }
@@ -92,7 +90,7 @@ namespace ThinkNet.Runtime.Routing
             //    this.EnvelopeReceived(this, item);
             //}
             foreach (var item in broker.GetConsumingEnumerable(cancellationSource.Token)) {
-                if (LogManager.Default.IsDebugEnabled) {
+                if(LogManager.Default.IsDebugEnabled) {
                     LogManager.Default.DebugFormat("Receive an envelope from local queue, data:{0}.", item.Body);
                 }
                 this.EnvelopeReceived(this, item);
@@ -129,7 +127,7 @@ namespace ThinkNet.Runtime.Routing
         /// </summary>
         public virtual Task SendAsync(Envelope envelope)
         {
-            if (LogManager.Default.IsDebugEnabled) {
+            if(LogManager.Default.IsDebugEnabled) {
                 LogManager.Default.DebugFormat("Send an envelope to local queue, data:{0}.", envelope.Body);
             }
 
@@ -140,8 +138,9 @@ namespace ThinkNet.Runtime.Routing
         /// </summary>
         public virtual Task SendAsync(IEnumerable<Envelope> envelopes)
         {
-            if (LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("Send a batch of envelope to local queue.");
+            if(LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.DebugFormat("Send a batch of envelope to local queue, data:{0}.", 
+                    string.Join(";", envelopes.Select(item=>item.Body.ToString())));
             }
 
             return Task.Factory.StartNew(() => envelopes.ForEach(this.Distribute));

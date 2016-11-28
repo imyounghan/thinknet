@@ -8,7 +8,7 @@ namespace ThinkNet.Runtime.Routing
     /// <summary>
     /// 表示一个要发送的信件
     /// </summary>
-    public class Envelope
+    public class Envelope : EventArgs
     {
         private readonly Dictionary<string, object> dict;
         /// <summary>

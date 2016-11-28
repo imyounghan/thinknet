@@ -114,14 +114,14 @@ namespace ThinkNet.Messaging.Handling
                 return;
             }
 
-            if(dict.Values.Count > 1) {
-                throw new ThinkNetException("Detected more than one aggregate root created or modified by command.");
-            }
-            if(dict.Values.Count == 1) {
-                _eventSourcedRepository.Save(aggregateRoots.First(), commandId);
-                SendEvents();
-                return;
-            }
+            //if(dict.Values.Count > 1) {
+            //    throw new ThinkNetException("Detected more than one aggregate root created or modified by command.");
+            //}
+            //if(dict.Values.Count == 1) {
+            //    _eventSourcedRepository.Save(aggregateRoots.First(), commandId);
+            //    SendEvents();
+            //    return;
+            //}
 
             throw new ThinkNetException("No aggregate root found to be created or modified ");
         }

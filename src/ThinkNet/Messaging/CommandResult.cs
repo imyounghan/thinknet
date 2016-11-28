@@ -93,8 +93,8 @@ namespace ThinkNet.Messaging
         /// Parameterized Constructor.
         /// </summary>
         public CommandResult(string commandId, CommandReturnType commandReturnType = CommandReturnType.DomainEventHandled, CommandStatus status = CommandStatus.Success, string errorMessage = null, string errorCode = null)
-            //: base(commandId, status, errorMessage, errorCode)
         {
+            this.CommandId = commandId;
             this.CommandReturnType = commandReturnType;
             this.ReplyTime = DateTime.UtcNow;
             this.Status = status;
@@ -105,8 +105,8 @@ namespace ThinkNet.Messaging
         /// Parameterized Constructor.
         /// </summary>
         public CommandResult(string commandId, Exception exception, CommandStatus? status = null, CommandReturnType commandReturnType = CommandReturnType.DomainEventHandled)
-            //: base(commandId, exception)
         {
+            this.CommandId = commandId;
             this.CommandReturnType = commandReturnType;
             this.ReplyTime = DateTime.UtcNow;
             this.Status = status.HasValue ? status.Value : CommandStatus.Success;

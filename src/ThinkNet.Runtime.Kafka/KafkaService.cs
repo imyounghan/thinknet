@@ -3,8 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using ThinkNet.Common.Serialization;
-using ThinkNet.Domain.EventSourcing;
+using ThinkLib.Serialization;
 using ThinkNet.Messaging;
 using ThinkNet.Runtime.Kafka;
 using ThinkNet.Runtime.Routing;
@@ -91,7 +90,7 @@ namespace ThinkNet.Runtime
 
         private void Distribute(Envelope envelope, TopicOffsetPosition offset)
         {
-            var id = envelope.GetMetadata(StandardMetadata.IdentifierId);
+            var id = envelope.GetMetadata(StandardMetadata.SourceId);
 
             if(offsetPositions.TryAdd(id, offset))
                 base.Distribute(envelope);
@@ -124,10 +123,10 @@ namespace ThinkNet.Runtime
                 envelope.Body = eventStream;
                 //envelope.Metadata[StandardMetadata.IdentifierId] = ObjectId.GenerateNewStringId();
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.MessageKind;
-                envelope.Metadata[StandardMetadata.SourceId] = eventStream.SourceId;
+                envelope.Metadata[StandardMetadata.SourceId] = eventStream.CorrelationId;
             }
-            else if(type == typeof(CommandResultReplied)) {
-                var commandResult = _serializer.DeserializeFromBinary<CommandResultReplied>(serialized);
+            else if(type == typeof(CommandResult)) {
+                var commandResult = _serializer.DeserializeFromBinary<CommandResult>(serialized);
                 envelope.Body = commandResult;
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.MessageKind;
                 envelope.Metadata[StandardMetadata.SourceId] = commandResult.CommandId;
@@ -136,16 +135,16 @@ namespace ThinkNet.Runtime
                 var data = _serializer.DeserializeFromBinary<GeneralData>(serialized);
                 envelope.Body = this.Transform(data);
 
-                var command = envelope.Body as ICommand;
+                var command = envelope.Body as Command;
                 if (command != null) {
                     envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
-                    envelope.Metadata[StandardMetadata.SourceId] = command.GetKey();
+                    envelope.Metadata[StandardMetadata.SourceId] = command.Id;
                 }
 
-                var @event = envelope.Body as IEvent;
+                var @event = envelope.Body as Event;
                 if (@event != null) {
                     envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
-                    envelope.Metadata[StandardMetadata.SourceId] = @event.GetKey();
+                    envelope.Metadata[StandardMetadata.SourceId] = @event.Id;
                 }
             }
            
@@ -157,7 +156,7 @@ namespace ThinkNet.Runtime
 
         private void OnEnvelopeCompleted(object sender, Envelope envelope)
         {
-            var id = envelope.GetMetadata(StandardMetadata.IdentifierId);
+            var id = envelope.GetMetadata(StandardMetadata.SourceId);
             TopicOffsetPosition offset;
 
             if(!string.IsNullOrEmpty(id) && offsetPositions.TryRemove(id, out offset))

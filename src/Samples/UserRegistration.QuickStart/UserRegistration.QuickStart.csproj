@@ -44,6 +44,12 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="ThinkLib">
+      <HintPath>..\..\dependent\ThinkLib.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkLib.Composition.Unity">
+      <HintPath>..\..\dependent\ThinkLib.Composition.Unity.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />

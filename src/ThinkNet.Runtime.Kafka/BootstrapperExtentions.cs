@@ -1,4 +1,5 @@
-﻿using ThinkNet.Runtime.Kafka;
+﻿using ThinkLib;
+using ThinkNet.Runtime.Kafka;
 using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime
@@ -7,10 +8,10 @@ namespace ThinkNet.Runtime
     {
         public static Bootstrapper UsingKafka(this Bootstrapper that)
         {
-            that.Register<ITopicProvider, DefaultTopicProvider>();
-            that.Register<IEnvelopeSender, KafkaService>();
-            that.Register<IEnvelopeReceiver, KafkaService>();
-            that.Register<IProcessor, KafkaService>("KafkaProcessor");
+            that.SetDefault<ITopicProvider, DefaultTopicProvider>();
+            that.SetDefault<IEnvelopeSender, KafkaService>();
+            that.SetDefault<IEnvelopeReceiver, KafkaService>();
+            that.SetDefault<IProcessor, KafkaService>("kafka");
 
             //Console.WriteLine("kafka:{0}", );
 

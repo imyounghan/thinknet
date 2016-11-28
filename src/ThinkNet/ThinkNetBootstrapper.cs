@@ -71,6 +71,7 @@ namespace ThinkNet
             }
 
             this.RegisterFrameworkComponents();
+            AggregateRootInnerHandlerProvider.Instance.Initialize(nonAbstractTypes);
         }
 
         public override void Start()
@@ -102,6 +103,7 @@ namespace ThinkNet
             this.SetDefault<IMessageBus, MessageBus>();
             this.SetDefault<ICommandService, CommandService>();
             this.SetDefault<ICommandResultNotification, CommandService>();
+            this.SetDefault<IQueryService, QueryService>();
             this.SetDefault<IMessageHandlerRecordStore, MessageHandlerRecordInMemory>();
             this.SetDefault<IEnvelopeSender, EnvelopeHub>();
             this.SetDefault<IEnvelopeReceiver, EnvelopeHub>();

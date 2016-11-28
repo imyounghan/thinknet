@@ -50,18 +50,20 @@ namespace ThinkNet.Runtime.Dispatching
 
             IHandlerAgent[] handlerAgents = new IHandlerAgent[0];
             if(!handlers.IsEmpty()) {
-                var handlerAgentType = typeof(CommandHandlerAgent<>).MakeGenericType(commandType);
-                var constructor = handlerAgentType.GetConstructors().Single();
-                handlerAgents = handlers.Select(handler => constructor.Invoke(new object[] { handler, _commandContextFactory, _interceptorProvider, _firstInterceptors, _lastInterceptors })).Cast<IHandlerAgent>().ToArray();
+                //var handlerAgentType = typeof(CommandHandlerAgent<>).MakeGenericType(commandType);
+                //var constructor = handlerAgentType.GetConstructors().Single();
+                //handlerAgents = handlers.Select(handler => constructor.Invoke(new object[] { handler, _commandContextFactory, _interceptorProvider, _firstInterceptors, _lastInterceptors })).Cast<IHandlerAgent>().ToArray();
+                handlerAgents = handlers.Select(handler => new CommandHandlerAgent(contractType, handler, _commandContextFactory, _interceptorProvider, _firstInterceptors, _lastInterceptors)).Cast<IHandlerAgent>().ToArray();
             }
 
             if(handlerAgents.Length == 0) {
                 contractType = typeof(IMessageHandler<>).MakeGenericType(commandType);
                 handlers = this.GetMessageHandlers(contractType);
                 if(!handlers.IsEmpty()) {
-                    var handlerAgentType = typeof(MessageHandlerAgent<>).MakeGenericType(commandType);
-                    var constructor = handlerAgentType.GetConstructor(new Type[] { contractType, typeof(IInterceptorProvider), typeof(IEnumerable<IInterceptor>), typeof(IEnumerable<IInterceptor>) });
-                    handlerAgents = handlers.Select(handler => constructor.Invoke(new object[] { handler, _interceptorProvider, _firstInterceptors, _lastInterceptors })).Cast<IHandlerAgent>().ToArray();
+                    //var handlerAgentType = typeof(MessageHandlerAgent<>).MakeGenericType(commandType);
+                    //var constructor = handlerAgentType.GetConstructor(new Type[] { contractType, typeof(IInterceptorProvider), typeof(IEnumerable<IInterceptor>), typeof(IEnumerable<IInterceptor>) });
+                    //handlerAgents = handlers.Select(handler => constructor.Invoke(new object[] { handler, _interceptorProvider, _firstInterceptors, _lastInterceptors })).Cast<IHandlerAgent>().ToArray();
+                    handlerAgents = handlers.Select(handler => new MessageHandlerAgent(contractType, handler, _interceptorProvider, _firstInterceptors, _lastInterceptors)).Cast<IHandlerAgent>().ToArray();
                 }
             }
 

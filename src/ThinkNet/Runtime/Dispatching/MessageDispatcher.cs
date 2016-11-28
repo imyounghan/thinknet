@@ -29,7 +29,7 @@ namespace ThinkNet.Runtime.Dispatching
             var first = new FilterHandledMessageInterceptor(handlerStore);
             var last = new NotifyCommandResultInterceptor(messageBus);
 
-            this.AddCachedHandler(typeof(EventStream).FullName, new EventStreamInnerHandler(first, last));
+            this.AddCachedHandler(typeof(EventStream).FullName, new EventStreamInnerHandler(container, first, last));
             this.AddCachedHandler(typeof(CommandResult).FullName, new CommandResultInnerHandler(notification));
         }
 
@@ -70,10 +70,11 @@ namespace ThinkNet.Runtime.Dispatching
             if(handlers.IsEmpty())
                 return Enumerable.Empty<IHandlerAgent>();
 
-            var handlerAgentType = typeof(MessageHandlerAgent<>).MakeGenericType(messageType);
-            var constructor = handlerAgentType.GetConstructor(new Type[] { contractType });
+            //var handlerAgentType = typeof(MessageHandlerAgent<>).MakeGenericType(messageType);
+            //var constructor = handlerAgentType.GetConstructor(new Type[] { contractType });
 
-            return handlers.Select(handler => constructor.Invoke(new object[] { handler })).Cast<IHandlerAgent>();
+            //return handlers.Select(handler => constructor.Invoke(new object[] { handler })).Cast<IHandlerAgent>();
+            return handlers.Select(handler => new MessageHandlerAgent(contractType, handler)).Cast<IHandlerAgent>();
         }
         
     }

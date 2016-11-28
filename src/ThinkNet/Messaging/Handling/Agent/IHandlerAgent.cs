@@ -13,16 +13,9 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// </summary>
         void Handle(params object[] args);
 
-        ///// <summary>
-        ///// 表示处理器的反射方法
-        ///// </summary>
-        //MethodInfo ReflectedMethod { get; }
-
-        ///// <summary>
-        ///// 表示处理器的实例
-        ///// </summary>
-        //object HandlerInstance { get; }
-
+        /// <summary>
+        /// 获取内部的目标处理器
+        /// </summary>
         object GetInnerHandler();
     }
 }

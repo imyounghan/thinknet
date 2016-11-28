@@ -29,17 +29,18 @@ namespace ThinkNet.Runtime.Kafka
                 return "EventStreams";
             }
 
-            if (payload is CommandResultReplied) {
+            if (payload is CommandResult) {
                 return "CommandResults";
             }
 
-            if (payload is ICommand) {
+            if (payload is Command) {
                 return "Commands";
             }
 
-            if (payload is IEvent) {
+            if (payload is Event) {
                 return "Events";
-            }            
+            }
+            
 
             throw new ThinkNetException(string.Format("Unknown topic from the type of '{0}'.", payload.GetType().FullName));
         }
@@ -50,7 +51,7 @@ namespace ThinkNet.Runtime.Kafka
                 case "EventStreams":
                     return typeof(EventStream);
                 case "CommandResults":
-                    return typeof(CommandResultReplied);
+                    return typeof(CommandResult);
                 case "Commands":
                 case "Events":
                     return typeof(GeneralData);

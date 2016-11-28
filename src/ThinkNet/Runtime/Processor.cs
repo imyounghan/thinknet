@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using ThinkLib;
 using ThinkLib.Composition;
 using ThinkLib.Interception;
@@ -15,7 +17,7 @@ namespace ThinkNet.Runtime
     /// <summary>
     /// 框架内处理消息的核心进程
     /// </summary>
-    public class Processor : DisposableObject, IProcessor
+    public class Processor : DisposableObject, IProcessor, IInitializer
     {
         private readonly IEnvelopeReceiver _receiver;
         private readonly Dictionary<string, IDispatcher> _dispatcherDict;
@@ -138,5 +140,15 @@ namespace ThinkNet.Runtime
                 this.Stop();
             }
         }
+
+        #region IInitializer 成员
+
+        public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
+        {
+            _dispatcherDict.Values.OfType<IInitializer>()
+                .ForEach(item => item.Initialize(container, assemblies));
+        }
+
+        #endregion
     }
 }

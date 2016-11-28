@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ThinkNet</RootNamespace>
     <AssemblyName>ThinkNet</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -42,17 +42,11 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.Composition.Registration" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Reflection.Context" />
-    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -135,9 +129,9 @@
     <Compile Include="Messaging\Fetching\IQueryPageFetcher.cs" />
     <Compile Include="Messaging\Handling\Agent\HandlerAgent.cs" />
     <Compile Include="Messaging\Handling\DomainEventObsoletedException.cs" />
+    <Compile Include="Messaging\Handling\IHandler.cs" />
     <Compile Include="Messaging\Handling\SourceMetadata.cs" />
     <Compile Include="Messaging\Handling\CommandContext.cs" />
-    <Compile Include="Messaging\Handling\MessageHandlerProvider.cs" />
     <Compile Include="Messaging\Handling\Agent\NotifyCommandResultInterceptor.cs" />
     <Compile Include="Messaging\Handling\IMessageHandler.cs" />
     <Compile Include="Messaging\Handling\Agent\CommandHandlerAgent.cs" />

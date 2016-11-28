@@ -44,11 +44,15 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="ThinkLib">
+      <HintPath>..\..\dependent\ThinkLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\RegisterUser.cs" />
     <Compile Include="IUniqueLoginNameService.cs" />
     <Compile Include="LoginNameData.cs" />
+    <Compile Include="ReadModel\FindAllData.cs" />
     <Compile Include="ReadModel\IUserDao.cs">
       <SubType>Code</SubType>
     </Compile>

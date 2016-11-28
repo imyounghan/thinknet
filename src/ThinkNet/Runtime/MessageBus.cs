@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ThinkNet.Contracts;
-using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
 using ThinkNet.Runtime.Routing;
 
@@ -30,7 +28,7 @@ namespace ThinkNet.Runtime
 
             var eventStream = message as EventStream;
             if(eventStream != null) {
-                envelope.Metadata[StandardMetadata.SourceId] = eventStream.SourceId;
+                envelope.Metadata[StandardMetadata.SourceId] = eventStream.SourceId.Id;
             }
 
             var commandResult = message as CommandResult;

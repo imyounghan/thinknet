@@ -9,6 +9,7 @@ using ThinkLib.Annotation;
 using ThinkLib.Composition;
 using ThinkLib.Interception;
 using ThinkLib.Interception.Pipeline;
+using ThinkNet.Runtime;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
@@ -74,13 +75,23 @@ namespace ThinkNet.Messaging.Handling.Agent
             GetReflectedMethodInfo().Invoke(GetInnerHandler(), args);
         }
 
-        protected T GetValue<T>(IEnumerable<object> args)
-            where T : class
+        //protected T GetValue<T>(IEnumerable<object> args)
+        //    where T : class
+        //{
+        //    return args.FirstOrDefault(p => p.GetType() == typeof(T)) as T;
+        //}
+
+        private static void TryMultipleHandle(HandlerAgent handler, object[] args)
         {
-            return args.FirstOrDefault(p => p.GetType() == typeof(T)) as T;
+            //private static readonly int retryTimes = ConfigurationSetting.Current.HandleRetrytimes;
+            //private static readonly int retryInterval = ConfigurationSetting.Current.HandleRetryInterval;
+
+            TryMultipleHandle(handler, args,
+                ConfigurationSetting.Current.HandleRetrytimes,
+                ConfigurationSetting.Current.HandleRetryInterval);
         }
 
-        protected static void TryMultipleHandle(HandlerAgent handler, object[] args, int retryTimes = 3, int retryInterval = 1000)
+        private static void TryMultipleHandle(HandlerAgent handler, object[] args, int retryTimes, int retryInterval)
         {
             int count = 0;
             while (count++ < retryTimes) {
@@ -98,14 +109,14 @@ namespace ThinkNet.Messaging.Handling.Agent
                     if (LogManager.Default.IsWarnEnabled) {
                         LogManager.Default.Warn(ex,
                             "An exception happened while handling '{0}' through handler on '{1}', Error will be ignored and retry again({2}).",
-                             args.Last(), handler.GetType().FullName, count);
+                             args.Last(), handler.GetInnerHandler().GetType().FullName, count);
                     }
                     Thread.Sleep(retryInterval);
                 }
             }
 
             if (LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("Handle '{0}' on '{1}' success.", args.Last(), handler.GetType().FullName);
+                LogManager.Default.DebugFormat("Handle '{0}' on '{1}' success.", args.Last(), handler.GetInnerHandler().GetType().FullName);
             }
         }
 

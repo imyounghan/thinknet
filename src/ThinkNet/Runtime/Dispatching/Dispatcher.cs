@@ -2,16 +2,19 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using ThinkLib;
 using ThinkLib.Composition;
 using ThinkNet.Messaging;
+using ThinkNet.Messaging.Handling;
 using ThinkNet.Messaging.Handling.Agent;
 
 namespace ThinkNet.Runtime.Dispatching
 {
-    public abstract class Dispatcher : IDispatcher
+    public abstract class Dispatcher : IDispatcher, IInitializer
     {
-        private readonly static ConcurrentDictionary<string, IHandlerAgent> CachedHandlers = new ConcurrentDictionary<string, IHandlerAgent>();
+        private readonly ConcurrentDictionary<string, IHandlerAgent> _cachedHandlers;
         //private readonly static ConcurrentDictionary<string, Lifecycle> 
 
         private readonly IObjectContainer _container;
@@ -22,21 +25,22 @@ namespace ThinkNet.Runtime.Dispatching
         protected Dispatcher(IObjectContainer container)
         {
             this._container = container;
+            this._cachedHandlers = new ConcurrentDictionary<string, IHandlerAgent>();
         }
         /// <summary>
         /// 添加一个缓存的Handler
         /// </summary>
         protected void AddCachedHandler(string key, IHandlerAgent handler)
         {
-            CachedHandlers.TryAdd(key, handler);
+            _cachedHandlers.TryAdd(key, handler);
         }
 
         /// <summary>
         /// 获取消息处理器
         /// </summary>
-        protected IEnumerable<object> GetMessageHandlers(Type contractType)
+        protected IEnumerable<IHandler> GetMessageHandlers(Type contractType)
         {
-            return _container.ResolveAll(contractType);
+            return _container.ResolveAll(contractType).Cast<IHandler>();
         }
 
 
@@ -51,7 +55,7 @@ namespace ThinkNet.Runtime.Dispatching
         private IEnumerable<IHandlerAgent> GetProxyHandlers(Type type)
         {
             IHandlerAgent cachedHandler;
-            if(CachedHandlers.TryGetValue(type.FullName, out cachedHandler))
+            if(_cachedHandlers.TryGetValue(type.FullName, out cachedHandler))
                 yield return cachedHandler;
 
             var handlers = BuildHandlerAgents(type);
@@ -88,5 +92,15 @@ namespace ThinkNet.Runtime.Dispatching
                 }
             }
         }
+
+        #region IInitializer 成员
+
+        public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
+        {
+            _cachedHandlers.Values.OfType<IInitializer>()
+                .ForEach(item => item.Initialize(container, assemblies));
+        }
+
+        #endregion
     }
 }

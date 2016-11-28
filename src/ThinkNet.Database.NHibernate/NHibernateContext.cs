@@ -2,11 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Linq;
 using NHibernate;
 using NHibernate.Linq;
-using NHibernate.Mapping;
+using ThinkLib;
 
 
 namespace ThinkNet.Database.NHibernate

@@ -40,6 +40,8 @@ namespace ThinkNet.Messaging.Handling.Agent
                 input.InvocationContext["CommandReturnType"] = CommandReturnType.DomainEventHandled;
                 input.InvocationContext["CommandStatus"] = CommandStatus.NothingChanged;
                 input.InvocationContext["CommandId"] = eventStream.CorrelationId;
+                
+                return new MethodReturn(input, new ThinkNetException(""));
             }            
 
             var messageType = parameter.GetType();

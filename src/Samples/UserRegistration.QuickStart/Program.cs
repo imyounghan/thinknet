@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using ThinkNet.Common.Composition;
+using ThinkLib;
+using ThinkNet;
 using ThinkNet.Contracts;
-using ThinkNet.Runtime;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
 
@@ -12,7 +12,7 @@ namespace UserRegistration.QuickStart
     {
         static void Main(string[] args)
         {
-            Bootstrapper.Current.Done();
+            ThinkNetBootstrapper.Current.DoneWithUnity();
 
            
 
@@ -49,11 +49,11 @@ namespace UserRegistration.QuickStart
 
             System.Threading.Thread.Sleep(2000);
 
-            var userDao = ObjectContainer.Instance.Resolve<IUserDao>();
+            var queryService = ServiceProxy.CreateService<IQueryService>();
 
-            var count = userDao.GetAll().Count();
+            var result = queryService.Execute(new FindAllData()) as IQueryMultipleResult<UserModel>;
             Console.ResetColor();
-            Console.WriteLine("共有 " + count + " 个用户。");
+            Console.WriteLine("共有 " + result.Count() + " 个用户。");
 
             //var authenticationService = ObjectContainer.Instance.Resolve<IAuthenticationService>();
             //if(!authenticationService.Authenticate("young.han", "123456", "127.0.0.1")) {
