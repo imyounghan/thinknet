@@ -8,12 +8,12 @@
         /// <summary>
         /// 获取或设置总记录数。
         /// </summary>
-        int TotalRecords { get; }
+        long TotalRecords { get; }
 
         /// <summary>
         /// 获取或设置页数。
         /// </summary>
-        int TotalPages { get; }
+        long TotalPages { get; }
 
         /// <summary>
         /// 获取或设置页面大小。

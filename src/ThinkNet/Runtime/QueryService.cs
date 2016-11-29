@@ -4,23 +4,27 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using ThinkLib.Composition;
+using ThinkLib.Interception;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Fetching;
+using ThinkNet.Messaging.Fetching.Agent;
 
 namespace ThinkNet.Runtime
 {
-    public class QueryService : IQueryService, IInitializer
+    public class QueryService : MarshalByRefObject, IQueryService, IInitializer
     {
         private readonly static TimeSpan WaitTime = TimeSpan.FromSeconds(5);
         private readonly static QueryResult TimeoutResult = new QueryResult(QueryStatus.Timeout, null);
         private readonly static Dictionary<Type, Type> ParameterTypeMapFetcherType = new Dictionary<Type, Type>();
 
         private readonly IObjectContainer _container;
+        private readonly IInterceptorProvider _interceptorProvider;
 
-        public QueryService(IObjectContainer container)
+        public QueryService(IObjectContainer container, IInterceptorProvider interceptorProvider)
         {
             this._container = container;
+            this._interceptorProvider = interceptorProvider;
         }
 
         public IQueryResult Execute(IQueryParameter queryParameter)
@@ -39,7 +43,7 @@ namespace ThinkNet.Runtime
         }
 
         private object GetFetcher(Type parameterType, out Type contractType)
-        {           ;
+        {
             if(!ParameterTypeMapFetcherType.TryGetValue(parameterType, out contractType)) {
                 throw new QueryFetcherNotFoundException(parameterType);
             }
@@ -63,54 +67,30 @@ namespace ThinkNet.Runtime
                 Type contractType;
                 var fetcher = this.GetFetcher(parameter.GetType(), out contractType);
                 var genericType = contractType.GetGenericTypeDefinition();
-
+                var agentType = (Type)null;
 
                 if(genericType == typeof(IQueryFetcher<,>)) {
-                    return QuerySingleResult(fetcher, parameter, contractType);
+                    agentType = typeof(QueryFetcherAgent<,>).MakeGenericType(contractType.GetGenericArguments());
                 }
                 else if(genericType == typeof(IQueryMultipleFetcher<,>)) {
-                    return QueryMultipleResult(fetcher, parameter, contractType);
+                    agentType = typeof(QueryMultipleFetcherAgent<,>).MakeGenericType(contractType.GetGenericArguments());
 
                 }
                 else if(genericType == typeof(IQueryPageFetcher<,>)) {
-                    return QueryPageResult(fetcher, parameter as QueryPageParameter, contractType);
+                    agentType = typeof(QueryPageFetcherAgent<,>).MakeGenericType(contractType.GetGenericArguments());
                 }
+                else {
+                    return new QueryResult(QueryStatus.Failed, "Unkown parameter");
+                }
+
+                var agent = (IQueryFetcherAgent)Activator.CreateInstance(agentType, new object[] { fetcher, _interceptorProvider });
+                return agent.Fetch((IQueryParameter)parameter);
             }
             catch(Exception ex) {
                 return new QueryResult(QueryStatus.Failed, ex.Message);
-            }
-
-            return new QueryResult(QueryStatus.Failed, "Unkown parameter");
+            }            
         }
-
-        private IQueryResult QueryPageResult(object fetcher, QueryPageParameter parameter, Type contractType)
-        {
-            dynamic total;
-            var genericTypes = contractType.GetGenericArguments();
-            var result = ((dynamic)fetcher).Fetch((dynamic)parameter, out total);
-            var resultContractType = typeof(QueryPageResult<>).MakeGenericType(genericTypes[1]);
-            var queryResult = Activator.CreateInstance(resultContractType, new object[] { total, parameter.PageSize, parameter.PageIndex, result });
-            return queryResult as QueryResult;
-        }
-
-        private IQueryResult QuerySingleResult(object fetcher, object parameter, Type contractType)
-        {
-            var result = ((dynamic)fetcher).Fetch((dynamic)parameter);
-            var genericTypes = contractType.GetGenericArguments();
-            var resultContractType = typeof(QuerySingleResult<>).MakeGenericType(genericTypes[1]);
-            var queryResult = Activator.CreateInstance(resultContractType, new object[] { result });
-            return queryResult as QueryResult;
-        }
-
-        private IQueryResult QueryMultipleResult(object fetcher, object parameter, Type contractType)
-        {
-            var result = ((dynamic)fetcher).Fetch((dynamic)parameter);
-            var genericTypes = contractType.GetGenericArguments();
-            var resultContractType = typeof(QueryMultipleResult<>).MakeGenericType(genericTypes[1]);
-            var queryResult = Activator.CreateInstance(resultContractType, new object[] { result });
-            return queryResult as QueryResult;
-        }
-
+        
         public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
         {
             var filteredTypes = assemblies

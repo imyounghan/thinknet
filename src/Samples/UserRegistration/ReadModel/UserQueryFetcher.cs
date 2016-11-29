@@ -4,11 +4,11 @@ using ThinkNet.Messaging.Fetching;
 
 namespace UserRegistration.ReadModel
 {
-    public class UserQueryExecutor : IQueryMultipleFetcher<FindAllData, UserModel>
+    public class UserQueryFetcher : IQueryMultipleFetcher<FindAllData, UserModel>
     {
         private readonly IUserDao dao;
 
-        public UserQueryExecutor(IUserDao userDao)
+        public UserQueryFetcher(IUserDao userDao)
         {
             this.dao = userDao;
         }

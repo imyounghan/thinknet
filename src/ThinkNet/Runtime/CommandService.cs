@@ -12,7 +12,7 @@ namespace ThinkNet.Runtime
     /// <summary>
     /// <see cref="ICommandService"/> 的实现类
     /// </summary>
-    public class CommandService : ICommandService, ICommandResultNotification
+    public class CommandService : MarshalByRefObject, ICommandService, ICommandResultNotification
     {
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;
 
@@ -39,7 +39,7 @@ namespace ThinkNet.Runtime
         /// </summary>
         public Task SendAsync(ICommand command)
         {
-            if(_commandTaskDict.Count > 1000)
+            if(_commandTaskDict.Count > 10000)
                 throw new ThinkNetException("server is busy.");
 
             var envelope = new Envelope(command);

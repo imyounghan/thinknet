@@ -7,8 +7,7 @@ using System.Reflection;
 using ThinkLib;
 using ThinkLib.Annotation;
 using ThinkLib.Composition;
-using ThinkLib.Interception;
-using ThinkLib.Interception.Pipeline;
+using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
@@ -18,28 +17,25 @@ namespace ThinkNet.Messaging.Handling.Agent
     public class EventStreamInnerHandler : IHandlerAgent, IInitializer//, IMessageHandler<EventStream>
     {
         private readonly static Dictionary<CompositeKey, Type> EventTypesMapContractType = new Dictionary<CompositeKey, Type>();
+        private readonly static Type EventStreamType = typeof(EventStream);
+        private readonly static Type EventStreamHandlerType = typeof(EventStreamInnerHandler);
 
         private readonly ConcurrentDictionary<Type, IHandlerAgent> _cachedHandlers;
-        private readonly MethodInfo _method;
-        private readonly InterceptorPipeline _interceptorPipeline;
         private readonly IObjectContainer _container;
+        private readonly IMessageBus _messageBus;
+        private readonly IMessageHandlerRecordStore _handlerStore;
 
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public EventStreamInnerHandler(IObjectContainer container,
-            FilterHandledMessageInterceptor filterInInterceptor,
-            NotifyCommandResultInterceptor notifyInterceptor)            
+        public EventStreamInnerHandler(IObjectContainer container, 
+            IMessageBus messageBus,
+            IMessageHandlerRecordStore handlerStore)            
         {
-            this._container = container;
-            this._method = this.GetType().GetMethod("Handle");
-            //this._method = this.GetType().GetMethod("Handle",
-            //    BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic,
-            //    null,
-            //    new[] { typeof(object[]) },
-            //    null);
+            this._container = container;           
             this._cachedHandlers = new ConcurrentDictionary<Type, IHandlerAgent>();
-            this._interceptorPipeline = new InterceptorPipeline(new IInterceptor[] { filterInInterceptor, notifyInterceptor });
+            this._messageBus = messageBus;
+            this._handlerStore = handlerStore;
         }
         
 
@@ -49,21 +45,33 @@ namespace ThinkNet.Messaging.Handling.Agent
         }
 
         public void Handle(params object[] args)
-        {           
-            var input = new MethodInvocation(this, _method, args);
-            var methodReturn = _interceptorPipeline.Invoke(input, delegate {
-                try {
-                    this.TryHandle(args[0] as EventStream);
+        {
+            var stream = args[0] as EventStream;
+            if(stream.Events.IsEmpty()) {
+                _messageBus.Publish(new CommandResult(stream.CorrelationId, CommandReturnType.DomainEventHandled, CommandStatus.NothingChanged));
+                return;
+            }
 
-                    return new MethodReturn(input, null, args);
+            if(_handlerStore.HandlerIsExecuted(stream.CorrelationId, EventStreamType, EventStreamHandlerType)) {
+                var errorMessage = string.Format("The EventStream has been handled, Data({0}).", stream);
+                _messageBus.Publish(new CommandResult(stream.CorrelationId, new ThinkNetException(errorMessage)));
+                if(LogManager.Default.IsWarnEnabled) {
+                    LogManager.Default.Warn(errorMessage);
                 }
-                catch(Exception ex) {
-                    return new MethodReturn(input, ex);
-                }
-            });
+                return;
+            }
 
-            if(methodReturn.Exception != null)
-                throw methodReturn.Exception;
+            try {
+                this.TryHandle(stream);
+                _messageBus.Publish(new CommandResult(stream.CorrelationId));
+            }
+            catch(Exception ex) {
+                _messageBus.Publish(new CommandResult(stream.CorrelationId, ex));
+                throw ex;
+            }
+           
+
+            _handlerStore.AddHandlerInfo(stream.CorrelationId, EventStreamType, EventStreamHandlerType);
         }
 
         private void TryHandle(EventStream eventStream)
@@ -206,7 +214,9 @@ namespace ThinkNet.Messaging.Handling.Agent
         {
             var eventHandlerInterfaceTypes = assemblies
                 .SelectMany(assembly => assembly.GetTypes())
-                .Where(FilterType);//.ToArray();
+                .Where(FilterType)
+                .SelectMany(type => type.GetInterfaces())
+                .Where(FilterInterfaceType);
 
             foreach (var interfaceType in eventHandlerInterfaceTypes) {
                 var genericTypes = interfaceType.GetGenericArguments();

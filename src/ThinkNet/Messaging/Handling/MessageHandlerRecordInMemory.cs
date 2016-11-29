@@ -26,7 +26,7 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         protected void RemoveHandleInfo(object state)
         {
-            _handlerInfoSet.RemoveWhere(item => item.Timestamp.AddMinutes(5) < DateTime.UtcNow);
+            //_handlerInfoSet.RemoveWhere(item => item.Timestamp.AddMinutes(5) < DateTime.UtcNow);
         }
 
         /// <summary>

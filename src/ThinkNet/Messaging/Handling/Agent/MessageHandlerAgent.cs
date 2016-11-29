@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using ThinkLib.Interception;
+using ThinkLib;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
@@ -14,43 +13,40 @@ namespace ThinkNet.Messaging.Handling.Agent
 
         private readonly IHandler _targetHandler;
         private readonly Type _contractType;
+        private readonly IMessageHandlerRecordStore _handlerStore;
 
         public MessageHandlerAgent(Type messageHandlerInterfaceType, 
-            IHandler handler)
-            : this(messageHandlerInterfaceType, handler, null)
-        { }
-        public MessageHandlerAgent(Type messageHandlerInterfaceType,
-            IHandler handler,
-            IInterceptorProvider interceptorProvider)
-            : this(messageHandlerInterfaceType, handler, interceptorProvider, null, null)
-        { }
-
-        public MessageHandlerAgent(Type messageHandlerInterfaceType, 
-            IHandler handler,
-            IEnumerable<IInterceptor> firstInterceptors,
-            IEnumerable<IInterceptor> lastInterceptors)
-            : this(messageHandlerInterfaceType, handler, null, firstInterceptors, lastInterceptors)
-        { }
-        public MessageHandlerAgent(Type messageHandlerInterfaceType, 
-            IHandler handler,
-            IInterceptorProvider interceptorProvider,
-            IEnumerable<IInterceptor> firstInterceptors,
-            IEnumerable<IInterceptor> lastInterceptors)
-            : base(interceptorProvider, firstInterceptors, lastInterceptors)
-        {
+            IHandler handler, 
+            IMessageHandlerRecordStore handlerStore)
+        { 
             this._targetHandler = handler;
             this._contractType = messageHandlerInterfaceType;
+            this._handlerStore = handlerStore;
         }
 
         protected override void TryHandle(object[] args)
         {
             ((dynamic)_targetHandler).Handle((dynamic)args[0]);
         }
-        
 
-        protected override Type GetHandlerInterfaceType()
+        public override void Handle(object[] args)
         {
-            return this._contractType;
+            var uniquelyId = args[0] as IUniquelyIdentifiable;
+            var messageType = args[0].GetType();
+            var messageHandlerType = _targetHandler.GetType();
+
+            if(_handlerStore.HandlerIsExecuted(uniquelyId.Id, messageType, messageHandlerType)) {
+                var errorMessage = string.Format("The command has been handled. CommandHandlerType:{0}, CommandType:{1}, CommandId:{2}.",
+                    messageHandlerType.FullName, messageType.FullName, uniquelyId.Id);
+                if(LogManager.Default.IsWarnEnabled) {
+                    LogManager.Default.Warn(errorMessage);
+                }
+                return;
+            }
+
+            base.Handle(args);
+
+            _handlerStore.AddHandlerInfo(uniquelyId.Id, messageType, messageHandlerType);
         }
 
         public override object GetInnerHandler()

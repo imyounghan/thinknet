@@ -40,7 +40,7 @@ namespace ThinkNet.Runtime
             this._receiver = receiver;
 
             this._dispatcherDict = new Dictionary<string, IDispatcher>(StringComparer.CurrentCulture) {
-                { StandardMetadata.CommandKind, new CommandDispatcher(container, repository, eventSourcedRepository, messageBus, handlerStore, notification, interceptorProvider) },
+                { StandardMetadata.CommandKind, new CommandDispatcher(container, repository, eventSourcedRepository, messageBus, handlerStore, interceptorProvider) },
                 { StandardMetadata.EventKind, new EventDispatcher(container,handlerStore) },
                 { StandardMetadata.MessageKind, new MessageDispatcher(container, handlerStore, messageBus, notification) }
             };

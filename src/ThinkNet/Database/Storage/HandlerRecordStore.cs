@@ -43,12 +43,12 @@ namespace ThinkNet.Database.Storage
 
             var handlerRecord = new HandlerRecord(messageId, messageType, handlerType);
             Task.Factory.StartNew(() => {
-                using (var context = _dataContextFactory.Create()) {
+                using(var context = _dataContextFactory.Create()) {
                     var executed = context.CreateQuery<HandlerRecord>()
                         .Any(p => p.MessageId == handlerRecord.MessageId &&
                             p.MessageTypeCode == handlerRecord.MessageTypeCode &&
                             p.HandlerTypeCode == handlerRecord.HandlerTypeCode);
-                    if (executed)
+                    if(executed)
                         return;
 
                     context.Save(handlerRecord);

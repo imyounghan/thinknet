@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ThinkLib;
 using ThinkLib.Composition;
-using ThinkLib.Interception;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Messaging.Handling.Agent;
 
@@ -14,7 +13,7 @@ namespace ThinkNet.Runtime.Dispatching
     /// </summary>
     public class EventDispatcher : Dispatcher
     {
-        private readonly IEnumerable<IInterceptor> _firstInterceptors;
+        private readonly IMessageHandlerRecordStore _handlerStore;
 
         /// <summary>
         /// Parameterized Constructor.
@@ -22,7 +21,7 @@ namespace ThinkNet.Runtime.Dispatching
         public EventDispatcher(IObjectContainer container, IMessageHandlerRecordStore handlerStore)
             : base(container)
         {
-            this._firstInterceptors = new IInterceptor[] { new FilterHandledMessageInterceptor(handlerStore) };
+            this._handlerStore = handlerStore;
         }
 
         protected override IEnumerable<IHandlerAgent> BuildHandlerAgents(Type eventType)
@@ -37,7 +36,7 @@ namespace ThinkNet.Runtime.Dispatching
             //var constructor = handlerAgentType.GetConstructor(new Type[] { contractType, typeof(IEnumerable<IInterceptor>), typeof(IEnumerable<IInterceptor>) });
 
             //return handlers.Select(handler => constructor.Invoke(new object[] { handler, _firstInterceptors, new IInterceptor[0] })).Cast<IHandlerAgent>();
-            return handlers.Select(handler => new MessageHandlerAgent(contractType, handler, _firstInterceptors, new IInterceptor[0])).Cast<IHandlerAgent>();
+            return handlers.Select(handler => new MessageHandlerAgent(contractType, handler, _handlerStore)).Cast<IHandlerAgent>();
         }
 
         //private IHandlerAgent BuildMessageHandler(object handler, Type contractType)

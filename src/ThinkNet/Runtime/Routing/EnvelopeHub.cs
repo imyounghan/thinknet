@@ -91,7 +91,7 @@ namespace ThinkNet.Runtime.Routing
             //}
             foreach (var item in broker.GetConsumingEnumerable(cancellationSource.Token)) {
                 if(LogManager.Default.IsDebugEnabled) {
-                    LogManager.Default.DebugFormat("Receive an envelope from local queue, data:{0}.", item.Body);
+                    LogManager.Default.DebugFormat("Receive an envelope from local queue, data:({0}).", item.Body);
                 }
                 this.EnvelopeReceived(this, item);
             }
@@ -128,7 +128,7 @@ namespace ThinkNet.Runtime.Routing
         public virtual Task SendAsync(Envelope envelope)
         {
             if(LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("Send an envelope to local queue, data:{0}.", envelope.Body);
+                LogManager.Default.DebugFormat("Send an envelope to local queue, data({0}).", envelope.Body);
             }
 
             return Task.Factory.StartNew(() => this.Distribute(envelope));
@@ -139,7 +139,7 @@ namespace ThinkNet.Runtime.Routing
         public virtual Task SendAsync(IEnumerable<Envelope> envelopes)
         {
             if(LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("Send a batch of envelope to local queue, data:{0}.", 
+                LogManager.Default.DebugFormat("Send a batch of envelope to local queue, data:(0).", 
                     string.Join(";", envelopes.Select(item=>item.Body.ToString())));
             }
 

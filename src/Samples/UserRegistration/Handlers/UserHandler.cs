@@ -22,7 +22,7 @@ namespace UserRegistration.Handlers
 
         public void Handle(UserCreated message)
         {
-            Console.WriteLine("send email.");
+            //Console.WriteLine("send email.");
         }
 
         public void Handle(ICommandContext context, RegisterUser command)
@@ -44,7 +44,7 @@ namespace UserRegistration.Handlers
                 UserName = @event.UserName
             });
 
-            Console.WriteLine("同步到Q端数据库");
+            //Console.WriteLine("同步到Q端数据库");
         }
     }
 }

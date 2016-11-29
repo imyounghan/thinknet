@@ -17,6 +17,7 @@ namespace ThinkNet.Runtime.Dispatching
     {
         //private readonly FilterHandledMessageInterceptor _first;
         //private readonly NotifyCommandResultInterceptor _last;
+        private readonly IMessageHandlerRecordStore _handlerStore;
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
@@ -25,11 +26,9 @@ namespace ThinkNet.Runtime.Dispatching
             IMessageBus messageBus,
             ICommandResultNotification notification)
             : base(container)
-       {
-            var first = new FilterHandledMessageInterceptor(handlerStore);
-            var last = new NotifyCommandResultInterceptor(messageBus);
-
-            this.AddCachedHandler(typeof(EventStream).FullName, new EventStreamInnerHandler(container, first, last));
+        {
+            this._handlerStore = handlerStore;
+            this.AddCachedHandler(typeof(EventStream).FullName, new EventStreamInnerHandler(container, messageBus, handlerStore));
             this.AddCachedHandler(typeof(CommandResult).FullName, new CommandResultInnerHandler(notification));
         }
 
@@ -74,7 +73,7 @@ namespace ThinkNet.Runtime.Dispatching
             //var constructor = handlerAgentType.GetConstructor(new Type[] { contractType });
 
             //return handlers.Select(handler => constructor.Invoke(new object[] { handler })).Cast<IHandlerAgent>();
-            return handlers.Select(handler => new MessageHandlerAgent(contractType, handler)).Cast<IHandlerAgent>();
+            return handlers.Select(handler => new MessageHandlerAgent(contractType, handler,_handlerStore)).Cast<IHandlerAgent>();
         }
         
     }

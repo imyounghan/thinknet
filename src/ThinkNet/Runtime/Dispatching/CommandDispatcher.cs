@@ -19,10 +19,9 @@ namespace ThinkNet.Runtime.Dispatching
     public class CommandDispatcher : Dispatcher
     {
         private readonly Func<CommandContext> _commandContextFactory;
-        private readonly IEnumerable<IInterceptor> _firstInterceptors;
-        private readonly IEnumerable<IInterceptor> _lastInterceptors;
         private readonly IInterceptorProvider _interceptorProvider;
-        //private readonly IObjectContainer _container;
+        private readonly IMessageBus _messageBus;
+        private readonly IMessageHandlerRecordStore _handlerStore;
 
         /// <summary>
         /// Parameterized Constructor.
@@ -32,14 +31,13 @@ namespace ThinkNet.Runtime.Dispatching
             IEventSourcedRepository eventSourcedRepository,
             IMessageBus messageBus, 
             IMessageHandlerRecordStore handlerStore,
-            ICommandResultNotification notification,
             IInterceptorProvider interceptorProvider)
             : base(container)
         {
             this._commandContextFactory = () => new CommandContext(repository, eventSourcedRepository, messageBus);
-            this._firstInterceptors = new IInterceptor[] { new FilterHandledMessageInterceptor(handlerStore) };
-            this._lastInterceptors = new IInterceptor[] { new NotifyCommandResultInterceptor(messageBus) };
             this._interceptorProvider = interceptorProvider;
+            this._messageBus = messageBus;
+            this._handlerStore = handlerStore;
         }        
         
 
@@ -53,7 +51,7 @@ namespace ThinkNet.Runtime.Dispatching
                 //var handlerAgentType = typeof(CommandHandlerAgent<>).MakeGenericType(commandType);
                 //var constructor = handlerAgentType.GetConstructors().Single();
                 //handlerAgents = handlers.Select(handler => constructor.Invoke(new object[] { handler, _commandContextFactory, _interceptorProvider, _firstInterceptors, _lastInterceptors })).Cast<IHandlerAgent>().ToArray();
-                handlerAgents = handlers.Select(handler => new CommandHandlerAgent(contractType, handler, _commandContextFactory, _interceptorProvider, _firstInterceptors, _lastInterceptors)).Cast<IHandlerAgent>().ToArray();
+                handlerAgents = handlers.Select(handler => new CommandHandlerAgent(contractType, handler, _commandContextFactory, _messageBus, _handlerStore, _interceptorProvider)).Cast<IHandlerAgent>().ToArray();
             }
 
             if(handlerAgents.Length == 0) {
@@ -63,7 +61,7 @@ namespace ThinkNet.Runtime.Dispatching
                     //var handlerAgentType = typeof(MessageHandlerAgent<>).MakeGenericType(commandType);
                     //var constructor = handlerAgentType.GetConstructor(new Type[] { contractType, typeof(IInterceptorProvider), typeof(IEnumerable<IInterceptor>), typeof(IEnumerable<IInterceptor>) });
                     //handlerAgents = handlers.Select(handler => constructor.Invoke(new object[] { handler, _interceptorProvider, _firstInterceptors, _lastInterceptors })).Cast<IHandlerAgent>().ToArray();
-                    handlerAgents = handlers.Select(handler => new MessageHandlerAgent(contractType, handler, _interceptorProvider, _firstInterceptors, _lastInterceptors)).Cast<IHandlerAgent>().ToArray();
+                    handlerAgents = handlers.Select(handler => new CommandHandlerAgent(contractType, handler, null, _messageBus, _handlerStore, _interceptorProvider)).Cast<IHandlerAgent>().ToArray();
                 }
             }
 

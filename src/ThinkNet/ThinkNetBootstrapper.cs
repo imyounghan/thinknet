@@ -93,7 +93,7 @@ namespace ThinkNet
         private void RegisterFrameworkComponents()
         {
             this.SetDefault<IDataContextFactory, MemoryContextFactory>();
-            this.SetDefault<IEventStore, EventStore>();
+            this.SetDefault<IEventStore, MemoryEventStore>();
             this.SetDefault<ISnapshotPolicy, NoneSnapshotPolicy>();
             this.SetDefault<ISnapshotStore, SnapshotStore>();
             this.SetDefault<ICache, LocalCache>();

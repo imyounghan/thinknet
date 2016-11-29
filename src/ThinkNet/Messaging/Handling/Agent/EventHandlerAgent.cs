@@ -17,16 +17,11 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// Parameterized Constructor.
         /// </summary>
         public EventHandlerAgent(Type eventHandlerInterfaceType, IHandler handler)
-            : base(null)
         {
             this._targetHandler = handler;
             this._contractType = eventHandlerInterfaceType;
         }
-
-        protected override Type GetHandlerInterfaceType()
-        {
-            return this._contractType;
-        }
+        
 
         public override object GetInnerHandler()
         {

@@ -26,26 +26,26 @@ namespace ThinkNet.Messaging
         /// <param name="pageSize">每页显示记录</param>
         /// <param name="pageIndex">当前页索引</param>
         /// <param name="datas">页面数据</param>
-        public QueryPageResult(int totalRecords, int pageSize, int pageIndex, IEnumerable<T> datas)
+        public QueryPageResult(long totalRecords, int pageSize, int pageIndex, IEnumerable<T> datas)
             : base(datas)
         {
             this.TotalRecords = totalRecords;
             this.PageSize = pageSize;
             this.PageIndex = pageIndex;
-            this.TotalPages = (int)Math.Ceiling((double)totalRecords / (double)pageSize);
+            this.TotalPages = (long)Math.Ceiling((double)totalRecords / (double)pageSize);
         }
 
         /// <summary>
         /// 获取或设置总记录数。
         /// </summary>
         [DataMember]
-        public int TotalRecords { get; set; }
+        public long TotalRecords { get; set; }
 
         /// <summary>
         /// 获取或设置页数。
         /// </summary>
         [DataMember]
-        public int TotalPages { get; set; }
+        public long TotalPages { get; set; }
 
         /// <summary>
         /// 获取或设置页面大小。

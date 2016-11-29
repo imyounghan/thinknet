@@ -5,32 +5,34 @@ namespace ThinkNet.Messaging.Handling.Agent
     /// <summary>
     /// 命令结果的内部处理器
     /// </summary>
-    public class CommandResultInnerHandler : IHandlerAgent//, IMessageHandler<CommandResult>
+    public class CommandResultInnerHandler : HandlerAgent//, IMessageHandler<CommandResult>
     {
         private readonly ICommandResultNotification _notification;
 
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public CommandResultInnerHandler(ICommandResultNotification notification)            
+        public CommandResultInnerHandler(ICommandResultNotification notification)
         {
             this._notification = notification;
         }
 
-        public object GetInnerHandler()
+        public override object GetInnerHandler()
         {
             return this;
         }
 
-        public void Handle(params object[] args)
-        {            
-            var reply = args[0] as CommandResult;
+        //public void Handle(params object[] args)
+        //{            
+        //    var reply = args[0] as CommandResult;
 
-            this.TryHandle(reply);
-        }       
+        //    this.TryHandle(reply);
+        //}
 
-        private void TryHandle(CommandResult result)
+        protected override void TryHandle(object[] args)
         {
+            var result = args[0] as CommandResult;
+
             switch (result.CommandReturnType) {
                 case CommandReturnType.CommandExecuted:
                     _notification.NotifyCommandHandled(result);
