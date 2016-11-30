@@ -1,7 +1,7 @@
 ﻿using System.Configuration;
 using ThinkLib;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet
 {
     /// <summary>
     /// 配置项
@@ -20,9 +20,8 @@ namespace ThinkNet.Runtime
             this.HandleRetryInterval = 1000;
             this.QueueCount = ConfigurationManager.AppSettings["thinkcfg.queue_count"].ChangeIfError(4);
             this.QueueCapacity = ConfigurationManager.AppSettings["thinkcfg.queue_capacity"].ChangeIfError(1000);
-            //this.EnableCommandProcessor = true;
-            //this.EnableEventProcessor = true;
-            //this.EnableSynchronousProcessor = true;
+            this.MaxRequests = ConfigurationManager.AppSettings["thinkcfg.maxrequests"].ChangeIfError(5000);
+            this.EnableCommandFilter = ConfigurationManager.AppSettings["thinkcfg.enablefilter"].ChangeIfError(false);
         }
 
         /// <summary>
@@ -48,6 +47,16 @@ namespace ThinkNet.Runtime
         /// 默认为1000
         /// </summary>
         public int QueueCapacity { get; set; }
+
+        /// <summary>
+        /// 最大处理请求数
+        /// </summary>
+        public int MaxRequests { get; set; }
+
+        /// <summary>
+        /// 是否启用命令过滤器
+        /// </summary>
+        public bool EnableCommandFilter { get; set; }
 
         ///// <summary>
         ///// 是否启用命令处理器

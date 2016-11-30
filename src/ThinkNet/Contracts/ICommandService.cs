@@ -19,23 +19,23 @@ namespace ThinkNet.Contracts
         /// <summary>
         /// 异步发送命令
         /// </summary>
-        [OperationContract]
+        //[OperationContract]
         Task SendAsync(ICommand command);
 
+        ///// <summary>
+        ///// 在规定时间内执行一个命令
+        ///// </summary>
+        //[OperationContract]
+        //ICommandResult Execute(ICommand command, CommandReturnType returnType, int millisecondsTimeout = -1);
         /// <summary>
         /// 在规定时间内执行一个命令
         /// </summary>
         [OperationContract]
-        ICommandResult Execute(ICommand command, CommandReturnType returnType, int millisecondsTimeout = -1);
-        /// <summary>
-        /// 在规定时间内执行一个命令
-        /// </summary>
-        [OperationContract]
-        ICommandResult Execute(ICommand command, CommandReturnType returnType, TimeSpan timeout);
+        ICommandResult Execute(ICommand command, CommandReturnType returnType);
         /// <summary>
         /// 异步执行一个命令
         /// </summary>
-        [OperationContract]
+        //[OperationContract]
         Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType);
     }
 }

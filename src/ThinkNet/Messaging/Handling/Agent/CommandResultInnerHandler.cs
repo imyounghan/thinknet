@@ -33,14 +33,16 @@ namespace ThinkNet.Messaging.Handling.Agent
         {
             var result = args[0] as CommandResult;
 
-            switch (result.CommandReturnType) {
-                case CommandReturnType.CommandExecuted:
-                    _notification.NotifyCommandHandled(result);
-                    break;
-                case CommandReturnType.DomainEventHandled:
-                    _notification.NotifyEventHandled(result);
-                    break;
-            }
+            _notification.Notify(result.CommandId, result, result.CommandReturnType);
+
+            //switch (result.CommandReturnType) {
+            //    case CommandReturnType.CommandExecuted:
+            //        _notification.NotifyCommandHandled(result);
+            //        break;
+            //    case CommandReturnType.DomainEventHandled:
+            //        _notification.NotifyEventHandled(result);
+            //        break;
+            //}
         }
 
         //#region IMessageHandler<CommandResult> 成员

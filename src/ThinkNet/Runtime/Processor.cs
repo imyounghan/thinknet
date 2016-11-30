@@ -7,6 +7,7 @@ using ThinkLib.Composition;
 using ThinkLib.Interception;
 using ThinkNet.Contracts;
 using ThinkNet.Domain;
+using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Runtime.Dispatching;
@@ -32,17 +33,20 @@ namespace ThinkNet.Runtime
             IRepository repository,
             IEventSourcedRepository eventSourcedRepository,
             IEnvelopeReceiver receiver,
-            ICommandResultNotification notification,
+            ICommandResultNotification commandResultNotification,
+            IQueryResultNotification queryResultNotification,
             IInterceptorProvider interceptorProvider,
             IMessageHandlerRecordStore handlerStore,
+            IPublishedVersionStore publishedVersionStore,
             IMessageBus messageBus)
         {
             this._receiver = receiver;
 
             this._dispatcherDict = new Dictionary<string, IDispatcher>(StringComparer.CurrentCulture) {
                 { StandardMetadata.CommandKind, new CommandDispatcher(container, repository, eventSourcedRepository, messageBus, handlerStore, interceptorProvider) },
-                { StandardMetadata.EventKind, new EventDispatcher(container,handlerStore) },
-                { StandardMetadata.MessageKind, new MessageDispatcher(container, handlerStore, messageBus, notification) }
+                { StandardMetadata.EventKind, new EventDispatcher(container, handlerStore) },
+                { StandardMetadata.QueryKind, new QueryDispatcher(container, interceptorProvider, queryResultNotification) },
+                { StandardMetadata.MessageKind, new MessageDispatcher(container, handlerStore, messageBus, commandResultNotification, publishedVersionStore) }
             };
             this.lockObject = new object();
         }
@@ -69,6 +73,9 @@ namespace ThinkNet.Runtime
             if (data is Command)
                 return StandardMetadata.CommandKind;
 
+            if(data is QueryParameter)
+                return StandardMetadata.QueryKind;
+
             if (data is IMessage)
                 return StandardMetadata.MessageKind;
 
@@ -78,10 +85,9 @@ namespace ThinkNet.Runtime
 
         private void OnEnvelopeReceived(object sender, Envelope envelope)
         {
-            var kind = envelope.GetMetadata(StandardMetadata.Kind);
-            if (string.IsNullOrEmpty(kind)) {
-                kind = this.GetKind(envelope.Body);
-            }
+            var kind = envelope.GetMetadata(StandardMetadata.Kind)
+                .IfEmpty(() => GetKind(envelope.Body));
+
             if (string.IsNullOrEmpty(kind)) {
                 //TODO...WriteLog
                 return;

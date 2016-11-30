@@ -114,7 +114,7 @@ namespace ThinkNet.Database
             {
                 try {
                     var entity  = Activator.CreateInstance(type, id);
-                    this.Load(entity);
+                    this.Load(ref entity);
                     return entity;
                 }
                 catch (Exception) {
@@ -125,7 +125,7 @@ namespace ThinkNet.Database
             public override object Find(Type type, object[] keyValues)
             {                
                 try {
-                    var entity  = Activator.CreateInstance(type, keyValues);
+                    var entity = Activator.CreateInstance(type, keyValues);
                     this.Load(entity);
                     return entity;
                 }
@@ -205,6 +205,11 @@ namespace ThinkNet.Database
 
             public override void Load(object entity)
             {
+                this.Load(ref entity);
+            }
+
+            private void Load(ref object entity)
+            {
                 var key = GetKey(entity);
                 if (this.Contains(entity)) {
                     entity = local[key].Key;
@@ -215,7 +220,9 @@ namespace ThinkNet.Database
                 if (total.TryGetValue(entity.GetType(), out entities)) {
                     entity = entities[key];
                 }
-
+                else {
+                    entity = null;
+                }
                 //throw new EntityNotFoundException();
             }
 

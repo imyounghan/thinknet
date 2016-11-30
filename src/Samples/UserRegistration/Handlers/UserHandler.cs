@@ -10,7 +10,8 @@ namespace UserRegistration.Handlers
     public class UserHandler :
         ICommandHandler<RegisterUser>,
         IEventHandler<UserCreated>,
-        IMessageHandler<UserCreated>
+        IMessageHandler<UserCreated>,
+        IMessageHandler<UserSigned>
     {
         private readonly IUniqueLoginNameService _uniqueService;
         private readonly IUserDao _userDao;
@@ -46,5 +47,14 @@ namespace UserRegistration.Handlers
 
             //Console.WriteLine("同步到Q端数据库");
         }
+
+        #region IMessageHandler<UserSigned> 成员
+
+        public void Handle(UserSigned message)
+        {
+            Console.WriteLine("签名成功并记录登录日志");
+        }
+
+        #endregion
     }
 }

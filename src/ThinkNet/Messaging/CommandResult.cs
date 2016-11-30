@@ -54,45 +54,25 @@ namespace ThinkNet.Messaging
         /// </summary>
         public CommandResult()
         { }
+        
+        /// <summary>
+        /// 表示成功的结果
+        /// </summary>
+        public CommandResult(string commandId, CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
+            : this(commandId, commandReturnType, CommandStatus.Success, null)
+        { }
 
-        ///// <summary>Parameterized constructor.
-        ///// </summary>
-        //public CommandResult(string commandId, CommandStatus status = CommandStatus.Success)
-        //{
-        //    this.Status = status;
-        //    this.CommandId = commandId;
-        //}
-
-        ///// <summary>Parameterized constructor.
-        ///// </summary>
-        //public CommandResult(string commandId, CommandStatus status, string errorMessage, string errorCode)
-        //{
-        //    this.Status = status;
-        //    this.CommandId = commandId;
-        //    this.ErrorMessage = errorMessage;
-        //    this.ErrorCode = errorCode;
-        //}
-
-        ///// <summary>Parameterized constructor.
-        ///// </summary>
-        //public CommandResult(string commandId, Exception exception, CommandStatus? status = null)
-        //{
-        //    if(exception == null)
-        //        return;
-
-        //    this.Status = status.HasValue ? status.Value : CommandStatus.Failed;
-        //    this.ErrorMessage = exception.Message;
-        //    this.ErrorData = exception.Data;
-
-        //    var thinkNetException = exception as ThinkNetException;
-        //    if(thinkNetException != null)
-        //        this.ErrorCode = thinkNetException.MessageCode;
-        //}
+        /// <summary>
+        /// 表示失败的结果
+        /// </summary>
+        public CommandResult(string commandId, string errorMessage, string errorCode = "-1", CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
+            : this(commandId, commandReturnType, CommandStatus.Failed, null, errorCode)
+        { }
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public CommandResult(string commandId, CommandReturnType commandReturnType = CommandReturnType.DomainEventHandled, CommandStatus status = CommandStatus.Success, string errorMessage = null, string errorCode = null)
+        public CommandResult(string commandId, CommandReturnType commandReturnType, CommandStatus status, string errorMessage = null, string errorCode = null)
         {
             this.CommandId = commandId;
             this.CommandReturnType = commandReturnType;
@@ -104,23 +84,25 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public CommandResult(string commandId, Exception exception, CommandStatus? status = null, CommandReturnType commandReturnType = CommandReturnType.DomainEventHandled)
+        public CommandResult(string commandId, Exception exception, CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
         {
             this.CommandId = commandId;
             this.CommandReturnType = commandReturnType;
             this.ReplyTime = DateTime.UtcNow;
-            this.Status = status.HasValue ? status.Value : CommandStatus.Success;
+            this.Status = CommandStatus.Success;
 
             if(exception == null)
                 return;
 
-            this.Status = status.HasValue ? status.Value : CommandStatus.Failed;
+            this.Status = CommandStatus.Failed;
             this.ErrorMessage = exception.Message;
             this.ErrorData = exception.Data;
 
             var thinkNetException = exception as ThinkNetException;
             if(thinkNetException != null)
                 this.ErrorCode = thinkNetException.MessageCode;
+            else
+                this.ErrorCode = "-1";
         }
 
 

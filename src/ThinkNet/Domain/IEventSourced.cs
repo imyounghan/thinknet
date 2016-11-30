@@ -9,9 +9,14 @@ namespace ThinkNet.Domain
     public interface IEventSourced : IAggregateRoot, IEventPublisher
     {
         /// <summary>
-        /// 版本号
+        /// 表示当前的版本号
         /// </summary>
         int Version { get; }
+
+        /// <summary>
+        /// 表示当前状态是否有变化
+        /// </summary>
+        bool IsChanged { get; }
 
         /// <summary>
         /// 通过事件还原对象状态。

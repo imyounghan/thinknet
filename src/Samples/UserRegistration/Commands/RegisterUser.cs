@@ -4,9 +4,9 @@ using ThinkNet.Messaging;
 
 namespace UserRegistration.Commands
 {
-    [DataContract]
+    [DataContract(Namespace = "UserRegistration.Commands", Name = "RegisterUser")]
     [Serializable]
-    public class RegisterUser : Command, ThinkNet.Contracts.ICommand
+    public class RegisterUser : Command
     {
         [DataMember]
         public string LoginId { get; set; }

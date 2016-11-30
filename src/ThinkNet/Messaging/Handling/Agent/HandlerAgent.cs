@@ -4,7 +4,6 @@ using System.Threading;
 using ThinkLib;
 using ThinkLib.Annotation;
 using ThinkLib.Composition;
-using ThinkNet.Runtime;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {

@@ -93,7 +93,8 @@ namespace ThinkNet
         private void RegisterFrameworkComponents()
         {
             this.SetDefault<IDataContextFactory, MemoryContextFactory>();
-            this.SetDefault<IEventStore, MemoryEventStore>();
+            this.SetDefault<IEventStore, EventStore>();
+            this.SetDefault<IPublishedVersionStore, PublishedVersionStore>();
             this.SetDefault<ISnapshotPolicy, NoneSnapshotPolicy>();
             this.SetDefault<ISnapshotStore, SnapshotStore>();
             this.SetDefault<ICache, LocalCache>();
@@ -104,7 +105,8 @@ namespace ThinkNet
             this.SetDefault<ICommandService, CommandService>();
             this.SetDefault<ICommandResultNotification, CommandService>();
             this.SetDefault<IQueryService, QueryService>();
-            this.SetDefault<IMessageHandlerRecordStore, MessageHandlerRecordInMemory>();
+            this.SetDefault<IQueryResultNotification, QueryService>();
+            this.SetDefault<IMessageHandlerRecordStore, HandlerRecordStore>();
             this.SetDefault<IEnvelopeSender, EnvelopeHub>();
             this.SetDefault<IEnvelopeReceiver, EnvelopeHub>();
             this.SetDefault<IProcessor, Processor>("core");

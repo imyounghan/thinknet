@@ -4,6 +4,7 @@ using System.Linq;
 using ThinkLib;
 using ThinkLib.Composition;
 using ThinkNet.Contracts;
+using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Messaging.Handling.Agent;
@@ -24,11 +25,12 @@ namespace ThinkNet.Runtime.Dispatching
         public MessageDispatcher(IObjectContainer container,
             IMessageHandlerRecordStore handlerStore,
             IMessageBus messageBus,
-            ICommandResultNotification notification)
+            ICommandResultNotification notification, 
+            IPublishedVersionStore publishedVersionStore)
             : base(container)
         {
             this._handlerStore = handlerStore;
-            this.AddCachedHandler(typeof(EventStream).FullName, new EventStreamInnerHandler(container, messageBus, handlerStore));
+            this.AddCachedHandler(typeof(EventStream).FullName, new EventStreamInnerHandler(container, messageBus, handlerStore, publishedVersionStore));
             this.AddCachedHandler(typeof(CommandResult).FullName, new CommandResultInnerHandler(notification));
         }
 

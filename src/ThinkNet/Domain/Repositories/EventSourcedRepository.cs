@@ -131,8 +131,7 @@ namespace ThinkNet.Domain.Repositories
                 Events = eventSourced.Events,
                 CorrelationId = correlationId,
                 SourceId = new DataKey(eventSourced.Id, aggregateRootType),
-                Version = eventSourced.Version + 1,
-                //CreationTime = DateTime.UtcNow
+                Version = eventSourced.Version
             };
 
             try {

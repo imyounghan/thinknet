@@ -6,9 +6,13 @@
     public interface IQueryResult
     {
         /// <summary>
-        /// 成功或失败的消息
+        /// 失败的消息编码
         /// </summary>
-        string Message { get; }
+        string ErrorCode { get; }
+        /// <summary>
+        /// 失败的消息
+        /// </summary>
+        string ErrorMessage { get; }
         /// <summary>
         /// 查询返回状态。
         /// </summary>

@@ -24,7 +24,7 @@ namespace ThinkNet.Contracts
         /// <summary>
         /// 异步读取数据
         /// </summary>
-        [OperationContract]
+        //[OperationContract]
         Task<IQueryResult> ExecuteAsync(IQueryParameter queryParameter);
 
         ///// <summary>

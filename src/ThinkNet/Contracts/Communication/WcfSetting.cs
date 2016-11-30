@@ -9,7 +9,7 @@ namespace ThinkNet.Contracts.Communication
             Tcp
         }
 
-        private WcfSetting()
+        static WcfSetting()
         {
             Scheme = BindingMode.Tcp;
             IpAddress = "127.0.0.1";

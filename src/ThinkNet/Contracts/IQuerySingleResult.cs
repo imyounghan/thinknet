@@ -16,6 +16,6 @@
     /// </summary>
     public interface IQuerySingleResult<T> : IQueryResult
     {
-        T Data { get; }
+        T Result { get; }
     }
 }

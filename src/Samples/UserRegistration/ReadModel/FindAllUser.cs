@@ -2,7 +2,6 @@
 
 namespace UserRegistration.ReadModel
 {
-    public class FindAllData : QueryParameter
-    {
-    }
+    public class FindAllUser : QueryParameter
+    { }
 }

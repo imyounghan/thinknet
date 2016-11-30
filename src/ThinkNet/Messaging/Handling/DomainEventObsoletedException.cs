@@ -21,6 +21,6 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 当前事件的版本号
         /// </summary>
-        public string Version { get; set; }
+        public int Version { get; set; }
     }
 }

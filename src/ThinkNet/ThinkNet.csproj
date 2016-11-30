@@ -59,6 +59,7 @@
     <Compile Include="Contracts\Communication\IServer.cs" />
     <Compile Include="Contracts\Communication\WcfServer.cs" />
     <Compile Include="Contracts\Communication\WcfSetting.cs" />
+    <Compile Include="Contracts\IQueryResultNotification.cs" />
     <Compile Include="Database\Context\ContextManager.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -116,9 +117,12 @@
     <Compile Include="Database\SortSet.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Database\Storage\PublishedVersionStore.cs" />
     <Compile Include="Database\TransactionAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Domain\EventSourcing\IPublishedVersionStore.cs" />
+    <Compile Include="Domain\EventSourcing\PublishedVersionInMemory.cs" />
     <Compile Include="IUniquelyIdentifiable.cs" />
     <Compile Include="Contracts\Communication\WcfClient.cs" />
     <Compile Include="Contracts\IQueryPageResult.cs" />
@@ -156,6 +160,7 @@
     <Compile Include="Messaging\QueryResult.cs" />
     <Compile Include="Messaging\QuerySingleResult.cs" />
     <Compile Include="Runtime\Dispatching\Dispatcher.cs" />
+    <Compile Include="Runtime\Dispatching\QueryDispatcher.cs" />
     <Compile Include="Runtime\Processor.cs" />
     <Compile Include="Runtime\Dispatching\CommandDispatcher.cs" />
     <Compile Include="Messaging\Handling\Agent\CommandResultInnerHandler.cs" />
@@ -215,7 +220,7 @@
     <Compile Include="Messaging\Fetching\IQueryFetcher.cs" />
     <Compile Include="Messaging\QueryPageParameter.cs" />
     <Compile Include="Messaging\QueryParameter.cs" />
-    <Compile Include="Runtime\ConfigurationSetting.cs" />
+    <Compile Include="ConfigurationSetting.cs" />
     <Compile Include="Runtime\Dispatching\IDispatcher.cs" />
     <Compile Include="Runtime\IProcessor.cs" />
     <Compile Include="Messaging\CommandResult.cs" />

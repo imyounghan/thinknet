@@ -36,7 +36,7 @@ namespace ThinkNet.Messaging.Handling.Agent
             var messageHandlerType = _targetHandler.GetType();
 
             if(_handlerStore.HandlerIsExecuted(uniquelyId.Id, messageType, messageHandlerType)) {
-                var errorMessage = string.Format("The command has been handled. CommandHandlerType:{0}, CommandType:{1}, CommandId:{2}.",
+                var errorMessage = string.Format("The message has been handled. MessageHandlerType:{0}, MessageType:{1}, MessageId:{2}.",
                     messageHandlerType.FullName, messageType.FullName, uniquelyId.Id);
                 if(LogManager.Default.IsWarnEnabled) {
                     LogManager.Default.Warn(errorMessage);

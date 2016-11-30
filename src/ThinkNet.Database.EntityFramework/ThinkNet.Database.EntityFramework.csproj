@@ -56,6 +56,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IDbContextFactory.cs" />
     <Compile Include="Configurations\EventDataConfiguration.cs" />
     <Compile Include="Configurations\EventDataItemConfiguration.cs" />
     <Compile Include="Configurations\HandlerRecordConfiguration.cs" />

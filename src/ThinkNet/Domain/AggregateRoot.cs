@@ -52,6 +52,11 @@ namespace ThinkNet.Domain
             }
             _pendingEvents.Add(@event);
 
+            this.ApplyEvent(@event);
+        }
+
+        private void ApplyEvent(Event @event)
+        {
             var eventType = @event.GetType();
             var aggregateRootType = this.GetType();
             Action<IAggregateRoot, Event> innerHandler;
@@ -93,7 +98,17 @@ namespace ThinkNet.Domain
         [IgnoreDataMember]
         IEnumerable<Event> IEventPublisher.Events
         {
-            get { return this.GetEvents(); }
+            get
+            {
+                if(_pendingEvents == null || _pendingEvents.Count == 0) {
+                    return Enumerable.Empty<Event>();
+                }
+                var array = new Event[_pendingEvents.Count];
+                _pendingEvents.CopyTo(array, 0);
+                this.Version++;
+                this.ClearEvents();
+                return array;
+            }
         }
 
         #endregion
@@ -104,14 +119,19 @@ namespace ThinkNet.Domain
         {
             get { return this.Id; }
         }
+
+        [IgnoreDataMember]
+        bool IEventSourced.IsChanged
+        {
+            get { return _pendingEvents != null && _pendingEvents.Count > 0; }
+        }
         #endregion
 
         #region IEventSourced 成员
         void IEventSourced.LoadFrom(IEnumerable<Event> events)
         {
             this.Version++;
-            events.Cast<Event<TIdentify>>().ForEach(this.RaiseEvent);
-            this.ClearEvents();
+            events.ForEach(this.ApplyEvent);
         }
         #endregion
     }

@@ -17,6 +17,11 @@ namespace ThinkNet.Runtime.Routing
         public const string CommandKind = "Command";
 
         /// <summary>
+        /// A query message.
+        /// </summary>
+        public const string QueryKind = "Query";
+
+        /// <summary>
         /// A message.
         /// </summary>
         public const string MessageKind = "Message";

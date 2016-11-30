@@ -35,58 +35,43 @@ namespace ThinkNet.Domain.EventSourcing
 
     internal class MemoryEventStore : IEventStore
     {
-        /// <summary>
-        /// 表示事件或快照的数据流
-        /// </summary>
-        class Stream
-        {
-            public string CorrelationId { get; set; }
+        ///// <summary>
+        ///// 表示事件或快照的数据流
+        ///// </summary>
+        //class Stream
+        //{
+        //    public string CorrelationId { get; set; }
 
-            public int Version { get; set; }
+        //    public int Version { get; set; }
 
-            public IEnumerable<Event> Events { get; set; }
-        }
+        //    public IEnumerable<Event> Events { get; set; }
+        //}
 
-        private readonly ConcurrentDictionary<DataKey, IList<Stream>> collection;
+        private readonly ConcurrentDictionary<DataKey, IList<EventStream>> collection;
 
         public MemoryEventStore()
         {
-            this.collection = new ConcurrentDictionary<DataKey, IList<Stream>>();
+            this.collection = new ConcurrentDictionary<DataKey, IList<EventStream>>();
         }
 
 
         public EventStream Find(DataKey sourceKey, string correlationId)
         {
-            IList<Stream> streams;
+            IList<EventStream> streams;
             if(!collection.TryGetValue(sourceKey, out streams))
                 return null;
 
-            var stream = streams.FirstOrDefault(item => item.CorrelationId == correlationId);
-            if(stream == null)
-                return null;
-
-            return new EventStream() {
-                CorrelationId = stream.CorrelationId,
-                Events = stream.Events,
-                SourceId = sourceKey,
-                Version = stream.Version
-            };
+            return streams.FirstOrDefault(item => item.CorrelationId == correlationId);
         }
         
 
         public IEnumerable<EventStream> FindAll(DataKey sourceKey, int startVersion)
         {
-            IList<Stream> streams;
+            IList<EventStream> streams;
             if(!collection.TryGetValue(sourceKey, out streams))
                 return Enumerable.Empty<EventStream>();
 
             return streams.Where(stream => stream.Version > startVersion)
-                .Select(stream => new EventStream() {
-                    CorrelationId = stream.CorrelationId,
-                    Events = stream.Events,
-                    SourceId = sourceKey,
-                    Version = stream.Version
-                })
                 .OrderBy(stream => stream.Version)
                 .ToArray();
         }
@@ -98,15 +83,11 @@ namespace ThinkNet.Domain.EventSourcing
 
         public void Save(EventStream @event)
         {
-            var streams = collection.GetOrAdd(@event.SourceId, () => new List<Stream>());
+            var streams = collection.GetOrAdd(@event.SourceId, () => new List<EventStream>());
             if(streams.Count > 0 && streams.Any(p => p.CorrelationId == @event.CorrelationId))
                 return;
 
-            streams.Add(new Stream() {
-                CorrelationId = @event.CorrelationId,
-                Version = @event.Version,
-                Events = @event.Events
-            });
+            streams.Add(@event);
         }
     }
 }

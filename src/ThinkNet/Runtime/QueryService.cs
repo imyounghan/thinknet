@@ -1,30 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Collections.Concurrent;
+using System.Runtime.Serialization;
+using System.ServiceModel;
 using System.Threading.Tasks;
-using ThinkLib.Composition;
-using ThinkLib.Interception;
+using ThinkLib;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging;
-using ThinkNet.Messaging.Fetching;
-using ThinkNet.Messaging.Fetching.Agent;
+using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime
 {
-    public class QueryService : MarshalByRefObject, IQueryService, IInitializer
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
+    public class QueryService : MarshalByRefObject, IQueryService, IQueryResultNotification
     {
-        private readonly static TimeSpan WaitTime = TimeSpan.FromSeconds(5);
-        private readonly static QueryResult TimeoutResult = new QueryResult(QueryStatus.Timeout, null);
-        private readonly static Dictionary<Type, Type> ParameterTypeMapFetcherType = new Dictionary<Type, Type>();
+        private readonly static TimeSpan WaitTime = TimeSpan.FromSeconds(60);
+        private readonly static QueryResult TimeoutResult = new QueryResult(QueryStatus.Timeout, "Timeout");
 
-        private readonly IObjectContainer _container;
-        private readonly IInterceptorProvider _interceptorProvider;
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<IQueryResult>> _queryTaskDict;
+        private readonly IEnvelopeSender _sender;
 
-        public QueryService(IObjectContainer container, IInterceptorProvider interceptorProvider)
+        public QueryService(IEnvelopeSender sender)
         {
-            this._container = container;
-            this._interceptorProvider = interceptorProvider;
+            this._queryTaskDict = new ConcurrentDictionary<string, TaskCompletionSource<IQueryResult>>();
+            this._sender = sender;
         }
 
         public IQueryResult Execute(IQueryParameter queryParameter)
@@ -37,97 +35,68 @@ namespace ThinkNet.Runtime
             return TimeoutResult;
         }
 
-        public Task<IQueryResult> ExecuteAsync(IQueryParameter queryParameter)
+        public Task<IQueryResult> ExecuteAsync(IQueryParameter parameter)
         {
-            return Task.Factory.StartNew<IQueryResult>(FetchQueryResult, queryParameter);
-        }
-
-        private object GetFetcher(Type parameterType, out Type contractType)
-        {
-            if(!ParameterTypeMapFetcherType.TryGetValue(parameterType, out contractType)) {
-                throw new QueryFetcherNotFoundException(parameterType);
+            var taskCompletionSource = new TaskCompletionSource<IQueryResult>();
+            if(!_queryTaskDict.TryAdd(parameter.Id, taskCompletionSource)) {
+                taskCompletionSource.TrySetException(new Exception("Try add TaskCompletionSource failed."));
+                return taskCompletionSource.Task;
             }
 
-            //var contractType = typeof(IQueryFetcher<>).MakeGenericType(queryParameterType);
-            var fetchers = _container.ResolveAll(contractType).ToArray();
+            this.SendAsync(parameter).ContinueWith(task => {
+                if(task.Status == TaskStatus.Faulted) {
+                    this.Notify(parameter.Id, new QueryResult(QueryStatus.Failed, task.Exception.Message));
+                }
+            });
 
-            switch(fetchers.Length) {
-                case 0:
-                    throw new QueryFetcherNotFoundException(parameterType);
-                case 1:
-                    return fetchers[0];
-                default:
-                    throw new QueryFetcherTooManyException(parameterType);
-            }
+            return taskCompletionSource.Task;
         }
 
-        private IQueryResult FetchQueryResult(object parameter)
-        {        
-            try {
-                Type contractType;
-                var fetcher = this.GetFetcher(parameter.GetType(), out contractType);
-                var genericType = contractType.GetGenericTypeDefinition();
-                var agentType = (Type)null;
-
-                if(genericType == typeof(IQueryFetcher<,>)) {
-                    agentType = typeof(QueryFetcherAgent<,>).MakeGenericType(contractType.GetGenericArguments());
-                }
-                else if(genericType == typeof(IQueryMultipleFetcher<,>)) {
-                    agentType = typeof(QueryMultipleFetcherAgent<,>).MakeGenericType(contractType.GetGenericArguments());
-
-                }
-                else if(genericType == typeof(IQueryPageFetcher<,>)) {
-                    agentType = typeof(QueryPageFetcherAgent<,>).MakeGenericType(contractType.GetGenericArguments());
-                }
-                else {
-                    return new QueryResult(QueryStatus.Failed, "Unkown parameter");
-                }
-
-                var agent = (IQueryFetcherAgent)Activator.CreateInstance(agentType, new object[] { fetcher, _interceptorProvider });
-                return agent.Fetch((IQueryParameter)parameter);
-            }
-            catch(Exception ex) {
-                return new QueryResult(QueryStatus.Failed, ex.Message);
-            }            
-        }
-        
-        public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
+        /// <summary>
+        /// 异步发送一个命令
+        /// </summary>
+        public Task SendAsync(IQueryParameter parameter)
         {
-            var filteredTypes = assemblies
-                .SelectMany(assembly => assembly.GetTypes())
-                .Where(FilterType)
-                .SelectMany(type => type.GetInterfaces())
-                .Where(FilterInterfaceType);
+            if(_queryTaskDict.Count > ConfigurationSetting.Current.MaxRequests)
+                throw new ThinkNetException("server is busy.");
 
-            foreach(var type in filteredTypes) {
-                var parameterType = type.GetGenericArguments().First();
-                if(ParameterTypeMapFetcherType.ContainsKey(parameterType)) {
-                    string errorMessage = string.Format("There are have duplicate IQueryFetcher interface type for {0}.", parameterType.FullName);
-                    throw new ThinkNetException(errorMessage);
+            var envelope = new Envelope(parameter);
+            envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.QueryKind;
+            envelope.Metadata[StandardMetadata.SourceId] = parameter.Id;
+            var attribute = parameter.GetType().GetCustomAttribute<DataContractAttribute>(false);
+            if(attribute != null) {
+                bool clearAssemblyName = false;
+
+                if(!string.IsNullOrEmpty(attribute.Namespace)) {
+                    envelope.Metadata[StandardMetadata.Namespace] = attribute.Namespace;
+                    clearAssemblyName = true;
                 }
 
-                ParameterTypeMapFetcherType[parameterType] = type;
+                if(!string.IsNullOrEmpty(attribute.Name)) {
+                    envelope.Metadata[StandardMetadata.TypeName] = attribute.Name;
+                    clearAssemblyName = true;
+                }
+
+                if(clearAssemblyName)
+                    envelope.Metadata.Remove(StandardMetadata.AssemblyName);
+            }
+
+            return _sender.SendAsync(envelope);
+        }
+
+        #region IQueryResultNotification 成员
+
+        public void Notify(string queryId, IQueryResult queryResult)
+        {
+            if(_queryTaskDict.Count == 0)
+                return;
+
+            TaskCompletionSource<IQueryResult> taskCompletionSource;
+            if(_queryTaskDict.TryRemove(queryId, out taskCompletionSource)) {
+                taskCompletionSource.TrySetResult(queryResult);
             }
         }
 
-        private static bool FilterInterfaceType(Type type)
-        {
-            if(!type.IsGenericType)
-                return false;
-
-            var genericType = type.GetGenericTypeDefinition();
-
-            return genericType == typeof(IQueryFetcher<,>) ||
-                genericType == typeof(IQueryMultipleFetcher<,>) ||
-                genericType == typeof(IQueryPageFetcher<,>);
-        }
-
-        private static bool FilterType(Type type)
-        {
-            if(!type.IsClass || type.IsAbstract)
-                return false;
-
-            return type.GetInterfaces().Any(FilterInterfaceType);
-        }
+        #endregion
     }
 }

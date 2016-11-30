@@ -8,6 +8,7 @@ using ThinkLib;
 using ThinkLib.Annotation;
 using ThinkLib.Composition;
 using ThinkNet.Contracts;
+using ThinkNet.Domain.EventSourcing;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
@@ -24,18 +25,21 @@ namespace ThinkNet.Messaging.Handling.Agent
         private readonly IObjectContainer _container;
         private readonly IMessageBus _messageBus;
         private readonly IMessageHandlerRecordStore _handlerStore;
+        private readonly IPublishedVersionStore _publishedVersionStore;
 
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
         public EventStreamInnerHandler(IObjectContainer container, 
             IMessageBus messageBus,
-            IMessageHandlerRecordStore handlerStore)            
+            IMessageHandlerRecordStore handlerStore, 
+            IPublishedVersionStore publishedVersionStore)            
         {
             this._container = container;           
             this._cachedHandlers = new ConcurrentDictionary<Type, IHandlerAgent>();
             this._messageBus = messageBus;
             this._handlerStore = handlerStore;
+            this._publishedVersionStore = publishedVersionStore;
         }
         
 
@@ -63,10 +67,10 @@ namespace ThinkNet.Messaging.Handling.Agent
 
             try {
                 this.TryHandle(stream);
-                _messageBus.Publish(new CommandResult(stream.CorrelationId));
+                _messageBus.Publish(new CommandResult(stream.CorrelationId, CommandReturnType.DomainEventHandled));
             }
             catch(Exception ex) {
-                _messageBus.Publish(new CommandResult(stream.CorrelationId, ex));
+                _messageBus.Publish(new CommandResult(stream.CorrelationId, ex, CommandReturnType.DomainEventHandled));
                 throw ex;
             }
            
@@ -74,11 +78,26 @@ namespace ThinkNet.Messaging.Handling.Agent
             _handlerStore.AddHandlerInfo(stream.CorrelationId, EventStreamType, EventStreamHandlerType);
         }
 
-        private void TryHandle(EventStream eventStream)
+        private void TryHandle(EventStream @event)
         {
-            var eventTypes = eventStream.Events.Select(p => p.GetType()).ToArray();
+            var version = _publishedVersionStore.GetPublishedVersion(@event.SourceId);
+            if(version < @event.Version) {
+                throw new DomainEventAsPendingException() {
+                    RelatedId = @event.SourceId.Id,
+                    RelatedType = @event.SourceId.GetSourceTypeFullName()
+                };
+            }
+            else if(version > @event.Version) {
+                throw new DomainEventObsoletedException() {
+                    RelatedId = @event.SourceId.Id,
+                    RelatedType = @event.SourceId.GetSourceTypeFullName(),
+                    Version = @event.Version
+                };
+            }
+
+            var eventTypes = @event.Events.Select(p => p.GetType()).ToArray();
             var eventHandler = this.GetEventHandler(eventTypes);
-            var parameters = this.GetParameters(eventStream);
+            var parameters = this.GetParameters(@event);
 
             eventHandler.Handle(parameters);
         }

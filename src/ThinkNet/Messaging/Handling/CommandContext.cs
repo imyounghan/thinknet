@@ -103,7 +103,7 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         public void Commit(string commandId)
         {
-            var aggregateRoots = dict.Values.OfType<IEventSourced>().Where(p => !p.Events.IsEmpty());
+            var aggregateRoots = dict.Values.OfType<IEventSourced>().Where(p => p.IsChanged);
             var count = aggregateRoots.Count();
             if(count > 1) {
                 throw new ThinkNetException("Detected more than one aggregate root created or modified by command.");

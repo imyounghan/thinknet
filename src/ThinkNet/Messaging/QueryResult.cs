@@ -9,18 +9,17 @@ namespace ThinkNet.Messaging
     [DataContract]
     public class QueryResult : IQueryResult
     {
+        public QueryResult()
+            : this(QueryStatus.Success, null)
+        { }
 
-
-        protected QueryResult()
-        {
-            this.Status = QueryStatus.Success;
-        }
-
-        public QueryResult(QueryStatus status, string message)
+        public QueryResult(QueryStatus status, string errorMessage, string errorCode = null)
         {
             this.Status = status;
-            this.Message = message;
+            this.ErrorCode = errorCode;
+            this.ErrorMessage = errorMessage;
         }
+
 
         ///// <summary>
         ///// 是否成功
@@ -29,10 +28,16 @@ namespace ThinkNet.Messaging
         //public bool Success { get; set; }
 
         /// <summary>
-        /// 成功或失败的消息
+        /// 失败的消息编码
         /// </summary>
         [DataMember]
-        public string Message { get; set; }
+        public string ErrorCode { get; set; }
+
+        /// <summary>
+        /// 失败的消息
+        /// </summary>
+        [DataMember]
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// 查询返回状态。

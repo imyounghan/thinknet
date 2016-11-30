@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using ThinkLib.Annotation;
+using ThinkNet.Database;
 
 namespace UserRegistration.ReadModel
 {
@@ -17,40 +18,40 @@ namespace UserRegistration.ReadModel
     [Register(typeof(IUserDao))]
     public class UserDao : IUserDao
     {
-        //private readonly IDataContextFactory _dataContextFactory;
+        private readonly IDataContextFactory _dataContextFactory;
 
-        //public UserDao(IDataContextFactory dataContextFactory)
-        //{
-        //    this._dataContextFactory = dataContextFactory;
-        //}
+        public UserDao(IDataContextFactory dataContextFactory)
+        {
+            this._dataContextFactory = dataContextFactory;
+        }
 
         private readonly ConcurrentQueue<UserModel> cache = new ConcurrentQueue<UserModel>();
 
         #region IUserDao 成员
         public void Save(UserModel user)
         {
-            //using(var context = _dataContextFactory.Create()){
-            //    context.Save(user);
-            //    context.Commit();
-            //}
-            cache.Enqueue(user);
+            using(var context = _dataContextFactory.Create()) {
+                context.Save(user);
+                context.Commit();
+            }
+            //cache.Enqueue(user);
         }
 
 
         public UserModel Find(string loginid)
         {
-            //using (var context = _dataContextFactory.Create()) {
-            //    return context.Find<UserModel>(loginid);
-            //}
-            return cache.FirstOrDefault(p => p.LoginId == loginid);
+            using(var context = _dataContextFactory.Create()) {
+                return context.Find<UserModel>(loginid);
+            }
+            //return cache.FirstOrDefault(p => p.LoginId == loginid);
         }
 
         public IEnumerable<UserModel> GetAll()
         {
-            //using (var context = _dataContextFactory.Create()) {
-            //    return context.CreateQuery<UserModel>().ToArray();
-            //}
-            return cache;
+            using(var context = _dataContextFactory.Create()) {
+                return context.CreateQuery<UserModel>().ToArray();
+            }
+            //return cache;
         }
 
         #endregion

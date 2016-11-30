@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Runtime.Serialization;
+using System.ServiceModel;
 using System.Threading.Tasks;
 using ThinkLib;
 using ThinkNet.Contracts;
@@ -12,8 +13,16 @@ namespace ThinkNet.Runtime
     /// <summary>
     /// <see cref="ICommandService"/> 的实现类
     /// </summary>
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class CommandService : MarshalByRefObject, ICommandService, ICommandResultNotification
     {
+        private readonly ICommandResult timeoutResult = new CommandResult() {
+            CommandReturnType = CommandReturnType.CommandExecuted,
+            ErrorCode = "-1",
+            Status = CommandStatus.Timeout
+        };
+
+
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;
 
         private readonly IEnvelopeSender _sender;
@@ -39,7 +48,7 @@ namespace ThinkNet.Runtime
         /// </summary>
         public Task SendAsync(ICommand command)
         {
-            if(_commandTaskDict.Count > 10000)
+            if(_commandTaskDict.Count > ConfigurationSetting.Current.MaxRequests)
                 throw new ThinkNetException("server is busy.");
 
             var envelope = new Envelope(command);
@@ -66,32 +75,32 @@ namespace ThinkNet.Runtime
             return _sender.SendAsync(envelope);
         }
 
+        ///// <summary>
+        ///// 执行一个命令并返回处理结果
+        ///// </summary>
+        //public ICommandResult Execute(ICommand command, CommandReturnType returnType)
+        //{
+        //    return this.ExecuteAsync(command, returnType).Result;
+        //}
+
+        ///// <summary>
+        ///// 在规定时间内执行一个命令并返回处理结果
+        ///// </summary>
+        //public ICommandResult Execute(ICommand command, CommandReturnType returnType, int millisecondsTimeout)
+        //{
+        //    return this.Execute(command, returnType,
+        //        millisecondsTimeout <= 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(millisecondsTimeout));
+        //}
+
         /// <summary>
-        /// 执行一个命令并返回处理结果
+        /// 在规定时间内执行一个命令并返回处理结果
         /// </summary>
         public ICommandResult Execute(ICommand command, CommandReturnType returnType)
         {
-            return this.ExecuteAsync(command, returnType).Result;
-        }
-
-        /// <summary>
-        /// 在规定时间内执行一个命令并返回处理结果
-        /// </summary>
-        public ICommandResult Execute(ICommand command, CommandReturnType returnType, int millisecondsTimeout)
-        {
-            return this.Execute(command, returnType,
-                millisecondsTimeout <= 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(millisecondsTimeout));
-        }
-
-        /// <summary>
-        /// 在规定时间内执行一个命令并返回处理结果
-        /// </summary>
-        public ICommandResult Execute(ICommand command, CommandReturnType returnType, TimeSpan timeout)
-        {
             var task = this.ExecuteAsync(command, returnType);
 
-            if(timeout > TimeSpan.Zero && !task.Wait(timeout)) {
-                this.NotifyEventHandled(new CommandResult(command.Id, new TimeoutException(), CommandStatus.Timeout));
+            if(!task.Wait(TimeSpan.FromMinutes(1))) {
+                this.Notify(command.Id, timeoutResult, CommandReturnType.CommandExecuted);
             }
             return task.Result;
         }
@@ -104,50 +113,50 @@ namespace ThinkNet.Runtime
             var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, () => new CommandTaskCompletionSource(returnType));
             this.SendAsync(command).ContinueWith(task => {
                 if(task.Status == TaskStatus.Faulted) {
-                    this.NotifyEventHandled(new CommandResult(command.Id, task.Exception));
+                    this.Notify(command.Id, new CommandResult(command.Id, task.Exception), CommandReturnType.CommandExecuted);
                 }
             });
 
             return commandTaskCompletionSource.TaskCompletionSource.Task;
         }
 
-        /// <summary>
-        /// 通知命令已处理
-        /// </summary>
-        public void NotifyCommandHandled(ICommandResult commandResult)
-        {
-            if(_commandTaskDict.Count == 0)
-                return;
+        ///// <summary>
+        ///// 通知命令已处理
+        ///// </summary>
+        //public void NotifyCommandHandled(ICommandResult commandResult)
+        //{
+        //    if(_commandTaskDict.Count == 0)
+        //        return;
 
-            CommandTaskCompletionSource commandTaskCompletionSource;
-            bool completed = false;
-            if(_commandTaskDict.TryGetValue(commandResult.CommandId, out commandTaskCompletionSource)) {
-                if(commandTaskCompletionSource.CommandReplyType == CommandReturnType.CommandExecuted) {
-                    completed = true;
-                }
-                else if(commandTaskCompletionSource.CommandReplyType == CommandReturnType.DomainEventHandled) {
-                    completed = (commandResult.Status == CommandStatus.Failed || commandResult.Status == CommandStatus.NothingChanged);
-                }
-            }
+        //    CommandTaskCompletionSource commandTaskCompletionSource;
+        //    bool completed = false;
+        //    if(_commandTaskDict.TryGetValue(commandResult.CommandId, out commandTaskCompletionSource)) {
+        //        if(commandTaskCompletionSource.CommandReplyType == CommandReturnType.CommandExecuted) {
+        //            completed = true;
+        //        }
+        //        else if(commandTaskCompletionSource.CommandReplyType == CommandReturnType.DomainEventHandled) {
+        //            completed = (commandResult.Status == CommandStatus.Failed || commandResult.Status == CommandStatus.NothingChanged);
+        //        }
+        //    }
 
-            if(completed) {
-                this.NotifyEventHandled(commandResult);
-            }
-        }
+        //    if(completed) {
+        //        this.NotifyEventHandled(commandResult);
+        //    }
+        //}
 
-        /// <summary>
-        /// 通知由命令产生的领域事件已处理
-        /// </summary>
-        public void NotifyEventHandled(ICommandResult commandResult)
-        {
-            if(_commandTaskDict.Count == 0)
-                return;
+        ///// <summary>
+        ///// 通知由命令产生的领域事件已处理
+        ///// </summary>
+        //public void NotifyEventHandled(ICommandResult commandResult)
+        //{
+        //    if(_commandTaskDict.Count == 0)
+        //        return;
 
-            CommandTaskCompletionSource commandTaskCompletionSource;
-            if(_commandTaskDict.TryRemove(commandResult.CommandId, out commandTaskCompletionSource)) {
-                commandTaskCompletionSource.TaskCompletionSource.TrySetResult(commandResult);
-            }
-        }        
+        //    CommandTaskCompletionSource commandTaskCompletionSource;
+        //    if(_commandTaskDict.TryRemove(commandResult.CommandId, out commandTaskCompletionSource)) {
+        //        commandTaskCompletionSource.TaskCompletionSource.TrySetResult(commandResult);
+        //    }
+        //}
 
         class CommandTaskCompletionSource
         {
@@ -160,5 +169,39 @@ namespace ThinkNet.Runtime
             public TaskCompletionSource<ICommandResult> TaskCompletionSource { get; set; }
             public CommandReturnType CommandReplyType { get; set; }
         }
+
+        #region ICommandResultNotification 成员
+
+        public void Notify(string commandId, ICommandResult commandResult, CommandReturnType returnType)
+        {
+            if(_commandTaskDict.Count == 0)
+                return;
+
+            CommandTaskCompletionSource commandTaskCompletionSource;
+            bool completed = false;
+            if(_commandTaskDict.TryGetValue(commandId, out commandTaskCompletionSource)) {
+               
+                if(commandResult.Status != CommandStatus.Success) {
+                    completed = true;
+                }
+                else {
+                    completed = commandTaskCompletionSource.CommandReplyType == returnType;
+                }
+
+                //if(commandTaskCompletionSource.CommandReplyType == CommandReturnType.CommandExecuted) {
+                //    completed = true;
+                //}
+                //else if(commandTaskCompletionSource.CommandReplyType == CommandReturnType.DomainEventHandled) {
+                //    completed = (commandResult.Status == CommandStatus.Failed || commandResult.Status == CommandStatus.NothingChanged);
+                //}
+            }
+
+            if(completed) {
+                commandTaskCompletionSource.TaskCompletionSource.TrySetResult(commandResult);
+                _commandTaskDict.TryRemove(commandId);
+            }
+        }
+
+        #endregion
     }
 }

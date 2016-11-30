@@ -6,6 +6,7 @@ using ThinkLib;
 using ThinkLib.Serialization;
 using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
+using ThinkNet.Messaging.Handling;
 
 
 namespace ThinkNet.Database.Storage
@@ -17,13 +18,15 @@ namespace ThinkNet.Database.Storage
     {
         private readonly IDataContextFactory _dataContextFactory;
         private readonly ITextSerializer _serializer;
+        private readonly IPublishedVersionStore _publishedVersionStore;
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public EventStore(IDataContextFactory dataContextFactory, ITextSerializer serializer)
+        public EventStore(IDataContextFactory dataContextFactory, ITextSerializer serializer, IPublishedVersionStore publishedVersionStore)
         {
             this._dataContextFactory = dataContextFactory;
             this._serializer = serializer;
+            this._publishedVersionStore = publishedVersionStore;
         }
 
         private bool EventPersisted(IDataContext context, int aggregateRootTypeCode, string aggregateRootId, int version, string correlationId)
@@ -70,6 +73,30 @@ namespace ThinkNet.Database.Storage
         /// </summary>
         public void Save(EventStream @event)
         {
+            var version = _publishedVersionStore.GetPublishedVersion(@event.SourceId);
+            if(version + 1 < @event.Version) {
+                if(LogManager.Default.IsWarnEnabled)
+                    LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is less than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
+                        @event.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.Id);
+                //throw new DomainEventAsPendingException() {
+                //    RelatedId = @event.SourceId.Id,
+                //    RelatedType = @event.SourceId.GetSourceTypeFullName()
+                //};
+                return;
+            }
+            else if(version + 1 > @event.Version) {
+                if(LogManager.Default.IsWarnEnabled)
+                    LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is greater than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
+                        @event.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.Id);
+                //throw new DomainEventObsoletedException() {
+                //    RelatedId = @event.SourceId.Id,
+                //    RelatedType = @event.SourceId.GetSourceTypeFullName(),
+                //    Version = @event.Version
+                //};
+                return;
+            }
+
+
             Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
                     var eventData = new EventData() {
@@ -81,31 +108,13 @@ namespace ThinkNet.Database.Storage
                         Timestamp = DateTime.UtcNow,
                         Items = new List<EventDataItem>()
                     };
-
-                    var queryable = context.CreateQuery<EventData>();
-
-                    queryable = queryable.Where(p => p.AggregateRootId == eventData.AggregateRootId &&
-                        p.AggregateRootTypeCode == eventData.AggregateRootTypeCode);
-                    int version = !queryable.Any() ? 0 : queryable.Max(p => p.Version);
-                    if(version + 1 < eventData.Version) {
-                        if(LogManager.Default.IsWarnEnabled)
-                            LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is less than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
-                                eventData.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.Id);
-                        return;
-                    }
-                    else if(version + 1 > eventData.Version) {
-                        if(LogManager.Default.IsWarnEnabled)
-                            LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is greater than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
-                                eventData.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.Id);
-                        throw new ThinkNetException("");
-                    }
-
-                    if(queryable.Any(p => p.CorrelationId == eventData.CorrelationId)) {
-                        if(LogManager.Default.IsWarnEnabled)
-                            LogManager.Default.WarnFormat("This eventstream was abandoned because the correlationId '{0}' is saved.",
-                                eventData.CorrelationId);
-                        return;
-                    }
+                    
+                    //if(queryable.Any(p => p.CorrelationId == eventData.CorrelationId)) {
+                    //    if(LogManager.Default.IsWarnEnabled)
+                    //        LogManager.Default.WarnFormat("This eventstream was abandoned because the correlationId '{0}' is saved.",
+                    //            eventData.CorrelationId);
+                    //    return;
+                    //}
 
                     @event.Events.Select(this.Transform).ForEach(eventData.AddItem);
 
@@ -113,6 +122,8 @@ namespace ThinkNet.Database.Storage
                     context.Commit();
                 }
             }).Wait();
+
+            _publishedVersionStore.AddOrUpdatePublishedVersion(@event.SourceId, @event.Version);
         }
 
         /// <summary>

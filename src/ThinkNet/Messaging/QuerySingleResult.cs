@@ -8,11 +8,10 @@ namespace ThinkNet.Messaging
         { }
 
         public QuerySingleResult(T data)
-            : base(QueryStatus.Success, null)
         {
-            this.Data = data;
+            this.Result = data;
         }   
 
-        public T Data { get; set; }
+        public T Result { get; set; }
     }
 }

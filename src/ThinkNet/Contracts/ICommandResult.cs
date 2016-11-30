@@ -13,11 +13,11 @@ namespace ThinkNet.Contracts
         /// </summary>
         [DataMember]
         CommandStatus Status { get; }
-        /// <summary>
-        /// Represents the unique identifier of the command.
-        /// </summary>
-        [DataMember]
-        string CommandId { get; }
+        ///// <summary>
+        ///// Represents the unique identifier of the command.
+        ///// </summary>
+        //[DataMember]
+        //string CommandId { get; }
         /// <summary>
         /// 错误消息
         /// </summary>

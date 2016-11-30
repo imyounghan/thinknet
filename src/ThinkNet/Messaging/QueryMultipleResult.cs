@@ -20,7 +20,6 @@ namespace ThinkNet.Messaging
         }
 
         public QueryMultipleResult(IEnumerable<T> datas)
-            : base(QueryStatus.Success, null)
         {
             this.datas = datas ?? Enumerable.Empty<T>();
         }

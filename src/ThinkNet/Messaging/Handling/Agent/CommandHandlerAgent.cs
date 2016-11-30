@@ -21,7 +21,6 @@ namespace ThinkNet.Messaging.Handling.Agent
         private readonly IInterceptorProvider _interceptorProvider;
         private readonly IMessageBus _messageBus;
         private readonly IMessageHandlerRecordStore _handlerStore;
-        private readonly bool _enableFilter;
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
@@ -38,7 +37,6 @@ namespace ThinkNet.Messaging.Handling.Agent
             this._messageBus = messageBus;
             this._handlerStore = handlerStore;
             this._interceptorProvider = interceptorProvider;
-            this._enableFilter = true;
         }
 
 
@@ -72,7 +70,7 @@ namespace ThinkNet.Messaging.Handling.Agent
             if(_handlerStore.HandlerIsExecuted(command.Id, commandType, commandHandlerType)) {
                 var errorMessage = string.Format("The command has been handled. CommandHandlerType:{0}, CommandType:{1}, CommandId:{2}.",
                     commandHandlerType.FullName, commandType.FullName, command.Id);
-                _messageBus.Publish(new CommandResult(command.Id, new ThinkNetException(errorMessage)));
+                _messageBus.Publish(new CommandResult(command.Id, errorMessage, "-1"));
                 if(LogManager.Default.IsWarnEnabled) {
                     LogManager.Default.Warn(errorMessage);
                 }
@@ -85,7 +83,7 @@ namespace ThinkNet.Messaging.Handling.Agent
 
             try {
                 TryHandleWithFilter(args);
-                _messageBus.Publish(new CommandResult(command.Id, CommandReturnType.CommandExecuted, CommandStatus.Success));
+                _messageBus.Publish(new CommandResult(command.Id));
             }
             catch(Exception ex) {
                 _messageBus.Publish(new CommandResult(command.Id, ex));
@@ -132,7 +130,7 @@ namespace ThinkNet.Messaging.Handling.Agent
 
         private InterceptorPipeline GetInterceptorPipeline()
         {
-            if(!_enableFilter) {
+            if(!ConfigurationSetting.Current.EnableCommandFilter) {
                 return null;
             }
 
