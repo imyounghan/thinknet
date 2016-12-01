@@ -7,13 +7,14 @@ namespace ThinkNet.Contracts
     /// <summary>
     /// 表示用于命令的服务
     /// </summary>
-    [ServiceContract(Name = "CommandService")]
+    [ServiceContract(Name = "CommandService", Namespace = "http://www.thinknet.com")]
+    [DataContractFormat(Style = OperationFormatStyle.Rpc)]
     public interface ICommandService
     {
         /// <summary>
         /// 发送命令
         /// </summary>
-        [OperationContract]
+        [OperationContract]        
         void Send(ICommand command);
 
         /// <summary>

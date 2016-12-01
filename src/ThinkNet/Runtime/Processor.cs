@@ -7,7 +7,6 @@ using ThinkLib.Composition;
 using ThinkLib.Interception;
 using ThinkNet.Contracts;
 using ThinkNet.Domain;
-using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Runtime.Dispatching;
@@ -37,7 +36,7 @@ namespace ThinkNet.Runtime
             IQueryResultNotification queryResultNotification,
             IInterceptorProvider interceptorProvider,
             IMessageHandlerRecordStore handlerStore,
-            IPublishedVersionStore publishedVersionStore,
+            IEventPublishedVersionStore publishedVersionStore,
             IMessageBus messageBus)
         {
             this._receiver = receiver;

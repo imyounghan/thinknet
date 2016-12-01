@@ -1,16 +1,17 @@
 ﻿using System.Collections.Concurrent;
 using ThinkLib;
+using ThinkNet.Domain.EventSourcing;
 
-namespace ThinkNet.Domain.EventSourcing
+namespace ThinkNet.Messaging.Handling
 {
-    public class PublishedVersionInMemory : IPublishedVersionStore
+    public class EventPublishedVersionInMemory : IEventPublishedVersionStore
     {
         private readonly ConcurrentDictionary<int, ConcurrentDictionary<string, int>> _versionCache;
 
         /// <summary>
         /// Default Constructor.
         /// </summary>
-        public PublishedVersionInMemory()
+        public EventPublishedVersionInMemory()
         {
             this._versionCache = new ConcurrentDictionary<int, ConcurrentDictionary<string, int>>();
         }
@@ -19,14 +20,7 @@ namespace ThinkNet.Domain.EventSourcing
         /// 添加或更新溯源聚合的版本号
         /// </summary>
         public virtual void AddOrUpdatePublishedVersion(DataKey sourceKey, int version)
-        {
-            var sourceTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
-
-            _versionCache.GetOrAdd(sourceTypeCode, () => new ConcurrentDictionary<string, int>())
-                .AddOrUpdate(sourceKey.Id,
-                    version,
-                    (key, value) => version == value + 1 ? version : value);
-        }
+        { }
 
         /// <summary>
         /// 获取已发布的溯源聚合版本号
@@ -50,9 +44,19 @@ namespace ThinkNet.Domain.EventSourcing
             return -1;
         }
 
+        public virtual void AddOrUpdatePublishedVersionToMemory(DataKey sourceKey, int version)
+        {
+            var sourceTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
+
+            _versionCache.GetOrAdd(sourceTypeCode, () => new ConcurrentDictionary<string, int>())
+                .AddOrUpdate(sourceKey.Id,
+                    version,
+                    (key, value) => version == value + 1 ? version : value);
+        }
+
         #region IPublishedVersionStore 成员
 
-        int IPublishedVersionStore.GetPublishedVersion(DataKey sourceKey)
+        int IEventPublishedVersionStore.GetPublishedVersion(DataKey sourceKey)
         {
             var version = this.GetPublishedVersionFromMemory(sourceKey);
 
@@ -62,6 +66,12 @@ namespace ThinkNet.Domain.EventSourcing
             }
 
             return version;
+        }
+
+        void IEventPublishedVersionStore.AddOrUpdatePublishedVersion(DataKey sourceKey, int version)
+        {
+            this.AddOrUpdatePublishedVersionToMemory(sourceKey, version);
+            this.AddOrUpdatePublishedVersion(sourceKey, version);
         }
 
         #endregion

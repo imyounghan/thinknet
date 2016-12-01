@@ -17,10 +17,10 @@ namespace ThinkNet.Domain.EventSourcing
         /// </summary>
         void Save(EventStream @event);
 
-        /// <summary>
-        /// 查询该命令下的事件。
-        /// </summary>
-        EventStream Find(DataKey sourceKey, string correlationId);
+        ///// <summary>
+        ///// 查询该命令下的事件。
+        ///// </summary>
+        //EventStream Find(DataKey sourceKey, string correlationId);
 
         /// <summary>
         /// 查询聚合的溯源事件。

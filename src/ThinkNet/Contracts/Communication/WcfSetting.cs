@@ -13,7 +13,7 @@ namespace ThinkNet.Contracts.Communication
         {
             Scheme = BindingMode.Tcp;
             IpAddress = "127.0.0.1";
-            Port = 8081;
+            Port = 9999;
         }
 
         public static BindingMode Scheme { get; set; }

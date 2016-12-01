@@ -26,8 +26,7 @@ namespace ThinkNet.Contracts.Communication
                 throw new InvalidMessageContractException();
             }
 
-            var channel = channelFactories.GetOrAdd(serviceType, () => BuildChannel<TService>()) as ChannelFactory<TService>;
-
+            var channel = channelFactories.GetOrAdd(serviceType, BuildChannel<TService>) as ChannelFactory<TService>;
 
             return channel.CreateChannel();
         }
@@ -50,7 +49,7 @@ namespace ThinkNet.Contracts.Communication
                     return new ChannelFactory<TService>(new NetTcpBinding(), tcpUri);
                 case WcfSetting.BindingMode.Http:
                     var httpUri = string.Format("http://{0}:{1}/{2}", WcfSetting.IpAddress, WcfSetting.Port, contractName);
-                    return new ChannelFactory<TService>(new BasicHttpBinding(), httpUri);
+                    return new ChannelFactory<TService>(new WSHttpBinding(), httpUri);
                 default:
                     throw new InvalidChannelBindingException();
             }

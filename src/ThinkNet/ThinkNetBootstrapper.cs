@@ -94,7 +94,7 @@ namespace ThinkNet
         {
             this.SetDefault<IDataContextFactory, MemoryContextFactory>();
             this.SetDefault<IEventStore, EventStore>();
-            this.SetDefault<IPublishedVersionStore, PublishedVersionStore>();
+            this.SetDefault<IEventPublishedVersionStore, EventPublishedVersionStore>();
             this.SetDefault<ISnapshotPolicy, NoneSnapshotPolicy>();
             this.SetDefault<ISnapshotStore, SnapshotStore>();
             this.SetDefault<ICache, LocalCache>();

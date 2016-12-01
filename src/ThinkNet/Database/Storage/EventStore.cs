@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +7,6 @@ using ThinkLib;
 using ThinkLib.Serialization;
 using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
-using ThinkNet.Messaging.Handling;
 
 
 namespace ThinkNet.Database.Storage
@@ -16,32 +16,32 @@ namespace ThinkNet.Database.Storage
     /// </summary>
     public sealed class EventStore : IEventStore
     {
+        private readonly ConcurrentDictionary<int, ConcurrentDictionary<string, int>> _versionCache;
         private readonly IDataContextFactory _dataContextFactory;
         private readonly ITextSerializer _serializer;
-        private readonly IPublishedVersionStore _publishedVersionStore;
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public EventStore(IDataContextFactory dataContextFactory, ITextSerializer serializer, IPublishedVersionStore publishedVersionStore)
+        public EventStore(IDataContextFactory dataContextFactory, ITextSerializer serializer)
         {
             this._dataContextFactory = dataContextFactory;
             this._serializer = serializer;
-            this._publishedVersionStore = publishedVersionStore;
+            this._versionCache = new ConcurrentDictionary<int, ConcurrentDictionary<string, int>>();
         }
 
-        private bool EventPersisted(IDataContext context, int aggregateRootTypeCode, string aggregateRootId, int version, string correlationId)
-        {
-            var query = context.CreateQuery<EventData>();
-            if(!query.Any(p => p.CorrelationId == correlationId &&
-                    p.AggregateRootId == aggregateRootId &&
-                    p.AggregateRootTypeCode == aggregateRootTypeCode)) {
-                return false;
-            }
+        //private bool EventPersisted(IDataContext context, int aggregateRootTypeCode, string aggregateRootId, int version, string correlationId)
+        //{
+        //    var query = context.CreateQuery<EventData>();
+        //    if(!query.Any(p => p.CorrelationId == correlationId &&
+        //            p.AggregateRootId == aggregateRootId &&
+        //            p.AggregateRootTypeCode == aggregateRootTypeCode)) {
+        //        return false;
+        //    }
 
-            return query.Any(p => p.AggregateRootId == aggregateRootId &&
-                    p.AggregateRootTypeCode == aggregateRootTypeCode &&
-                    p.Version == version);
-        }
+        //    return query.Any(p => p.AggregateRootId == aggregateRootId &&
+        //            p.AggregateRootTypeCode == aggregateRootTypeCode &&
+        //            p.Version == version);
+        //}
 
         private EventDataItem Transform(Event @event)
         {
@@ -68,37 +68,54 @@ namespace ThinkNet.Database.Storage
             };
         }
 
+        private bool Validate(int originalVersion, int sourceVersion, DataKey sourceId)
+        {
+            if(originalVersion + 1 < sourceVersion) {
+                if(LogManager.Default.IsWarnEnabled)
+                    LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is less than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
+                        sourceVersion, sourceVersion, sourceId.GetSourceTypeName(), sourceId.Id);
+                return false;
+            }
+
+            if(originalVersion + 1 > sourceVersion) {
+                if(LogManager.Default.IsWarnEnabled)
+                    LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is greater than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
+                        sourceVersion, sourceVersion, sourceId.GetSourceTypeName(), sourceId.Id);
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// 保存事件流数据
         /// </summary>
         public void Save(EventStream @event)
         {
-            var version = _publishedVersionStore.GetPublishedVersion(@event.SourceId);
-            if(version + 1 < @event.Version) {
-                if(LogManager.Default.IsWarnEnabled)
-                    LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is less than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
-                        @event.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.Id);
-                //throw new DomainEventAsPendingException() {
-                //    RelatedId = @event.SourceId.Id,
-                //    RelatedType = @event.SourceId.GetSourceTypeFullName()
-                //};
-                return;
-            }
-            else if(version + 1 > @event.Version) {
-                if(LogManager.Default.IsWarnEnabled)
-                    LogManager.Default.WarnFormat("This eventstream was abandoned because the version '{0}' is greater than the AggregateRoot version '{1}' on '{2}' of id '{3}'.",
-                        @event.Version, version, @event.SourceId.GetSourceTypeName(), @event.SourceId.Id);
-                //throw new DomainEventObsoletedException() {
-                //    RelatedId = @event.SourceId.Id,
-                //    RelatedType = @event.SourceId.GetSourceTypeFullName(),
-                //    Version = @event.Version
-                //};
-                return;
+            var sourceTypeCode = @event.SourceId.GetSourceTypeName().GetHashCode();
+
+            ConcurrentDictionary<string, int> aggregateRootVersion;
+            int version;
+            bool validated = false;
+            if(@event.Version > 1 && _versionCache.TryGetValue(sourceTypeCode, out aggregateRootVersion) &&
+                aggregateRootVersion.TryGetValue(@event.SourceId.Id, out version)) {
+                validated = true;
+                if(!Validate(version, @event.Version, @event.SourceId))
+                    return;
             }
 
 
             Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
+                    if(@event.Version > 1 && !validated) {
+                        version = context.CreateQuery<EventData>()
+                            .Where(p => p.AggregateRootId == @event.SourceId.Id && p.AggregateRootTypeCode == sourceTypeCode)
+                            .Max(p => p.Version);
+
+                        if(!Validate(version, @event.Version, @event.SourceId))
+                            return;
+                    }
+                    
                     var eventData = new EventData() {
                         AggregateRootId = @event.SourceId.Id,
                         AggregateRootTypeCode = @event.SourceId.GetSourceTypeName().GetHashCode(),
@@ -123,7 +140,10 @@ namespace ThinkNet.Database.Storage
                 }
             }).Wait();
 
-            _publishedVersionStore.AddOrUpdatePublishedVersion(@event.SourceId, @event.Version);
+            _versionCache.GetOrAdd(sourceTypeCode, () => new ConcurrentDictionary<string, int>())
+                .AddOrUpdate(@event.SourceId.Id,
+                    @event.Version,
+                    (key, value) => @event.Version == value + 1 ? @event.Version : value);
         }
 
         /// <summary>

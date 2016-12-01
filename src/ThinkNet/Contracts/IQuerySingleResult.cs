@@ -1,4 +1,6 @@
-﻿namespace ThinkNet.Contracts
+﻿using System.Runtime.Serialization;
+
+namespace ThinkNet.Contracts
 {
     //public class SingleQueryResult<T> : QueryResult
     //{
@@ -16,6 +18,7 @@
     /// </summary>
     public interface IQuerySingleResult<T> : IQueryResult
     {
+        [DataMember]
         T Result { get; }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 using ThinkLib;
 using ThinkLib.Composition;
 
@@ -11,19 +12,25 @@ namespace ThinkNet.Contracts.Communication
     {
         static ServiceHost CreateServiceHost(Type type, string name, object instance)
         {
+            var httpUri = new Uri(string.Format("http://{0}:{1}/{2}", WcfSetting.IpAddress, WcfSetting.Port, name));
+            var tcpUri = new Uri(string.Format("net.tcp://{0}:{1}/{2}", WcfSetting.IpAddress, WcfSetting.Port, name));
+
             var host = new ServiceHost(instance);
             if(WcfSetting.Scheme == WcfSetting.BindingMode.Http) {
-                var httpUri = new Uri(string.Format("http://{0}:{1}/{2}", WcfSetting.IpAddress, WcfSetting.Port, name));
                 host.AddServiceEndpoint(type, new BasicHttpBinding(), httpUri);
-                //host.Description.Behaviors.Find<ServiceMetadataBehavior>();
-                //var behavior  = new ServiceMetadataBehavior();
-                //behavior.HttpGetEnabled = true;
-                //host.Description.Behaviors.Add(behavior);
+
+                var behavior = host.Description.Behaviors.Find<ServiceMetadataBehavior>();
+                if(behavior == null) {
+                    behavior = new ServiceMetadataBehavior();
+                    behavior.HttpGetEnabled = true;
+                    //behavior.HttpGetUrl = new Uri(string.Format("http://{0}:{1}/{2}/metadata", WcfSetting.IpAddress, WcfSetting.Port, name));
+                    host.Description.Behaviors.Add(behavior);
+                }
             }
-            if(WcfSetting.Scheme == WcfSetting.BindingMode.Tcp) {
-                var tcpUri = new Uri(string.Format("net.tcp://{0}:{1}/{2}", WcfSetting.IpAddress, WcfSetting.Port, name));
+            else if(WcfSetting.Scheme == WcfSetting.BindingMode.Tcp) {
                 host.AddServiceEndpoint(type, new NetTcpBinding(), tcpUri);
             }
+            
             
             host.Opened += (sender, e) => {
                 Console.WriteLine("{0}服务已经启用。", name);

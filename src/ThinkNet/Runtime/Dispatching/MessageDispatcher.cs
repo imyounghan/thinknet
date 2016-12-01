@@ -4,7 +4,6 @@ using System.Linq;
 using ThinkLib;
 using ThinkLib.Composition;
 using ThinkNet.Contracts;
-using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Messaging.Handling.Agent;
@@ -26,7 +25,7 @@ namespace ThinkNet.Runtime.Dispatching
             IMessageHandlerRecordStore handlerStore,
             IMessageBus messageBus,
             ICommandResultNotification notification, 
-            IPublishedVersionStore publishedVersionStore)
+            IEventPublishedVersionStore publishedVersionStore)
             : base(container)
         {
             this._handlerStore = handlerStore;

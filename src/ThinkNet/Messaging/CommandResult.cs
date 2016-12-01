@@ -9,7 +9,6 @@ namespace ThinkNet.Messaging
     /// 命令处理结果的回复
     /// </summary>
     [DataContract]
-    [Serializable]
     public sealed class CommandResult : ICommandResult, IMessage, IUniquelyIdentifiable
     {
         /// <summary>

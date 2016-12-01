@@ -1,7 +1,8 @@
-﻿
-namespace ThinkNet.Domain.EventSourcing
+﻿using ThinkNet.Domain.EventSourcing;
+
+namespace ThinkNet.Messaging.Handling
 {
-    public interface IPublishedVersionStore
+    public interface IEventPublishedVersionStore
     {
         /// <summary>
         /// 更新版本号

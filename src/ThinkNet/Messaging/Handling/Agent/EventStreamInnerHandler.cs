@@ -8,7 +8,6 @@ using ThinkLib;
 using ThinkLib.Annotation;
 using ThinkLib.Composition;
 using ThinkNet.Contracts;
-using ThinkNet.Domain.EventSourcing;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
@@ -25,15 +24,15 @@ namespace ThinkNet.Messaging.Handling.Agent
         private readonly IObjectContainer _container;
         private readonly IMessageBus _messageBus;
         private readonly IMessageHandlerRecordStore _handlerStore;
-        private readonly IPublishedVersionStore _publishedVersionStore;
+        private readonly IEventPublishedVersionStore _publishedVersionStore;
 
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
         public EventStreamInnerHandler(IObjectContainer container, 
             IMessageBus messageBus,
-            IMessageHandlerRecordStore handlerStore, 
-            IPublishedVersionStore publishedVersionStore)            
+            IMessageHandlerRecordStore handlerStore,
+            IEventPublishedVersionStore publishedVersionStore)            
         {
             this._container = container;           
             this._cachedHandlers = new ConcurrentDictionary<Type, IHandlerAgent>();
@@ -80,19 +79,22 @@ namespace ThinkNet.Messaging.Handling.Agent
 
         private void TryHandle(EventStream @event)
         {
-            var version = _publishedVersionStore.GetPublishedVersion(@event.SourceId);
-            if(version < @event.Version) {
-                throw new DomainEventAsPendingException() {
-                    RelatedId = @event.SourceId.Id,
-                    RelatedType = @event.SourceId.GetSourceTypeFullName()
-                };
-            }
-            else if(version > @event.Version) {
-                throw new DomainEventObsoletedException() {
-                    RelatedId = @event.SourceId.Id,
-                    RelatedType = @event.SourceId.GetSourceTypeFullName(),
-                    Version = @event.Version
-                };
+            if(@event.Version > 1) {
+                var version = _publishedVersionStore.GetPublishedVersion(@event.SourceId) + 1;
+                if(version < @event.Version) {
+                    _messageBus.Publish(@event);
+                    throw new DomainEventAsPendingException() {
+                        RelatedId = @event.SourceId.Id,
+                        RelatedType = @event.SourceId.GetSourceTypeFullName()
+                    };
+                }
+                else if(version > @event.Version) {
+                    throw new DomainEventObsoletedException() {
+                        RelatedId = @event.SourceId.Id,
+                        RelatedType = @event.SourceId.GetSourceTypeFullName(),
+                        Version = @event.Version
+                    };
+                }
             }
 
             var eventTypes = @event.Events.Select(p => p.GetType()).ToArray();
@@ -100,6 +102,10 @@ namespace ThinkNet.Messaging.Handling.Agent
             var parameters = this.GetParameters(@event);
 
             eventHandler.Handle(parameters);
+
+            _messageBus.Publish(@event.Events);
+
+            _publishedVersionStore.AddOrUpdatePublishedVersion(@event.SourceId, @event.Version);
         }
 
         private IHandlerAgent BuildEventHandler(IHandler handler, Type eventHandlerType)

@@ -117,12 +117,13 @@
     <Compile Include="Database\SortSet.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Database\Storage\PublishedVersionStore.cs" />
+    <Compile Include="Database\Storage\EventPublishedVersion.cs" />
+    <Compile Include="Database\Storage\EventPublishedVersionStore.cs" />
     <Compile Include="Database\TransactionAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Domain\EventSourcing\IPublishedVersionStore.cs" />
-    <Compile Include="Domain\EventSourcing\PublishedVersionInMemory.cs" />
+    <Compile Include="Messaging\Handling\IEventPublishedVersionStore.cs" />
+    <Compile Include="Messaging\Handling\EventPublishedVersionInMemory.cs" />
     <Compile Include="IUniquelyIdentifiable.cs" />
     <Compile Include="Contracts\Communication\WcfClient.cs" />
     <Compile Include="Contracts\IQueryPageResult.cs" />
@@ -234,9 +235,7 @@
     <Compile Include="Runtime\Routing\StandardMetadata.cs" />
     <Compile Include="ThinkNetException.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="obj\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

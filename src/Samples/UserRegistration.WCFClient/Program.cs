@@ -12,8 +12,8 @@ namespace UserRegistration.WCFClient
         {
             ServiceProxy.Mode = ServiceProxy.CommunicationMode.Wcf;
 
-            Console.WriteLine("输入任意键开始演示...");
-            Console.ReadKey();
+            //Console.WriteLine("输入任意键开始演示...");
+            //Console.ReadKey();
 
             ServiceProxy.GetService<ICommandService>().Execute(new RegisterUser() {
                 UserName = "hanyang",

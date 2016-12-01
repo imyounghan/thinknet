@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging
 {
+    [DataContract]
     public class QueryMultipleResult<T> : QueryResult, IQueryMultipleResult<T>
     {
         /// <summary>
