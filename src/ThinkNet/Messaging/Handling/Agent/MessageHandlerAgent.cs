@@ -15,6 +15,9 @@ namespace ThinkNet.Messaging.Handling.Agent
         private readonly Type _contractType;
         private readonly IMessageHandlerRecordStore _handlerStore;
 
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
         public MessageHandlerAgent(Type messageHandlerInterfaceType, 
             IHandler handler, 
             IMessageHandlerRecordStore handlerStore)
@@ -24,11 +27,17 @@ namespace ThinkNet.Messaging.Handling.Agent
             this._handlerStore = handlerStore;
         }
 
+        /// <summary>
+        /// 尝试处理消息
+        /// </summary>
         protected override void TryHandle(object[] args)
         {
             ((dynamic)_targetHandler).Handle((dynamic)args[0]);
         }
 
+        /// <summary>
+        /// 处理消息
+        /// </summary>
         public override void Handle(object[] args)
         {
             var uniquelyId = args[0] as IUniquelyIdentifiable;
@@ -49,6 +58,9 @@ namespace ThinkNet.Messaging.Handling.Agent
             _handlerStore.AddHandlerInfo(uniquelyId.Id, messageType, messageHandlerType);
         }
 
+        /// <summary>
+        /// 获取消息处理程序
+        /// </summary>
         public override object GetInnerHandler()
         {
             return this._targetHandler;

@@ -41,17 +41,22 @@ namespace ThinkNet.Messaging.Handling.Agent
             this._publishedVersionStore = publishedVersionStore;
         }
         
-
+        /// <summary>
+        /// 获取事件流的处理程序
+        /// </summary>
         public object GetInnerHandler()
         {
             return this;
         }
 
+        /// <summary>
+        /// 处理事件流
+        /// </summary>
         public void Handle(params object[] args)
         {
             var stream = args[0] as EventStream;
             if(stream.Events.IsEmpty()) {
-                _messageBus.Publish(new CommandResult(stream.CorrelationId, CommandReturnType.DomainEventHandled, CommandStatus.NothingChanged));
+                _messageBus.Publish(new CommandResult(stream.CorrelationId, CommandReturnType.DomainEventHandled, ReturnStatus.Nothing));
                 return;
             }
 
@@ -235,6 +240,9 @@ namespace ThinkNet.Messaging.Handling.Agent
                 genericType == typeof(IEventHandler<,,,,>);
         } 
 
+        /// <summary>
+        /// 初始化程序，用于映射多个事件处理程序
+        /// </summary>
         public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
         {
             var eventHandlerInterfaceTypes = assemblies

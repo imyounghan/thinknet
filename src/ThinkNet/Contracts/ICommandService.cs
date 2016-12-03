@@ -6,15 +6,12 @@ namespace ThinkNet.Contracts
 {
     /// <summary>
     /// 表示用于命令的服务
-    /// </summary>
-    [ServiceContract(Name = "CommandService", Namespace = "http://www.thinknet.com")]
-    [DataContractFormat(Style = OperationFormatStyle.Rpc)]
+    /// </summary>    
     public interface ICommandService
     {
         /// <summary>
         /// 发送命令
-        /// </summary>
-        [OperationContract]        
+        /// </summary>      
         void Send(ICommand command);
 
         /// <summary>
@@ -23,15 +20,9 @@ namespace ThinkNet.Contracts
         //[OperationContract]
         Task SendAsync(ICommand command);
 
-        ///// <summary>
-        ///// 在规定时间内执行一个命令
-        ///// </summary>
-        //[OperationContract]
-        //ICommandResult Execute(ICommand command, CommandReturnType returnType, int millisecondsTimeout = -1);
         /// <summary>
         /// 在规定时间内执行一个命令
         /// </summary>
-        [OperationContract]
         ICommandResult Execute(ICommand command, CommandReturnType returnType);
         /// <summary>
         /// 异步执行一个命令

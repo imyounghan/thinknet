@@ -148,7 +148,7 @@ namespace ThinkNet.Runtime
 
         #region IInitializer 成员
 
-        public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
+        void IInitializer.Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
         {
             _dispatcherDict.Values.OfType<IInitializer>()
                 .ForEach(item => item.Initialize(container, assemblies));

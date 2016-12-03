@@ -1,13 +1,12 @@
-﻿
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace ThinkNet.Contracts
 {
     /// <summary>
-    /// 查询结果状态枚举定义
+    /// 返回状态枚举定义
     /// </summary>
     [DataContract]
-    public enum QueryStatus
+    public enum ReturnStatus : byte
     {
         /// <summary>
         /// 错误
@@ -20,9 +19,14 @@ namespace ThinkNet.Contracts
         [EnumMember]
         Success = 1,
         /// <summary>
+        /// 没有变化或数据
+        /// </summary>
+        [EnumMember]
+        Nothing = 2,
+        /// <summary>
         /// 超时
         /// </summary>
         [EnumMember]
-        Timeout = 2,
+        Timeout = 3,
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace UserRegistration.ReadModel
 {
+    [DataContract]
     public class UserModel
     {
         public UserModel()
@@ -12,12 +14,13 @@ namespace UserRegistration.ReadModel
             this.LoginId = loginId;
         }
 
+        [DataMember]
         public Guid UserID { get; set; }
-
+        [DataMember]
         public string LoginId { get; set; }
-
+        [DataMember]
         public string Password { get; set; }
-
+        [DataMember]
         public string UserName { get; set; }
 
         public override bool Equals(object obj)

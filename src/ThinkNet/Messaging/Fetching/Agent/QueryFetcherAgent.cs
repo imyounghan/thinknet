@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using ThinkLib;
 using ThinkLib.Interception;
 using ThinkLib.Interception.Pipeline;
 using ThinkNet.Contracts;
@@ -35,6 +34,10 @@ namespace ThinkNet.Messaging.Fetching.Agent
     //    }
     //}
 
+
+    /// <summary>
+    /// 查询代理
+    /// </summary>
     public abstract class QueryFetcherAgent<TParameter> : IQueryFetcherAgent
         where TParameter : QueryParameter
     {
@@ -42,15 +45,27 @@ namespace ThinkNet.Messaging.Fetching.Agent
 
         private readonly IInterceptorProvider interceptorProvider;
 
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         protected QueryFetcherAgent(IInterceptorProvider interceptorProvider)
         {
             this.interceptorProvider = interceptorProvider;
         }
 
+        /// <summary>
+        /// 尝试获取查询结果
+        /// </summary>
         protected abstract IQueryResult TryFetch(TParameter parameter);
 
+        /// <summary>
+        /// 获取查询接口类型
+        /// </summary>
         protected abstract Type GetQueryFetcherInterfaceType();
 
+        /// <summary>
+        /// 获取查询程序
+        /// </summary>
         public abstract object GetInnerQueryFetcher();
 
         private MethodInfo GetReflectedMethodInfo()
@@ -70,7 +85,7 @@ namespace ThinkNet.Messaging.Fetching.Agent
             return InterceptorPipelineManager.Instance.CreatePipeline(method, interceptorProvider.GetInterceptors);
         }
 
-        private IQueryResult Fetch(IQueryParameter parameter)
+        private IQueryResult Fetch(IQuery parameter)
         {
             var pipeline = this.GetInterceptorPipeline();
             if(pipeline == null || pipeline.Count == 0) {
@@ -95,23 +110,40 @@ namespace ThinkNet.Messaging.Fetching.Agent
             return methodReturn.ReturnValue as IQueryResult;
         }
 
-        IQueryResult IQueryFetcherAgent.Fetch(IQueryParameter parameter)
+        IQueryResult IQueryFetcherAgent.Fetch(IQuery parameter)
         {
+            bool wasError = false;
             try {
                 return this.Fetch(parameter as TParameter);
             }
             catch(Exception ex) {
-                return new QueryResult(QueryStatus.Failed, ex.Message);
+                if(LogManager.Default.IsErrorEnabled) {
+                    LogManager.Default.Error(ex, "Exception raised when fetching {0}.", parameter);
+                }
+                wasError = true;
+                return new QueryResult(ReturnStatus.Failed, ex.Message);
+            }
+            finally {
+                if(!wasError && LogManager.Default.IsDebugEnabled) {
+                    LogManager.Default.DebugFormat("Fetch ({0}) on ({1}) successfully.",
+                       parameter, this.GetInnerQueryFetcher().GetType().FullName);
+                }
             }
         }
     }
 
+    /// <summary>
+    /// 查询返回单个值的代理程序
+    /// </summary>
     public class QueryFetcherAgent<TParameter, TResult> : QueryFetcherAgent<TParameter>
         where TParameter : QueryParameter
     {
         private readonly IQueryFetcher<TParameter, TResult> fetcher;
         private readonly Type contractType;
 
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public QueryFetcherAgent(IQueryFetcher<TParameter, TResult> fetcher, IInterceptorProvider interceptorProvider)
             : base(interceptorProvider)
         {
@@ -119,20 +151,29 @@ namespace ThinkNet.Messaging.Fetching.Agent
             this.contractType = typeof(IQueryFetcher<TParameter, TResult>);
         }
 
+        /// <summary>
+        /// 获取查询程序
+        /// </summary>
         public override object GetInnerQueryFetcher()
         {
             return this.fetcher;
         }
 
+        /// <summary>
+        /// 获取查询接口类型
+        /// </summary>
         protected override Type GetQueryFetcherInterfaceType()
         {
             return this.contractType;
         }
 
+        /// <summary>
+        /// 尝试获取查询结果
+        /// </summary>
         protected override IQueryResult TryFetch(TParameter parameter)
         {
             var result = fetcher.Fetch(parameter);
-            return new QuerySingleResult<TResult>(result);
+            return new QueryResultCollection<TResult>(result);
         }
     }
 }

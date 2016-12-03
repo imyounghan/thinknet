@@ -55,11 +55,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Contracts\Communication\IClient.cs" />
-    <Compile Include="Contracts\Communication\IServer.cs" />
-    <Compile Include="Contracts\Communication\WcfServer.cs" />
-    <Compile Include="Contracts\Communication\WcfSetting.cs" />
+    <Compile Include="Contracts\IQueryResultCollection.cs" />
     <Compile Include="Contracts\IQueryResultNotification.cs" />
+    <Compile Include="Contracts\IServiceGateway.cs" />
+    <Compile Include="Contracts\ServiceGateway.cs" />
+    <Compile Include="Contracts\ServiceGatewayProvider.cs" />
     <Compile Include="Database\Context\ContextManager.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -122,21 +122,17 @@
     <Compile Include="Database\TransactionAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Messaging\Fetching\Agent\QueryMultipleFetcherAgent.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Messaging\Handling\IEventPublishedVersionStore.cs" />
     <Compile Include="Messaging\Handling\EventPublishedVersionInMemory.cs" />
     <Compile Include="IUniquelyIdentifiable.cs" />
-    <Compile Include="Contracts\Communication\WcfClient.cs" />
-    <Compile Include="Contracts\IQueryPageResult.cs" />
-    <Compile Include="Contracts\ServiceProxy.cs" />
     <Compile Include="Contracts\ICommandResult.cs" />
-    <Compile Include="Contracts\IQueryPageParameter.cs" />
-    <Compile Include="Contracts\IQueryMultipleResult.cs" />
     <Compile Include="Contracts\IQueryResult.cs" />
-    <Compile Include="Contracts\IQuerySingleResult.cs" />
     <Compile Include="Domain\Entity.cs" />
     <Compile Include="Messaging\Fetching\Agent\IQueryFetcherAgent.cs" />
     <Compile Include="Messaging\Fetching\Agent\QueryFetcherAgent.cs" />
-    <Compile Include="Messaging\Fetching\Agent\QueryMultipleFetcherAgent.cs" />
     <Compile Include="Messaging\Fetching\Agent\QueryPageFetcherAgent.cs" />
     <Compile Include="Messaging\Fetching\IQueryMultipleFetcher.cs" />
     <Compile Include="Messaging\Fetching\IQueryPageFetcher.cs" />
@@ -156,10 +152,11 @@
     <Compile Include="Messaging\Handling\MessageHandlerRecordInMemory.cs" />
     <Compile Include="Messaging\Fetching\QueryFetcherNotFoundException.cs" />
     <Compile Include="Messaging\Fetching\QueryFetcherTooManyException.cs" />
-    <Compile Include="Messaging\QueryPageResult.cs" />
-    <Compile Include="Messaging\QueryMultipleResult.cs" />
+    <Compile Include="Messaging\PagedQueryParameter.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Messaging\QueryResult.cs" />
-    <Compile Include="Messaging\QuerySingleResult.cs" />
+    <Compile Include="Messaging\QueryResultCollection.cs" />
     <Compile Include="Runtime\Dispatching\Dispatcher.cs" />
     <Compile Include="Runtime\Dispatching\QueryDispatcher.cs" />
     <Compile Include="Runtime\Processor.cs" />
@@ -169,13 +166,11 @@
     <Compile Include="Runtime\CommandService.cs" />
     <Compile Include="Contracts\ICommandResultNotification.cs" />
     <Compile Include="Contracts\CommandReturnType.cs" />
-    <Compile Include="Contracts\CommandStatus.cs" />
+    <Compile Include="Contracts\ReturnStatus.cs" />
     <Compile Include="Contracts\ICommand.cs" />
     <Compile Include="Contracts\ICommandService.cs" />
-    <Compile Include="Contracts\IDataTransferObject.cs" />
-    <Compile Include="Contracts\IQueryParameter.cs" />
+    <Compile Include="Contracts\IQuery.cs" />
     <Compile Include="Contracts\IQueryService.cs" />
-    <Compile Include="Contracts\QueryStatus.cs" />
     <Compile Include="Domain\EventSourcing\NoneSnapshotPolicy.cs" />
     <Compile Include="Domain\Repositories\Repository.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
@@ -219,7 +214,6 @@
     <Compile Include="Domain\EventSourcing\ISnapshotStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Messaging\Fetching\IQueryFetcher.cs" />
-    <Compile Include="Messaging\QueryPageParameter.cs" />
     <Compile Include="Messaging\QueryParameter.cs" />
     <Compile Include="ConfigurationSetting.cs" />
     <Compile Include="Runtime\Dispatching\IDispatcher.cs" />

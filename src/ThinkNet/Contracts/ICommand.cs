@@ -3,6 +3,6 @@
     /// <summary>
     /// 表示这是一个命令
     /// </summary>
-    public interface ICommand : IDataTransferObject, IUniquelyIdentifiable
+    public interface ICommand : IUniquelyIdentifiable
     { }
 }

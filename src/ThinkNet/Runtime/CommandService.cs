@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Runtime.Serialization;
-using System.ServiceModel;
 using System.Threading.Tasks;
 using ThinkLib;
 using ThinkNet.Contracts;
@@ -13,14 +12,15 @@ namespace ThinkNet.Runtime
     /// <summary>
     /// <see cref="ICommandService"/> 的实现类
     /// </summary>
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IgnoreExtensionDataObject = true)]
-    public class CommandService : MarshalByRefObject, ICommandService, ICommandResultNotification
+    public class CommandService : ICommandService, ICommandResultNotification
     {
         private readonly ICommandResult timeoutResult = new CommandResult() {
             CommandReturnType = CommandReturnType.CommandExecuted,
             ErrorCode = "-1",
-            Status = CommandStatus.Timeout
+            Status = ReturnStatus.Timeout
         };
+
+        private readonly TimeSpan timeout = TimeSpan.FromMilliseconds(1000);
 
 
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;
@@ -38,7 +38,6 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// 发送一个命令
         /// </summary>
-        [ServiceKnownType(typeof(Command))]
         public void Send(ICommand command)
         {           
             this.SendAsync(command).Wait();
@@ -76,32 +75,13 @@ namespace ThinkNet.Runtime
             return _sender.SendAsync(envelope);
         }
 
-        ///// <summary>
-        ///// 执行一个命令并返回处理结果
-        ///// </summary>
-        //public ICommandResult Execute(ICommand command, CommandReturnType returnType)
-        //{
-        //    return this.ExecuteAsync(command, returnType).Result;
-        //}
-
-        ///// <summary>
-        ///// 在规定时间内执行一个命令并返回处理结果
-        ///// </summary>
-        //public ICommandResult Execute(ICommand command, CommandReturnType returnType, int millisecondsTimeout)
-        //{
-        //    return this.Execute(command, returnType,
-        //        millisecondsTimeout <= 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(millisecondsTimeout));
-        //}
-
         /// <summary>
         /// 在规定时间内执行一个命令并返回处理结果
         /// </summary>
-        [ServiceKnownType(typeof(Command))]
         public ICommandResult Execute(ICommand command, CommandReturnType returnType)
         {
             var task = this.ExecuteAsync(command, returnType);
-
-            if(!task.Wait(TimeSpan.FromMinutes(1))) {
+            if(!task.Wait(timeout)) {
                 this.Notify(command.Id, timeoutResult, CommandReturnType.CommandExecuted);
             }
             return task.Result;
@@ -173,7 +153,9 @@ namespace ThinkNet.Runtime
         }
 
         #region ICommandResultNotification 成员
-
+        /// <summary>
+        /// 通知命令结果
+        /// </summary>
         public void Notify(string commandId, ICommandResult commandResult, CommandReturnType returnType)
         {
             if(_commandTaskDict.Count == 0)
@@ -183,7 +165,7 @@ namespace ThinkNet.Runtime
             bool completed = false;
             if(_commandTaskDict.TryGetValue(commandId, out commandTaskCompletionSource)) {
                
-                if(commandResult.Status != CommandStatus.Success) {
+                if(commandResult.Status != ReturnStatus.Success) {
                     completed = true;
                 }
                 else {

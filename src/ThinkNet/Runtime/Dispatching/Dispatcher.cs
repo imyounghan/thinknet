@@ -12,6 +12,9 @@ using ThinkNet.Messaging.Handling.Agent;
 
 namespace ThinkNet.Runtime.Dispatching
 {
+    /// <summary>
+    /// <see cref="IDispatcher"/> 的抽象实现类
+    /// </summary>
     public abstract class Dispatcher : IDispatcher, IInitializer
     {
         private readonly ConcurrentDictionary<string, IHandlerAgent> _cachedHandlers;
@@ -95,7 +98,7 @@ namespace ThinkNet.Runtime.Dispatching
 
         #region IInitializer 成员
 
-        public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
+        void IInitializer.Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
         {
             _cachedHandlers.Values.OfType<IInitializer>()
                 .ForEach(item => item.Initialize(container, assemblies));

@@ -1,4 +1,5 @@
 ﻿
+using System.Runtime.Serialization;
 namespace ThinkNet
 {
     /// <summary>
@@ -9,6 +10,7 @@ namespace ThinkNet
         /// <summary>
         /// 标识ID
         /// </summary>
+        [DataMember]
         string Id { get; }
     }
 }

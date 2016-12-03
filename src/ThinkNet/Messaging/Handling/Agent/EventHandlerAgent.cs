@@ -22,7 +22,9 @@ namespace ThinkNet.Messaging.Handling.Agent
             this._contractType = eventHandlerInterfaceType;
         }
         
-
+        /// <summary>
+        /// 获取事件处理程序
+        /// </summary>
         public override object GetInnerHandler()
         {
             return this._targetHandler;
@@ -78,6 +80,9 @@ namespace ThinkNet.Messaging.Handling.Agent
             base.Handle(parameters);
         }
 
+        /// <summary>
+        /// 尝试处理事件
+        /// </summary>
         protected override void TryHandle(object[] args)
         {
             switch(args.Length - 1) {

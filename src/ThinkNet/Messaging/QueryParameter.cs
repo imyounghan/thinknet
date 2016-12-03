@@ -1,20 +1,22 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using ThinkLib.Utilities;
 using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging
 {
     /// <summary>
-    /// <see cref="IQueryParameter"/> 的抽象类
+    /// <see cref="IQuery"/> 的抽象类
     /// </summary>
     [DataContract]
-    public abstract class QueryParameter : IQueryParameter, IMessage, IUniquelyIdentifiable
+    public abstract class QueryParameter : IQuery, IMessage
     {
+        /// <summary>
+        /// Default Constructor.
+        /// </summary>
         public QueryParameter()
         {
             this.Id = UniqueId.GenerateNewStringId();
-        }        
+        }
 
         string IMessage.GetKey()
         {
@@ -28,6 +30,14 @@ namespace ThinkNet.Messaging
         string IUniquelyIdentifiable.Id
         {
             get { return this.Id; }
+        }
+
+        /// <summary>
+        /// 输出字符串信息
+        /// </summary>
+        public override string ToString()
+        {
+            return string.Format("{0}@{1}", this.GetType().FullName, this.Id);
         }
     }
 }

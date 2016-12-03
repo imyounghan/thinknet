@@ -15,7 +15,7 @@ namespace ThinkNet.Messaging
         /// 命令处理状态。
         /// </summary>
         [DataMember]
-        public CommandStatus Status { get; set; }
+        public ReturnStatus Status { get; set; }
         /// <summary>
         /// Represents the unique identifier of the command.
         /// </summary>
@@ -58,20 +58,20 @@ namespace ThinkNet.Messaging
         /// 表示成功的结果
         /// </summary>
         public CommandResult(string commandId, CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
-            : this(commandId, commandReturnType, CommandStatus.Success, null)
+            : this(commandId, commandReturnType, ReturnStatus.Success, null)
         { }
 
         /// <summary>
         /// 表示失败的结果
         /// </summary>
         public CommandResult(string commandId, string errorMessage, string errorCode = "-1", CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
-            : this(commandId, commandReturnType, CommandStatus.Failed, null, errorCode)
+            : this(commandId, commandReturnType, ReturnStatus.Failed, null, errorCode)
         { }
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public CommandResult(string commandId, CommandReturnType commandReturnType, CommandStatus status, string errorMessage = null, string errorCode = null)
+        public CommandResult(string commandId, CommandReturnType commandReturnType, ReturnStatus status, string errorMessage = null, string errorCode = null)
         {
             this.CommandId = commandId;
             this.CommandReturnType = commandReturnType;
@@ -88,12 +88,12 @@ namespace ThinkNet.Messaging
             this.CommandId = commandId;
             this.CommandReturnType = commandReturnType;
             this.ReplyTime = DateTime.UtcNow;
-            this.Status = CommandStatus.Success;
+            this.Status = ReturnStatus.Success;
 
             if(exception == null)
                 return;
 
-            this.Status = CommandStatus.Failed;
+            this.Status = ReturnStatus.Failed;
             this.ErrorMessage = exception.Message;
             this.ErrorData = exception.Data;
 

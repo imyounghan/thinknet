@@ -16,7 +16,7 @@ namespace ThinkNet.Database.Storage
     /// </summary>
     public sealed class EventStore : IEventStore
     {
-        private readonly ConcurrentDictionary<int, ConcurrentDictionary<string, int>> _versionCache;
+        private readonly ConcurrentDictionary<string, int>[] _versionCache;
         private readonly IDataContextFactory _dataContextFactory;
         private readonly ITextSerializer _serializer;
         /// <summary>
@@ -26,7 +26,10 @@ namespace ThinkNet.Database.Storage
         {
             this._dataContextFactory = dataContextFactory;
             this._serializer = serializer;
-            this._versionCache = new ConcurrentDictionary<int, ConcurrentDictionary<string, int>>();
+            this._versionCache = new ConcurrentDictionary<string, int>[10];
+            for(int index = 0; index < 10; index++) {
+                _versionCache[index] = new ConcurrentDictionary<string, int>();
+            }
         }
 
         //private bool EventPersisted(IDataContext context, int aggregateRootTypeCode, string aggregateRootId, int version, string correlationId)
@@ -92,13 +95,11 @@ namespace ThinkNet.Database.Storage
         /// </summary>
         public void Save(EventStream @event)
         {
-            var sourceTypeCode = @event.SourceId.GetSourceTypeName().GetHashCode();
+            var aggregateRootVersion = _versionCache[Math.Abs(@event.SourceId.GetHashCode() % 10) - 1];
 
-            ConcurrentDictionary<string, int> aggregateRootVersion;
             int version;
             bool validated = false;
-            if(@event.Version > 1 && _versionCache.TryGetValue(sourceTypeCode, out aggregateRootVersion) &&
-                aggregateRootVersion.TryGetValue(@event.SourceId.Id, out version)) {
+            if(@event.Version > 1 && aggregateRootVersion.TryGetValue(@event.SourceId.Id, out version)) {
                 validated = true;
                 if(!Validate(version, @event.Version, @event.SourceId))
                     return;
@@ -108,6 +109,7 @@ namespace ThinkNet.Database.Storage
             Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
                     if(@event.Version > 1 && !validated) {
+                        var sourceTypeCode = @event.SourceId.GetSourceTypeName().GetHashCode();
                         version = context.CreateQuery<EventData>()
                             .Where(p => p.AggregateRootId == @event.SourceId.Id && p.AggregateRootTypeCode == sourceTypeCode)
                             .Max(p => p.Version);
@@ -140,10 +142,7 @@ namespace ThinkNet.Database.Storage
                 }
             }).Wait();
 
-            _versionCache.GetOrAdd(sourceTypeCode, () => new ConcurrentDictionary<string, int>())
-                .AddOrUpdate(@event.SourceId.Id,
-                    @event.Version,
-                    (key, value) => @event.Version == value + 1 ? @event.Version : value);
+            aggregateRootVersion[@event.SourceId.Id] = @event.Version;
         }
 
         /// <summary>

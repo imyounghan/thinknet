@@ -1,19 +1,25 @@
-﻿using System.Collections.Concurrent;
-using ThinkLib;
+﻿using System;
+using System.Collections.Concurrent;
 using ThinkNet.Domain.EventSourcing;
 
 namespace ThinkNet.Messaging.Handling
 {
+    /// <summary>
+    /// <see cref="IEventPublishedVersionStore"/> 的本地内存存储
+    /// </summary>
     public class EventPublishedVersionInMemory : IEventPublishedVersionStore
     {
-        private readonly ConcurrentDictionary<int, ConcurrentDictionary<string, int>> _versionCache;
+        private readonly ConcurrentDictionary<string, int>[] _versionCache;
 
         /// <summary>
         /// Default Constructor.
         /// </summary>
         public EventPublishedVersionInMemory()
         {
-            this._versionCache = new ConcurrentDictionary<int, ConcurrentDictionary<string, int>>();
+            this._versionCache = new ConcurrentDictionary<string, int>[10];
+            for(int index = 0; index < 10; index++) {
+                _versionCache[index] = new ConcurrentDictionary<string, int>();
+            }
         }
 
         /// <summary>
@@ -32,26 +38,25 @@ namespace ThinkNet.Messaging.Handling
 
         private int GetPublishedVersionFromMemory(DataKey sourceKey)
         {
-            ConcurrentDictionary<string, int> dict;
-            var sourceTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
-            if (_versionCache.TryGetValue(sourceTypeCode, out dict)) {
-                int version;
-                if (dict.TryGetValue(sourceKey.Id, out version)) {
-                    return version;
-                }
-            }     
+            var dict = _versionCache[Math.Abs(sourceKey.GetHashCode() % 10) - 1];
+            int version;
+            if(dict.TryGetValue(sourceKey.Id, out version)) {
+                return version;
+            }
 
             return -1;
         }
 
-        public virtual void AddOrUpdatePublishedVersionToMemory(DataKey sourceKey, int version)
+        /// <summary>
+        /// 添加或更新版本号到内存中
+        /// </summary>
+        protected void AddOrUpdatePublishedVersionToMemory(DataKey sourceKey, int version)
         {
-            var sourceTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
+            var dict = _versionCache[Math.Abs(sourceKey.GetHashCode() % 10) - 1];
 
-            _versionCache.GetOrAdd(sourceTypeCode, () => new ConcurrentDictionary<string, int>())
-                .AddOrUpdate(sourceKey.Id,
-                    version,
-                    (key, value) => version == value + 1 ? version : value);
+            dict.AddOrUpdate(sourceKey.Id,
+                version,
+                (key, value) => version == value + 1 ? version : value);
         }
 
         #region IPublishedVersionStore 成员

@@ -4,7 +4,7 @@ using ThinkNet.Messaging;
 namespace ThinkNet.Runtime.Dispatching
 {
     /// <summary>
-    /// 执行消息的调度器
+    /// 执行消息的调度程序
     /// </summary>
     public interface IDispatcher
     {

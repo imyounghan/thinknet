@@ -1,46 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
+using ThinkLib.Composition;
+using ThinkLib.Scheduling;
+using ThinkNet.Runtime;
 
 namespace ThinkNet.Messaging.Handling
 {
     /// <summary>
     /// 将已完成的处理程序信息记录在内存中。
     /// </summary>
-    public class MessageHandlerRecordInMemory : IMessageHandlerRecordStore
+    public class MessageHandlerRecordInMemory : IMessageHandlerRecordStore, IInitializer, IProcessor
     {
         private readonly HashSet<HandlerRecordData> _handlerInfoSet;
-        private readonly Timer timer;
+        private readonly TimeScheduler _scheduler;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
         public MessageHandlerRecordInMemory()
         {
-            timer = new Timer(RemoveHandleInfo, null, 5000, 2000);
-            _handlerInfoSet = new HashSet<HandlerRecordData>();
+            //timer = new Timer(RemoveHandleInfo, null, 5000, 2000);
+            this._handlerInfoSet = new HashSet<HandlerRecordData>();
+            this._scheduler = TimeScheduler.Create("Recording Handler Scheduler", Planning).SetInterval(2000);
         }
+
+        private void Planning()
+        {
+            this.RemoveHandleInfo();
+            this.TimeProcessing();
+        }
+
+        /// <summary>
+        /// 定时处理程序
+        /// </summary>
+        protected virtual void TimeProcessing()
+        { }
 
         /// <summary>
         /// 移除超出期限的信息
         /// </summary>
-        protected void RemoveHandleInfo(object state)
+        private void RemoveHandleInfo()
         {
-            //_handlerInfoSet.RemoveWhere(item => item.Timestamp.AddMinutes(5) < DateTime.UtcNow);
+            _handlerInfoSet.RemoveWhere(item => item.Timestamp < DateTime.UtcNow.AddMinutes(-1));
         }
 
         /// <summary>
         /// 添加处理程序信息
         /// </summary>
         public virtual void AddHandlerInfo(string messageId, Type messageType, Type handlerType)
-        {
-            this.AddHandlerInfo(messageId, messageType.FullName, handlerType.FullName);
-        }
+        { }
 
         /// <summary>
         /// 添加处理程序信息到内存中
         /// </summary>
-        protected void AddHandlerInfo(string messageId, string messageTypeName, string handlerTypeName)
+        protected void AddHandlerInfoToMemory(string messageId, string messageTypeName, string handlerTypeName)
         {
             var messageTypeCode = messageTypeName.GetHashCode();
             var handlerTypeCode = handlerTypeName.GetHashCode();
@@ -57,7 +72,7 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 判断内存中是否存在该处理程序信息。
         /// </summary>
-        protected bool HandlerIsExecuted(string messageId, string messageTypeName, string handlerTypeName)
+        private bool HandlerIsExecuted(string messageId, string messageTypeName, string handlerTypeName)
         {
             var messageTypeCode = messageTypeName.GetHashCode();
             var handlerTypeCode = handlerTypeName.GetHashCode();
@@ -65,6 +80,32 @@ namespace ThinkNet.Messaging.Handling
             return _handlerInfoSet.Contains(new HandlerRecordData(messageId, messageTypeCode, handlerTypeCode));
         }
 
+        void IMessageHandlerRecordStore.AddHandlerInfo(string messageId, Type messageType, Type handlerType)
+        {
+            this.AddHandlerInfoToMemory(messageId, messageType.FullName, handlerType.FullName);
+            this.AddHandlerInfo(messageId, messageType, handlerType);
+        }
+
+        bool IMessageHandlerRecordStore.HandlerIsExecuted(string messageId, Type messageType, Type handlerType)
+        {
+            return this.HandlerIsExecuted(messageId, messageType.FullName, handlerType.FullName) ||
+                this.HandlerIsExecuted(messageId, messageType, handlerType);
+        }
+
+        void IInitializer.Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
+        {
+            container.RegisterInstance<IProcessor>(this, "recordhandler");
+        }
+
+        void IProcessor.Start()
+        {
+            _scheduler.Start();
+        }
+
+        void IProcessor.Stop()
+        {
+            _scheduler.Stop();
+        }
 
         class HandlerRecordData
         {

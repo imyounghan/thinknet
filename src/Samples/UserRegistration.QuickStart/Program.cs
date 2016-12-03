@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Threading;
 using ThinkLib;
 using ThinkNet;
 using ThinkNet.Contracts;
@@ -20,7 +20,7 @@ namespace UserRegistration.QuickStart
             Console.ReadKey();
 
 
-            var commandService = ServiceProxy.GetService<ICommandService>();
+            var commandService = ServiceGateway.Current.GetService<ICommandService>();
             commandService.Execute(new RegisterUser {
                 UserName = "hanyang",
                 Password = "123456",
@@ -45,21 +45,20 @@ namespace UserRegistration.QuickStart
             //sw.Stop();
             //Console.WriteLine("用时:{0}ms", sw.ElapsedMilliseconds);
             //Console.WriteLine("成功完成的命令数量：{0}", tasks.Where(p => p.IsCompleted).Count());
+            Thread.Sleep(2000);
 
-            System.Threading.Thread.Sleep(2000);
+            var queryService = ServiceGateway.Current.GetService<IQueryService>();
 
-            var queryService = ServiceProxy.GetService<IQueryService>();
-
-            var result = queryService.Execute(new FindAllUser()) as IQueryMultipleResult<UserModel>;
-            //Console.ResetColor();
-            Console.WriteLine("共有 " + result.Count() + " 个用户。");
+            var result = queryService.Execute(new FindAllUser()) as IQueryResultCollection<UserModel>;
+            Console.WriteLine("共有 {0} 个用户。", result == null ? 0 : result.Count);
+            Thread.Sleep(2000);
 
             var authentication = queryService.Execute(new UserAuthentication() {
                 LoginId = "young.han",
                 Password = "123456",
                 IpAddress = "127.0.0.1"
-            }) as IQuerySingleResult<bool>;
-            if(authentication.Result) {
+            }) as IQueryResultCollection<bool>;
+            if(authentication != null && authentication.Count == 1 && authentication[0]) {
                 Console.WriteLine("登录成功。");
             }
             else {

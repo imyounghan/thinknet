@@ -12,7 +12,7 @@ namespace ThinkNet.Database.Storage
     public sealed class HandlerRecordStore : MessageHandlerRecordInMemory
     {
         private readonly IDataContextFactory _dataContextFactory;
-        private readonly BlockingCollection<HandlerRecord> _queue;
+        private readonly ConcurrentQueue<HandlerRecord> _queue;
 
         /// <summary>
         /// Default Constructor.
@@ -20,7 +20,7 @@ namespace ThinkNet.Database.Storage
         public HandlerRecordStore(IDataContextFactory dataContextFactory)
         {
             this._dataContextFactory = dataContextFactory;
-            this._queue = new BlockingCollection<HandlerRecord>();
+            this._queue = new ConcurrentQueue<HandlerRecord>();
 
             Task.Factory.StartNew(() => {
                 using (var context = _dataContextFactory.Create()) {
@@ -33,29 +33,30 @@ namespace ThinkNet.Database.Storage
                     return;
 
                 foreach (var record in task.Result) {
-                    base.AddHandlerInfo(record.MessageId, record.MessageTypeName, record.HandlerTypeName);
+                    base.AddHandlerInfoToMemory(record.MessageId, record.MessageTypeName, record.HandlerTypeName);
                 }
             });
         }
 
-        private void BatchSaveHandlerInfo()
+        /// <summary>
+        /// 批量保存
+        /// </summary>
+        protected override void TimeProcessing()
         {
-            Task.Factory.StartNew(() => {
-                int count = 0;
-                using(var context = _dataContextFactory.Create()) {
-                    HandlerRecord handlerRecord;
+            int count = 0;
+            using(var context = _dataContextFactory.Create()) {
+                HandlerRecord handlerRecord;
 
-                    while(count++ < 20 && _queue.TryTake(out handlerRecord)) {
-                        //var executed = context.CreateQuery<HandlerRecord>()
-                        //.Any(p => p.MessageId == handlerRecord.MessageId &&
-                        //    p.MessageTypeCode == handlerRecord.MessageTypeCode &&
-                        //    p.HandlerTypeCode == handlerRecord.HandlerTypeCode);
-                        //if(!executed)
-                        context.Save(handlerRecord);
-                    }
-                    context.Commit();
+                while(count++ < 20 && _queue.TryDequeue(out handlerRecord)) {
+                    //var executed = context.CreateQuery<HandlerRecord>()
+                    //.Any(p => p.MessageId == handlerRecord.MessageId &&
+                    //    p.MessageTypeCode == handlerRecord.MessageTypeCode &&
+                    //    p.HandlerTypeCode == handlerRecord.HandlerTypeCode);
+                    //if(!executed)
+                    context.Save(handlerRecord);
                 }
-            });
+                context.Commit();
+            }
         }
 
         /// <summary>
@@ -63,11 +64,9 @@ namespace ThinkNet.Database.Storage
         /// </summary>
         public override void AddHandlerInfo(string messageId, Type messageType, Type handlerType)
         {
-            base.AddHandlerInfo(messageId, messageType.FullName, handlerType.FullName);
-
             var handlerRecord = new HandlerRecord(messageId, messageType, handlerType);
-            _queue.Add(handlerRecord);
+            _queue.Enqueue(handlerRecord);
         }
-
+        
     }
 }

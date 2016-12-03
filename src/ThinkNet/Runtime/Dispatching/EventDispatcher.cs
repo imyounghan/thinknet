@@ -24,6 +24,9 @@ namespace ThinkNet.Runtime.Dispatching
             this._handlerStore = handlerStore;
         }
 
+        /// <summary>
+        /// 构造事件处理的代理程序
+        /// </summary>
         protected override IEnumerable<IHandlerAgent> BuildHandlerAgents(Type eventType)
         {
             var contractType = typeof(IMessageHandler<>).MakeGenericType(eventType);

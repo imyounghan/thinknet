@@ -15,6 +15,9 @@ using ThinkNet.Messaging.Fetching.Agent;
 
 namespace ThinkNet.Runtime.Dispatching
 {
+    /// <summary>
+    /// 用于查询的调度程序
+    /// </summary>
     public class QueryDispatcher : IDispatcher, IInitializer
     {
         private readonly Dictionary<Type, Type> _parameterTypeMapFetcherType;
@@ -23,6 +26,9 @@ namespace ThinkNet.Runtime.Dispatching
         private readonly IInterceptorProvider _interceptorProvider;
         private readonly IQueryResultNotification _notification;
 
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
         public QueryDispatcher(IObjectContainer container, IInterceptorProvider interceptorProvider, IQueryResultNotification notification)
         {
             this._container = container;
@@ -40,7 +46,7 @@ namespace ThinkNet.Runtime.Dispatching
                 _notification.Notify(parameter.Id, result);
             }
             catch(Exception ex) {
-                _notification.Notify(parameter.Id, new QueryResult(QueryStatus.Failed, ex.Message));
+                _notification.Notify(parameter.Id, new QueryResult(ReturnStatus.Failed, ex.Message));
                 throw ex;
             }
         }

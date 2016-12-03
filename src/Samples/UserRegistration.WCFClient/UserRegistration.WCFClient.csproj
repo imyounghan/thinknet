@@ -7,7 +7,7 @@
     <ProjectGuid>{2D5B040E-3833-4DB6-B40B-2DF4EE8A668D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UserRegistration.WCFClient</RootNamespace>
+    <RootNamespace>UserRegistration</RootNamespace>
     <AssemblyName>UserRegistration.WCFClient</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -33,7 +33,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.Composition.Registration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Reflection.Context" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Channels" />
@@ -45,8 +48,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryService.cs" />
+    <Compile Include="WcfServiceGateway.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

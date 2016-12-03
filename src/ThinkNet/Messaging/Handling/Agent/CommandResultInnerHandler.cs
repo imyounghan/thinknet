@@ -3,7 +3,7 @@
 namespace ThinkNet.Messaging.Handling.Agent
 {
     /// <summary>
-    /// 命令结果的内部处理器
+    /// 命令结果的内部处理程序
     /// </summary>
     public class CommandResultInnerHandler : HandlerAgent//, IMessageHandler<CommandResult>
     {
@@ -17,18 +17,17 @@ namespace ThinkNet.Messaging.Handling.Agent
             this._notification = notification;
         }
 
+        /// <summary>
+        /// 获取处理命令结果的程序
+        /// </summary>
         public override object GetInnerHandler()
         {
             return this;
         }
 
-        //public void Handle(params object[] args)
-        //{            
-        //    var reply = args[0] as CommandResult;
-
-        //    this.TryHandle(reply);
-        //}
-
+        /// <summary>
+        /// 处理命令结果
+        /// </summary>
         protected override void TryHandle(object[] args)
         {
             var result = args[0] as CommandResult;

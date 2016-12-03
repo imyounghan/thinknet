@@ -39,7 +39,9 @@ namespace ThinkNet.Messaging.Handling.Agent
             this._interceptorProvider = interceptorProvider;
         }
 
-
+        /// <summary>
+        /// 尝试处理命令
+        /// </summary>
         protected override void TryHandle(object[] args)
         {
             if(args.Length == 1) {
@@ -56,11 +58,17 @@ namespace ThinkNet.Messaging.Handling.Agent
             context.Commit(command.Id);
         }
 
+        /// <summary>
+        /// 获取命令处理程序
+        /// </summary>
         public override object GetInnerHandler()
         {
             return this._targetHandler;
         }
 
+        /// <summary>
+        /// 处理命令
+        /// </summary>
         public override void Handle(object[] args)
         {
             var command = args.Last() as Command;

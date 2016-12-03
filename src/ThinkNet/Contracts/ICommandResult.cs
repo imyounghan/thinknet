@@ -6,13 +6,13 @@ namespace ThinkNet.Contracts
     /// <summary>
     /// 命令处理结果
     /// </summary>
-    public interface ICommandResult : IDataTransferObject
+    public interface ICommandResult
     {
         /// <summary>
         /// 命令处理状态。
         /// </summary>
         [DataMember]
-        CommandStatus Status { get; }
+        ReturnStatus Status { get; }
         ///// <summary>
         ///// Represents the unique identifier of the command.
         ///// </summary>

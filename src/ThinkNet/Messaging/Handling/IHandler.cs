@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ThinkNet.Messaging.Handling
+﻿namespace ThinkNet.Messaging.Handling
 {
+    /// <summary>
+    /// 继承该接口的是一个处理程序
+    /// </summary>
     public interface IHandler
     { }
 }

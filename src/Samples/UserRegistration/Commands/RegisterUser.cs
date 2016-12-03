@@ -4,8 +4,7 @@ using ThinkNet.Messaging;
 
 namespace UserRegistration.Commands
 {
-    [DataContract(Namespace = "UserRegistration.Commands", Name = "RegisterUser")]
-    [Serializable]
+    [DataContract(/*Namespace = "UserRegistration.Commands", Name = "RegisterUser"*/)]
     public class RegisterUser : Command
     {
         [DataMember]

@@ -9,29 +9,21 @@ namespace ThinkNet.Messaging
     [DataContract]
     public class QueryResult : IQueryResult
     {
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public QueryResult()
-            : this(QueryStatus.Success, null)
+            : this(ReturnStatus.Success, null)
         { }
-
-        public QueryResult(QueryStatus status, string errorMessage, string errorCode = null)
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
+        public QueryResult(ReturnStatus status, string errorMessage)
         {
             this.Status = status;
-            this.ErrorCode = errorCode;
             this.ErrorMessage = errorMessage;
         }
-
-
-        ///// <summary>
-        ///// 是否成功
-        ///// </summary>
-        //[DataMember]
-        //public bool Success { get; set; }
-
-        /// <summary>
-        /// 失败的消息编码
-        /// </summary>
-        [DataMember]
-        public string ErrorCode { get; set; }
+        
 
         /// <summary>
         /// 失败的消息
@@ -43,6 +35,6 @@ namespace ThinkNet.Messaging
         /// 查询返回状态。
         /// </summary>
         [DataMember]
-        public QueryStatus Status { get; set; }
+        public ReturnStatus Status { get; set; }
     }
 }

@@ -2,6 +2,9 @@
 
 namespace ThinkNet.Messaging.Handling
 {
+    /// <summary>
+    /// 用于存储已发布事件的版本号的接口
+    /// </summary>
     public interface IEventPublishedVersionStore
     {
         /// <summary>

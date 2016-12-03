@@ -19,8 +19,14 @@ using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet
 {
+    /// <summary>
+    /// 启动程序
+    /// </summary>
     public sealed class ThinkNetBootstrapper : Bootstrapper
     {
+        /// <summary>
+        /// 当前的启动程序
+        /// </summary>
         public static readonly new ThinkNetBootstrapper Current = new ThinkNetBootstrapper();
 
         private ThinkNetBootstrapper()
@@ -59,6 +65,9 @@ namespace ThinkNet
             return IsMessageHandlerInterfaceType(genericType) || IsQueryFetcherInterfaceType(genericType);
         }
 
+        /// <summary>
+        /// 程序集加载完后的执行操作
+        /// </summary>
         protected override void OnAssembliesLoaded(IEnumerable<Assembly> assemblies, IEnumerable<Type> nonAbstractTypes)
         {
             foreach (var type in nonAbstractTypes) {
@@ -74,6 +83,9 @@ namespace ThinkNet
             AggregateRootInnerHandlerProvider.Instance.Initialize(nonAbstractTypes);
         }
 
+        /// <summary>
+        /// 启动
+        /// </summary>
         public override void Start()
         {
             if (this.Status != ServerStatus.Started)
@@ -81,7 +93,9 @@ namespace ThinkNet
 
             base.Start();
         }
-
+        /// <summary>
+        /// 停止
+        /// </summary>
         public override void Stop()
         {
             if (this.Status != ServerStatus.Stopped)

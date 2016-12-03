@@ -7,6 +7,9 @@ using ThinkLib.Composition;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {
+    /// <summary>
+    /// <see cref="IHandlerAgent"/> 的抽象实现类
+    /// </summary>
     public abstract class HandlerAgent : DisposableObject, IHandlerAgent
     {
         /// <summary>
@@ -17,6 +20,9 @@ namespace ThinkNet.Messaging.Handling.Agent
             TryMultipleHandle(this, args);
         }
 
+        /// <summary>
+        /// 尝试处理消息
+        /// </summary>
         protected abstract void TryHandle(object[] args);
 
         //protected T GetValue<T>(IEnumerable<object> args)
@@ -86,6 +92,9 @@ namespace ThinkNet.Messaging.Handling.Agent
             }
         }
 
+        /// <summary>
+        /// 获取目标处理器
+        /// </summary>
         public abstract object GetInnerHandler();        
 
     }

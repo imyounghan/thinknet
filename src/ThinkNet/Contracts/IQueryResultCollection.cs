@@ -1,10 +1,22 @@
-﻿namespace ThinkNet.Contracts
+﻿using System.Collections.Generic;
+
+namespace ThinkNet.Contracts
 {
     /// <summary>
-    /// 查询分页数据结果
+    /// 表示一个查询结果集合的接口
     /// </summary>
-    public interface IQueryPageResult<T> : IQueryMultipleResult<T>
+    public interface IQueryResultCollection<T> : IEnumerable<T>, IQueryResult
     {
+        /// <summary>
+        /// 获取指定索引处的元素。
+        /// </summary>
+        T this[int index] { get; }
+
+        /// <summary>
+        /// 当前集合的数量
+        /// </summary>
+        int Count { get; }
+
         /// <summary>
         /// 获取或设置总记录数。
         /// </summary>

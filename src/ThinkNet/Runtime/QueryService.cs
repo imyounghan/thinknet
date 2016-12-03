@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Runtime.Serialization;
-using System.ServiceModel;
 using System.Threading.Tasks;
 using ThinkLib;
 using ThinkNet.Contracts;
@@ -10,22 +9,30 @@ using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime
 {
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
-    public class QueryService : MarshalByRefObject, IQueryService, IQueryResultNotification
+    /// <summary>
+    /// <see cref="IQueryService"/> 的实现类
+    /// </summary>
+    public class QueryService : IQueryService, IQueryResultNotification
     {
         private readonly static TimeSpan WaitTime = TimeSpan.FromSeconds(60);
-        private readonly static QueryResult TimeoutResult = new QueryResult(QueryStatus.Timeout, "Timeout");
+        private readonly static QueryResult TimeoutResult = new QueryResult(ReturnStatus.Timeout, "Timeout");
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<IQueryResult>> _queryTaskDict;
         private readonly IEnvelopeSender _sender;
 
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
         public QueryService(IEnvelopeSender sender)
         {
             this._queryTaskDict = new ConcurrentDictionary<string, TaskCompletionSource<IQueryResult>>();
             this._sender = sender;
         }
 
-        public IQueryResult Execute(IQueryParameter queryParameter)
+        /// <summary>
+        /// 执行查询结果
+        /// </summary>
+        public IQueryResult Execute(IQuery queryParameter)
         {
             var task = this.ExecuteAsync(queryParameter);
             if(task.Wait(WaitTime)) {
@@ -35,7 +42,10 @@ namespace ThinkNet.Runtime
             return TimeoutResult;
         }
 
-        public Task<IQueryResult> ExecuteAsync(IQueryParameter parameter)
+        /// <summary>
+        /// 异步执行查询结果
+        /// </summary>
+        public Task<IQueryResult> ExecuteAsync(IQuery parameter)
         {
             var taskCompletionSource = new TaskCompletionSource<IQueryResult>();
             if(!_queryTaskDict.TryAdd(parameter.Id, taskCompletionSource)) {
@@ -45,17 +55,14 @@ namespace ThinkNet.Runtime
 
             this.SendAsync(parameter).ContinueWith(task => {
                 if(task.Status == TaskStatus.Faulted) {
-                    this.Notify(parameter.Id, new QueryResult(QueryStatus.Failed, task.Exception.Message));
+                    this.Notify(parameter.Id, new QueryResult(ReturnStatus.Failed, task.Exception.Message));
                 }
             });
 
             return taskCompletionSource.Task;
         }
 
-        /// <summary>
-        /// 异步发送一个命令
-        /// </summary>
-        public Task SendAsync(IQueryParameter parameter)
+        private Task SendAsync(IQuery parameter)
         {
             if(_queryTaskDict.Count > ConfigurationSetting.Current.MaxRequests)
                 throw new ThinkNetException("server is busy.");
@@ -85,7 +92,9 @@ namespace ThinkNet.Runtime
         }
 
         #region IQueryResultNotification 成员
-
+        /// <summary>
+        /// 通知查询结果
+        /// </summary>
         public void Notify(string queryId, IQueryResult queryResult)
         {
             if(_queryTaskDict.Count == 0)

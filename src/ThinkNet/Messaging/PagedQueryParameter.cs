@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using ThinkNet.Contracts;
 
 namespace ThinkNet.Messaging
 {
@@ -7,7 +6,7 @@ namespace ThinkNet.Messaging
     /// 分页查询参数的抽象类
     /// </summary>
     [DataContract]
-    public abstract class QueryPageParameter : QueryParameter, IQueryPageParameter
+    public abstract class PagedQueryParameter : QueryParameter
     {
         /// <summary>
         /// 当前页码

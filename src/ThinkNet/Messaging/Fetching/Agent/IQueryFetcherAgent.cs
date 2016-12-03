@@ -2,8 +2,14 @@
 
 namespace ThinkNet.Messaging.Fetching.Agent
 {
+    /// <summary>
+    /// 获取查询结果的代理接口
+    /// </summary>
     public interface IQueryFetcherAgent
     {
-        IQueryResult Fetch(IQueryParameter parameter);
+        /// <summary>
+        /// 获取查询结果
+        /// </summary>
+        IQueryResult Fetch(IQuery parameter);
     }
 }
