@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkNet", "ThinkNet\ThinkN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserRegistration.QuickStart", "Samples\UserRegistration.QuickStart\UserRegistration.QuickStart.csproj", "{AB2B8EFF-2F1B-47AE-9291-F4CD656860DE}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ThinkNet.netcore", "ThinkNet.netcore\ThinkNet.netcore.xproj", "{E961D002-518D-485E-AA57-AC0AA553D995}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,6 +117,18 @@ Global
 		{AB2B8EFF-2F1B-47AE-9291-F4CD656860DE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AB2B8EFF-2F1B-47AE-9291-F4CD656860DE}.Release|x86.ActiveCfg = Release|Any CPU
 		{AB2B8EFF-2F1B-47AE-9291-F4CD656860DE}.Release|x86.Build.0 = Release|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Debug|x86.Build.0 = Debug|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Release|x86.ActiveCfg = Release|Any CPU
+		{E961D002-518D-485E-AA57-AC0AA553D995}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
