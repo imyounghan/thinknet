@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Data;
 using System.Linq;
-using ThinkLib;
 using ThinkNet.Database.Context;
 
 namespace ThinkNet.Database

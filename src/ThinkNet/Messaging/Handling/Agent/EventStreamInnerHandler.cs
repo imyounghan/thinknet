@@ -4,10 +4,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ThinkLib;
-using ThinkLib.Annotation;
-using ThinkLib.Composition;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure;
+using ThinkNet.Infrastructure.Composition;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {

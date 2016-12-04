@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Runtime.Serialization;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {

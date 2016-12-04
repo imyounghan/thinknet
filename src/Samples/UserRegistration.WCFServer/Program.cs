@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ServiceModel;
-using ThinkLib;
 using ThinkNet;
 
 namespace UserRegistration.Application
@@ -22,7 +21,7 @@ namespace UserRegistration.Application
 
         static void Main(string[] args)
         {
-            ThinkNetBootstrapper.Current.DoneWithUnity();
+            Bootstrapper.Current.DoneWithUnity();
 
             var hosts = new ServiceHost[] {
                 CreateServiceHost(typeof(CommandService)),

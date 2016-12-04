@@ -2,10 +2,9 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
-using ThinkLib;
-using ThinkLib.Interception;
-using ThinkLib.Interception.Pipeline;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure.Interception;
+using ThinkNet.Infrastructure.Interception.Pipeline;
 
 namespace ThinkNet.Messaging.Fetching.Agent
 {

@@ -1,5 +1,5 @@
 ﻿using System;
-using ThinkLib;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {

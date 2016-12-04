@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.Serialization;
-using ThinkLib;
 using ThinkNet.Domain.EventSourcing;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 
 
@@ -75,7 +75,7 @@ namespace ThinkNet.Domain.Repositories
                 return eventSourced;
             }
             //IEventSourced eventSourced = null;
-            var sourceKey = new DataKey(eventSourcedId, eventSourcedType);
+            var sourceKey = new SourceKey(eventSourcedId, eventSourcedType);
             try {
                 eventSourced = _snapshotStore.GetLastest<IEventSourced>(sourceKey);
                 if (eventSourced != null) {
@@ -130,7 +130,7 @@ namespace ThinkNet.Domain.Repositories
             var eventStream = new EventStream() {
                 Events = eventSourced.Events,
                 CorrelationId = correlationId,
-                SourceId = new DataKey(eventSourced.Id, aggregateRootType),
+                SourceId = new SourceKey(eventSourced.Id, aggregateRootType),
                 Version = eventSourced.Version
             };
 
@@ -166,7 +166,7 @@ namespace ThinkNet.Domain.Repositories
         {
             _cache.Remove(eventSourcedType, eventSourcedId);
 
-            var key = new DataKey(eventSourcedId, eventSourcedType);
+            var key = new SourceKey(eventSourcedId, eventSourcedType);
             _snapshotStore.Remove(key);
             _eventStore.RemoveAll(key);            
         }

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkLib;
-using ThinkLib.Utilities;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {

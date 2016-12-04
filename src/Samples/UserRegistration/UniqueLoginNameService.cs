@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using ThinkLib.Annotation;
+using ThinkNet.Infrastructure;
 
 namespace UserRegistration
 {

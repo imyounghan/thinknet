@@ -10,13 +10,13 @@ namespace ThinkNet.Runtime.Routing
     /// </summary>
     public class Envelope : EventArgs
     {
-        private readonly Dictionary<string, object> dict;
+        private readonly Dictionary<string, string> dict;
         /// <summary>
         /// Default Constructor.
         /// </summary>
         public Envelope()
         {
-            this.dict = new Dictionary<string, object>();
+            this.dict = new Dictionary<string, string>();
         }
         /// <summary>
         /// Parameterized Constructor.
@@ -31,7 +31,7 @@ namespace ThinkNet.Runtime.Routing
         {
             this.Body = body;
 
-            this.dict = new Dictionary<string, object>() {
+            this.dict = new Dictionary<string, string>() {
                 { StandardMetadata.Namespace, type.Namespace },
                 { StandardMetadata.TypeName, type.Name },
                 { StandardMetadata.AssemblyName, Path.GetFileNameWithoutExtension(type.Assembly.ManifestModule.FullyQualifiedName) }
@@ -44,7 +44,7 @@ namespace ThinkNet.Runtime.Routing
         /// <summary>
         /// 元数据信息
         /// </summary>
-        public IDictionary Metadata
+        public IDictionary<string, string> Metadata
         {
             get { return this.dict; }
         }
@@ -61,9 +61,9 @@ namespace ThinkNet.Runtime.Routing
         /// </summary>
         public string GetMetadata(string key)
         {
-            object value;
+            string value;
             if (dict.TryGetValue(key, out value)) {
-                return value.ToString();
+                return value;
             }
 
             return string.Empty;

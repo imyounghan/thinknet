@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
-using ThinkLib;
 using ThinkNet;
 using ThinkNet.Contracts;
 using UserRegistration.Commands;
@@ -12,7 +12,7 @@ namespace UserRegistration.QuickStart
     {
         static void Main(string[] args)
         {
-            ThinkNetBootstrapper.Current.DoneWithUnity();
+            Bootstrapper.Current.DoneWithUnity();
 
 
 
@@ -20,6 +20,7 @@ namespace UserRegistration.QuickStart
             Console.ReadKey();
 
 
+            Console.WriteLine("开始添加用户...");
             var commandService = ServiceGateway.Current.GetService<ICommandService>();
             commandService.Execute(new RegisterUser {
                 UserName = "hanyang",

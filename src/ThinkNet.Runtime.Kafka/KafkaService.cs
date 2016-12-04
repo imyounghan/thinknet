@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ThinkLib.Serialization;
@@ -20,6 +21,7 @@ namespace ThinkNet.Runtime
         private readonly object lockObject;
         private readonly KafkaClient kafka;
         private readonly ConcurrentDictionary<string, TopicOffsetPosition> offsetPositions;
+        private readonly BlockingCollection<Envelope> pendingQueue;
         private CancellationTokenSource cancellationSource;
         private bool started;
 
@@ -31,6 +33,7 @@ namespace ThinkNet.Runtime
             this.lockObject = new object();
             this.kafka = new KafkaClient(KafkaSettings.Current.ZookeeperAddress);
             this.offsetPositions = new ConcurrentDictionary<string, TopicOffsetPosition>();
+            this.pendingQueue = new BlockingCollection<Envelope>(ConfigurationSetting.Current.QueueCapacity);
         }
 
         protected override void Dispose(bool disposing)
@@ -78,39 +81,41 @@ namespace ThinkNet.Runtime
             return kafka.Push(envelopes, GetTopic, this.Serialize);
         }
 
-        private void PullThenForward(object state)
+        //private void PullThenForward(object state)
+        //{
+        //    string topic = state as string;
+
+        //    while(!cancellationSource.IsCancellationRequested) {
+        //        var type = _topicProvider.GetType(topic);
+        //        kafka.Consume(cancellationSource.Token, topic, type, this.Deserialize, this.Distribute);
+        //    }
+        //}
+
+        private void PullToLocal(object state)
         {
             string topic = state as string;
 
             while(!cancellationSource.IsCancellationRequested) {
                 var type = _topicProvider.GetType(topic);
-                kafka.Consume(cancellationSource.Token, topic, type, this.Deserialize, this.Distribute);
+                kafka.Consume(cancellationSource.Token, topic, type, this.Deserialize, this.IntoMemory);
             }
         }
 
-        private void Distribute(Envelope envelope, TopicOffsetPosition offset)
+        private void IntoMemory(Envelope envelope, TopicOffsetPosition offset)
         {
             var id = envelope.GetMetadata(StandardMetadata.SourceId);
 
             if(offsetPositions.TryAdd(id, offset))
-                base.Distribute(envelope);
+                pendingQueue.Add(envelope, cancellationSource.Token);
+        }
+
+        private void Distribute()
+        {
+            foreach(var item in pendingQueue.GetConsumingEnumerable(cancellationSource.Token)) {
+                base.Route(item);
+            }
         }
         
-        //private VersionedEvent Transform(EventStream @event)
-        //{
-        //    var stream = new VersionedEvent(@event.Id, @event.CreatedTime) {
-        //        SourceId = @event.SourceId,
-        //        SourceType = @event.GetSourceType(),
-        //        CommandId = @event.CommandId,
-        //        Version = @event.Version,
-        //        Events = @event.Events.Select(Transform).Cast<IEvent>().ToArray()
-        //    };
-
-        //    stream.Events.ForEach(item => item.SourceId = @event.SourceId);
-
-        //    return stream;
-        //}
-
         private object Transform(GeneralData data)
         {
             return _serializer.Deserialize(data.Metadata, data.GetMetadataType());
@@ -171,12 +176,17 @@ namespace ThinkNet.Runtime
                 this.cancellationSource = new CancellationTokenSource();
 
                 foreach (var topic in KafkaSettings.Current.SubscriptionTopics) {
-                    Task.Factory.StartNew(this.PullThenForward,
+                    Task.Factory.StartNew(this.PullToLocal,
                         topic,
                         this.cancellationSource.Token,
                         TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness,
                         TaskScheduler.Current);
                 }
+
+                Task.Factory.StartNew(this.Distribute,
+                        this.cancellationSource.Token,
+                        TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness,
+                        TaskScheduler.Current);
             }            
         }
 

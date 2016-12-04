@@ -44,12 +44,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThinkLib">
-      <HintPath>..\..\dependent\ThinkLib.dll</HintPath>
-    </Reference>
-    <Reference Include="ThinkLib.Composition.Unity">
-      <HintPath>..\..\dependent\ThinkLib.Composition.Unity.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -61,6 +55,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ThinkNet.Infrastructure.Unity\ThinkNet.Infrastructure.Unity.csproj">
+      <Project>{7f73c3d8-27f3-4791-b781-9714fbf8df8d}</Project>
+      <Name>ThinkNet.Infrastructure.Unity</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ThinkNet\ThinkNet.csproj">
       <Project>{3a400d75-9c72-43c5-8447-2070f333aae3}</Project>
       <Name>ThinkNet</Name>

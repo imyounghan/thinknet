@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Linq;
-using ThinkLib;
 
 namespace ThinkNet.Database.Storage
 {
     /// <summary>
     /// 处理程序信息
     /// </summary>
-    [Serializable]
     public class HandlerRecord
     {
         /// <summary>

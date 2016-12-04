@@ -1,4 +1,4 @@
-﻿
+﻿using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Domain.EventSourcing
 {
@@ -10,7 +10,7 @@ namespace ThinkNet.Domain.EventSourcing
         /// <summary>
         /// 获取最新的快照。
         /// </summary>
-        T GetLastest<T>(DataKey sourceKey) where T : class, IAggregateRoot;
+        T GetLastest<T>(SourceKey sourceKey) where T : class, IAggregateRoot;
         /// <summary>
         /// 存储聚合快照。
         /// </summary>
@@ -18,6 +18,6 @@ namespace ThinkNet.Domain.EventSourcing
         /// <summary>
         /// 从存储中删除快照。
         /// </summary>
-        void Remove(DataKey sourceKey);
+        void Remove(SourceKey sourceKey);
     }    
 }

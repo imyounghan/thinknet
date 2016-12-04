@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using ThinkLib;
-using ThinkLib.Annotation;
-using ThinkLib.Composition;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {

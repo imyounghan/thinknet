@@ -3,9 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkLib;
-using ThinkLib.Serialization;
 using ThinkNet.Domain.EventSourcing;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 
 
@@ -65,13 +64,13 @@ namespace ThinkNet.Database.Storage
         {
             return new EventStream() {
                 CorrelationId = @event.CorrelationId,
-                SourceId = new DataKey(@event.AggregateRootId, @event.AggregateRootTypeName),
+                SourceId = new SourceKey(@event.AggregateRootId, @event.AggregateRootTypeName),
                 Version = @event.Version,
                 Events = @event.Items.OrderBy(p => p.Order).Select(this.Transform).ToArray()
             };
         }
 
-        private bool Validate(int originalVersion, int sourceVersion, DataKey sourceId)
+        private bool Validate(int originalVersion, int sourceVersion, SourceKey sourceId)
         {
             if(originalVersion + 1 < sourceVersion) {
                 if(LogManager.Default.IsWarnEnabled)
@@ -95,7 +94,7 @@ namespace ThinkNet.Database.Storage
         /// </summary>
         public void Save(EventStream @event)
         {
-            var aggregateRootVersion = _versionCache[Math.Abs(@event.SourceId.GetHashCode() % 10) - 1];
+            var aggregateRootVersion = _versionCache[Math.Abs(@event.SourceId.GetHashCode() % 10)];
 
             int version;
             bool validated = false;
@@ -108,10 +107,10 @@ namespace ThinkNet.Database.Storage
 
             Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
+                    var aggregateRootTypeCode = @event.SourceId.GetSourceTypeName().GetHashCode();
                     if(@event.Version > 1 && !validated) {
-                        var sourceTypeCode = @event.SourceId.GetSourceTypeName().GetHashCode();
                         version = context.CreateQuery<EventData>()
-                            .Where(p => p.AggregateRootId == @event.SourceId.Id && p.AggregateRootTypeCode == sourceTypeCode)
+                            .Where(p => p.AggregateRootId == @event.SourceId.Id && p.AggregateRootTypeCode == aggregateRootTypeCode)
                             .Max(p => p.Version);
 
                         if(!Validate(version, @event.Version, @event.SourceId))
@@ -120,7 +119,7 @@ namespace ThinkNet.Database.Storage
                     
                     var eventData = new EventData() {
                         AggregateRootId = @event.SourceId.Id,
-                        AggregateRootTypeCode = @event.SourceId.GetSourceTypeName().GetHashCode(),
+                        AggregateRootTypeCode = aggregateRootTypeCode,
                         AggregateRootTypeName = @event.SourceId.GetSourceTypeFullName(),
                         CorrelationId = @event.CorrelationId,
                         Version = @event.Version,
@@ -148,7 +147,7 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// 查找与该命令相关的事件流数据
         /// </summary>
-        public EventStream Find(DataKey sourceKey, string correlationId)
+        public EventStream Find(SourceKey sourceKey, string correlationId)
         {
             correlationId.NotNullOrWhiteSpace("correlationId");
 
@@ -170,7 +169,7 @@ namespace ThinkNet.Database.Storage
 
             return new EventStream() {
                 CorrelationId = correlationId,
-                SourceId = new DataKey(@event.AggregateRootId, @event.AggregateRootTypeName),
+                SourceId = new SourceKey(@event.AggregateRootId, @event.AggregateRootTypeName),
                 Version = @event.Version,
                 Events = @event.Items.Select(this.Transform).ToArray()
             };
@@ -179,7 +178,7 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// 查找大于该版本号的所有事件流数据
         /// </summary>
-        public IEnumerable<EventStream> FindAll(DataKey sourceKey, int version)
+        public IEnumerable<EventStream> FindAll(SourceKey sourceKey, int version)
         {
             var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 
@@ -200,7 +199,7 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// 删除相关的事件流数据
         /// </summary>
-        public void RemoveAll(DataKey sourceKey)
+        public void RemoveAll(SourceKey sourceKey)
         {
             var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 

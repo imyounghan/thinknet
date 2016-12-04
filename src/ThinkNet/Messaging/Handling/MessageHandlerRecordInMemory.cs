@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
-using ThinkLib.Composition;
-using ThinkLib.Scheduling;
+using ThinkNet.Infrastructure.Composition;
 using ThinkNet.Runtime;
 
 namespace ThinkNet.Messaging.Handling
@@ -14,19 +14,19 @@ namespace ThinkNet.Messaging.Handling
     public class MessageHandlerRecordInMemory : IMessageHandlerRecordStore, IInitializer, IProcessor
     {
         private readonly HashSet<HandlerRecordData> _handlerInfoSet;
-        private readonly TimeScheduler _scheduler;
+        //private readonly TimeScheduler _scheduler;
+        private Timer _scheduler;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
         public MessageHandlerRecordInMemory()
         {
-            //timer = new Timer(RemoveHandleInfo, null, 5000, 2000);
             this._handlerInfoSet = new HashSet<HandlerRecordData>();
-            this._scheduler = TimeScheduler.Create("Recording Handler Scheduler", Planning).SetInterval(2000);
+            //this._scheduler = TimeScheduler.Create("Recording Handler Scheduler", Planning).SetInterval(2000);
         }
 
-        private void Planning()
+        private void Planning(object state)
         {
             this.RemoveHandleInfo();
             this.TimeProcessing();
@@ -43,7 +43,11 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         private void RemoveHandleInfo()
         {
-            _handlerInfoSet.RemoveWhere(item => item.Timestamp < DateTime.UtcNow.AddMinutes(-1));
+            if(_handlerInfoSet.Count == 0)
+                return;
+
+            var tick = DateTime.UtcNow.AddMinutes(-1);
+            _handlerInfoSet.RemoveWhere(item => !item.IsNull() && item.Timestamp < tick);
         }
 
         /// <summary>
@@ -99,12 +103,19 @@ namespace ThinkNet.Messaging.Handling
 
         void IProcessor.Start()
         {
-            _scheduler.Start();
+            if(_scheduler == null) {
+                _scheduler = new Timer(Planning, null, 5000, 2000);
+            }
+            //_scheduler.Start();
         }
 
         void IProcessor.Stop()
         {
-            _scheduler.Stop();
+            if(_scheduler != null) {
+                _scheduler.Dispose();
+                _scheduler = null;
+            }
+            //_scheduler.Stop();
         }
 
         class HandlerRecordData
@@ -143,7 +154,11 @@ namespace ThinkNet.Messaging.Handling
             /// </summary>
             public override int GetHashCode()
             {
-                return ToString().GetHashCode();
+                return new int[] {
+                    MessageId.GetHashCode(),
+                    HandlerTypeCode.GetHashCode(),
+                    MessageTypeCode.GetHashCode()
+                }.Aggregate((x, y) => x ^ y);
             }
 
             /// <summary>
@@ -161,13 +176,13 @@ namespace ThinkNet.Messaging.Handling
                     && other.MessageTypeCode == this.MessageTypeCode;
             }
 
-            /// <summary>
-            /// 将此实例的标识转换为其等效的字符串表示形式。
-            /// </summary>
-            public override string ToString()
-            {
-                return string.Format("{0}_{1}_{2}", MessageId, MessageTypeCode, HandlerTypeCode);
-            }
+            ///// <summary>
+            ///// 将此实例的标识转换为其等效的字符串表示形式。
+            ///// </summary>
+            //public override string ToString()
+            //{
+            //    return string.Format("{0}_{1}_{2}", MessageId, MessageTypeCode, HandlerTypeCode);
+            //}
         }
     }
 }

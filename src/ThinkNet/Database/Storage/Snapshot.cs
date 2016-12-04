@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Linq;
-using ThinkLib;
-
 namespace ThinkNet.Database.Storage
 {
     /// <summary>
     /// 聚合快照
     /// </summary>
-    [Serializable]
     public class Snapshot
     {
         /// <summary>

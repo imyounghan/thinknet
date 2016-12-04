@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Configuration;
-using ThinkLib;
 
 namespace ThinkNet.Database.Context
 {
@@ -20,14 +19,14 @@ namespace ThinkNet.Database.Context
         /// </summary>
         protected ContextManager(string contextType)
         {
-            this.Id = Guid.NewGuid().ToString();
+            this.Id = Guid.NewGuid();
             this.ContextType = contextType.IfEmpty(ConfigurationManager.AppSettings["thinkcfg.context_type"]).IfEmpty("web");
         }
 
         /// <summary>
         /// 标识
         /// </summary>
-        public string Id
+        public Guid Id
         {
             get;
             private set;

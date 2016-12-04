@@ -43,20 +43,31 @@ namespace ThinkNet.Database.Storage
         /// </summary>
         protected override void TimeProcessing()
         {
-            int count = 0;
-            using(var context = _dataContextFactory.Create()) {
-                HandlerRecord handlerRecord;
+            if(_queue.Count == 0)
+                return;
 
-                while(count++ < 20 && _queue.TryDequeue(out handlerRecord)) {
-                    //var executed = context.CreateQuery<HandlerRecord>()
-                    //.Any(p => p.MessageId == handlerRecord.MessageId &&
-                    //    p.MessageTypeCode == handlerRecord.MessageTypeCode &&
-                    //    p.HandlerTypeCode == handlerRecord.HandlerTypeCode);
-                    //if(!executed)
-                    context.Save(handlerRecord);
+            int count = 0;
+            try {
+                using(var context = _dataContextFactory.Create()) {
+                    HandlerRecord handlerRecord;
+
+                    while(count++ < 20 && _queue.TryDequeue(out handlerRecord)) {
+                        //var executed = context.CreateQuery<HandlerRecord>()
+                        //.Any(p => p.MessageId == handlerRecord.MessageId &&
+                        //    p.MessageTypeCode == handlerRecord.MessageTypeCode &&
+                        //    p.HandlerTypeCode == handlerRecord.HandlerTypeCode);
+                        //if(!executed)
+                        context.Save(handlerRecord);
+                    }
+                    context.Commit();
                 }
-                context.Commit();
             }
+            catch(Exception ex) {
+                if(LogManager.Default.IsErrorEnabled) {
+                    LogManager.Default.Error("", ex);
+                }
+            }
+            
         }
 
         /// <summary>

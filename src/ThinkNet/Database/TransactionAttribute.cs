@@ -1,8 +1,8 @@
 ﻿using System;
-using ThinkLib.Annotation;
-using ThinkLib.Composition;
-using ThinkLib.Interception;
 using ThinkNet.Database.Context;
+using ThinkNet.Infrastructure;
+using ThinkNet.Infrastructure.Composition;
+using ThinkNet.Infrastructure.Interception;
 
 namespace ThinkNet.Database
 {

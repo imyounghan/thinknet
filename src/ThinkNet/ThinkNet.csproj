@@ -42,19 +42,20 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThinkLib">
-      <HintPath>..\dependent\ThinkLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bootstrapper.cs" />
     <Compile Include="Contracts\IQueryResultCollection.cs" />
     <Compile Include="Contracts\IQueryResultNotification.cs" />
     <Compile Include="Contracts\IServiceGateway.cs" />
@@ -122,12 +123,56 @@
     <Compile Include="Database\TransactionAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DisposableObject.cs" />
+    <Compile Include="Extensions\ConcurrentDictionaryExtensions.cs" />
+    <Compile Include="Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Extensions\EnumerableExtentions.cs" />
+    <Compile Include="Extensions\ObjectExtentions.cs" />
+    <Compile Include="Extensions\ReflectionExtentions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="Infrastructure\CacheRegionAttribute.cs" />
+    <Compile Include="Infrastructure\CachingAttribute.cs" />
+    <Compile Include="Infrastructure\Caching\CacheConfiguration.cs" />
+    <Compile Include="Infrastructure\Caching\CacheConfigurationSectionHandler.cs" />
+    <Compile Include="Infrastructure\Caching\HashtableCacheProvider.cs" />
+    <Compile Include="Infrastructure\Caching\ICache.cs" />
+    <Compile Include="Infrastructure\Caching\ICacheProvider.cs" />
+    <Compile Include="Infrastructure\Caching\MemoryCacheProvider.cs" />
+    <Compile Include="Infrastructure\Caching\WebCacheProvider.cs" />
+    <Compile Include="Infrastructure\DefaultTextSerializer.cs" />
+    <Compile Include="Infrastructure\Composition\IInitializer.cs" />
+    <Compile Include="Infrastructure\Interception\GetNextInterceptorDelegate.cs" />
+    <Compile Include="Infrastructure\Interception\IInterceptor.cs" />
+    <Compile Include="Infrastructure\Interception\IInterceptorProvider.cs" />
+    <Compile Include="Infrastructure\Interception\IMethodInvocation.cs" />
+    <Compile Include="Infrastructure\Interception\IMethodReturn.cs" />
+    <Compile Include="Infrastructure\Interception\InterceptorProvider.cs" />
+    <Compile Include="Infrastructure\Interception\InvokeInterceptorDelegate.cs" />
+    <Compile Include="Infrastructure\Interception\IParameterCollection.cs" />
+    <Compile Include="Infrastructure\Interception\MethodInvocation.cs" />
+    <Compile Include="Infrastructure\Interception\MethodReturn.cs" />
+    <Compile Include="Infrastructure\Interception\ParameterCollection.cs" />
+    <Compile Include="Infrastructure\Interception\Pipeline\InterceptorPipeline.cs" />
+    <Compile Include="Infrastructure\Interception\Pipeline\InterceptorPipelineKey.cs" />
+    <Compile Include="Infrastructure\Interception\Pipeline\InterceptorPipelineManager.cs" />
+    <Compile Include="Infrastructure\Composition\IObjectContainer.cs" />
+    <Compile Include="Infrastructure\Interception\InterceptorAttribute.cs" />
+    <Compile Include="Infrastructure\ITextSerializer.cs" />
+    <Compile Include="Infrastructure\IUniquelyIdentifiable.cs" />
+    <Compile Include="Infrastructure\Lifecycle.cs" />
+    <Compile Include="Infrastructure\Composition\ObjectContainer.cs" />
+    <Compile Include="Infrastructure\Composition\ObjectContainerExtentions.cs" />
+    <Compile Include="Infrastructure\LifeCycleAttribute.cs" />
+    <Compile Include="Infrastructure\RegisterAttribute.cs" />
+    <Compile Include="Infrastructure\SerializerExtensions.cs" />
+    <Compile Include="Infrastructure\UniqueId.cs" />
+    <Compile Include="Infrastructure\ValueObject.cs" />
+    <Compile Include="LogManager.cs" />
     <Compile Include="Messaging\Fetching\Agent\QueryMultipleFetcherAgent.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messaging\Handling\IEventPublishedVersionStore.cs" />
     <Compile Include="Messaging\Handling\EventPublishedVersionInMemory.cs" />
-    <Compile Include="IUniquelyIdentifiable.cs" />
     <Compile Include="Contracts\ICommandResult.cs" />
     <Compile Include="Contracts\IQueryResult.cs" />
     <Compile Include="Domain\Entity.cs" />
@@ -192,7 +237,7 @@
     <Compile Include="Messaging\Handling\MessageHandlerNotFoundException.cs" />
     <Compile Include="Messaging\Handling\MessageHandlerTooManyException.cs" />
     <Compile Include="Messaging\IMessage.cs" />
-    <Compile Include="Domain\EventSourcing\DataKey.cs" />
+    <Compile Include="Infrastructure\SourceKey.cs" />
     <Compile Include="Domain\EntityNotFoundException.cs" />
     <Compile Include="Domain\ICache.cs" />
     <Compile Include="Domain\LocalCache.cs" />
@@ -207,8 +252,6 @@
     <Compile Include="Database\Storage\HandlerRecordStore.cs" />
     <Compile Include="Database\Storage\Snapshot.cs" />
     <Compile Include="Database\Storage\SnapshotStore.cs" />
-    <Compile Include="ThinkNetBootstrapper.cs" />
-    <Compile Include="ValueObject.cs" />
     <Compile Include="Domain\EventSourcing\IEventStore.cs" />
     <Compile Include="Domain\EventSourcing\ISnapshotPolicy.cs" />
     <Compile Include="Domain\EventSourcing\ISnapshotStore.cs" />

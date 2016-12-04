@@ -1,6 +1,6 @@
 ﻿using System;
-using ThinkLib.Interception;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure.Interception;
 
 namespace ThinkNet.Messaging.Fetching.Agent
 {

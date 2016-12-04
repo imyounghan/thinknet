@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkLib;
-using ThinkLib.Composition;
+using ThinkNet.Infrastructure.Composition;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Messaging.Handling.Agent;
 

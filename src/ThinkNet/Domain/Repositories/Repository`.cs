@@ -1,5 +1,4 @@
-﻿using ThinkLib;
-using ThinkNet.Database;
+﻿using ThinkNet.Database;
 
 namespace ThinkNet.Domain.Repositories
 {

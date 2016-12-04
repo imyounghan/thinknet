@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
-using ThinkLib.Annotation;
 using ThinkNet.Database;
+using ThinkNet.Infrastructure;
 
 namespace UserRegistration.ReadModel
 {

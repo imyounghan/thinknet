@@ -1,4 +1,5 @@
 ﻿using ThinkNet.Domain.EventSourcing;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
 {
@@ -10,10 +11,10 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 更新版本号
         /// </summary>
-        void AddOrUpdatePublishedVersion(DataKey sourceKey, int version);
+        void AddOrUpdatePublishedVersion(SourceKey sourceKey, int version);
         /// <summary>
         /// 获取已发布的版本号
         /// </summary>
-        int GetPublishedVersion(DataKey sourceKey);
+        int GetPublishedVersion(SourceKey sourceKey);
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ThinkLib;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Domain

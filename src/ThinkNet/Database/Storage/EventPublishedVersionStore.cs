@@ -1,12 +1,12 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
-using ThinkLib;
-using ThinkLib.Composition;
-using ThinkLib.Scheduling;
-using ThinkNet.Domain.EventSourcing;
+using ThinkNet.Infrastructure;
+using ThinkNet.Infrastructure.Composition;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Runtime;
 
@@ -18,30 +18,31 @@ namespace ThinkNet.Database.Storage
     public class EventPublishedVersionStore : EventPublishedVersionInMemory, IInitializer, IProcessor
     {
         private readonly IDataContextFactory _contextFactory;
-        private readonly ConcurrentQueue<KeyValuePair<DataKey, int>> _queue;
-        private readonly TimeScheduler _scheduler;
+        private readonly ConcurrentQueue<KeyValuePair<SourceKey, int>> _queue;
+        //private readonly TimeScheduler _scheduler;
+        private Timer _scheduler;
         /// <summary>
         /// Default Constructor.
         /// </summary>
         public EventPublishedVersionStore(IDataContextFactory contextFactory)
         {
             this._contextFactory = contextFactory;
-            this._queue = new ConcurrentQueue<KeyValuePair<DataKey, int>>();
+            this._queue = new ConcurrentQueue<KeyValuePair<SourceKey, int>>();
 
-            this._scheduler = TimeScheduler.Create("Publishing Version Scheduler", BatchSaving).SetInterval(2000);
+            //this._scheduler = TimeScheduler.Create("Publishing Version Scheduler", BatchSaving).SetInterval(2000);
         }
 
-        private EventPublishedVersion Transform(KeyValuePair<DataKey, int> kvp)
+        private EventPublishedVersion Transform(KeyValuePair<SourceKey, int> kvp)
         {
             var aggregateRootTypeName = kvp.Key.GetSourceTypeName();
             var aggregateRootTypeCode = aggregateRootTypeName.GetHashCode();
             return new EventPublishedVersion(aggregateRootTypeCode, kvp.Key.Id, kvp.Value, aggregateRootTypeName);
         }
 
-        private void BatchSaving()
+        private void BatchSaving(object state)
         {
-            Dictionary<DataKey, int> dict = new Dictionary<DataKey, int>();
-            KeyValuePair<DataKey, int> item;
+            Dictionary<SourceKey, int> dict = new Dictionary<SourceKey, int>();
+            KeyValuePair<SourceKey, int> item;
             while(dict.Count < 20 && _queue.TryDequeue(out item)) {
                 dict[item.Key] = item.Value;
             }
@@ -50,36 +51,32 @@ namespace ThinkNet.Database.Storage
                 return;
 
 
-            using(var context = _contextFactory.Create()) {
-                dict.Select(Transform).ForEach(context.SaveOrUpdate);
-
-                //var versionData = context.Find<EventPublishedVersion>(new object[] { aggregateRootTypeCode, sourceKey.Id });
-
-                //if(versionData == null) {
-                //    context.Save(new EventPublishedVersion(aggregateRootTypeCode, sourceKey.Id, version, sourceKey.GetSourceTypeFullName()));
-                //}
-                //else if(versionData.Version + 1 == version) {
-                //    versionData.Version = version;
-                //}
-                //else {
-                //    return;
-                //}
-                context.Commit();
+            try {
+                using(var context = _contextFactory.Create()) {
+                    dict.Select(Transform).ForEach(context.SaveOrUpdate);
+                    context.Commit();
+                }
             }
+            catch(Exception ex) {
+                if(LogManager.Default.IsErrorEnabled) {
+                    LogManager.Default.Error("", ex);
+                }
+            }
+            
         }
 
         /// <summary>
         /// 添加或更新溯源聚合的版本号
         /// </summary>
-        public override void AddOrUpdatePublishedVersion(DataKey sourceKey, int version)
+        public override void AddOrUpdatePublishedVersion(SourceKey sourceKey, int version)
         {
-            _queue.Enqueue(new KeyValuePair<DataKey, int>(sourceKey, version));
+            _queue.Enqueue(new KeyValuePair<SourceKey, int>(sourceKey, version));
         }
 
         /// <summary>
         /// 获取已发布的溯源聚合版本号
         /// </summary>
-        public override int GetPublishedVersion(DataKey sourceKey)
+        public override int GetPublishedVersion(SourceKey sourceKey)
         {
             var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 
@@ -101,12 +98,19 @@ namespace ThinkNet.Database.Storage
 
         void IProcessor.Start()
         {
-            _scheduler.Start();
+            if(_scheduler == null) {
+                _scheduler = new Timer(BatchSaving, null, 5000, 2000);
+            }
+            //_scheduler.Start();
         }
 
         void IProcessor.Stop()
         {
-            _scheduler.Stop();
+            if(_scheduler != null) {
+                _scheduler.Dispose();
+                _scheduler = null;
+            }
+            //_scheduler.Stop();
         }
     }
 }

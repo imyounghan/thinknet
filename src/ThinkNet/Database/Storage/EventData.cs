@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkLib;
 
 namespace ThinkNet.Database.Storage
 {
     /// <summary>
     /// 历史事件(用于还原溯源聚合的事件)
     /// </summary>
-    [Serializable]
     public class EventData
     {
         /// <summary>

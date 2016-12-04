@@ -1,10 +1,9 @@
 ﻿using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
-using ThinkLib;
-using ThinkLib.Serialization;
 using ThinkNet.Domain;
 using ThinkNet.Domain.EventSourcing;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Database.Storage
 {
@@ -39,7 +38,7 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// 获取最新的快照
         /// </summary>
-        public T GetLastest<T>(DataKey sourceKey)
+        public T GetLastest<T>(SourceKey sourceKey)
             where T : class, IAggregateRoot
         {
             if (!_persistent)
@@ -107,7 +106,7 @@ namespace ThinkNet.Database.Storage
         /// <summary>
         /// 删除快照
         /// </summary>
-        public void Remove(DataKey sourceKey)
+        public void Remove(SourceKey sourceKey)
         {
             if (!_persistent)
                 return;

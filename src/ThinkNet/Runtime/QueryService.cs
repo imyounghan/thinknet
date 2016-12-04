@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using ThinkLib;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging;
 using ThinkNet.Runtime.Routing;

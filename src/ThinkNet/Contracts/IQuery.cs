@@ -1,4 +1,5 @@
-﻿
+﻿using ThinkNet.Infrastructure;
+
 namespace ThinkNet.Contracts
 {
     /// <summary>

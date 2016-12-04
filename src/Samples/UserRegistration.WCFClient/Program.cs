@@ -12,8 +12,8 @@ namespace UserRegistration.Application
         {
             ServiceGateway.SetGatewayProvider(() => new WcfServiceGateway());
 
-            //Console.WriteLine("输入任意键开始演示...");
-            //Console.ReadKey();
+            Console.WriteLine("输入任意键开始演示...");
+            Console.ReadKey();
 
             var commandService = ServiceGateway.Current.GetService<ICommandService>();
             commandService.Execute(new RegisterUser() {

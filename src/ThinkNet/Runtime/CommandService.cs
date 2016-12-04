@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using ThinkLib;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging;
 using ThinkNet.Runtime.Routing;
@@ -39,7 +38,7 @@ namespace ThinkNet.Runtime
         /// 发送一个命令
         /// </summary>
         public void Send(ICommand command)
-        {           
+        {
             this.SendAsync(command).Wait();
         }
 
@@ -50,6 +49,10 @@ namespace ThinkNet.Runtime
         {
             if(_commandTaskDict.Count > ConfigurationSetting.Current.MaxRequests)
                 throw new ThinkNetException("server is busy.");
+
+            _commandTaskDict.AddOrUpdate(command.Id, 
+                key => new CommandTaskCompletionSource(CommandReturnType.CommandExecuted),
+                (key, value) => value);
 
             var envelope = new Envelope(command);
             envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;

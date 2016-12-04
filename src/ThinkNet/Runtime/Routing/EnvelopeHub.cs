@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ThinkLib;
 
 namespace ThinkNet.Runtime.Routing
 {
@@ -13,7 +12,6 @@ namespace ThinkNet.Runtime.Routing
     /// </summary>
     public class EnvelopeHub : DisposableObject, IEnvelopeSender, IEnvelopeReceiver
     {
-        //private readonly ConcurrentDictionary<string, SemaphoreSlim> semaphores;
         private readonly BlockingCollection<Envelope>[] brokers;
         private readonly IRoutingKeyProvider _routingKeyProvider;
 
@@ -23,18 +21,18 @@ namespace ThinkNet.Runtime.Routing
         /// Parameterized Constructor.
         /// </summary>        
         public EnvelopeHub(IRoutingKeyProvider routingKeyProvider)
-            : this(routingKeyProvider, ConfigurationSetting.Current.QueueCount, ConfigurationSetting.Current.QueueCapacity)
+            : this(routingKeyProvider, ConfigurationSetting.Current.QueueCount)
         { }
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        protected EnvelopeHub(IRoutingKeyProvider routingKeyProvider, int queueCount, int queueCapacity)
+        protected EnvelopeHub(IRoutingKeyProvider routingKeyProvider, int queueCount)
         {
             this._routingKeyProvider = routingKeyProvider;
             this.brokers = new BlockingCollection<Envelope>[queueCount];
 
             for(int i = 0; i < queueCount; i++) {
-                brokers[i] = new BlockingCollection<Envelope>(queueCapacity);
+                brokers[i] = new BlockingCollection<Envelope>();
             }
         }
 
@@ -68,11 +66,11 @@ namespace ThinkNet.Runtime.Routing
         }
 
         /// <summary>
-        /// 分发信件
+        /// 路由信件
         /// </summary>
-        protected virtual void Distribute(Envelope envelope)
+        protected void Route(Envelope envelope)
         {
-            this.GetBroker(this.GetKey(envelope)).Add(envelope);
+            this.GetBroker(this.GetKey(envelope)).Add(envelope, cancellationSource.Token);
         }
 
         /// <summary>
@@ -85,11 +83,14 @@ namespace ThinkNet.Runtime.Routing
             var broker = state as BlockingCollection<Envelope>;
             broker.NotNull("state");
 
-            //while (!cancellationSource.IsCancellationRequested) {
-            //    var item = broker.Take();
+            //while(!cancellationSource.IsCancellationRequested) {
+            //    var item = broker.Take(cancellationSource.Token);
+            //    if(LogManager.Default.IsDebugEnabled) {
+            //        LogManager.Default.DebugFormat("Receive an envelope from local queue, data:({0}).", item.Body);
+            //    }
             //    this.EnvelopeReceived(this, item);
             //}
-            foreach (var item in broker.GetConsumingEnumerable(cancellationSource.Token)) {
+            foreach(var item in broker.GetConsumingEnumerable(cancellationSource.Token)) {
                 if(LogManager.Default.IsDebugEnabled) {
                     LogManager.Default.DebugFormat("Receive an envelope from local queue, data:({0}).", item.Body);
                 }
@@ -131,7 +132,7 @@ namespace ThinkNet.Runtime.Routing
                 LogManager.Default.DebugFormat("Send an envelope to local queue, data({0}).", envelope.Body);
             }
 
-            return Task.Factory.StartNew(() => this.Distribute(envelope));
+            return Task.Factory.StartNew(() => this.Route(envelope));
         }
         /// <summary>
         /// Sends a batch of envelopes.
@@ -143,7 +144,7 @@ namespace ThinkNet.Runtime.Routing
                     string.Join(";", envelopes.Select(item=>item.Body.ToString())));
             }
 
-            return Task.Factory.StartNew(() => envelopes.ForEach(this.Distribute));
+            return Task.Factory.StartNew(() => envelopes.ForEach(this.Route));
         }
     }
 }

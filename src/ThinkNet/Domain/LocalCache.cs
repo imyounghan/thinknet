@@ -3,12 +3,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using ThinkLib;
-using ThinkLib.Annotation;
-using Caching = ThinkLib.Caching;
-using ThinkLib.Serialization;
+using ThinkNet.Infrastructure;
+using Caching = ThinkNet.Infrastructure.Caching;
 
 namespace ThinkNet.Domain
 {
@@ -19,14 +15,14 @@ namespace ThinkNet.Domain
     {
         private readonly Caching.ICacheProvider _cacheProivder;
         private readonly ConcurrentDictionary<string, Caching.ICache> _caches;
-        private readonly IBinarySerializer _serializer;
+        private readonly ITextSerializer _serializer;
         private readonly bool _enabled;
         private readonly HashSet<string> _keys;
 
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public LocalCache(IBinarySerializer serializer)
+        public LocalCache(ITextSerializer serializer)
         {
             this._serializer = serializer;
             this._enabled = ConfigurationManager.AppSettings["thinkcfg.caching_enabled"].ChangeIfError(false);
@@ -64,7 +60,7 @@ namespace ThinkNet.Domain
 
             var de = (DictionaryEntry)data;
             if (modelId.ToString() == de.Key.ToString()) {
-                model = (T)_serializer.Deserialize((byte[])de.Value);
+                model = (T)_serializer.DeserializeFromBinary((byte[])de.Value);
                 return true;
             }
             else {

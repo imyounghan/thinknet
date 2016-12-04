@@ -1,4 +1,4 @@
-﻿using ThinkLib.Composition;
+﻿using ThinkNet.Infrastructure.Composition;
 
 namespace ThinkNet.Contracts
 {

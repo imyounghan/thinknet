@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkLib;
-using ThinkLib.Annotation;
-using ThinkLib.Composition;
-using ThinkLib.Interception;
-using ThinkNet.Contracts;
 using ThinkNet.Domain;
+using ThinkNet.Infrastructure;
+using ThinkNet.Infrastructure.Composition;
+using ThinkNet.Infrastructure.Interception;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Messaging.Handling.Agent;

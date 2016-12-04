@@ -1,5 +1,4 @@
 ﻿using System.Configuration;
-using ThinkLib;
 
 namespace ThinkNet
 {
@@ -19,8 +18,8 @@ namespace ThinkNet
             this.HandleRetrytimes = 5;
             this.HandleRetryInterval = 1000;
             this.QueueCount = ConfigurationManager.AppSettings["thinkcfg.queue_count"].ChangeIfError(4);
-            this.QueueCapacity = ConfigurationManager.AppSettings["thinkcfg.queue_capacity"].ChangeIfError(1000);
-            this.MaxRequests = ConfigurationManager.AppSettings["thinkcfg.maxrequests"].ChangeIfError(5000);
+            this.QueueCapacity = ConfigurationManager.AppSettings["thinkcfg.queue_capacity"].ChangeIfError(2000);
+            this.MaxRequests = ConfigurationManager.AppSettings["thinkcfg.maxrequests"].ChangeIfError(2000);
             this.EnableCommandFilter = ConfigurationManager.AppSettings["thinkcfg.enablefilter"].ChangeIfError(false);
         }
 

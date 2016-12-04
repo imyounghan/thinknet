@@ -1,5 +1,4 @@
 ﻿using System;
-using ThinkLib;
 
 namespace ThinkNet.Domain
 {

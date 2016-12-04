@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ThinkLib;
-using ThinkLib.Utilities;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
@@ -9,7 +8,6 @@ namespace ThinkNet.Messaging
     /// 表示一个事件的抽象类
     /// </summary>
     [DataContract]
-    [Serializable]
     public abstract class Event : IMessage, IUniquelyIdentifiable
     {
         /// <summary>

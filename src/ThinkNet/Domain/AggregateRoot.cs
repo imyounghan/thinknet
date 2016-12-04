@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
-using ThinkLib;
 using ThinkNet.Messaging;
 
 
@@ -13,7 +12,6 @@ namespace ThinkNet.Domain
     /// 表示一个通过事件溯源的聚合根的抽象类
     /// </summary>
     [DataContract]
-    [Serializable]
     public abstract class AggregateRoot<TIdentify> : Entity<TIdentify>, IEventSourced
     {
         /// <summary>
@@ -35,8 +33,7 @@ namespace ThinkNet.Domain
         [DataMember(Name = "version")]
         public int Version { get; private set; }
 
-
-        [NonSerialized]
+        
         [IgnoreDataMember]
         private IList<Event> _pendingEvents;
         /// <summary>

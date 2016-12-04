@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using ThinkNet.Domain.EventSourcing;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
 {
@@ -10,14 +9,13 @@ namespace ThinkNet.Messaging
     /// 表示这是一个可溯源的有序事件流。
     /// </summary>
     [DataContract]
-    [Serializable]
     public sealed class EventStream : IMessage, IUniquelyIdentifiable
     {
         /// <summary>
         /// 源ID
         /// </summary>
         [DataMember(Name = "sourceId")]
-        public DataKey SourceId { get; set; }
+        public SourceKey SourceId { get; set; }
 
         /// <summary>
         /// 产生事件的相关标识(如命令的id)
