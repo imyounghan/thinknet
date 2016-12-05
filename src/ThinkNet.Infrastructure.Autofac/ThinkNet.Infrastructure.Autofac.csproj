@@ -7,7 +7,7 @@
     <ProjectGuid>{A10508F1-D4A2-463E-AEF7-8813E399A074}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ThinkNet.Infrastructure.Composition</RootNamespace>
+    <RootNamespace>ThinkNet.Infrastructure</RootNamespace>
     <AssemblyName>ThinkNet.Infrastructure.Autofac</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -37,6 +37,7 @@
       <HintPath>..\packages\Autofac.4.2.1\lib\net45\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />

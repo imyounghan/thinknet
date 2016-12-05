@@ -55,24 +55,32 @@ namespace ThinkNet.Messaging
         public CommandResult()
         { }
         
-        /// <summary>
-        /// 表示成功的结果
-        /// </summary>
-        public CommandResult(string commandId, CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
-            : this(commandId, commandReturnType, ReturnStatus.Success, null)
-        { }
+        ///// <summary>
+        ///// 表示成功的结果
+        ///// </summary>
+        //public CommandResult(string commandId, CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
+        //    : this(commandId, commandReturnType, ReturnStatus.Success, null)
+        //{ }
 
         /// <summary>
         /// 表示失败的结果
         /// </summary>
-        public CommandResult(string commandId, string errorMessage, string errorCode = "-1", CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
+        public CommandResult(string commandId, 
+            string errorMessage, 
+            ReturnStatus status = ReturnStatus.Failed, 
+            string errorCode = "-1", 
+            CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
             : this(commandId, commandReturnType, ReturnStatus.Failed, null, errorCode)
         { }
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public CommandResult(string commandId, CommandReturnType commandReturnType, ReturnStatus status, string errorMessage = null, string errorCode = null)
+        public CommandResult(string commandId, 
+            CommandReturnType commandReturnType = CommandReturnType.CommandExecuted, 
+            ReturnStatus status = ReturnStatus.Success, 
+            string errorMessage = null, 
+            string errorCode = null)
         {
             this.CommandId = commandId;
             this.CommandReturnType = commandReturnType;

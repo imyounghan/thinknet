@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using ThinkNet.Infrastructure.Composition;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Messaging.Handling.Agent;

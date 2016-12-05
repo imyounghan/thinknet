@@ -1,6 +1,6 @@
 ﻿using System.ServiceModel;
-using ThinkLib.Composition;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using UserRegistration.Commands;
 

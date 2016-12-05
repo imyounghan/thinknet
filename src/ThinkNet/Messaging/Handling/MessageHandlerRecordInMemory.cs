@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using ThinkNet.Infrastructure.Composition;
+using ThinkNet.Infrastructure;
 using ThinkNet.Runtime;
 
 namespace ThinkNet.Messaging.Handling

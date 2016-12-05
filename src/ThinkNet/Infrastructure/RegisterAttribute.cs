@@ -16,48 +16,48 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public RegisterAttribute(string contractName)
+        public RegisterAttribute(string name)
         {
-            contractName.NotNullOrWhiteSpace("contractName");
-            this.ContractName = contractName;
+            name.NotNullOrWhiteSpace("name");
+            this.Name = name;
         }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public RegisterAttribute(Type contractType)
+        public RegisterAttribute(Type serviceType)
         {
-            contractType.NotNull("contractType");
-            this.ContractType = contractType;
+            serviceType.NotNull("serviceType");
+            this.ServiceType = serviceType;
         }
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public RegisterAttribute(string contractName, Type contractType)
+        public RegisterAttribute(string name, Type serviceType)
         {
-            contractName.NotNullOrWhiteSpace("contractName");
-            contractType.NotNull("contractType");
+            name.NotNullOrWhiteSpace("name");
+            serviceType.NotNull("serviceType");
 
-            this.ContractName = contractName;
-            this.ContractType = contractType;
+            this.Name = name;
+            this.ServiceType = serviceType;
         }
 
         /// <summary>
         /// 注册的名称
         /// </summary>
-        public string ContractName { get; private set; }
+        public string Name { get; private set; }
         /// <summary>
         /// 注册的类型
         /// </summary>
-        public Type ContractType { get; private set; }
+        public Type ServiceType { get; private set; }
 
-        /// <summary>
-        /// 是否创建实例。
-        /// </summary>
-        public bool Created { get; set; }
+        ///// <summary>
+        ///// 是否创建实例。
+        ///// </summary>
+        //public bool Created { get; set; }
 
-        /// <summary>
-        /// 构造函数的参数。
-        /// </summary>
-        public object[] ConstructorParameters { get; set; }
+        ///// <summary>
+        ///// 构造函数的参数。
+        ///// </summary>
+        //public object[] ConstructorParameters { get; set; }
     }
 }

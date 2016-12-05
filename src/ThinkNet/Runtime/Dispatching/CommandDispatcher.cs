@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ThinkNet.Domain;
 using ThinkNet.Infrastructure;
-using ThinkNet.Infrastructure.Composition;
 using ThinkNet.Infrastructure.Interception;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;

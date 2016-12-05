@@ -51,18 +51,17 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThinkLib">
-      <HintPath>..\dependent\ThinkLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IDbContextFactory.cs" />
+    <Compile Include="BootstrapperExtentions.cs" />
     <Compile Include="Configurations\EventDataConfiguration.cs" />
     <Compile Include="Configurations\EventDataItemConfiguration.cs" />
-    <Compile Include="Configurations\HandlerRecordConfiguration.cs" />
+    <Compile Include="Configurations\EventPublishedVersionConfiguration.cs" />
+    <Compile Include="Configurations\MessageHandlerRecordConfiguration.cs" />
     <Compile Include="Configurations\SnapshotConfiguration.cs" />
     <Compile Include="EntityFrameworkContext.cs" />
     <Compile Include="EntityFrameworkContextFactory.cs" />
+    <Compile Include="IDbContextFactory.cs" />
     <Compile Include="IEntityFrameworkContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

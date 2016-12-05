@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using ThinkNet.Contracts;
 using ThinkNet.Infrastructure;
-using ThinkNet.Infrastructure.Composition;
 
 namespace ThinkNet.Messaging.Handling.Agent
 {

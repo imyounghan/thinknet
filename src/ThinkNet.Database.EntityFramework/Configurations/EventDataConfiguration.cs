@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using ThinkNet.Database.Storage;
+using ThinkNet.Infrastructure.Storage;
 
-namespace ThinkNet.Infrastructure
+namespace ThinkNet.Infrastructure.Configurations
 {
     public class EventDataConfiguration : EntityTypeConfiguration<EventData>
     {

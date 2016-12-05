@@ -1,8 +1,8 @@
-﻿using ThinkLib;
+﻿using ThinkNet.Runtime;
 using ThinkNet.Runtime.Kafka;
 using ThinkNet.Runtime.Routing;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet
 {
     public static class BootstrapperExtentions
     {

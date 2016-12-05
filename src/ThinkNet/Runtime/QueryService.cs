@@ -13,8 +13,10 @@ namespace ThinkNet.Runtime
     /// </summary>
     public class QueryService : IQueryService, IQueryResultNotification
     {
-        private readonly static TimeSpan WaitTime = TimeSpan.FromSeconds(60);
-        private readonly static QueryResult TimeoutResult = new QueryResult(ReturnStatus.Timeout, "Timeout");
+        private readonly static TimeSpan WaitTime = TimeSpan.FromSeconds(ConfigurationSetting.Current.OperationTimeout);
+        private readonly static IQueryResult TimeoutResult = new QueryResult(ReturnStatus.Timeout, "Operation is timeout.");
+        private readonly static IQueryResult BusyResult = new QueryResult(ReturnStatus.Failed, "Server is busy.");
+
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<IQueryResult>> _queryTaskDict;
         private readonly IEnvelopeSender _sender;
@@ -46,9 +48,14 @@ namespace ThinkNet.Runtime
         /// </summary>
         public Task<IQueryResult> ExecuteAsync(IQuery parameter)
         {
+            if(_queryTaskDict.Count > ConfigurationSetting.Current.MaxRequests) {
+                //throw new ThinkNetException("server is busy.");
+                return Task.Factory.StartNew(() => BusyResult);
+            }    
+
             var taskCompletionSource = new TaskCompletionSource<IQueryResult>();
             if(!_queryTaskDict.TryAdd(parameter.Id, taskCompletionSource)) {
-                taskCompletionSource.TrySetException(new Exception("Try add TaskCompletionSource failed."));
+                taskCompletionSource.TrySetException(new ThinkNetException("Try add TaskCompletionSource failed."));
                 return taskCompletionSource.Task;
             }
 
@@ -63,9 +70,6 @@ namespace ThinkNet.Runtime
 
         private Task SendAsync(IQuery parameter)
         {
-            if(_queryTaskDict.Count > ConfigurationSetting.Current.MaxRequests)
-                throw new ThinkNetException("server is busy.");
-
             var envelope = new Envelope(parameter);
             envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.QueryKind;
             envelope.Metadata[StandardMetadata.SourceId] = parameter.Id;

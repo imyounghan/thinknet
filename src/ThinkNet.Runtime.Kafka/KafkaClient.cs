@@ -10,7 +10,6 @@ using Kafka.Client.Messages;
 using Kafka.Client.Producers;
 using Kafka.Client.Requests;
 using Kafka.Client.Serialization;
-using ThinkLib;
 
 namespace ThinkNet.Runtime.Kafka
 {

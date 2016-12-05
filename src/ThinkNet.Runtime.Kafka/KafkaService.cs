@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ThinkLib.Serialization;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using ThinkNet.Runtime.Kafka;
 using ThinkNet.Runtime.Routing;

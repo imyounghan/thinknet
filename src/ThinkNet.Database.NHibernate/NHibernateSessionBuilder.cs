@@ -1,10 +1,11 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Reflection;
 using NHibernate;
 using NHibernate.Cfg;
 
 
-namespace ThinkNet.Database.NHibernate
+namespace ThinkNet.Database
 {
     public sealed class NHibernateSessionBuilder
     {
@@ -108,8 +109,7 @@ namespace ThinkNet.Database.NHibernate
             try {
                 BuildSessionFactory(new Configuration().AddAssembly(assembly));
             }
-            catch (System.Exception ex) {
-
+            catch (Exception ex) {
                 throw ex;
             }
         }

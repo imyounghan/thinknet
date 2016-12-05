@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using ThinkNet.Infrastructure.Composition;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet
 {

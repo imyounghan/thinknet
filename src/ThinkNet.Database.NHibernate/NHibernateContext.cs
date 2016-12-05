@@ -5,10 +5,9 @@ using System.Data;
 using System.Linq;
 using NHibernate;
 using NHibernate.Linq;
-using ThinkLib;
 
 
-namespace ThinkNet.Database.NHibernate
+namespace ThinkNet.Database
 {
     public class NHibernateContext : DataContextBase, INHibernateContext
     {

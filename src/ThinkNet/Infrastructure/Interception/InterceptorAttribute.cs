@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using ThinkNet.Infrastructure.Composition;
 
 namespace ThinkNet.Infrastructure.Interception
 {

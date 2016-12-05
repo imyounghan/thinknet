@@ -7,12 +7,10 @@ using System.Reflection;
 using System.Text;
 using ThinkNet.Contracts;
 using ThinkNet.Database;
-using ThinkNet.Database.Storage;
 using ThinkNet.Domain;
 using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Domain.Repositories;
 using ThinkNet.Infrastructure;
-using ThinkNet.Infrastructure.Composition;
 using ThinkNet.Infrastructure.Interception;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Fetching;
@@ -294,11 +292,11 @@ namespace ThinkNet
             this.Status = ServerStatus.Stopped;
         }
 
-        /// <summary>
-        /// 表示程序集加载完成后的处理方式
-        /// </summary>
-        protected virtual void OnAssembliesLoaded(IEnumerable<Assembly> assemblies, IEnumerable<Type> nonAbstractTypes)
-        { }
+        ///// <summary>
+        ///// 表示程序集加载完成后的处理方式
+        ///// </summary>
+        //protected virtual void OnAssembliesLoaded(IEnumerable<Assembly> assemblies, IEnumerable<Type> nonAbstractTypes)
+        //{ }
 
         
         ///// <summary>
@@ -336,7 +334,7 @@ namespace ThinkNet
 
             this.RegisterComponents(nonAbstractTypes);
             this.RegisterHandlerAndFetcher(nonAbstractTypes);
-            this.OnAssembliesLoaded(_assemblies, nonAbstractTypes);
+            //this.OnAssembliesLoaded(_assemblies, nonAbstractTypes);
             this.RegisterDefaultComponents();
 
             _components.ForEach(item => item.Register(container));
@@ -365,7 +363,7 @@ namespace ThinkNet
         /// <summary>
         /// 设置组件
         /// </summary>
-        public Bootstrapper SetDefault(Type type, string name, object instance )
+        public Bootstrapper SetDefault(Type type, object instance, string name = null)
         {
             if (this.Status != ServerStatus.Running) {
                 throw new ApplicationException("system is working, can not register type, please execute before 'Done' method.");
@@ -431,13 +429,13 @@ namespace ThinkNet
 
                 var attribute = type.GetCustomAttribute<RegisterAttribute>(false);
                 if (attribute != null) {
-                    var contractType = attribute.ContractType;
-                    var contractName = attribute.ContractName;
-                    if (attribute.ContractType == null) {
+                    var contractType = attribute.ServiceType;
+                    var contractName = attribute.Name;
+                    if(contractType == null) {
                         this.SetDefault(type, contractName, lifecycle);
                     }
                     else {
-                        this.SetDefault(attribute.ContractType, type, contractName, lifecycle);
+                        this.SetDefault(contractType, type, contractName, lifecycle);
                     }
                 }
             }
@@ -448,10 +446,10 @@ namespace ThinkNet
             this.SetDefault<ITextSerializer, DefaultTextSerializer>();
             this.SetDefault<IInterceptorProvider, InterceptorProvider>();
             this.SetDefault<IDataContextFactory, MemoryContextFactory>();
-            this.SetDefault<IEventStore, EventStore>();
-            this.SetDefault<IEventPublishedVersionStore, EventPublishedVersionStore>();
+            this.SetDefault<IEventStore, MemoryEventStore>();
+            this.SetDefault<IEventPublishedVersionStore, EventPublishedVersionInMemory>();
             this.SetDefault<ISnapshotPolicy, NoneSnapshotPolicy>();
-            this.SetDefault<ISnapshotStore, SnapshotStore>();
+            this.SetDefault<ISnapshotStore, NoneSnapshotStore>();
             this.SetDefault<ICache, LocalCache>();
             this.SetDefault<IRoutingKeyProvider, DefaultRoutingKeyProvider>();
             this.SetDefault<IEventSourcedRepository, EventSourcedRepository>();
@@ -461,7 +459,7 @@ namespace ThinkNet
             this.SetDefault<ICommandResultNotification, CommandService>();
             this.SetDefault<IQueryService, QueryService>();
             this.SetDefault<IQueryResultNotification, QueryService>();
-            this.SetDefault<IMessageHandlerRecordStore, HandlerRecordStore>();
+            this.SetDefault<IMessageHandlerRecordStore, MessageHandlerRecordInMemory>();
             this.SetDefault<IEnvelopeSender, EnvelopeHub>();
             this.SetDefault<IEnvelopeReceiver, EnvelopeHub>();
             this.SetDefault<IProcessor, Processor>("core");
@@ -519,7 +517,15 @@ namespace ThinkNet
         public static Bootstrapper SetDefault(this Bootstrapper that, Type from, Type to, Lifecycle lifecycle = Lifecycle.Singleton)
         {
             return that.SetDefault(from, to, (string)null, lifecycle);
-        }        
+        }
+
+        /// <summary>
+        /// 注册类型
+        /// </summary>
+        public static Bootstrapper SetDefault<T>(this Bootstrapper that, T instance, string name = null)
+        {
+            return that.SetDefault(typeof(T), instance, name);
+        }
 
         /// <summary>
         /// 注册类型

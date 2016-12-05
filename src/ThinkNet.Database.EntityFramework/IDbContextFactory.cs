@@ -19,9 +19,9 @@ namespace ThinkNet.Database
         private readonly Type _dbContextType;
         public DefaultContextFactory()
         {
-            var typeName = ConfigurationManager.AppSettings["thinkcfg.ef_dbtype"];
+            var typeName = ConfigurationManager.AppSettings["thinkcfg.ef_dbtypename"];
             if(string.IsNullOrWhiteSpace(typeName)) {
-                throw new Exception("");
+                throw new ThinkNetException("Config by 'thinkcfg.ef_dbtypename' is empty or not exist.");
             }
 
             var dbContextType = Type.GetType(typeName);

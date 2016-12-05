@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using ThinkNet.Infrastructure.Caching;
-using ThinkNet.Infrastructure.Composition;
 using ThinkNet.Infrastructure.Interception;
 
 namespace ThinkNet.Infrastructure

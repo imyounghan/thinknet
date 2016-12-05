@@ -19,8 +19,9 @@ namespace ThinkNet
             this.HandleRetryInterval = 1000;
             this.QueueCount = ConfigurationManager.AppSettings["thinkcfg.queue_count"].ChangeIfError(4);
             this.QueueCapacity = ConfigurationManager.AppSettings["thinkcfg.queue_capacity"].ChangeIfError(2000);
-            this.MaxRequests = ConfigurationManager.AppSettings["thinkcfg.maxrequests"].ChangeIfError(2000);
-            this.EnableCommandFilter = ConfigurationManager.AppSettings["thinkcfg.enablefilter"].ChangeIfError(false);
+            this.MaxRequests = ConfigurationManager.AppSettings["thinkcfg.server_maxrequests"].ChangeIfError(2000);
+            this.OperationTimeout = ConfigurationManager.AppSettings["thinkcfg.server_timeout"].ChangeIfError(120);
+            this.EnableCommandFilter = ConfigurationManager.AppSettings["thinkcfg.server_enablefilter"].ChangeIfError(false);
         }
 
         /// <summary>
@@ -51,6 +52,12 @@ namespace ThinkNet
         /// 最大处理请求数
         /// </summary>
         public int MaxRequests { get; set; }
+
+        /// <summary>
+        /// 操作超时设置(单位:秒)
+        /// 默认为120秒
+        /// </summary>
+        public int OperationTimeout { get; set; }
 
         /// <summary>
         /// 是否启用命令过滤器

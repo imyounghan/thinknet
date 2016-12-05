@@ -4,7 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace ThinkNet.Database.EntityFramework
+namespace ThinkNet.Database
 {
     public interface IEntityFrameworkContext : IDataContext
     {

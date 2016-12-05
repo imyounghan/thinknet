@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ThinkNet.Contracts;
-using ThinkNet.Infrastructure.Composition;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;
 using ThinkNet.Messaging.Handling.Agent;

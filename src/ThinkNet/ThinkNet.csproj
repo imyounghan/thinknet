@@ -82,10 +82,7 @@
     <Compile Include="Database\DataContextBase.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Database\DataContextExtentions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Database\ExpressionExtensions.cs">
+    <Compile Include="Extensions\ExpressionExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Database\ICriteria.cs">
@@ -118,9 +115,18 @@
     <Compile Include="Database\SortSet.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Database\Storage\EventPublishedVersion.cs" />
-    <Compile Include="Database\Storage\EventPublishedVersionStore.cs" />
-    <Compile Include="Database\TransactionAttribute.cs">
+    <Compile Include="Infrastructure\Lifecycle.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Infrastructure\LifeCycleAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Infrastructure\RegisterAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Infrastructure\Storage\EventPublishedVersion.cs" />
+    <Compile Include="Infrastructure\Storage\EventPublishedVersionStore.cs" />
+    <Compile Include="Infrastructure\TransactionAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DisposableObject.cs" />
@@ -140,7 +146,7 @@
     <Compile Include="Infrastructure\Caching\MemoryCacheProvider.cs" />
     <Compile Include="Infrastructure\Caching\WebCacheProvider.cs" />
     <Compile Include="Infrastructure\DefaultTextSerializer.cs" />
-    <Compile Include="Infrastructure\Composition\IInitializer.cs" />
+    <Compile Include="Infrastructure\IInitializer.cs" />
     <Compile Include="Infrastructure\Interception\GetNextInterceptorDelegate.cs" />
     <Compile Include="Infrastructure\Interception\IInterceptor.cs" />
     <Compile Include="Infrastructure\Interception\IInterceptorProvider.cs" />
@@ -155,16 +161,11 @@
     <Compile Include="Infrastructure\Interception\Pipeline\InterceptorPipeline.cs" />
     <Compile Include="Infrastructure\Interception\Pipeline\InterceptorPipelineKey.cs" />
     <Compile Include="Infrastructure\Interception\Pipeline\InterceptorPipelineManager.cs" />
-    <Compile Include="Infrastructure\Composition\IObjectContainer.cs" />
+    <Compile Include="Infrastructure\IObjectContainer.cs" />
     <Compile Include="Infrastructure\Interception\InterceptorAttribute.cs" />
     <Compile Include="Infrastructure\ITextSerializer.cs" />
     <Compile Include="Infrastructure\IUniquelyIdentifiable.cs" />
-    <Compile Include="Infrastructure\Lifecycle.cs" />
-    <Compile Include="Infrastructure\Composition\ObjectContainer.cs" />
-    <Compile Include="Infrastructure\Composition\ObjectContainerExtentions.cs" />
-    <Compile Include="Infrastructure\LifeCycleAttribute.cs" />
-    <Compile Include="Infrastructure\RegisterAttribute.cs" />
-    <Compile Include="Infrastructure\SerializerExtensions.cs" />
+    <Compile Include="Infrastructure\ObjectContainer.cs" />
     <Compile Include="Infrastructure\UniqueId.cs" />
     <Compile Include="Infrastructure\ValueObject.cs" />
     <Compile Include="LogManager.cs" />
@@ -216,7 +217,6 @@
     <Compile Include="Contracts\ICommandService.cs" />
     <Compile Include="Contracts\IQuery.cs" />
     <Compile Include="Contracts\IQueryService.cs" />
-    <Compile Include="Domain\EventSourcing\NoneSnapshotPolicy.cs" />
     <Compile Include="Domain\Repositories\Repository.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
     <Compile Include="Domain\IAggregateRoot.cs" />
@@ -245,13 +245,13 @@
     <Compile Include="Messaging\Event.cs" />
     <Compile Include="Messaging\IMessageBus.cs" />
     <Compile Include="Messaging\IEventPublisher.cs" />
-    <Compile Include="Database\Storage\EventData.cs" />
-    <Compile Include="Database\Storage\EventDataItem.cs" />
-    <Compile Include="Database\Storage\EventStore.cs" />
-    <Compile Include="Database\Storage\HandlerRecord.cs" />
-    <Compile Include="Database\Storage\HandlerRecordStore.cs" />
-    <Compile Include="Database\Storage\Snapshot.cs" />
-    <Compile Include="Database\Storage\SnapshotStore.cs" />
+    <Compile Include="Infrastructure\Storage\EventData.cs" />
+    <Compile Include="Infrastructure\Storage\EventDataItem.cs" />
+    <Compile Include="Infrastructure\Storage\EventStore.cs" />
+    <Compile Include="Infrastructure\Storage\MessageHandlerRecord.cs" />
+    <Compile Include="Infrastructure\Storage\MessageHandlerRecordStore.cs" />
+    <Compile Include="Infrastructure\Storage\Snapshot.cs" />
+    <Compile Include="Infrastructure\Storage\SnapshotStore.cs" />
     <Compile Include="Domain\EventSourcing\IEventStore.cs" />
     <Compile Include="Domain\EventSourcing\ISnapshotPolicy.cs" />
     <Compile Include="Domain\EventSourcing\ISnapshotStore.cs" />

@@ -19,5 +19,19 @@ namespace ThinkNet.Domain.EventSourcing
         /// 从存储中删除快照。
         /// </summary>
         void Remove(SourceKey sourceKey);
-    }    
+    }
+
+    internal class NoneSnapshotStore : ISnapshotStore
+    {
+        public void Remove(SourceKey sourceKey)
+        { }
+
+        public void Save(IAggregateRoot aggregateRoot)
+        { }
+
+        T ISnapshotStore.GetLastest<T>(SourceKey sourceKey)
+        {
+            return null;
+        }
+    }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using ThinkNet.Contracts;
 using ThinkNet.Domain;
-using ThinkNet.Infrastructure.Composition;
+using ThinkNet.Infrastructure;
 using ThinkNet.Infrastructure.Interception;
 using ThinkNet.Messaging;
 using ThinkNet.Messaging.Handling;

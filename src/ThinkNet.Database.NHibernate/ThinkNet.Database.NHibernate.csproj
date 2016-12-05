@@ -48,15 +48,14 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThinkLib">
-      <HintPath>..\dependent\ThinkLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BootstrapperExtentions.cs" />
     <Compile Include="INHibernateContext.cs" />
     <Compile Include="NHibernateContext.cs" />
     <Compile Include="NHibernateContextFactory.cs" />
@@ -66,7 +65,7 @@
   <ItemGroup>
     <None Include="MapFiles\EventData.hbm.xml" />
     <None Include="MapFiles\EventDataItem.hbm.xml" />
-    <None Include="MapFiles\HandlerRecord.hbm.xml" />
+    <None Include="MapFiles\MessageHandlerRecord.hbm.xml" />
     <None Include="MapFiles\Snapshot.hbm.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -77,6 +76,9 @@
       <Project>{3a400d75-9c72-43c5-8447-2070f333aae3}</Project>
       <Name>ThinkNet</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MapFiles\EventPublishedVersion.hbm.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

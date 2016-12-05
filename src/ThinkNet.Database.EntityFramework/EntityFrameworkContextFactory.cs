@@ -1,34 +1,32 @@
 ﻿using System.Data.Common;
-using ThinkLib.Annotation;
 using ThinkNet.Database.Context;
 
-namespace ThinkNet.Database.EntityFramework
+namespace ThinkNet.Database
 {
-    [Register(typeof(IDataContextFactory))]
     public class EntityFrameworkContextFactory : ContextManager, IDataContextFactory
     {
-        private readonly IDbContextFactory _contextFactory;
-        public EntityFrameworkContextFactory(IDbContextFactory contextFactory)
-            : base("thread")
+        private readonly IDbContextFactory _dbcontextFactory;
+        public EntityFrameworkContextFactory(IDbContextFactory dbcontextFactory, string contextType)
+            : base(contextType)
         {
-            this._contextFactory = contextFactory;
+            this._dbcontextFactory = dbcontextFactory;
         }
 
         public IDataContext Create()
         {
-            var dbContext = _contextFactory.Create();
+            var dbContext = _dbcontextFactory.Create();
             return new EntityFrameworkContext(dbContext);
         }
 
         public IDataContext Create(string nameOrConnectionString)
         {            
-            var dbContext = _contextFactory.Create(nameOrConnectionString);
+            var dbContext = _dbcontextFactory.Create(nameOrConnectionString);
             return new EntityFrameworkContext(dbContext);
         }
 
         public IDataContext Create(DbConnection connection)
         {
-            var dbContext = _contextFactory.Create(connection);
+            var dbContext = _dbcontextFactory.Create(connection);
             return new EntityFrameworkContext(dbContext);
         }
         

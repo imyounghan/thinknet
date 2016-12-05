@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using NHibernate;
 
-namespace ThinkNet.Database.NHibernate
+namespace ThinkNet.Database
 {
     public interface INHibernateContext : IDataContext
     {
