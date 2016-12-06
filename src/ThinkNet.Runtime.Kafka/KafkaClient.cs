@@ -179,7 +179,7 @@ namespace ThinkNet.Runtime.Kafka
                     break;
                 }
                 catch(Exception ex) {
-                    this.CommitOffset(offset);
+                    //this.CommitOffset(offset);
 
                     if(LogManager.Default.IsErrorEnabled)
                         LogManager.Default.Error(ex.GetBaseException().Message, ex);

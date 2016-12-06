@@ -10,13 +10,13 @@ using ThinkNet.Infrastructure;
 namespace ThinkNet.Messaging.Handling.Agent
 {
     /// <summary>
-    /// <see cref="EventStream"/> 的内部处理程序
+    /// <see cref="EventCollection"/> 的内部处理程序
     /// </summary>
-    public class EventStreamInnerHandler : IHandlerAgent, IInitializer//, IMessageHandler<EventStream>
+    public class EventCollectionInnerHandler : IHandlerAgent, IInitializer//, IMessageHandler<EventStream>
     {
         private readonly static Dictionary<CompositeKey, Type> EventTypesMapContractType = new Dictionary<CompositeKey, Type>();
-        private readonly static Type EventStreamType = typeof(EventStream);
-        private readonly static Type EventStreamHandlerType = typeof(EventStreamInnerHandler);
+        private readonly static Type EventStreamType = typeof(EventCollection);
+        private readonly static Type EventStreamHandlerType = typeof(EventCollectionInnerHandler);
 
         private readonly ConcurrentDictionary<Type, IHandlerAgent> _cachedHandlers;
         private readonly IObjectContainer _container;
@@ -27,7 +27,7 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// <summary>
         /// Parameterized constructor.
         /// </summary>
-        public EventStreamInnerHandler(IObjectContainer container, 
+        public EventCollectionInnerHandler(IObjectContainer container, 
             IMessageBus messageBus,
             IMessageHandlerRecordStore handlerStore,
             IEventPublishedVersionStore publishedVersionStore)            
@@ -52,15 +52,15 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// </summary>
         public void Handle(params object[] args)
         {
-            var stream = args[0] as EventStream;
-            if(stream.Events.IsEmpty()) {
-                _messageBus.Publish(new CommandResult(stream.CorrelationId, CommandReturnType.DomainEventHandled, ReturnStatus.Nothing));
+            var collection = args[0] as EventCollection;
+            if(collection.IsEmpty()) {
+                _messageBus.Publish(new CommandResult(collection.CorrelationId, CommandReturnType.DomainEventHandled, ReturnStatus.Nothing));
                 return;
             }
 
-            if(_handlerStore.HandlerIsExecuted(stream.CorrelationId, EventStreamType, EventStreamHandlerType)) {
-                var errorMessage = string.Format("The EventStream has been handled, Data({0}).", stream);
-                _messageBus.Publish(new CommandResult(stream.CorrelationId, new ThinkNetException(errorMessage)));
+            if(_handlerStore.HandlerIsExecuted(collection.CorrelationId, EventStreamType, EventStreamHandlerType)) {
+                var errorMessage = string.Format("The domain event has been handled, Data({0}).", collection);
+                _messageBus.Publish(new CommandResult(collection.CorrelationId, new ThinkNetException(errorMessage)));
                 if(LogManager.Default.IsWarnEnabled) {
                     LogManager.Default.Warn(errorMessage);
                 }
@@ -68,24 +68,24 @@ namespace ThinkNet.Messaging.Handling.Agent
             }
 
             try {
-                this.TryHandle(stream);
-                _messageBus.Publish(new CommandResult(stream.CorrelationId, CommandReturnType.DomainEventHandled));
+                this.TryHandle(collection);
+                _messageBus.Publish(new CommandResult(collection.CorrelationId, CommandReturnType.DomainEventHandled));
             }
             catch(Exception ex) {
-                _messageBus.Publish(new CommandResult(stream.CorrelationId, ex, CommandReturnType.DomainEventHandled));
+                _messageBus.Publish(new CommandResult(collection.CorrelationId, ex, CommandReturnType.DomainEventHandled));
                 throw ex;
             }
            
 
-            _handlerStore.AddHandlerInfo(stream.CorrelationId, EventStreamType, EventStreamHandlerType);
+            _handlerStore.AddHandlerInfo(collection.CorrelationId, EventStreamType, EventStreamHandlerType);
         }
 
-        private void TryHandle(EventStream @event)
+        private void TryHandle(EventCollection @event)
         {
             if(@event.Version > 1) {
                 var version = _publishedVersionStore.GetPublishedVersion(@event.SourceId) + 1;
                 if(version < @event.Version) {
-                    _messageBus.Publish(@event);
+                    _messageBus.Publish((IMessage)@event);
                     throw new DomainEventAsPendingException() {
                         RelatedId = @event.SourceId.Id,
                         RelatedType = @event.SourceId.GetSourceTypeFullName()
@@ -100,13 +100,13 @@ namespace ThinkNet.Messaging.Handling.Agent
                 }
             }
 
-            var eventTypes = @event.Events.Select(p => p.GetType()).ToArray();
+            var eventTypes = @event.Select(p => p.GetType()).ToArray();
             var eventHandler = this.GetEventHandler(eventTypes);
             var parameters = this.GetParameters(@event);
 
             eventHandler.Handle(parameters);
 
-            _messageBus.Publish(@event.Events);
+            _messageBus.Publish((IEnumerable<Event>)@event);
 
             _publishedVersionStore.AddOrUpdatePublishedVersion(@event.SourceId, @event.Version);
         }
@@ -195,24 +195,26 @@ namespace ThinkNet.Messaging.Handling.Agent
         /// <summary>
         /// 获取参数
         /// </summary>
-        protected object[] GetParameters(EventStream eventStream)
+        protected object[] GetParameters(EventCollection collection)
         {
             var array = new ArrayList();
             array.Add(new SourceMetadata {
-                CorrelationId = eventStream.CorrelationId,
-                SourceId = eventStream.SourceId.Id,
-                SourceTypeName = eventStream.SourceId.GetSourceTypeFullName(),
-                Version = eventStream.Version
+                CorrelationId = collection.CorrelationId,
+                SourceId = collection.SourceId.Id,
+                SourceTypeName = collection.SourceId.GetSourceTypeFullName(),
+                Version = collection.Version
             });
 
-            var collection = eventStream.Events as ICollection;
-            if (collection != null) {
-                array.AddRange(collection);
-            }
-            else {
-                foreach (var el in eventStream.Events)
-                    array.Add(el);
-            }
+            array.AddRange(collection);
+
+            //var collection = eventStream as ICollection;
+            //if (collection != null) {
+            //    array.AddRange(collection);
+            //}
+            //else {
+            //    foreach (var el in eventStream.Events)
+            //        array.Add(el);
+            //}
 
             return array.ToArray();
         }

@@ -26,9 +26,9 @@ namespace ThinkNet.Runtime
             envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.MessageKind;
             //envelope.Metadata[StandardMetadata.IdentifierId] = message.Id;
 
-            var eventStream = message as EventStream;
-            if(eventStream != null) {
-                envelope.Metadata[StandardMetadata.SourceId] = eventStream.SourceId.Id;
+            var eventCollection = message as EventCollection;
+            if(eventCollection != null) {
+                envelope.Metadata[StandardMetadata.SourceId] = eventCollection.SourceId.Id;
             }
 
             var commandResult = message as CommandResult;

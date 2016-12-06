@@ -18,7 +18,7 @@ namespace ThinkNet
             this.HandleRetrytimes = 5;
             this.HandleRetryInterval = 1000;
             this.QueueCount = ConfigurationManager.AppSettings["thinkcfg.queue_count"].ChangeIfError(4);
-            this.QueueCapacity = ConfigurationManager.AppSettings["thinkcfg.queue_capacity"].ChangeIfError(2000);
+            this.BufferCapacity = ConfigurationManager.AppSettings["thinkcfg.server_capacity"].ChangeIfError(2000);
             this.MaxRequests = ConfigurationManager.AppSettings["thinkcfg.server_maxrequests"].ChangeIfError(2000);
             this.OperationTimeout = ConfigurationManager.AppSettings["thinkcfg.server_timeout"].ChangeIfError(120);
             this.EnableCommandFilter = ConfigurationManager.AppSettings["thinkcfg.server_enablefilter"].ChangeIfError(false);
@@ -43,10 +43,10 @@ namespace ThinkNet
         public int QueueCount { get; set; }
 
         /// <summary>
-        /// 消息队列的容量
+        /// 获取或设置从mq拉取消息的缓冲容量
         /// 默认为1000
         /// </summary>
-        public int QueueCapacity { get; set; }
+        public int BufferCapacity { get; set; }
 
         /// <summary>
         /// 最大处理请求数

@@ -193,7 +193,7 @@
     <Compile Include="Messaging\Handling\IMessageHandlerRecordStore.cs" />
     <Compile Include="Messaging\Handling\Agent\IHandlerAgent.cs" />
     <Compile Include="Messaging\Handling\Agent\MessageHandlerAgent.cs" />
-    <Compile Include="Messaging\Handling\Agent\EventStreamInnerHandler.cs" />
+    <Compile Include="Messaging\Handling\Agent\EventCollectionInnerHandler.cs" />
     <Compile Include="Messaging\Handling\DomainEventAsPendingException.cs" />
     <Compile Include="Messaging\Handling\MessageHandlerRecordInMemory.cs" />
     <Compile Include="Messaging\Fetching\QueryFetcherNotFoundException.cs" />
@@ -224,7 +224,7 @@
     <Compile Include="Domain\Repositories\EventSourcedRepository.cs" />
     <Compile Include="Domain\IEventSourced.cs" />
     <Compile Include="Domain\IEventSourcedRepository.cs" />
-    <Compile Include="Messaging\EventStream.cs" />
+    <Compile Include="Messaging\EventCollection.cs" />
     <Compile Include="Domain\IRepository.cs" />
     <Compile Include="Domain\IRepository`.cs" />
     <Compile Include="Domain\RepositoryExtensions.cs" />

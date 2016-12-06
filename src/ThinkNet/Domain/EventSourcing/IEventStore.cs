@@ -14,7 +14,7 @@ namespace ThinkNet.Domain.EventSourcing
         /// <summary>
         /// 保存溯源事件。
         /// </summary>
-        void Save(EventStream @event);
+        void Save(EventCollection @event);
 
         ///// <summary>
         ///// 查询该命令下的事件。
@@ -24,7 +24,7 @@ namespace ThinkNet.Domain.EventSourcing
         /// <summary>
         /// 查询聚合的溯源事件。
         /// </summary>
-        IEnumerable<EventStream> FindAll(SourceKey sourceKey, int startVersion);
+        IEnumerable<EventCollection> FindAll(SourceKey sourceKey, int startVersion);
 
         /// <summary>
         /// 移除该聚合的溯源事件。
@@ -36,17 +36,17 @@ namespace ThinkNet.Domain.EventSourcing
     internal class MemoryEventStore : IEventStore
     {
 
-        private readonly ConcurrentDictionary<SourceKey, IList<EventStream>> collection;
+        private readonly ConcurrentDictionary<SourceKey, IList<EventCollection>> collection;
 
         public MemoryEventStore()
         {
-            this.collection = new ConcurrentDictionary<SourceKey, IList<EventStream>>();
+            this.collection = new ConcurrentDictionary<SourceKey, IList<EventCollection>>();
         }
 
 
-        public EventStream Find(SourceKey sourceKey, string correlationId)
+        public EventCollection Find(SourceKey sourceKey, string correlationId)
         {
-            IList<EventStream> streams;
+            IList<EventCollection> streams;
             if(!collection.TryGetValue(sourceKey, out streams))
                 return null;
 
@@ -54,11 +54,11 @@ namespace ThinkNet.Domain.EventSourcing
         }
 
 
-        public IEnumerable<EventStream> FindAll(SourceKey sourceKey, int startVersion)
+        public IEnumerable<EventCollection> FindAll(SourceKey sourceKey, int startVersion)
         {
-            IList<EventStream> streams;
+            IList<EventCollection> streams;
             if(!collection.TryGetValue(sourceKey, out streams))
-                return Enumerable.Empty<EventStream>();
+                return Enumerable.Empty<EventCollection>();
 
             return streams.Where(stream => stream.Version > startVersion)
                 .OrderBy(stream => stream.Version)
@@ -70,9 +70,9 @@ namespace ThinkNet.Domain.EventSourcing
             collection.TryRemove(sourceKey);
         }
 
-        public void Save(EventStream @event)
+        public void Save(EventCollection @event)
         {
-            var streams = collection.GetOrAdd(@event.SourceId, () => new List<EventStream>());
+            var streams = collection.GetOrAdd(@event.SourceId, () => new List<EventCollection>());
             if(streams.Count > 0 && streams.Any(p => p.CorrelationId == @event.CorrelationId))
                 return;
 

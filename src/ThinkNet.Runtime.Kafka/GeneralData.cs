@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 namespace ThinkNet.Runtime.Kafka
 {
     [DataContract]
-    [Serializable]
     public class GeneralData
     {
         public GeneralData()
@@ -33,20 +32,20 @@ namespace ThinkNet.Runtime.Kafka
         /// <summary>
         /// 程序集
         /// </summary>
-        [DataMember]
+        [DataMember(Name = "assemblyName")]
         public string AssemblyName { get; set; }
         /// <summary>
         /// 命名空间
         /// </summary>
-        [DataMember]
+        [DataMember(Name = "namespace")]
         public string Namespace { get; set; }
         /// <summary>
         /// 类型名称
         /// </summary>
-        [DataMember]
+        [DataMember(Name = "typeName")]
         public string TypeName { get; set; }
 
-        [DataMember]
+        [DataMember(Name = "metadata")]
         public string Metadata { get; set; }
 
         public Type GetMetadataType()

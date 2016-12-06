@@ -28,7 +28,7 @@ namespace ThinkNet.Runtime.Dispatching
             : base(container)
         {
             this._handlerStore = handlerStore;
-            this.AddCachedHandler(typeof(EventStream).FullName, new EventStreamInnerHandler(container, messageBus, handlerStore, publishedVersionStore));
+            this.AddCachedHandler(typeof(EventCollection).FullName, new EventCollectionInnerHandler(container, messageBus, handlerStore, publishedVersionStore));
             this.AddCachedHandler(typeof(CommandResult).FullName, new CommandResultInnerHandler(notification));
         }
 

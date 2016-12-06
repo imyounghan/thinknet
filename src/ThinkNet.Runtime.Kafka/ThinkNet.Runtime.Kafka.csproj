@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BootstrapperExtentions.cs" />
+    <Compile Include="EventStream.cs" />
     <Compile Include="KafkaSettings.cs" />
     <Compile Include="DefaultTopicProvider.cs" />
     <Compile Include="ITopicProvider.cs" />

@@ -60,13 +60,14 @@ namespace ThinkNet.Infrastructure.Storage
             return (Event)_serializer.DeserializeFromBinary(@event.Payload, type);
         }
 
-        private EventStream Transform(EventData @event)
+        private EventCollection Transform(EventData @event)
         {
-            return new EventStream() {
+            var events = @event.Items.OrderBy(p => p.Order).Select(this.Transform).ToArray();
+
+            return new EventCollection(events) {
                 CorrelationId = @event.CorrelationId,
                 SourceId = new SourceKey(@event.AggregateRootId, @event.AggregateRootTypeName),
                 Version = @event.Version,
-                Events = @event.Items.OrderBy(p => p.Order).Select(this.Transform).ToArray()
             };
         }
 
@@ -92,7 +93,7 @@ namespace ThinkNet.Infrastructure.Storage
         /// <summary>
         /// 保存事件流数据
         /// </summary>
-        public void Save(EventStream @event)
+        public void Save(EventCollection @event)
         {
             var aggregateRootVersion = _versionCache[Math.Abs(@event.SourceId.GetHashCode() % 10)];
 
@@ -134,7 +135,7 @@ namespace ThinkNet.Infrastructure.Storage
                     //    return;
                     //}
 
-                    @event.Events.Select(this.Transform).ForEach(eventData.AddItem);
+                    @event.Select(this.Transform).ForEach(eventData.AddItem);
 
                     context.Save(eventData);
                     context.Commit();
@@ -147,7 +148,7 @@ namespace ThinkNet.Infrastructure.Storage
         /// <summary>
         /// 查找与该命令相关的事件流数据
         /// </summary>
-        public EventStream Find(SourceKey sourceKey, string correlationId)
+        public EventCollection Find(SourceKey sourceKey, string correlationId)
         {
             correlationId.NotNullOrWhiteSpace("correlationId");
 
@@ -167,18 +168,18 @@ namespace ThinkNet.Infrastructure.Storage
                 return null;
             }
 
-            return new EventStream() {
+            var events = @event.Items.Select(this.Transform).ToArray();
+            return new EventCollection(events) {
                 CorrelationId = correlationId,
                 SourceId = new SourceKey(@event.AggregateRootId, @event.AggregateRootTypeName),
-                Version = @event.Version,
-                Events = @event.Items.Select(this.Transform).ToArray()
+                Version = @event.Version
             };
         }
 
         /// <summary>
         /// 查找大于该版本号的所有事件流数据
         /// </summary>
-        public IEnumerable<EventStream> FindAll(SourceKey sourceKey, int version)
+        public IEnumerable<EventCollection> FindAll(SourceKey sourceKey, int version)
         {
             var aggregateRootTypeCode = sourceKey.GetSourceTypeName().GetHashCode();
 

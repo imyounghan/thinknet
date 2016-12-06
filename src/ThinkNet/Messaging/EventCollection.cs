@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging
@@ -8,39 +9,34 @@ namespace ThinkNet.Messaging
     /// <summary>
     /// 表示这是一个可溯源的有序事件流。
     /// </summary>
-    [DataContract]
-    public sealed class EventStream : IMessage, IUniquelyIdentifiable
+    public sealed class EventCollection : IEnumerable<Event>, ICollection, IMessage, IUniquelyIdentifiable
     {
+        private readonly List<Event> events;
+        public EventCollection(IEnumerable<Event> events)
+        {
+            this.events = new List<Event>(events);
+        }
+
         /// <summary>
         /// 源ID
         /// </summary>
-        [DataMember(Name = "sourceId")]
         public SourceKey SourceId { get; set; }
 
         /// <summary>
         /// 产生事件的相关标识(如命令的id)
         /// </summary>
-        [DataMember(Name = "correlationId")]
         public string CorrelationId { get; set; }
         /// <summary>
         /// 版本号
         /// </summary>
-        [DataMember(Name = "version")]
         public int Version { get; set; }
-
-        /// <summary>
-        /// 事件源
-        /// </summary>
-        [DataMember(Name = "events")]
-        public IEnumerable<Event> Events { get; set; }
-
 
         /// <summary>
         /// 确定此实例是否与指定的对象相同。
         /// </summary>
         public override bool Equals(object obj)
         {
-            var other = obj as EventStream;
+            var other = obj as EventCollection;
             if (other == null) {
                 return false;
             }
@@ -61,7 +57,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            var events = this.Events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.Id));
+            var events = this.events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.Id));
 
             return string.Concat(this.SourceId.GetSourceTypeName(), "@", this.SourceId.Id,
                 "[", string.Join(",", events), "]", "#", this.CorrelationId);
@@ -73,12 +69,54 @@ namespace ThinkNet.Messaging
             return this.SourceId.Id;
         }
 
-        [IgnoreDataMember]
+        public IEnumerator<Event> GetEnumerator()
+        {
+            return events.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            foreach(Event @event in events)
+                yield return @event;
+        }
+
+        public void CopyTo(Array array, int index)
+        {
+            int destIndex = 0;
+            events.GetRange(index, events.Count - index).ForEach(
+                delegate (Event info) {
+                    array.SetValue(info, destIndex++);
+                });
+        }
         string IUniquelyIdentifiable.Id
         {
             get
             {
                 return this.CorrelationId;
+            }
+        }
+
+        public int Count
+        {
+            get
+            {
+                return events.Count;
+            }
+        }
+
+        public object SyncRoot
+        {
+            get
+            {
+                return this;
+            }
+        }
+
+        public bool IsSynchronized
+        {
+            get
+            {
+                return false;
             }
         }
     }

@@ -102,7 +102,7 @@ namespace ThinkNet.Domain.Repositories
                             @event.Version, eventSourced.Version, eventSourcedType.FullName, eventSourcedId);
                         throw new ThinkNetException(errorMessage);
                     }
-                    eventSourced.LoadFrom(@event.Events);
+                    eventSourced.LoadFrom(@event);
                 }                
 
                 if(LogManager.Default.IsDebugEnabled)
@@ -127,15 +127,14 @@ namespace ThinkNet.Domain.Repositories
 
             var aggregateRootType = eventSourced.GetType();
 
-            var eventStream = new EventStream() {
-                Events = eventSourced.Events,
+            var eventCollection = new EventCollection(eventSourced.Events) {
                 CorrelationId = correlationId,
                 SourceId = new SourceKey(eventSourced.Id, aggregateRootType),
                 Version = eventSourced.Version
             };
 
             try {
-                _eventStore.Save(eventStream);
+                _eventStore.Save(eventCollection);
 
                 if (LogManager.Default.IsDebugEnabled)
                     LogManager.Default.DebugFormat("Domain events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}.",
@@ -150,7 +149,7 @@ namespace ThinkNet.Domain.Repositories
             }
 
             _cache.Set(eventSourced, eventSourced.Id);
-            _messageBus.Publish(eventStream);
+            _messageBus.Publish((IMessage)eventCollection);
 
 
             if(!_snapshotPolicy.ShouldbeCreateSnapshot(eventSourced))

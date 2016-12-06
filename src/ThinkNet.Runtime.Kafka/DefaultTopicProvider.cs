@@ -25,7 +25,7 @@ namespace ThinkNet.Runtime.Kafka
 
         public string GetTopic(object payload)
         {
-            if (payload is EventStream) {
+            if (payload is EventCollection) {
                 return "EventStreams";
             }
 
