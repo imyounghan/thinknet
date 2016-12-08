@@ -68,7 +68,7 @@ namespace ThinkNet.Runtime.Routing
         /// <summary>
         /// 路由信件
         /// </summary>
-        protected void Route(Envelope envelope)
+        protected void Route(Envelope envelope, CancellationTokenSource cancellationSource)
         {
             this.GetBroker(this.GetKey(envelope)).Add(envelope, cancellationSource.Token);
         }
@@ -132,7 +132,7 @@ namespace ThinkNet.Runtime.Routing
                 LogManager.Default.DebugFormat("Send an envelope to local queue, data({0}).", envelope.Body);
             }
 
-            return Task.Factory.StartNew(() => this.Route(envelope));
+            return Task.Factory.StartNew(() => this.Route(envelope, this.cancellationSource));
         }
         /// <summary>
         /// Sends a batch of envelopes.
@@ -144,7 +144,10 @@ namespace ThinkNet.Runtime.Routing
                     string.Join(";", envelopes.Select(item=>item.Body.ToString())));
             }
 
-            return Task.Factory.StartNew(() => envelopes.ForEach(this.Route));
+            return Task.Factory.StartNew(delegate {
+                foreach(var envelope in envelopes)
+                    this.Route(envelope, this.cancellationSource);
+            });
         }
     }
 }

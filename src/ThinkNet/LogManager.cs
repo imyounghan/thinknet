@@ -632,13 +632,23 @@ namespace ThinkNet
             string log4NetDllPath = string.IsNullOrEmpty(binPath) ? "log4net.dll" : Path.Combine(binPath, "log4net.dll");
 
             existLog4Net = File.Exists(log4NetDllPath) || AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "log4net");
+
+            if(existLog4Net) {
+                Composition = "log4net";
+            }
+
             loggers = new ConcurrentDictionary<string, ILogger>();
         }
 
         /// <summary>
         /// 表示这是一个默认的日志程序。
         /// </summary>
-        public static ILogger Default { get { return GetLogger("ThinkLog"); } }
+        public static ILogger Default { get { return GetLogger("ThinkNet"); } }
+
+        /// <summary>
+        /// 当前使用的组件
+        /// </summary>
+        public static string Composition { get; private set; }
 
 
         private readonly static ConcurrentDictionary<string, ILogger> loggers;
@@ -694,6 +704,8 @@ namespace ThinkNet
                 return;
 
             factory.NotNull("factory");
+
+            Composition = "outside";
 
             Interlocked.CompareExchange(ref loggerFactory, factory, null);
         }

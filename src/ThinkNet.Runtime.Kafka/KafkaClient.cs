@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,18 +16,20 @@ namespace ThinkNet.Runtime.Kafka
 {
     public class KafkaClient : DisposableObject
     {
-        private readonly Lazy<Producer> _kafkaProducer;
-        private readonly Lazy<ZookeeperConsumerConnector> _kafkaConsumer;
+        private readonly Lazy<Producer> _producer;
+        private readonly ConcurrentDictionary<string, ZookeeperConsumerConnector> _consumers;
 
         
         private readonly ZooKeeperConfiguration _zooKeeperConfiguration;
+        private readonly ITopicProvider _topicProvider;
 
-        public KafkaClient(string zkConnectionString)
+        public KafkaClient(string zkConnectionString, ITopicProvider topicProvider)
         {
+            this._topicProvider = topicProvider;
             this._zooKeeperConfiguration = new ZooKeeperConfiguration(zkConnectionString, 3000, 4000, 8000);
 
-            this._kafkaProducer = new Lazy<Producer>(CreateProducer, true);
-            this._kafkaConsumer = new Lazy<ZookeeperConsumerConnector>(CreateConsumer, true);
+            this._producer = new Lazy<Producer>(CreateProducer, LazyThreadSafetyMode.ExecutionAndPublication);
+            this._consumers = new ConcurrentDictionary<string, ZookeeperConsumerConnector>();
         }
 
         private Producer CreateProducer()
@@ -63,11 +66,10 @@ namespace ThinkNet.Runtime.Kafka
         {
             ThrowIfDisposed();
             if(disposing) {
-                if (_kafkaProducer.IsValueCreated)
-                    _kafkaProducer.Value.Dispose();
+                if(_producer.IsValueCreated)
+                    _producer.Value.Dispose();
 
-                if(_kafkaConsumer.IsValueCreated)
-                    _kafkaConsumer.Value.Dispose();
+                _consumers.Values.ForEach(item => item.Dispose());
             }
         }
 
@@ -100,11 +102,11 @@ namespace ThinkNet.Runtime.Kafka
         {
             try {
                 var data = new ProducerData<string, Message>(topic, string.Empty, new Message(new byte[0]));
-                _kafkaProducer.Value.Send(data);
+                _producer.Value.Send(data);
             }
             catch(Exception ex) {
                 if(LogManager.Default.IsErrorEnabled)
-                    LogManager.Default.Error($"Create topic {topic} failed", ex);
+                    LogManager.Default.Error(ex, "Create topic {0} failed", topic);
             }
         }
 
@@ -115,26 +117,28 @@ namespace ThinkNet.Runtime.Kafka
                 LogManager.Default.DebugFormat("ready to send a message to kafka in topic('{0}').", 
                     string.Join("','", topics));
             }
-            
-            return Task.Factory.StartNew(() => {
-                _kafkaProducer.Value.Send(producerDatas);
-            });
+
+            return Task.Factory.StartNew(() => _producer.Value.Send(producerDatas));
         }
 
-
-        public Task Push<T>(string topic, IEnumerable<T> elements, Func<T, byte[]> serializer)
+        private string GetTopic<T>(T element)
         {
-            var producerDatas = elements
-                .Select(item => {
-                    var message = new Message(serializer(item));
-                    return new ProducerData<string, Message>(topic, message);
-                }).ToArray();
-
-            return this.PushToKafka(producerDatas);
+            return _topicProvider.GetTopic(element);
         }
-        public Task Push<T>(IEnumerable<T> elements, Func<T, string> topicGetter, Func<T, byte[]> serializer)
+
+        //public Task Push<T>(string topic, IEnumerable<T> elements, Func<T, byte[]> serializer)
+        //{
+        //    var producerDatas = elements
+        //        .Select(item => {
+        //            var message = new Message(serializer(item));
+        //            return new ProducerData<string, Message>(topic, message);
+        //        }).ToArray();
+
+        //    return this.PushToKafka(producerDatas);
+        //}
+        public Task Push<T>(IEnumerable<T> elements, Func<T, byte[]> serializer)
         {
-            var producerDatas = elements.GroupBy(topicGetter)
+            var producerDatas = elements.GroupBy(GetTopic)
                 .Select(group => {
                     var messages = group.Select(item => new Message(serializer(item))).ToArray();
                     return new ProducerData<string, Message>(group.Key, messages);
@@ -144,38 +148,40 @@ namespace ThinkNet.Runtime.Kafka
         }
 
 
-        public void CommitOffset(TopicOffsetPosition topicOffsetPosition)
+        public void CommitOffset(string topic, OffsetPosition offsetPosition)
         {
-            _kafkaConsumer.Value.CommitOffset(topicOffsetPosition.Topic,
-                topicOffsetPosition.PartitionId,
-                topicOffsetPosition.Offset, 
+            _consumers[topic].CommitOffset(topic,
+                offsetPosition.PartitionId,
+                offsetPosition.Offset, 
                 false);
         }
 
         
         public void Consume<T>(CancellationToken cancellationToken,
-            string topic,            
-            Type type,
+            string topic, 
             Func<byte[], Type, T> deserializer, 
-            Action<T, TopicOffsetPosition> consumer)
+            Action<T, string, OffsetPosition> consumer)
         {
             var topicDic = new Dictionary<string, int>() {
                 { topic, 1 }
             };
-            var streams = _kafkaConsumer.Value.CreateMessageStreams(topicDic, new DefaultDecoder());
+            var streams = _consumers.GetOrAdd(topic, CreateConsumer).CreateMessageStreams(topicDic, new DefaultDecoder());
 
             var KafkaMessageStream = streams[topic][0];
+            var type = _topicProvider.GetType(topic);
 
             foreach(Message message in KafkaMessageStream.GetCancellable(cancellationToken)) {
-                var offset = new TopicOffsetPosition(topic, message.PartitionId.Value, message.Offset);
                 try {
                     var result = deserializer(message.Payload, type);
-                    consumer(result, new TopicOffsetPosition(topic, message.PartitionId.Value, message.Offset));
+                    consumer(result, topic, new OffsetPosition(message.PartitionId.Value, message.Offset));
                 }
                 catch(OperationCanceledException) {
                     break;
                 }
                 catch(ThreadAbortException) {
+                    if(LogManager.Default.IsErrorEnabled) {
+                        LogManager.Default.Error("Kafka Consume ");
+                    }
                     break;
                 }
                 catch(Exception ex) {

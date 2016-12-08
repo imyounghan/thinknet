@@ -53,6 +53,7 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="log4net.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ThinkNet.Infrastructure.Unity\ThinkNet.Infrastructure.Unity.csproj">

@@ -13,9 +13,10 @@ namespace ThinkNet.Runtime
             this.EnsureTopicRetrycount = 5;
             this.EnsureTopicRetryInterval = 1000;
 
-            this.KafkaUris = ConfigurationManager.AppSettings["thinkcfg.kafka_uri"].IfEmpty(string.Empty).Split(',').Select(str => new Uri(str)).ToArray();
+           // this.KafkaUris = ConfigurationManager.AppSettings["thinkcfg.kafka_uri"].IfEmpty(string.Empty).Split(',').Select(str => new Uri(str)).ToArray();
             this.SubscriptionTopics = ConfigurationManager.AppSettings["thinkcfg.kafka_topic"].IfEmpty(string.Empty).Split(',');
             this.ZookeeperAddress = ConfigurationManager.AppSettings["thinkcfg.zookeeper_address"];
+            this.BufferCapacity = ConfigurationManager.AppSettings["thinkcfg.kafka_buffer"].ChangeIfError(2000);
         }
 
 
@@ -39,5 +40,11 @@ namespace ThinkNet.Runtime
         /// 默认1000ms
         /// </summary>
         public int EnsureTopicRetryInterval { get; set; }
+
+        /// <summary>
+        /// 获取或设置从mq拉取消息的缓冲容量
+        /// 默认为2000
+        /// </summary>
+        public int BufferCapacity { get; set; }
     }
 }

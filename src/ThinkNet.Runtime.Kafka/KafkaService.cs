@@ -4,36 +4,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
-using ThinkNet.Runtime.Kafka;
 using ThinkNet.Runtime.Routing;
 
-namespace ThinkNet.Runtime
+namespace ThinkNet.Runtime.Kafka
 {
     public class KafkaService : EnvelopeHub, IProcessor
     {
-       // public const string OffsetPositionFile = "kafka.consumer.offset";
+        public const string OffsetPositionFile = "kafka.consumer.offset";
 
         private readonly ITextSerializer _serializer;
-        private readonly ITopicProvider _topicProvider;
 
         private readonly object lockObject;
         private readonly KafkaClient kafka;
-        private readonly ConcurrentDictionary<string, TopicOffsetPosition> offsetPositions;
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> topicSemaphores;
-        private CancellationTokenSource cancellationSource;
+        private readonly Dictionary<string, ConcurrentDictionary<string, OffsetPosition>> offsetPositions;
+        private readonly Dictionary<string, ConcurrentDictionary<int, long>> lastedOffsetPositions;
+        private readonly Dictionary<string, SemaphoreSlim> topicSemaphores;
+
         private bool started;
+        private CancellationTokenSource cancellationSource;
 
         public KafkaService(ITextSerializer serializer, ITopicProvider topicProvider, IRoutingKeyProvider routingKeyProvider)
             : base(routingKeyProvider)
         {
             this._serializer = serializer;
-            this._topicProvider = topicProvider;
             this.lockObject = new object();
-            this.kafka = new KafkaClient(KafkaSettings.Current.ZookeeperAddress);
-            this.offsetPositions = new ConcurrentDictionary<string, TopicOffsetPosition>();
-            this.topicSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+            this.kafka = new KafkaClient(KafkaSettings.Current.ZookeeperAddress, topicProvider);
+            this.offsetPositions = new Dictionary<string, ConcurrentDictionary<string, OffsetPosition>>();
+            this.lastedOffsetPositions = new Dictionary<string, ConcurrentDictionary<int, long>>();
+            this.topicSemaphores = new Dictionary<string, SemaphoreSlim>();
+
+            foreach(var topic in KafkaSettings.Current.SubscriptionTopics) {
+                offsetPositions[topic] = new ConcurrentDictionary<string, OffsetPosition>();
+                lastedOffsetPositions[topic] = new ConcurrentDictionary<int, long>();
+                topicSemaphores[topic] = new SemaphoreSlim(KafkaSettings.Current.BufferCapacity, KafkaSettings.Current.BufferCapacity);
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -52,9 +59,9 @@ namespace ThinkNet.Runtime
             };
         }
 
-        private byte[] Serialize(Envelope envelope)
+        private byte[] Serialize(object element)
         {
-            var eventCollection = envelope.Body as EventCollection;
+            var eventCollection = element as EventCollection;
             if(eventCollection != null) {
                 var events = eventCollection.Select(Transform).ToArray();
                 var stream = new EventStream() {
@@ -70,77 +77,42 @@ namespace ThinkNet.Runtime
                 return _serializer.SerializeToBinary(stream);
             }
 
-            var commandResult = envelope.Body as CommandResult;
+            var commandResult = element as CommandResult;
             if(commandResult != null) {
                 return _serializer.SerializeToBinary(commandResult);
             }
 
 
-            return _serializer.SerializeToBinary(Transform(envelope.Body));
-            //var kind = envelope.GetMetadata(StandardMetadata.Kind);
-            //switch (kind) {
-            //    case StandardMetadata.MessageKind:
-            //        return _serializer.SerializeToBinary(envelope.Body, true);
-            //    //case StandardMetadata.RepliedCommandKind:
-            //    //    return _serializer.SerializeToBinary(envelope.Body);
-            //    default:
-            //        return _serializer.SerializeToBinary(Transform(envelope.Body));
-            //}
+            return _serializer.SerializeToBinary(Transform(element));
         }
 
-        private string GetTopic(Envelope envelope)
-        {
-            return _topicProvider.GetTopic(envelope.Body);
-        }
 
         public override Task SendAsync(Envelope envelope)
         {
-            //return this.SendAsync(new[] { envelope });
-            return kafka.Push(GetTopic(envelope), new[] { envelope }, this.Serialize);
+            return this.SendAsync(new[] { envelope });
         }
 
         public override Task SendAsync(IEnumerable<Envelope> envelopes)
         {
-            return kafka.Push(envelopes, GetTopic, this.Serialize);
+            return kafka.Push(envelopes.Select(item => item.Body), this.Serialize);
         }
-
-        //private void PullThenForward(object state)
-        //{
-        //    string topic = state as string;
-
-        //    while(!cancellationSource.IsCancellationRequested) {
-        //        var type = _topicProvider.GetType(topic);
-        //        kafka.Consume(cancellationSource.Token, topic, type, this.Deserialize, this.Distribute);
-        //    }
-        //}
-
+        
         private void PullToLocal(object state)
         {
             string topic = state as string;
 
             while(!cancellationSource.IsCancellationRequested) {
-                var type = _topicProvider.GetType(topic);
-                kafka.Consume(cancellationSource.Token, topic, type, this.Deserialize, this.Distribute);
+                kafka.Consume(cancellationSource.Token, topic, this.Deserialize, this.Distribute);
             }
         }
-
-        private SemaphoreSlim CreateSemaphore()
+        
+        private void Distribute(Envelope envelope, string topic, OffsetPosition offset)
         {
-            return new SemaphoreSlim(ConfigurationSetting.Current.BufferCapacity, ConfigurationSetting.Current.BufferCapacity);
-        }
-
-        private void Distribute(Envelope envelope, TopicOffsetPosition offset)
-        {
-            var id = envelope.GetMetadata(StandardMetadata.SourceId);
-
-            var semaphore = topicSemaphores.GetOrAdd(offset.Topic, CreateSemaphore);
-            semaphore.Wait(cancellationSource.Token);
-
-            offsetPositions.TryAdd(id, offset);
-
-            //foreach(var item in pendingQueue.GetConsumingEnumerable(cancellationSource.Token)) {
-            //    base.Route(item);
-            //}
+            topicSemaphores[topic].Wait(cancellationSource.Token);
+            offsetPositions[topic].TryAdd(envelope.GetMetadata(StandardMetadata.SourceId), offset);
+            lastedOffsetPositions[topic][offset.PartitionId] = offset.Offset;
+            envelope.Metadata["Topic"] = topic;
+            this.Route(envelope, this.cancellationSource);
         }
         
         private object Transform(GeneralData data)
@@ -191,12 +163,13 @@ namespace ThinkNet.Runtime
 
         private void OnEnvelopeCompleted(object sender, Envelope envelope)
         {
+            var topic = envelope.GetMetadata("Topic");
             var id = envelope.GetMetadata(StandardMetadata.SourceId);
-            TopicOffsetPosition offset;
+            OffsetPosition offset;
 
-            if(!string.IsNullOrEmpty(id) && offsetPositions.TryRemove(id, out offset)) {
-                kafka.CommitOffset(offset);
-                topicSemaphores[offset.Topic].Release();
+            if(!string.IsNullOrEmpty(id) && offsetPositions[topic].TryRemove(id, out offset)) {                
+                topicSemaphores[topic].Release();
+                kafka.CommitOffset(topic, offset);
             }
         }
 
@@ -204,7 +177,7 @@ namespace ThinkNet.Runtime
         {
             Envelope.EnvelopeCompleted += OnEnvelopeCompleted;
 
-            if (this.cancellationSource == null) {
+            if(this.cancellationSource == null) {
                 this.cancellationSource = new CancellationTokenSource();
 
                 foreach (var topic in KafkaSettings.Current.SubscriptionTopics) {
@@ -219,12 +192,10 @@ namespace ThinkNet.Runtime
 
         private void StoppingKafka()
         {
-            //this.timer.Dispose();
-            //this.timer = null;
-
             Envelope.EnvelopeCompleted -= OnEnvelopeCompleted;
-            if (this.cancellationSource != null) {
-                using (this.cancellationSource) {
+
+            if(this.cancellationSource != null) {
+                using(this.cancellationSource) {
                     this.cancellationSource.Cancel();
                     this.cancellationSource = null;
                 }
@@ -240,6 +211,8 @@ namespace ThinkNet.Runtime
                 if (!this.started) {
                     this.StartingKafka();
                     this.started = true;
+
+                    Console.WriteLine("Kafka service is started.");
                 }
             }
         }
@@ -250,10 +223,59 @@ namespace ThinkNet.Runtime
                 if (this.started) {
                     this.StoppingKafka();
                     this.started = false;
+
+                    Console.WriteLine("Kafka service is stopped.");
                 }
             }
         }
 
         #endregion
+
+        private void RecordConsumerOffset()
+        {
+            if(offsetPositions.All(p => p.Value.Count == 0) && lastedOffsetPositions.All(p => p.Value.Count == 0)) {
+                return;
+            }
+
+            var xml = new XmlDocument();
+            xml.AppendChild(xml.CreateXmlDeclaration("1.0", "utf-8", null));
+            var root = xml.AppendChild(xml.CreateElement("root"));
+
+
+            foreach(var topic in KafkaSettings.Current.SubscriptionTopics) {
+                var history = offsetPositions[topic].Values;
+                OffsetPosition[] array = new OffsetPosition[0];
+                if(history.Count == 0) {
+                    var last = lastedOffsetPositions[topic];
+                    if(last.Count > 0) {
+                        array = last.Select(p => new OffsetPosition(p.Key, p.Value + 1)).ToArray();
+                    }
+                }
+                else {
+                    array = GetLastOffsetByPartition(history);
+                }
+
+                if(array.Length == 0)
+                    continue;
+
+                var el = xml.CreateElement("topic");
+                el.SetAttribute("name", topic);
+                foreach(var item in array) {
+                    var node = xml.CreateElement("offset");
+                    node.SetAttribute("partitionId", item.PartitionId.ToString());
+                    node.InnerText = item.Offset.ToString();
+                    el.AppendChild(node);
+                }
+                root.AppendChild(el);
+            }
+
+            xml.Save(OffsetPositionFile);
+        }
+
+        private OffsetPosition[] GetLastOffsetByPartition(ICollection<OffsetPosition> offsetPositionCollection)
+        {
+            return offsetPositionCollection.GroupBy(p => p.PartitionId, p => p.Offset)
+                .Select(p => new OffsetPosition(p.Key, p.Min() + 1)).ToArray();
+        }
     }
 }

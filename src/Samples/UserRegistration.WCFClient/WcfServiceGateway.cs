@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.Composition.Hosting;
+﻿using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Registration;
-using ThinkNet.Contracts;
-using System.ComponentModel.Composition;
 using System.Reflection;
+using ThinkNet.Contracts;
 
 namespace UserRegistration
 {

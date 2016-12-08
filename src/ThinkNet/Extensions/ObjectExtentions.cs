@@ -478,6 +478,11 @@ namespace ThinkNet
         public static bool TryChange<T>(this string str, out T result)
             where T : struct
         {
+            if(string.IsNullOrEmpty(str)) {
+                result = default(T);
+                return false;
+            }
+
             try {
                 result = str.Change<T>();
                 return true;

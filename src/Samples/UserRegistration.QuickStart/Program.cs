@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using ThinkNet;
 using ThinkNet.Contracts;
@@ -13,7 +12,6 @@ namespace UserRegistration.QuickStart
         static void Main(string[] args)
         {
             Bootstrapper.Current.DoneWithUnity();
-
 
 
             Console.WriteLine("输入任意键演示...");

@@ -64,7 +64,7 @@
     <Compile Include="DefaultTopicProvider.cs" />
     <Compile Include="ITopicProvider.cs" />
     <Compile Include="KafkaClient.cs" />
-    <Compile Include="TopicOffsetPosition.cs" />
+    <Compile Include="OffsetPosition.cs" />
     <Compile Include="GeneralData.cs" />
     <Compile Include="KafkaService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

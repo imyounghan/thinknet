@@ -15,10 +15,9 @@ namespace ThinkNet
 
         private ConfigurationSetting()
         {
-            this.HandleRetrytimes = 5;
-            this.HandleRetryInterval = 1000;
-            this.QueueCount = ConfigurationManager.AppSettings["thinkcfg.queue_count"].ChangeIfError(4);
-            this.BufferCapacity = ConfigurationManager.AppSettings["thinkcfg.server_capacity"].ChangeIfError(2000);
+            this.HandleRetrytimes = ConfigurationManager.AppSettings["thinkcfg.retry_count"].ChangeIfError(5);
+            this.HandleRetryInterval = ConfigurationManager.AppSettings["thinkcfg.retry_interval"].ChangeIfError(1000);
+            this.QueueCount = ConfigurationManager.AppSettings["thinkcfg.queue_count"].ChangeIfError(4);            
             this.MaxRequests = ConfigurationManager.AppSettings["thinkcfg.server_maxrequests"].ChangeIfError(2000);
             this.OperationTimeout = ConfigurationManager.AppSettings["thinkcfg.server_timeout"].ChangeIfError(120);
             this.EnableCommandFilter = ConfigurationManager.AppSettings["thinkcfg.server_enablefilter"].ChangeIfError(false);
@@ -40,16 +39,11 @@ namespace ThinkNet
         /// 内部消息的队列数量
         /// 默认为4
         /// </summary>
-        public int QueueCount { get; set; }
-
-        /// <summary>
-        /// 获取或设置从mq拉取消息的缓冲容量
-        /// 默认为1000
-        /// </summary>
-        public int BufferCapacity { get; set; }
+        public int QueueCount { get; set; }        
 
         /// <summary>
         /// 最大处理请求数
+        /// 默认为2000
         /// </summary>
         public int MaxRequests { get; set; }
 
@@ -61,20 +55,8 @@ namespace ThinkNet
 
         /// <summary>
         /// 是否启用命令过滤器
+        /// 默认为false，不启用
         /// </summary>
         public bool EnableCommandFilter { get; set; }
-
-        ///// <summary>
-        ///// 是否启用命令处理器
-        ///// </summary>
-        //public bool EnableCommandProcessor { get; set; }
-        ///// <summary>
-        ///// 是否启用同步处理器
-        ///// </summary>
-        //public bool EnableSynchronousProcessor { get; set; }
-        ///// <summary>
-        ///// 是否启用事件处理器
-        ///// </summary>
-        //public bool EnableEventProcessor { get; set; }
     }
 }
