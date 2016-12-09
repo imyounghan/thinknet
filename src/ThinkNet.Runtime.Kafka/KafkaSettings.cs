@@ -29,6 +29,11 @@ namespace ThinkNet.Runtime
         /// </summary>
         public string[] SubscriptionTopics { get; set; }
 
+        ///// <summary>
+        ///// 初始化的Topic
+        ///// </summary>
+        //public string[] InitializationTopics { get; set; }
+
         /// <summary>
         /// 确认Topic遇到错误的重试次数
         /// 默认5次

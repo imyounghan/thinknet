@@ -317,7 +317,7 @@ namespace ThinkNet
                     }
                 }
 
-                Trace.WriteLine(log.ToString(), "ThinkLog");
+                Trace.WriteLine(log.ToString(), "ThinkNet");
             }
 
             public void Debug(object message, Exception exception = null)
@@ -660,10 +660,10 @@ namespace ThinkNet
             name.NotNullOrWhiteSpace("name");
 
             if (loggerFactory != null || existLog4Net) {
-                return loggers.GetOrAdd(name, _ => CreateLogger(name, null));
+                return loggers.GetOrAdd(name, () => CreateLogger(name, null));
             }
 
-            if (name.Equals("ThinkLog", StringComparison.CurrentCulture))
+            if(name.Equals("ThinkNet", StringComparison.CurrentCulture))
                 return DefaultLogger.Instance;
 
             return EmptyLogger.Instance;
@@ -676,7 +676,7 @@ namespace ThinkNet
             type.NotNull("type");
 
             if (loggerFactory != null || existLog4Net) {
-                return loggers.GetOrAdd(type.FullName, _ => CreateLogger(null, type));
+                return loggers.GetOrAdd(type.FullName, () => CreateLogger(null, type));
             }
 
             return EmptyLogger.Instance;

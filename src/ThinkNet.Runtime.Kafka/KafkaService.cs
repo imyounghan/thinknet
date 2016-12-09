@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -11,26 +12,22 @@ using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime.Kafka
 {
-    public class KafkaService : EnvelopeHub, IProcessor
+    public class KafkaService : EnvelopeHub, IInitializer
     {
         public const string OffsetPositionFile = "kafka.consumer.offset";
 
         private readonly ITextSerializer _serializer;
-
-        private readonly object lockObject;
         private readonly KafkaClient kafka;
         private readonly Dictionary<string, ConcurrentDictionary<string, OffsetPosition>> offsetPositions;
         private readonly Dictionary<string, ConcurrentDictionary<int, long>> lastedOffsetPositions;
         private readonly Dictionary<string, SemaphoreSlim> topicSemaphores;
 
-        private bool started;
         private CancellationTokenSource cancellationSource;
 
         public KafkaService(ITextSerializer serializer, ITopicProvider topicProvider, IRoutingKeyProvider routingKeyProvider)
             : base(routingKeyProvider)
         {
             this._serializer = serializer;
-            this.lockObject = new object();
             this.kafka = new KafkaClient(KafkaSettings.Current.ZookeeperAddress, topicProvider);
             this.offsetPositions = new Dictionary<string, ConcurrentDictionary<string, OffsetPosition>>();
             this.lastedOffsetPositions = new Dictionary<string, ConcurrentDictionary<int, long>>();
@@ -45,10 +42,13 @@ namespace ThinkNet.Runtime.Kafka
 
         protected override void Dispose(bool disposing)
         {
-            ThrowIfDisposed();
+            if(!disposing)
+                return;
 
-            if (disposing)
-                kafka.Dispose();
+            this.StoppingKafka(); 
+            kafka.Dispose();
+
+            Console.WriteLine("Kafka service is stopped.");
         }
 
         private GeneralData Transform(object data)
@@ -89,6 +89,14 @@ namespace ThinkNet.Runtime.Kafka
 
         public override Task SendAsync(Envelope envelope)
         {
+            if(envelope.GetMetadata(StandardMetadata.Kind) == StandardMetadata.QueryKind) {
+                if(LogManager.Default.IsDebugEnabled) {
+                    LogManager.Default.DebugFormat("Send an envelope to local queue, data({0}).", envelope.Body);
+                }
+
+                return Task.Factory.StartNew(() => this.Route(envelope));
+            }
+
             return this.SendAsync(new[] { envelope });
         }
 
@@ -112,7 +120,11 @@ namespace ThinkNet.Runtime.Kafka
             offsetPositions[topic].TryAdd(envelope.GetMetadata(StandardMetadata.SourceId), offset);
             lastedOffsetPositions[topic][offset.PartitionId] = offset.Offset;
             envelope.Metadata["Topic"] = topic;
-            this.Route(envelope, this.cancellationSource);
+
+            if(LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.DebugFormat("Distribute an envelope to local queue. topic:{0}, offset:{1}, partition:{2}, data:({3}).", topic, offset.Offset, offset.PartitionId, envelope.Body);
+            }
+            this.Route(envelope);
         }
         
         private object Transform(GeneralData data)
@@ -122,6 +134,7 @@ namespace ThinkNet.Runtime.Kafka
         private Envelope Deserialize(byte[] serialized, Type type)
         {
             var envelope = new Envelope();
+            envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.MessageKind;
             if(type == typeof(EventStream)) {
                 var stream = _serializer.DeserializeFromBinary<EventStream>(serialized);
                 var events = stream.Events.Select(this.Transform).Cast<Event>();
@@ -130,14 +143,11 @@ namespace ThinkNet.Runtime.Kafka
                     SourceId = new SourceKey(stream.SourceId, stream.SourceNamespace, stream.SourceTypeName, stream.SourceAssemblyName),
                     Version = stream.Version
                 };
-                //envelope.Metadata[StandardMetadata.IdentifierId] = ObjectId.GenerateNewStringId();
-                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.MessageKind;
                 envelope.Metadata[StandardMetadata.SourceId] = stream.CorrelationId;
             }
             else if(type == typeof(CommandResult)) {
                 var commandResult = _serializer.DeserializeFromBinary<CommandResult>(serialized);
-                envelope.Body = commandResult;
-                envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.MessageKind;
+                envelope.Body = commandResult;                
                 envelope.Metadata[StandardMetadata.SourceId] = commandResult.CommandId;
             }
             else {
@@ -167,7 +177,8 @@ namespace ThinkNet.Runtime.Kafka
             var id = envelope.GetMetadata(StandardMetadata.SourceId);
             OffsetPosition offset;
 
-            if(!string.IsNullOrEmpty(id) && offsetPositions[topic].TryRemove(id, out offset)) {                
+            if(envelope.GetMetadata(StandardMetadata.Kind) != StandardMetadata.QueryKind && 
+                !string.IsNullOrEmpty(id) && offsetPositions[topic].TryRemove(id, out offset)) {                
                 topicSemaphores[topic].Release();
                 kafka.CommitOffset(topic, offset);
             }
@@ -187,7 +198,9 @@ namespace ThinkNet.Runtime.Kafka
                         TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness,
                         TaskScheduler.Current);
                 }
-            }            
+            }
+
+            Console.WriteLine("Kafka service is started.");
         }
 
         private void StoppingKafka()
@@ -201,35 +214,6 @@ namespace ThinkNet.Runtime.Kafka
                 }
             }
         }
-
-        #region IProcessor 成员
-
-        void IProcessor.Start()
-        {
-            ThrowIfDisposed();
-            lock (this.lockObject) {
-                if (!this.started) {
-                    this.StartingKafka();
-                    this.started = true;
-
-                    Console.WriteLine("Kafka service is started.");
-                }
-            }
-        }
-
-        void IProcessor.Stop()
-        {
-            lock (this.lockObject) {
-                if (this.started) {
-                    this.StoppingKafka();
-                    this.started = false;
-
-                    Console.WriteLine("Kafka service is stopped.");
-                }
-            }
-        }
-
-        #endregion
 
         private void RecordConsumerOffset()
         {
@@ -277,5 +261,14 @@ namespace ThinkNet.Runtime.Kafka
             return offsetPositionCollection.GroupBy(p => p.PartitionId, p => p.Offset)
                 .Select(p => new OffsetPosition(p.Key, p.Min() + 1)).ToArray();
         }
+
+        #region IInitializer 成员
+
+        public void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
+        {
+            this.StartingKafka();
+        }
+
+        #endregion
     }
 }

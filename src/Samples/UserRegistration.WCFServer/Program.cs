@@ -21,7 +21,7 @@ namespace UserRegistration.Application
 
         static void Main(string[] args)
         {
-            Bootstrapper.Current.DoneWithUnity();
+            Bootstrapper.Current.UsingKafka().DoneWithUnity();
 
             var hosts = new ServiceHost[] {
                 CreateServiceHost(typeof(CommandService)),

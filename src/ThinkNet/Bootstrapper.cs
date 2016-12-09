@@ -25,6 +25,26 @@ namespace ThinkNet
     /// </summary>
     public class Bootstrapper
     {
+        //class ComponentComparer : IEqualityComparer<Component>
+        //{
+        //    #region IEqualityComparer<Component> 成员
+
+        //    public bool Equals(Component x, Component y)
+        //    {
+        //        if(ReferenceEquals(x, y))
+        //            return true;
+
+        //        //if()
+        //    }
+
+        //    public int GetHashCode(Component obj)
+        //    {
+        //        throw new NotImplementedException();
+        //    }
+
+        //    #endregion
+        //}
+
         class Component
         {
             /// <summary>

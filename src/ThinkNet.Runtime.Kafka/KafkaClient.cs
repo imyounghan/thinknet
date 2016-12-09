@@ -24,12 +24,16 @@ namespace ThinkNet.Runtime.Kafka
         private readonly ITopicProvider _topicProvider;
 
         public KafkaClient(string zkConnectionString, ITopicProvider topicProvider)
+            : this(zkConnectionString)
         {
             this._topicProvider = topicProvider;
-            this._zooKeeperConfiguration = new ZooKeeperConfiguration(zkConnectionString, 3000, 4000, 8000);
-
             this._producer = new Lazy<Producer>(CreateProducer, LazyThreadSafetyMode.ExecutionAndPublication);
             this._consumers = new ConcurrentDictionary<string, ZookeeperConsumerConnector>();
+        }
+
+        internal KafkaClient(string zkConnectionString)
+        {            
+            this._zooKeeperConfiguration = new ZooKeeperConfiguration(zkConnectionString, 3000, 4000, 8000);
         }
 
         private Producer CreateProducer()
@@ -43,17 +47,17 @@ namespace ThinkNet.Runtime.Kafka
             return new Producer(producerConfiguration);
         }
 
-        private ZookeeperConsumerConnector CreateConsumer()
+        private ZookeeperConsumerConnector CreateConsumer(string consumerId)
         {
             var consumerConfiguration = new ConsumerConfiguration {
                 //BackOffIncrement = 30,
                 AutoCommit = false,
                 GroupId = "thinknet",
-               // ConsumerId = consumerId,
+                ConsumerId = consumerId.AfterContact("_Consumer"),
                 BufferSize = ConsumerConfiguration.DefaultBufferSize,
                 MaxFetchBufferLength = ConsumerConfiguration.DefaultMaxFetchBufferLength,
                 FetchSize = ConsumerConfiguration.DefaultFetchSize,
-                AutoOffsetReset = OffsetRequest.LargestTime,
+                AutoOffsetReset = OffsetRequest.SmallestTime,
                 ZooKeeper = _zooKeeperConfiguration,
                 ShutdownTimeout = 100
             };
@@ -66,10 +70,11 @@ namespace ThinkNet.Runtime.Kafka
         {
             ThrowIfDisposed();
             if(disposing) {
-                if(_producer.IsValueCreated)
+                if(_producer != null && _producer.IsValueCreated)
                     _producer.Value.Dispose();
 
-                _consumers.Values.ForEach(item => item.Dispose());
+                if(_consumers != null)
+                    _consumers.Values.ForEach(item => item.Dispose());
             }
         }
 
@@ -92,7 +97,9 @@ namespace ThinkNet.Runtime.Kafka
                     var allPartitions = kafkaManager.GetTopicPartitionsFromZK(topic);
                     return allPartitions.Count > 0;
                 }
-                catch(Exception) {
+                catch(Exception ex) {
+                    if(LogManager.Default.IsErrorEnabled)
+                        LogManager.Default.Error(ex, "Get topic {0} failed", topic);
                     return false;
                 }
             }
@@ -100,13 +107,15 @@ namespace ThinkNet.Runtime.Kafka
 
         void CreateTopic(string topic)
         {
-            try {
-                var data = new ProducerData<string, Message>(topic, string.Empty, new Message(new byte[0]));
-                _producer.Value.Send(data);
-            }
-            catch(Exception ex) {
-                if(LogManager.Default.IsErrorEnabled)
-                    LogManager.Default.Error(ex, "Create topic {0} failed", topic);
+            using(var producer = CreateProducer()) {
+                try {
+                    var data = new ProducerData<string, Message>(topic, string.Empty, new Message(new byte[0]));
+                    producer.Send(data);
+                }
+                catch(Exception ex) {
+                    if(LogManager.Default.IsErrorEnabled)
+                        LogManager.Default.Error(ex, "Create topic {0} failed", topic);
+                }
             }
         }
 
@@ -114,7 +123,7 @@ namespace ThinkNet.Runtime.Kafka
         {
             if(LogManager.Default.IsDebugEnabled) {
                 var topics = producerDatas.Select(item => item.Topic).ToArray();
-                LogManager.Default.DebugFormat("ready to send a message to kafka in topic('{0}').", 
+                LogManager.Default.DebugFormat("Ready to send a message to kafka in topic('{0}').", 
                     string.Join("','", topics));
             }
 
@@ -162,16 +171,19 @@ namespace ThinkNet.Runtime.Kafka
             Func<byte[], Type, T> deserializer, 
             Action<T, string, OffsetPosition> consumer)
         {
-            var topicDic = new Dictionary<string, int>() {
+            var topicMap = new Dictionary<string, int>() {
                 { topic, 1 }
             };
-            var streams = _consumers.GetOrAdd(topic, CreateConsumer).CreateMessageStreams(topicDic, new DefaultDecoder());
+            var streams = _consumers.GetOrAdd(topic, CreateConsumer).CreateMessageStreams(topicMap, new DefaultDecoder());
 
             var KafkaMessageStream = streams[topic][0];
             var type = _topicProvider.GetType(topic);
 
             foreach(Message message in KafkaMessageStream.GetCancellable(cancellationToken)) {
                 try {
+                    if(LogManager.Default.IsDebugEnabled) {
+                        LogManager.Default.DebugFormat("Pull a message from kafka in topic('{0}').", topic);
+                    }
                     var result = deserializer(message.Payload, type);
                     consumer(result, topic, new OffsetPosition(message.PartitionId.Value, message.Offset));
                 }

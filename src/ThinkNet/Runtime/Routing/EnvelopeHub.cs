@@ -32,7 +32,7 @@ namespace ThinkNet.Runtime.Routing
             this.brokers = new BlockingCollection<Envelope>[queueCount];
 
             for(int i = 0; i < queueCount; i++) {
-                brokers[i] = new BlockingCollection<Envelope>();
+                this.brokers[i] = new BlockingCollection<Envelope>();
             }
         }
 
@@ -44,16 +44,18 @@ namespace ThinkNet.Runtime.Routing
 
         private BlockingCollection<Envelope> GetBroker(string routingKey)
         {
-            if(brokers.Length == 1) {
-                return brokers[0];
+            var processorCount = this.brokers.Length;
+
+            if(processorCount == 1) {
+                return this.brokers[0];
             }
 
             if(string.IsNullOrWhiteSpace(routingKey)) {
-                return brokers.OrderBy(broker => broker.Count).First();
+                return this.brokers.OrderBy(broker => broker.Count).First();
             }
 
-            var index = Math.Abs(routingKey.GetHashCode() % brokers.Length);
-            return brokers[index];
+            var index = Math.Abs(routingKey.GetHashCode() % processorCount);
+            return this.brokers[index];
         }
 
         /// <summary>
@@ -68,9 +70,9 @@ namespace ThinkNet.Runtime.Routing
         /// <summary>
         /// 路由信件
         /// </summary>
-        protected void Route(Envelope envelope, CancellationTokenSource cancellationSource)
+        protected void Route(Envelope envelope)
         {
-            this.GetBroker(this.GetKey(envelope)).Add(envelope, cancellationSource.Token);
+            this.GetBroker(this.GetKey(envelope)).Add(envelope, this.cancellationSource.Token);
         }
 
         /// <summary>
@@ -103,7 +105,7 @@ namespace ThinkNet.Runtime.Routing
             if(this.cancellationSource == null) {
                 this.cancellationSource = new CancellationTokenSource();
 
-                foreach(var broker in brokers) {
+                foreach(var broker in this.brokers) {
                     Task.Factory.StartNew(this.ReceiveMessages,
                         broker,
                         this.cancellationSource.Token,
@@ -132,7 +134,7 @@ namespace ThinkNet.Runtime.Routing
                 LogManager.Default.DebugFormat("Send an envelope to local queue, data({0}).", envelope.Body);
             }
 
-            return Task.Factory.StartNew(() => this.Route(envelope, this.cancellationSource));
+            return Task.Factory.StartNew(() => this.Route(envelope));
         }
         /// <summary>
         /// Sends a batch of envelopes.
@@ -145,8 +147,7 @@ namespace ThinkNet.Runtime.Routing
             }
 
             return Task.Factory.StartNew(delegate {
-                foreach(var envelope in envelopes)
-                    this.Route(envelope, this.cancellationSource);
+                envelopes.ForEach(this.Route);
             });
         }
     }
