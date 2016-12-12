@@ -12,6 +12,9 @@ namespace ThinkNet.Messaging
     public sealed class EventCollection : IEnumerable<Event>, ICollection, IMessage, IUniquelyIdentifiable
     {
         private readonly List<Event> events;
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
         public EventCollection(IEnumerable<Event> events)
         {
             this.events = new List<Event>(events);
@@ -69,6 +72,9 @@ namespace ThinkNet.Messaging
             return this.SourceId.Id;
         }
 
+        /// <summary>
+        /// 返回一个循环访问 <see cref="EventCollection"/> 的枚举器。
+        /// </summary>
         public IEnumerator<Event> GetEnumerator()
         {
             return events.GetEnumerator();
@@ -80,6 +86,9 @@ namespace ThinkNet.Messaging
                 yield return @event;
         }
 
+        /// <summary>
+        /// 从特定的 <see cref="Array"/> 索引处开始，将 <see cref="EventCollection"/> 的元素复制到一个 <see cref="Array"/> 中。
+        /// </summary>
         public void CopyTo(Array array, int index)
         {
             int destIndex = 0;
@@ -95,7 +104,9 @@ namespace ThinkNet.Messaging
                 return this.CorrelationId;
             }
         }
-
+        /// <summary>
+        /// 获取事件数量
+        /// </summary>
         public int Count
         {
             get
@@ -104,6 +115,9 @@ namespace ThinkNet.Messaging
             }
         }
 
+        /// <summary>
+        /// 同步对象
+        /// </summary>
         public object SyncRoot
         {
             get
@@ -112,6 +126,9 @@ namespace ThinkNet.Messaging
             }
         }
 
+        /// <summary>
+        /// 非线程安全
+        /// </summary>
         public bool IsSynchronized
         {
             get

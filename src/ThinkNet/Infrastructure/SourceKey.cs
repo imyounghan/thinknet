@@ -220,16 +220,14 @@ namespace ThinkNet.Infrastructure
         #endregion
 
         /// <summary>
-        /// 将 <see cref="DataKey"/> 的字符串表示形式转换为它的等效的 <see cref="DataKey"/>。
+        /// 将 <see cref="SourceKey"/> 的字符串表示形式转换为它的等效的 <see cref="SourceKey"/>。
         /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
         public static SourceKey Parse(string input)
         {
             return new SourceKey(input);
         }
         /// <summary>
-        /// 将 <see cref="DataKey"/> 的字符串表示形式转换为它的等效的 <see cref="DataKey"/>。一个指示转换是否成功的返回值。
+        /// 将 <see cref="SourceKey"/> 的字符串表示形式转换为它的等效的 <see cref="SourceKey"/>。一个指示转换是否成功的返回值。
         /// </summary>
         public static bool TryParse(string input, out SourceKey result)
         {

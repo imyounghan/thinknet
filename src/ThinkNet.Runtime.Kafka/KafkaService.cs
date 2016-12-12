@@ -89,7 +89,7 @@ namespace ThinkNet.Runtime.Kafka
 
         public override Task SendAsync(Envelope envelope)
         {
-            if(envelope.GetMetadata(StandardMetadata.Kind) == StandardMetadata.QueryKind) {
+            if(envelope.GetMetadata(StandardMetadata.Kind) == StandardMetadata.QueryKind || envelope.Body is QueryParameter) {
                 if(LogManager.Default.IsDebugEnabled) {
                     LogManager.Default.DebugFormat("Send an envelope to local queue, data({0}).", envelope.Body);
                 }
