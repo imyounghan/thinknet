@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using ThinkNet.Messaging;
 using ThinkNet.Runtime.Routing;
 
@@ -55,16 +56,25 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// 发布消息
         /// </summary>
-        public void Publish(IMessage message)
+        public Task PublishAsync(IMessage message)
         {
-            _sender.SendAsync(Transform(message));
+            return this.PublishAsync(new[] { message });
         }
         /// <summary>
         /// 发布一组消息
         /// </summary>
-        public void Publish(IEnumerable<IMessage> messages)
+        public Task PublishAsync(IEnumerable<IMessage> messages)
         {
-            _sender.SendAsync(messages.Select(Transform));
+            if(LogManager.Default.IsDebugEnabled) {
+                var stringArray = messages.Select(item => item.GetType().FullName.AfterContact("@").AfterContact(item.GetKey()));
+
+                LogManager.Default.DebugFormat("Publishing a batch of messages({0}).",
+                    string.Join(",", stringArray));
+            }
+
+            return Task.Factory.StartNew(delegate {
+                messages.Select(Transform).ForEach(_sender.Send);
+            });
         }
 
         #endregion

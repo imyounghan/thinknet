@@ -23,11 +23,11 @@ namespace ThinkNet.Contracts
         /// <summary>
         /// 在规定时间内执行一个命令
         /// </summary>
-        ICommandResult Execute(ICommand command, CommandReturnType returnType);
+        ICommandResult Execute(ICommand command, CommandReturnMode returnMode);
         /// <summary>
         /// 异步执行一个命令
         /// </summary>
         //[OperationContract]
-        Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType);
+        Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnMode returnMode);
     }
 }

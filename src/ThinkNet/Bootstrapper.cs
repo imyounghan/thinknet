@@ -475,14 +475,14 @@ namespace ThinkNet
             this.SetDefault<IEventSourcedRepository, EventSourcedRepository>();
             this.SetDefault<IRepository, Repository>();
             this.SetDefault<IMessageBus, MessageBus>();
-            this.SetDefault<ICommandService, CommandService>();
-            this.SetDefault<ICommandResultNotification, CommandService>();
+            this.SetDefault<ICommandService, DefaultCommandService>();
+            this.SetDefault<ICommandResultNotification, DefaultCommandService>();
             this.SetDefault<IQueryService, QueryService>();
             this.SetDefault<IQueryResultNotification, QueryService>();
             this.SetDefault<IMessageHandlerRecordStore, MessageHandlerRecordInMemory>();
             this.SetDefault<IEnvelopeSender, EnvelopeHub>();
             this.SetDefault<IEnvelopeReceiver, EnvelopeHub>();
-            this.SetDefault<IProcessor, Processor>("core");
+            this.SetDefault<IProcessor, CentralProcessor>("core");
         }
 
         private static bool IsRepositoryInterfaceType(Type genericType)

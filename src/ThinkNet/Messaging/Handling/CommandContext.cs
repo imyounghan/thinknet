@@ -95,7 +95,7 @@ namespace ThinkNet.Messaging.Handling
         private void SendEvents()
         {
             if(pendingEvents.Count > 0)
-                _bus.Publish(pendingEvents);
+                _bus.PublishAsync(pendingEvents.Cast<IMessage>());
         }
         /// <summary>
         /// 提交修改结果。

@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ThinkNet.Contracts;
 using ThinkNet.Messaging;
-using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime
 {
     /// <summary>
-    /// <see cref="ICommandService"/> 的实现类
+    /// <see cref="ICommandService"/> 的抽象实现类
     /// </summary>
-    public class CommandService : ICommandService, ICommandResultNotification
+    public abstract class CommandService : DisposableObject, ICommandService, ICommandResultNotification
     {
         private readonly static TimeSpan WaitTime = TimeSpan.FromSeconds(ConfigurationSetting.Current.OperationTimeout);
         private readonly static ICommandResult TimeoutResult = new CommandResult(null, "Operation is timeout.", ReturnStatus.Failed);
@@ -19,20 +17,18 @@ namespace ThinkNet.Runtime
 
 
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;
-        private readonly IEnvelopeSender _sender;
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public CommandService(IEnvelopeSender sender)
+        protected CommandService()
         {
             this._commandTaskDict = new ConcurrentDictionary<string, CommandTaskCompletionSource>();
-            this._sender = sender;
         }
 
         /// <summary>
         /// 发送一个命令
         /// </summary>
-        public void Send(ICommand command)
+        public virtual void Send(ICommand command)
         {
             this.SendAsync(command).Wait();
         }
@@ -40,47 +36,16 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// 异步发送一个命令
         /// </summary>
-        public Task SendAsync(ICommand command)
-        {
-            //if(_commandTaskDict.Count > ConfigurationSetting.Current.MaxRequests)
-            //    throw new ThinkNetException("server is busy.");
-
-            //_commandTaskDict.AddOrUpdate(command.Id, 
-            //    key => new CommandTaskCompletionSource(CommandReturnType.CommandExecuted),
-            //    (key, value) => value);
-
-            var envelope = new Envelope(command);
-            envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
-            envelope.Metadata[StandardMetadata.SourceId] = command.Id;
-            var attribute = command.GetType().GetCustomAttribute<DataContractAttribute>(false);
-            if(attribute != null) {
-                bool clearAssemblyName = false;
-
-                if(!string.IsNullOrEmpty(attribute.Namespace)) {
-                    envelope.Metadata[StandardMetadata.Namespace] = attribute.Namespace;
-                    clearAssemblyName = true;
-                }
-
-                if(!string.IsNullOrEmpty(attribute.Name)) {
-                    envelope.Metadata[StandardMetadata.TypeName] = attribute.Name;
-                    clearAssemblyName = true;
-                }
-
-                if(clearAssemblyName)
-                    envelope.Metadata.Remove(StandardMetadata.AssemblyName);
-            }
-
-            return _sender.SendAsync(envelope);
-        }
+        public abstract Task SendAsync(ICommand command);
 
         /// <summary>
         /// 在规定时间内执行一个命令并返回处理结果
         /// </summary>
-        public ICommandResult Execute(ICommand command, CommandReturnType returnType)
+        public ICommandResult Execute(ICommand command, CommandReturnMode returnMode)
         {
-            var task = this.ExecuteAsync(command, returnType);
+            var task = this.ExecuteAsync(command, returnMode);
             if(!task.Wait(WaitTime)) {
-                this.Notify(command.Id, TimeoutResult, CommandReturnType.CommandExecuted);
+                this.Notify(command.Id, TimeoutResult, CommandReturnMode.CommandExecuted);
             }
             return task.Result;
         }
@@ -88,18 +53,21 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// 异步执行一个命令
         /// </summary>
-        public Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType)
+        public Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnMode returnMode)
         {
             if(_commandTaskDict.Count > ConfigurationSetting.Current.MaxRequests) {
-                //throw new ThinkNetException("server is busy.");
+                if(LogManager.Default.IsWarnEnabled) {
+                    LogManager.Default.WarnFormat("Command Service is busy, maxrequests({0}).",
+                        ConfigurationSetting.Current.MaxRequests);
+                }
                 return Task.Factory.StartNew(() => BusyResult);
-            }               
+            }
 
 
-            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, () => new CommandTaskCompletionSource(returnType));
+            var commandTaskCompletionSource = _commandTaskDict.GetOrAdd(command.Id, () => new CommandTaskCompletionSource(returnMode));
             this.SendAsync(command).ContinueWith(task => {
                 if(task.Status == TaskStatus.Faulted) {
-                    this.Notify(command.Id, new CommandResult(command.Id, task.Exception), CommandReturnType.CommandExecuted);
+                    this.Notify(command.Id, new CommandResult(command.Id, task.Exception), CommandReturnMode.CommandExecuted);
                 }
             });
 
@@ -108,21 +76,21 @@ namespace ThinkNet.Runtime
 
         class CommandTaskCompletionSource
         {
-            public CommandTaskCompletionSource(CommandReturnType commandReplyType)
+            public CommandTaskCompletionSource(CommandReturnMode returnMode)
             {
-                this.CommandReplyType = commandReplyType;
+                this.CommandReplyMode = returnMode;
                 this.TaskCompletionSource = new TaskCompletionSource<ICommandResult>();
             }
 
             public TaskCompletionSource<ICommandResult> TaskCompletionSource { get; set; }
-            public CommandReturnType CommandReplyType { get; set; }
+            public CommandReturnMode CommandReplyMode { get; set; }
         }
 
         #region ICommandResultNotification 成员
         /// <summary>
         /// 通知命令结果
         /// </summary>
-        public void Notify(string commandId, ICommandResult commandResult, CommandReturnType returnType)
+        public void Notify(string commandId, ICommandResult commandResult, CommandReturnMode returnMode)
         {
             if(_commandTaskDict.Count == 0)
                 return;
@@ -135,7 +103,7 @@ namespace ThinkNet.Runtime
                     completed = true;
                 }
                 else {
-                    completed = commandTaskCompletionSource.CommandReplyType == returnType;
+                    completed = commandTaskCompletionSource.CommandReplyMode == returnMode;
                 }
 
                 //if(commandTaskCompletionSource.CommandReplyType == CommandReturnType.CommandExecuted) {
@@ -149,6 +117,11 @@ namespace ThinkNet.Runtime
             if(completed) {
                 commandTaskCompletionSource.TaskCompletionSource.TrySetResult(commandResult);
                 _commandTaskDict.TryRemove(commandId);
+
+                //if(LogManager.Default.IsDebugEnabled) {
+                //    LogManager.Default.DebugFormat("The Command Execution complete, commandType:{0}, commandId:{1}, status:{2}.",
+                //        commandTaskCompletionSource.CommandType.FullName, commandId, commandResult.Status);
+                //}
             }
         }
 

@@ -27,9 +27,9 @@ namespace UserRegistration
             realService.SendAsync(command).Wait(2000);
         }
         [OperationContract]
-        public ICommandResult Execute(ICommand command, CommandReturnType returnType)
+        public ICommandResult Execute(ICommand command, CommandReturnMode returnMode)
         {
-            return realService.Execute(command, returnType);
+            return realService.Execute(command, returnMode);
         }        
     }
 }

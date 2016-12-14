@@ -21,7 +21,7 @@ namespace UserRegistration.Application
                 Password = "123456",
                 LoginId = "young.han",
                 Email = "19126332@qq.com"
-            }, CommandReturnType.DomainEventHandled);
+            }, CommandReturnMode.DomainEventHandled);
 
             Console.WriteLine("创建一个用户。");
             Thread.Sleep(2000);

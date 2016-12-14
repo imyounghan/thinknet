@@ -54,13 +54,13 @@ namespace ThinkNet.Messaging.Handling.Agent
         {
             var collection = args[0] as EventCollection;
             if(collection.IsEmpty()) {
-                _messageBus.Publish(new CommandResult(collection.CorrelationId, CommandReturnType.DomainEventHandled, ReturnStatus.Nothing));
+                _messageBus.PublishAsync(new CommandResult(collection.CorrelationId, CommandReturnMode.DomainEventHandled, ReturnStatus.Nothing));
                 return;
             }
 
             if(_handlerStore.HandlerIsExecuted(collection.CorrelationId, EventStreamType, EventStreamHandlerType)) {
                 var errorMessage = string.Format("The domain event has been handled, Data({0}).", collection);
-                _messageBus.Publish(new CommandResult(collection.CorrelationId, new ThinkNetException(errorMessage)));
+                _messageBus.PublishAsync(new CommandResult(collection.CorrelationId, new ThinkNetException(errorMessage)));
                 if(LogManager.Default.IsWarnEnabled) {
                     LogManager.Default.Warn(errorMessage);
                 }
@@ -69,10 +69,10 @@ namespace ThinkNet.Messaging.Handling.Agent
 
             try {
                 this.TryHandle(collection);
-                _messageBus.Publish(new CommandResult(collection.CorrelationId, CommandReturnType.DomainEventHandled));
+                _messageBus.PublishAsync(new CommandResult(collection.CorrelationId, CommandReturnMode.DomainEventHandled));
             }
             catch(Exception ex) {
-                _messageBus.Publish(new CommandResult(collection.CorrelationId, ex, CommandReturnType.DomainEventHandled));
+                _messageBus.PublishAsync(new CommandResult(collection.CorrelationId, ex, CommandReturnMode.DomainEventHandled));
                 throw ex;
             }
            
@@ -85,7 +85,7 @@ namespace ThinkNet.Messaging.Handling.Agent
             if(@event.Version > 1) {
                 var version = _publishedVersionStore.GetPublishedVersion(@event.SourceId) + 1;
                 if(version < @event.Version) {
-                    _messageBus.Publish((IMessage)@event);
+                    _messageBus.PublishAsync((IMessage)@event);
                     throw new DomainEventAsPendingException() {
                         RelatedId = @event.SourceId.Id,
                         RelatedType = @event.SourceId.GetSourceTypeFullName()
@@ -106,7 +106,7 @@ namespace ThinkNet.Messaging.Handling.Agent
 
             eventHandler.Handle(parameters);
 
-            _messageBus.Publish((IEnumerable<Event>)@event);
+            _messageBus.PublishAsync((IEnumerable<Event>)@event);
 
             _publishedVersionStore.AddOrUpdatePublishedVersion(@event.SourceId, @event.Version);
         }

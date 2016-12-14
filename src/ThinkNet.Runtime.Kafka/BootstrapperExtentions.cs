@@ -3,9 +3,10 @@ using System.IO;
 using log4net.Appender;
 using log4net.Config;
 using log4net.Layout;
+using ThinkNet.Contracts;
+using ThinkNet.Messaging;
 using ThinkNet.Runtime;
 using ThinkNet.Runtime.Kafka;
-using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet
 {
@@ -25,15 +26,16 @@ namespace ThinkNet
                 BasicConfigurator.Configure(new ConsoleAppender { Layout = new PatternLayout() });
             }
 
-            that.SetDefault<ITopicProvider, DefaultTopicProvider>();
-            that.SetDefault<IEnvelopeSender, KafkaService>();
-            that.SetDefault<IEnvelopeReceiver, KafkaService>();
-            //that.SetDefault<IProcessor, KafkaService>("kafka");
-
-
             using(var client = new KafkaClient(KafkaSettings.Current.ZookeeperAddress)) {
                 KafkaSettings.Current.SubscriptionTopics.ForEach(client.CreateTopicIfNotExists);
             }
+
+            that.SetDefault<ITopicProvider, DefaultTopicProvider>();
+            //that.SetDefault<IEnvelopeSender, KafkaService>();
+            //that.SetDefault<IEnvelopeReceiver, KafkaService>();
+            that.SetDefault<IMessageBus, KafkaService>();
+            that.SetDefault<ICommandService, KafkaService>();
+            that.SetDefault<IProcessor, KafkaProcessor>("kafka");            
 
             return that;
         }

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
+﻿
 namespace ThinkNet.Runtime.Routing
 {
     /// <summary>
@@ -11,11 +9,6 @@ namespace ThinkNet.Runtime.Routing
         /// <summary>
         /// Sends an envelope.
         /// </summary>
-        Task SendAsync(Envelope envelope);
-
-        /// <summary>
-        /// Sends a batch of envelopes.
-        /// </summary>
-        Task SendAsync(IEnumerable<Envelope> envelopes);
+        void Send(Envelope envelope);
     }
 }

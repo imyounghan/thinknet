@@ -2,6 +2,7 @@
 using System.Threading;
 using ThinkNet;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
 
@@ -12,6 +13,16 @@ namespace UserRegistration.QuickStart
         static void Main(string[] args)
         {
             Bootstrapper.Current.DoneWithUnity();
+
+
+            //var serializer = ObjectContainer.Instance.Resolve<ITextSerializer>();
+            //var serialized = serializer.Serialize(new RegisterUser {
+            //    UserName = "hanyang",
+            //    Password = "123456",
+            //    LoginId = "young.han",
+            //    Email = "19126332@qq.com"
+            //}, true);
+            //Console.WriteLine(serialized);
 
 
             Console.WriteLine("输入任意键演示...");
@@ -25,7 +36,7 @@ namespace UserRegistration.QuickStart
                 Password = "123456",
                 LoginId = "young.han",
                 Email = "19126332@qq.com"
-            }, CommandReturnType.DomainEventHandled);
+            }, CommandReturnMode.DomainEventHandled);
             //int counter = 0;
             //var tasks = new System.Threading.Tasks.Task[5000];
             //var sw = new System.Diagnostics.Stopwatch();

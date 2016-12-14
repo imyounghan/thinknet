@@ -149,7 +149,7 @@ namespace ThinkNet.Domain.Repositories
             }
 
             _cache.Set(eventSourced, eventSourced.Id);
-            _messageBus.Publish((IMessage)eventCollection);
+            _messageBus.PublishAsync((IMessage)eventCollection);
 
 
             if(!_snapshotPolicy.ShouldbeCreateSnapshot(eventSourced))

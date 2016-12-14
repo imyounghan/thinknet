@@ -10,12 +10,13 @@ namespace ThinkNet.Runtime.Routing
     /// <summary>
     /// <see cref="IEnvelopeSender"/> 和 <see cref="IEnvelopeReceiver"/> 的实现类
     /// </summary>
-    public class EnvelopeHub : DisposableObject, IEnvelopeSender, IEnvelopeReceiver
+    public class EnvelopeHub : IEnvelopeSender, IEnvelopeReceiver
     {
         private readonly BlockingCollection<Envelope>[] brokers;
         private readonly IRoutingKeyProvider _routingKeyProvider;
 
         private CancellationTokenSource cancellationSource;
+        private int counter; 
 
         /// <summary>
         /// Parameterized Constructor.
@@ -36,25 +37,23 @@ namespace ThinkNet.Runtime.Routing
             }
         }
 
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        protected override void Dispose(bool disposing)
-        { }
-
-        private BlockingCollection<Envelope> GetBroker(string routingKey)
+        private BlockingCollection<Envelope> GetBroker(string routingKey, out int index)
         {
             var processorCount = this.brokers.Length;
 
             if(processorCount == 1) {
+                index = 0;
                 return this.brokers[0];
             }
 
             if(string.IsNullOrWhiteSpace(routingKey)) {
-                return this.brokers.OrderBy(broker => broker.Count).First();
+                index = Math.Abs(Interlocked.Increment(ref counter) % processorCount);
+                //return this.brokers.OrderBy(broker => broker.Count).First();
             }
-
-            var index = Math.Abs(routingKey.GetHashCode() % processorCount);
+            else {
+                index = Math.Abs(routingKey.GetHashCode() % processorCount);
+            }
+            
             return this.brokers[index];
         }
 
@@ -68,33 +67,24 @@ namespace ThinkNet.Runtime.Routing
         }
 
         /// <summary>
-        /// 路由信件
-        /// </summary>
-        protected void Route(Envelope envelope)
-        {
-            this.GetBroker(this.GetKey(envelope)).Add(envelope, this.cancellationSource.Token);
-        }
-
-        /// <summary>
         /// 收到信件后的处理方式
         /// </summary>
         public event EventHandler<Envelope> EnvelopeReceived = (sender, args) => { };
 
         private void ReceiveMessages(object state)
         {
-            var broker = state as BlockingCollection<Envelope>;
-            broker.NotNull("state");
+            var tuple = state as Tuple<int, BlockingCollection<Envelope>>;
+            var position = tuple.Item1;
+            var broker = tuple.Item2;
 
             //while(!cancellationSource.IsCancellationRequested) {
             //    var item = broker.Take(cancellationSource.Token);
-            //    if(LogManager.Default.IsDebugEnabled) {
-            //        LogManager.Default.DebugFormat("Receive an envelope from local queue, data:({0}).", item.Body);
-            //    }
             //    this.EnvelopeReceived(this, item);
             //}
             foreach(var item in broker.GetConsumingEnumerable(cancellationSource.Token)) {
                 if(LogManager.Default.IsDebugEnabled) {
-                    LogManager.Default.DebugFormat("Receive an envelope from local queue, data:({0}).", item.Body);
+                    LogManager.Default.DebugFormat("Receive an envelope from local queue({0}), data:({1}).",
+                        position, item.Body);
                 }
                 this.EnvelopeReceived(this, item);
             }
@@ -105,9 +95,9 @@ namespace ThinkNet.Runtime.Routing
             if(this.cancellationSource == null) {
                 this.cancellationSource = new CancellationTokenSource();
 
-                foreach(var broker in this.brokers) {
+                for(int i = 0; i < brokers.Length; i++) {
                     Task.Factory.StartNew(this.ReceiveMessages,
-                        broker,
+                        Tuple.Create<int, BlockingCollection<Envelope>>(i, brokers[i]),
                         this.cancellationSource.Token,
                         TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness,
                         TaskScheduler.Current);
@@ -128,27 +118,31 @@ namespace ThinkNet.Runtime.Routing
         /// <summary>
         /// Sends an envelope.
         /// </summary>
-        public virtual Task SendAsync(Envelope envelope)
+        public void Send(Envelope envelope)
         {
+            int index;
+            var broker = this.GetBroker(this.GetKey(envelope), out index);
+
             if(LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("Send an envelope to local queue, data({0}).", envelope.Body);
+                LogManager.Default.DebugFormat("Distribute an envelope to local queue({0}), data({1}).", 
+                    index, envelope.Body);
             }
 
-            return Task.Factory.StartNew(() => this.Route(envelope));
+            broker.Add(envelope, this.cancellationSource.Token);
         }
-        /// <summary>
-        /// Sends a batch of envelopes.
-        /// </summary>
-        public virtual Task SendAsync(IEnumerable<Envelope> envelopes)
-        {
-            if(LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("Send a batch of envelope to local queue, data:(0).", 
-                    string.Join(";", envelopes.Select(item=>item.Body.ToString())));
-            }
+        ///// <summary>
+        ///// Sends a batch of envelopes.
+        ///// </summary>
+        //public virtual Task SendAsync(IEnumerable<Envelope> envelopes)
+        //{
+        //    if(LogManager.Default.IsDebugEnabled) {
+        //        LogManager.Default.DebugFormat("Send a batch of envelope to local queue, data:(0).", 
+        //            string.Join(";", envelopes.Select(item=>item.Body.ToString())));
+        //    }
 
-            return Task.Factory.StartNew(delegate {
-                envelopes.ForEach(this.Route);
-            });
-        }
+        //    return Task.Factory.StartNew(delegate {
+        //        envelopes.ForEach(this.Route);
+        //    });
+        //}
     }
 }

@@ -23,7 +23,7 @@ namespace UserRegistration
         /// 执行命令
         /// </summary>
         [OperationContract]
-        ICommandResult Execute(ICommand command, CommandReturnType returnType);
+        ICommandResult Execute(ICommand command, CommandReturnMode returnMode);
     }
 
     [Export(typeof(ICommandService))]
@@ -37,14 +37,14 @@ namespace UserRegistration
             channelFactory = new ChannelFactory<ICommandClient>(new NetTcpBinding(), "net.tcp://127.0.0.1:9999/CommandService");
         }
 
-        public ICommandResult Execute(ICommand command, CommandReturnType returnType)
+        public ICommandResult Execute(ICommand command, CommandReturnMode returnMode)
         {
-            return channelFactory.CreateChannel().Execute(command, returnType);
+            return channelFactory.CreateChannel().Execute(command, returnMode);
         }
 
-        public Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnType returnType)
+        public Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnMode returnMode)
         {
-            return Task.Factory.StartNew(() => this.Execute(command, returnType));
+            return Task.Factory.StartNew(() => this.Execute(command, returnMode));
         }
 
         public void Send(ICommand command)

@@ -42,7 +42,7 @@ namespace ThinkNet.Messaging
         /// 返回类型
         /// </summary>
         [DataMember]
-        public CommandReturnType CommandReturnType { get; set; }
+        public CommandReturnMode CommandReturnMode { get; set; }
         /// <summary>
         /// 回复时间
         /// </summary>
@@ -68,22 +68,22 @@ namespace ThinkNet.Messaging
         public CommandResult(string commandId, 
             string errorMessage, 
             ReturnStatus status = ReturnStatus.Failed, 
-            string errorCode = "-1", 
-            CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
-            : this(commandId, commandReturnType, ReturnStatus.Failed, null, errorCode)
+            string errorCode = "-1",
+            CommandReturnMode returnMode = CommandReturnMode.CommandExecuted)
+            : this(commandId, returnMode, ReturnStatus.Failed, null, errorCode)
         { }
 
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public CommandResult(string commandId, 
-            CommandReturnType commandReturnType = CommandReturnType.CommandExecuted, 
+        public CommandResult(string commandId,
+            CommandReturnMode returnMode = CommandReturnMode.CommandExecuted, 
             ReturnStatus status = ReturnStatus.Success, 
             string errorMessage = null, 
             string errorCode = null)
         {
             this.CommandId = commandId;
-            this.CommandReturnType = commandReturnType;
+            this.CommandReturnMode = returnMode;
             this.ReplyTime = DateTime.UtcNow;
             this.Status = status;
             this.ErrorMessage = errorMessage;
@@ -92,10 +92,10 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public CommandResult(string commandId, Exception exception, CommandReturnType commandReturnType = CommandReturnType.CommandExecuted)
+        public CommandResult(string commandId, Exception exception, CommandReturnMode returnMode = CommandReturnMode.CommandExecuted)
         {
             this.CommandId = commandId;
-            this.CommandReturnType = commandReturnType;
+            this.CommandReturnMode = returnMode;
             this.ReplyTime = DateTime.UtcNow;
             this.Status = ReturnStatus.Success;
 
@@ -120,7 +120,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}@{1}#{2},{3}", this.GetType().FullName, this.CommandId, this.CommandReturnType.ToString(), this.Status.ToString());
+            return string.Format("{0}@{1}#{2},{3}", this.GetType().FullName, this.CommandId, this.CommandReturnMode.ToString(), this.Status.ToString());
         }
 
         string IUniquelyIdentifiable.Id

@@ -32,7 +32,7 @@ namespace ThinkNet.Messaging.Handling.Agent
         {
             var result = args[0] as CommandResult;
 
-            _notification.Notify(result.CommandId, result, result.CommandReturnType);
+            _notification.Notify(result.CommandId, result, result.CommandReturnMode);
 
             //switch (result.CommandReturnType) {
             //    case CommandReturnType.CommandExecuted:

@@ -82,6 +82,7 @@
     <Compile Include="Database\DataContextBase.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Runtime\DefaultCommandService.cs" />
     <Compile Include="Extensions\ExpressionExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -205,13 +206,13 @@
     <Compile Include="Messaging\QueryResultCollection.cs" />
     <Compile Include="Runtime\Dispatching\Dispatcher.cs" />
     <Compile Include="Runtime\Dispatching\QueryDispatcher.cs" />
-    <Compile Include="Runtime\Processor.cs" />
+    <Compile Include="Runtime\CentralProcessor.cs" />
     <Compile Include="Runtime\Dispatching\CommandDispatcher.cs" />
     <Compile Include="Messaging\Handling\Agent\CommandResultInnerHandler.cs" />
     <Compile Include="Runtime\Dispatching\EventDispatcher.cs" />
     <Compile Include="Runtime\CommandService.cs" />
     <Compile Include="Contracts\ICommandResultNotification.cs" />
-    <Compile Include="Contracts\CommandReturnType.cs" />
+    <Compile Include="Contracts\CommandReturnMode.cs" />
     <Compile Include="Contracts\ReturnStatus.cs" />
     <Compile Include="Contracts\ICommand.cs" />
     <Compile Include="Contracts\ICommandService.cs" />

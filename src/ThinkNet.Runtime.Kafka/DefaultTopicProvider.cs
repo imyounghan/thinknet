@@ -40,11 +40,7 @@ namespace ThinkNet.Runtime.Kafka
             if (payload is Event) {
                 return "Events";
             }
-
-            if(payload is QueryParameter) {
-                return "Querys";
-            }
-            
+                        
 
             throw new ThinkNetException(string.Format("Unknown topic from the type of '{0}'.", payload.GetType().FullName));
         }
@@ -58,7 +54,6 @@ namespace ThinkNet.Runtime.Kafka
                     return typeof(CommandResult);
                 case "Commands":
                 case "Events":
-                case "Querys":
                     return typeof(GeneralData);
                 default:
                     throw new ThinkNetException(string.Format("Unknown topic of '{0}'.", topic));

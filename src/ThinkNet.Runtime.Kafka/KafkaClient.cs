@@ -50,16 +50,14 @@ namespace ThinkNet.Runtime.Kafka
         private ZookeeperConsumerConnector CreateConsumer(string consumerId)
         {
             var consumerConfiguration = new ConsumerConfiguration {
-                //BackOffIncrement = 30,
                 AutoCommit = false,
                 GroupId = "thinknet",
                 ConsumerId = consumerId.AfterContact("_Consumer"),
-                BufferSize = ConsumerConfiguration.DefaultBufferSize,
-                MaxFetchBufferLength = ConsumerConfiguration.DefaultMaxFetchBufferLength,
-                FetchSize = ConsumerConfiguration.DefaultFetchSize,
-                AutoOffsetReset = OffsetRequest.SmallestTime,
+                //BufferSize = ConsumerConfiguration.DefaultBufferSize,
+                //MaxFetchBufferLength = ConsumerConfiguration.DefaultMaxFetchBufferLength,
+                //FetchSize = ConsumerConfiguration.DefaultFetchSize,
+                //AutoOffsetReset = OffsetRequest.SmallestTime,
                 ZooKeeper = _zooKeeperConfiguration,
-                ShutdownTimeout = 100
             };
 
             return new ZookeeperConsumerConnector(consumerConfiguration, true);
@@ -122,8 +120,8 @@ namespace ThinkNet.Runtime.Kafka
         private Task PushToKafka(IEnumerable<ProducerData<string, Message>> producerDatas)
         {
             if(LogManager.Default.IsDebugEnabled) {
-                var topics = producerDatas.Select(item => item.Topic).ToArray();
-                LogManager.Default.DebugFormat("Ready to send a message to kafka in topic('{0}').", 
+                var topics = producerDatas.Select(item => item.Topic).Distinct().ToArray();
+                LogManager.Default.DebugFormat("Ready to push messages to kafka on topic('{0}').", 
                     string.Join("','", topics));
             }
 
@@ -135,23 +133,19 @@ namespace ThinkNet.Runtime.Kafka
             return _topicProvider.GetTopic(element);
         }
 
-        //public Task Push<T>(string topic, IEnumerable<T> elements, Func<T, byte[]> serializer)
-        //{
-        //    var producerDatas = elements
-        //        .Select(item => {
-        //            var message = new Message(serializer(item));
-        //            return new ProducerData<string, Message>(topic, message);
-        //        }).ToArray();
-
-        //    return this.PushToKafka(producerDatas);
-        //}
+        public Task Push<T>(T element, Func<T, byte[]> serializer)
+        {
+            return this.Push(new T[] { element }, serializer);
+        }
         public Task Push<T>(IEnumerable<T> elements, Func<T, byte[]> serializer)
         {
-            var producerDatas = elements.GroupBy(GetTopic)
-                .Select(group => {
-                    var messages = group.Select(item => new Message(serializer(item))).ToArray();
-                    return new ProducerData<string, Message>(group.Key, messages);
-                }).ToArray();
+            var producerDatas = new List<ProducerData<string, Message>>();
+            foreach(var element in elements) {
+                var message = new Message(serializer(element));
+                var topic = this.GetTopic(element);
+                var key = element.GetType().FullName;
+                producerDatas.Add(new ProducerData<string, Message>(topic, key, message));
+            }
 
             return this.PushToKafka(producerDatas);
         }
@@ -182,7 +176,7 @@ namespace ThinkNet.Runtime.Kafka
             foreach(Message message in KafkaMessageStream.GetCancellable(cancellationToken)) {
                 try {
                     if(LogManager.Default.IsDebugEnabled) {
-                        LogManager.Default.DebugFormat("Pull a message from kafka in topic('{0}').", topic);
+                        LogManager.Default.DebugFormat("Pull a message from kafka on topic('{0}'). offset:{1}, partition:{2}.", topic, message.Offset, message.PartitionId);
                     }
                     var result = deserializer(message.Payload, type);
                     consumer(result, topic, new OffsetPosition(message.PartitionId.Value, message.Offset));
@@ -191,14 +185,9 @@ namespace ThinkNet.Runtime.Kafka
                     break;
                 }
                 catch(ThreadAbortException) {
-                    if(LogManager.Default.IsErrorEnabled) {
-                        LogManager.Default.Error("Kafka Consume ");
-                    }
                     break;
                 }
                 catch(Exception ex) {
-                    //this.CommitOffset(offset);
-
                     if(LogManager.Default.IsErrorEnabled)
                         LogManager.Default.Error(ex.GetBaseException().Message, ex);
                 }

@@ -60,13 +60,14 @@
   <ItemGroup>
     <Compile Include="BootstrapperExtentions.cs" />
     <Compile Include="EventStream.cs" />
+    <Compile Include="KafkaService.cs" />
+    <Compile Include="KafkaProcessor.cs" />
     <Compile Include="KafkaSettings.cs" />
     <Compile Include="DefaultTopicProvider.cs" />
     <Compile Include="ITopicProvider.cs" />
     <Compile Include="KafkaClient.cs" />
     <Compile Include="OffsetPosition.cs" />
     <Compile Include="GeneralData.cs" />
-    <Compile Include="KafkaService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

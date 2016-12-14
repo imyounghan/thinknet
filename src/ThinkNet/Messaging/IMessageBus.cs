@@ -1,4 +1,6 @@
-﻿
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace ThinkNet.Messaging
 {
     /// <summary>
@@ -7,13 +9,13 @@ namespace ThinkNet.Messaging
     public interface IMessageBus
     {
         /// <summary>
-        /// 发布消息
+        /// 异步发布消息
         /// </summary>
-        void Publish(IMessage message);
+        Task PublishAsync(IMessage message);
 
         /// <summary>
-        /// 发布一组消息
+        /// 异步发布一组消息
         /// </summary>
-        void Publish(System.Collections.Generic.IEnumerable<IMessage> messages);
+        Task PublishAsync(IEnumerable<IMessage> messages);
     }   
 }

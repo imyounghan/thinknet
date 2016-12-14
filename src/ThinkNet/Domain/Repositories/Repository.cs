@@ -90,8 +90,8 @@ namespace ThinkNet.Domain.Repositories
             if(eventPublisher == null) {
                 return;
             }
-            
-            _messageBus.Publish(eventPublisher.Events);
+
+            _messageBus.PublishAsync(eventPublisher.Events);
         }
 
         /// <summary>

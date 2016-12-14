@@ -36,7 +36,7 @@ namespace ThinkNet.Infrastructure
 
                    var events = dataContext.TrackingObjects.OfType<IEventPublisher>()
                        .SelectMany(item => item.Events).ToArray();
-                   messageBus.Publish(events);
+                   messageBus.PublishAsync(events);
 
                     return methodReturn;
 

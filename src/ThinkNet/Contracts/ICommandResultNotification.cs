@@ -8,6 +8,6 @@
         /// <summary>
         /// 通知命令结果
         /// </summary>
-        void Notify(string commandId, ICommandResult commandResult, CommandReturnType returnType);
+        void Notify(string commandId, ICommandResult commandResult, CommandReturnMode returnMode);
     }
 }

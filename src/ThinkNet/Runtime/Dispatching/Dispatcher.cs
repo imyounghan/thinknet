@@ -17,7 +17,7 @@ namespace ThinkNet.Runtime.Dispatching
     public abstract class Dispatcher : IDispatcher, IInitializer
     {
         private readonly ConcurrentDictionary<string, IHandlerAgent> _cachedHandlers;
-        //private readonly static ConcurrentDictionary<string, Lifecycle> 
+        private readonly Stopwatch _stopwatch;
 
         private readonly IObjectContainer _container;
 
@@ -28,6 +28,7 @@ namespace ThinkNet.Runtime.Dispatching
         {
             this._container = container;
             this._cachedHandlers = new ConcurrentDictionary<string, IHandlerAgent>();
+            this._stopwatch = new Stopwatch();
         }
         /// <summary>
         /// 添加一个缓存的Handler
@@ -76,22 +77,28 @@ namespace ThinkNet.Runtime.Dispatching
 
             executionTime = TimeSpan.Zero;
 
+            if(LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.DebugFormat("Start handling '{0}'.", message);
+            }
 
-            var stopwatch = Stopwatch.StartNew();
             var handlers = GetProxyHandlers(message.GetType());
             foreach(var handler in handlers) {
                 try {
-                    stopwatch.Restart();
+                    _stopwatch.Restart();
                     handler.Handle(message);
-                    stopwatch.Stop();
+                    _stopwatch.Stop();
 
-                    executionTime += stopwatch.Elapsed;
+                    executionTime += _stopwatch.Elapsed;
                 }
                 catch(Exception ex) {
                     if(LogManager.Default.IsErrorEnabled) {
-                        LogManager.Default.Error(ex, "Exception raised when handling {0}.", message);
+                        LogManager.Default.Error(ex, "Exception raised when handling '{0}' on '{1}'.", message, handler.GetInnerHandler().GetType().FullName);
                     }
                 }
+            }
+
+            if(LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.DebugFormat("Complete handling '{0}'.", message);
             }
         }
 

@@ -16,7 +16,7 @@ namespace ThinkNet.Runtime
     /// <summary>
     /// 框架内处理消息的核心进程
     /// </summary>
-    public class Processor : DisposableObject, IProcessor, IInitializer
+    public class CentralProcessor : DisposableObject, IProcessor, IInitializer
     {
         private readonly IEnvelopeReceiver _receiver;
         private readonly Dictionary<string, IDispatcher> _dispatcherDict;
@@ -27,7 +27,7 @@ namespace ThinkNet.Runtime
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public Processor(IObjectContainer container,
+        public CentralProcessor(IObjectContainer container,
             IRepository repository,
             IEventSourcedRepository eventSourcedRepository,
             IEnvelopeReceiver receiver,

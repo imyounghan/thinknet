@@ -59,16 +59,12 @@ namespace ThinkNet.Runtime
                 return taskCompletionSource.Task;
             }
 
-            this.SendAsync(parameter).ContinueWith(task => {
-                if(task.Status == TaskStatus.Faulted) {
-                    this.Notify(parameter.Id, new QueryResult(ReturnStatus.Failed, task.Exception.Message));
-                }
-            });
+            this.Send(parameter);
 
             return taskCompletionSource.Task;
         }
 
-        private Task SendAsync(IQuery parameter)
+        private void Send(IQuery parameter)
         {
             var envelope = new Envelope(parameter);
             envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.QueryKind;
@@ -91,7 +87,7 @@ namespace ThinkNet.Runtime
                     envelope.Metadata.Remove(StandardMetadata.AssemblyName);
             }
 
-            return _sender.SendAsync(envelope);
+            _sender.Send(envelope);
         }
 
         #region IQueryResultNotification 成员

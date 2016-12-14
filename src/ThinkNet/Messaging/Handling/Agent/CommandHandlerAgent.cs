@@ -75,7 +75,7 @@ namespace ThinkNet.Messaging.Handling.Agent
             if(_handlerStore.HandlerIsExecuted(command.Id, commandType, commandHandlerType)) {
                 var errorMessage = string.Format("The command has been handled. CommandHandlerType:{0}, CommandType:{1}, CommandId:{2}.",
                     commandHandlerType.FullName, commandType.FullName, command.Id);
-                _messageBus.Publish(new CommandResult(command.Id, errorMessage));
+                _messageBus.PublishAsync(new CommandResult(command.Id, errorMessage));
                 if(LogManager.Default.IsWarnEnabled) {
                     LogManager.Default.Warn(errorMessage);
                 }
@@ -88,10 +88,10 @@ namespace ThinkNet.Messaging.Handling.Agent
 
             try {
                 TryHandleWithFilter(args);
-                _messageBus.Publish(new CommandResult(command.Id));
+                _messageBus.PublishAsync(new CommandResult(command.Id));
             }
             catch(Exception ex) {
-                _messageBus.Publish(new CommandResult(command.Id, ex));
+                _messageBus.PublishAsync(new CommandResult(command.Id, ex));
                 throw ex;
             }
 

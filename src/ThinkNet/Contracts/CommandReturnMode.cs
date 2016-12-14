@@ -4,10 +4,10 @@ using System.Runtime.Serialization;
 namespace ThinkNet.Contracts
 {
     /// <summary>
-    /// 命令处理类型
+    /// 命令处理方式
     /// </summary>
     [DataContract]
-    public enum CommandReturnType : byte
+    public enum CommandReturnMode : byte
     {
         /// <summary>Return the command result when the command execution has the following cases:
         /// 1. the command execution meets some error or exception;
