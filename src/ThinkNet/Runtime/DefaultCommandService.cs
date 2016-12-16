@@ -1,6 +1,9 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure;
+using ThinkNet.Messaging;
 using ThinkNet.Runtime.Routing;
 
 namespace ThinkNet.Runtime
@@ -11,12 +14,14 @@ namespace ThinkNet.Runtime
     public class DefaultCommandService : CommandService
     {
         private readonly IEnvelopeSender _sender;
+        private readonly ITextSerializer _serializer;
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public DefaultCommandService(IEnvelopeSender sender)
+        public DefaultCommandService(IEnvelopeSender sender, ITextSerializer serializer)
         {
             this._sender = sender;
+            this._serializer = serializer;
         }
 
         /// <summary>
@@ -30,26 +35,34 @@ namespace ThinkNet.Runtime
         /// </summary>
         public override void Send(ICommand command)
         {
-            var envelope = new Envelope(command);
+            Envelope envelope;
+            if(command is Command) {
+                envelope = new Envelope(command);
+            }
+            else {
+                var attribute = command.GetType().GetCustomAttribute<XmlTypeAttribute>(false);
+                if(attribute == null || string.IsNullOrEmpty(attribute.TypeName)) {
+                    string errorMessage = string.Format("Type of '{0}' is not defined XmlTypeAttribute or not set TypeName.");
+                    throw new ThinkNetException(errorMessage);
+                }
+
+                Type type;
+                if(!TryGetCommandType(attribute.TypeName, out type)) {
+                    if(string.IsNullOrEmpty(attribute.Namespace)) {
+                        string errorMessage = string.Format("Type of '{0}' XmlTypeAttribute not set Namespace.");
+                        throw new ThinkNetException(errorMessage);
+                    }
+
+                    type = Type.GetType(string.Format("{0}.{1}", attribute.Namespace, attribute.TypeName));
+                }
+
+                var converted = _serializer.Deserialize(_serializer.Serialize(command), type);
+
+                envelope = new Envelope(converted, type);
+            }
+            
             envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.CommandKind;
             envelope.Metadata[StandardMetadata.SourceId] = command.Id;
-            var attribute = command.GetType().GetCustomAttribute<DataContractAttribute>(false);
-            if(attribute != null) {
-                bool clearAssemblyName = false;
-
-                if(!string.IsNullOrEmpty(attribute.Namespace)) {
-                    envelope.Metadata[StandardMetadata.Namespace] = attribute.Namespace;
-                    clearAssemblyName = true;
-                }
-
-                if(!string.IsNullOrEmpty(attribute.Name)) {
-                    envelope.Metadata[StandardMetadata.TypeName] = attribute.Name;
-                    clearAssemblyName = true;
-                }
-
-                if(clearAssemblyName)
-                    envelope.Metadata.Remove(StandardMetadata.AssemblyName);
-            }
 
             if(LogManager.Default.IsDebugEnabled) {
                 LogManager.Default.DebugFormat("Sending a command to local queue, commandType:{0}.{1}, commandId:{2}.",

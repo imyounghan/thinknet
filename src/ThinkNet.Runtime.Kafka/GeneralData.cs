@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace ThinkNet.Runtime.Kafka
 {
@@ -48,11 +49,21 @@ namespace ThinkNet.Runtime.Kafka
         [DataMember(Name = "metadata")]
         public string Metadata { get; set; }
 
-        public Type GetMetadataType()
+        public string GetMetadataTypeName()
         {
-            string typeFullName = string.Concat(this.Namespace, ".", this.TypeName, ", ", this.AssemblyName);
+            StringBuilder sb = new StringBuilder();
+            if(!string.IsNullOrWhiteSpace(this.Namespace))
+                sb.Append(this.Namespace).Append(".");
+            if(!string.IsNullOrWhiteSpace(this.TypeName))
+                sb.Append(this.TypeName);
+            if(!string.IsNullOrWhiteSpace(this.AssemblyName))
+                sb.Append(", ").Append(this.AssemblyName);
 
-            return Type.GetType(typeFullName);
+            return sb.ToString();
+
+            //string typeFullName = string.Concat(this.Namespace, ".", this.TypeName, ", ", this.AssemblyName);
+
+            //return Type.GetType(typeFullName);
         }
     }
 }

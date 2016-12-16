@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 
 namespace ThinkNet.Runtime
@@ -9,7 +13,7 @@ namespace ThinkNet.Runtime
     /// <summary>
     /// <see cref="ICommandService"/> 的抽象实现类
     /// </summary>
-    public abstract class CommandService : DisposableObject, ICommandService, ICommandResultNotification
+    public abstract class CommandService : DisposableObject, ICommandService, ICommandResultNotification, IInitializer
     {
         private readonly static TimeSpan WaitTime = TimeSpan.FromSeconds(ConfigurationSetting.Current.OperationTimeout);
         private readonly static ICommandResult TimeoutResult = new CommandResult(null, "Operation is timeout.", ReturnStatus.Failed);
@@ -17,12 +21,19 @@ namespace ThinkNet.Runtime
 
 
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;
+        private readonly Dictionary<string, Type> _typeMaps;
         /// <summary>
         /// Default constructor.
         /// </summary>
         protected CommandService()
         {
             this._commandTaskDict = new ConcurrentDictionary<string, CommandTaskCompletionSource>();
+            this._typeMaps = new Dictionary<string, Type>();
+        }
+
+        protected bool TryGetCommandType(string typeName, out Type type)
+        {
+            return _typeMaps.TryGetValue(typeName, out type);
         }
 
         /// <summary>
@@ -123,6 +134,20 @@ namespace ThinkNet.Runtime
                 //        commandTaskCompletionSource.CommandType.FullName, commandId, commandResult.Status);
                 //}
             }
+        }
+
+        #endregion
+
+        #region IInitializer 成员
+
+        void IInitializer.Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
+        {
+            assemblies.SelectMany(p => p.GetExportedTypes())
+                .Where(delegate(Type type) {
+                    return type.IsClass && !type.IsAbstract && typeof(Command).IsAssignableFrom(type);
+                }).ForEach(delegate(Type type) {
+                    _typeMaps.Add(type.Name, type);
+                });
         }
 
         #endregion

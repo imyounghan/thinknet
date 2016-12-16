@@ -505,7 +505,7 @@ namespace ThinkNet
 
             var type = typeof(T);
             if (!type.IsClass || type.IsAbstract) {
-                throw new ArgumentException(string.Format("This type of '{0}' is not a class.", type.FullName));
+                throw new ArgumentException(string.Format("This type of '{0}' is not a class or is abstract class.", type.FullName));
             }
 
             var properties = type.GetProperties();
@@ -518,7 +518,7 @@ namespace ThinkNet
         private static void Map(PropertyInfo[] properties, object source, object target)
         {
             foreach (var property in properties) {
-                if (property.PropertyType.IsValueType || property.PropertyType == typeof(string)) {
+                if (property.PropertyType.IsValueType || property.PropertyType.IsEnum || property.PropertyType == typeof(string)) {
                     property.SetValue(target, property.GetValue(source, null), null);
                 }
                 else {

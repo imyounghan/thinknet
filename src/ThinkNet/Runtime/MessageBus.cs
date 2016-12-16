@@ -66,9 +66,9 @@ namespace ThinkNet.Runtime
         public Task PublishAsync(IEnumerable<IMessage> messages)
         {
             if(LogManager.Default.IsDebugEnabled) {
-                var stringArray = messages.Select(item => item.GetType().FullName.AfterContact("@").AfterContact(item.GetKey()));
+                var stringArray = messages.Select(item => item.ToString());
 
-                LogManager.Default.DebugFormat("Publishing a batch of messages({0}).",
+                LogManager.Default.DebugFormat("Publishing a batch of messages({0}) to local queue.",
                     string.Join(",", stringArray));
             }
 

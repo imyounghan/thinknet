@@ -24,7 +24,7 @@ namespace UserRegistration
         [OperationContract]
         public void Send(ICommand command)
         {
-            realService.SendAsync(command).Wait(2000);
+            realService.SendAsync(command).Wait(60000);
         }
         [OperationContract]
         public ICommandResult Execute(ICommand command, CommandReturnMode returnMode)

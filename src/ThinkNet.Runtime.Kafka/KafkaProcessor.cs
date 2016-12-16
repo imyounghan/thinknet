@@ -73,7 +73,7 @@ namespace ThinkNet.Runtime.Kafka
         {
             Type type;
             if(!typeMaps.TryGetValue(data.TypeName, out type)) {
-                type = data.GetMetadataType();
+                type = Type.GetType(data.GetMetadataTypeName());
             }
 
             return _serializer.Deserialize(data.Metadata, type);

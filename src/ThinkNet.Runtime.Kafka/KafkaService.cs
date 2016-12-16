@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using System.Windows.Input;
+using System.Xml.Serialization;
+using ThinkNet.Contracts;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 
@@ -19,29 +20,41 @@ namespace ThinkNet.Runtime.Kafka
             this._kafka = new KafkaClient(KafkaSettings.Current.ZookeeperAddress, topicProvider);
         }
 
-        public override Task SendAsync(Contracts.ICommand command)
+        public override Task SendAsync(ICommand command)
         {
             if(LogManager.Default.IsDebugEnabled) {
                 LogManager.Default.DebugFormat("Sending a command({0}) to kafka.", command);
             }
 
-            return _kafka.Push<Contracts.ICommand>(command, this.Serialize);
+            return _kafka.Push<ICommand>(command, this.Serialize);
         }
 
-        private byte[] Serialize(Contracts.ICommand command)
+        private byte[] Serialize(ICommand command)
         {
             GeneralData generalData;
             var commandType = command.GetType();
-            var attribute = commandType.GetCustomAttribute<DataContractAttribute>(false);
-            if(attribute != null) {
-                if(string.IsNullOrEmpty(attribute.Namespace) || string.IsNullOrEmpty(attribute.Name)) {
-                    throw new ThinkNetException("");
-                }
-
-                generalData = new GeneralData(attribute.Namespace, attribute.Name);
+            if(command is Command) {
+                generalData = new GeneralData(commandType);
             }
             else {
-                generalData = new GeneralData(commandType);
+                var attribute = command.GetType().GetCustomAttribute<XmlTypeAttribute>(false);
+                if(attribute == null || string.IsNullOrEmpty(attribute.TypeName)) {
+                    string errorMessage = string.Format("Type of '{0}' is not defined XmlTypeAttribute or not set TypeName.");
+                    throw new ThinkNetException(errorMessage);
+                }
+
+                Type type;
+                if(!TryGetCommandType(attribute.TypeName, out type)) {
+                    if(string.IsNullOrEmpty(attribute.Namespace)) {
+                        string errorMessage = string.Format("Type of '{0}' XmlTypeAttribute not set Namespace.");
+                        throw new ThinkNetException(errorMessage);
+                    }
+
+                    generalData = new GeneralData(attribute.Namespace, attribute.TypeName);
+                }
+                else {
+                    generalData = new GeneralData(type);
+                }
             }
 
             generalData.Metadata = _serializer.Serialize(command);
@@ -106,7 +119,7 @@ namespace ThinkNet.Runtime.Kafka
         public Task PublishAsync(IEnumerable<IMessage> messages)
         {
             if(LogManager.Default.IsDebugEnabled) {
-                var stringArray = messages.Select(item => item.GetType().FullName.AfterContact("@").AfterContact(item.GetKey()));
+                var stringArray = messages.Select(item => item.ToString());
 
                 LogManager.Default.DebugFormat("Publishing a batch of messages({0}) to kafka.",
                     string.Join(",", stringArray));

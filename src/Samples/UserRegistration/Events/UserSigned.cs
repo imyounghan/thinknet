@@ -8,6 +8,9 @@ namespace UserRegistration.Events
     [Serializable]
     public class UserSigned : Event
     {
+        public UserSigned()
+        { }
+
         public UserSigned(string loginid, string clientIp)
         {
             this.LoginId = loginid;

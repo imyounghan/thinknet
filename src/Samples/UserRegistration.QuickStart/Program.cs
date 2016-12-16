@@ -2,7 +2,6 @@
 using System.Threading;
 using ThinkNet;
 using ThinkNet.Contracts;
-using ThinkNet.Infrastructure;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
 
