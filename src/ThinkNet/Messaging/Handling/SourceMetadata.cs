@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinkNet.Infrastructure;
 
 namespace ThinkNet.Messaging.Handling
 {
@@ -16,12 +17,8 @@ namespace ThinkNet.Messaging.Handling
         /// </summary>
         public int Version { get; set; }
         /// <summary>
-        /// 事件源的标识id(如聚合根ID)
+        /// 事件源的标识id
         /// </summary>
-        public string SourceId { get; set; }
-        /// <summary>
-        /// 事件源的类型(如聚合根类型)
-        /// </summary>
-        public string SourceTypeName { get; set; }
+        public SourceKey SourceId { get; set; }
     }
 }

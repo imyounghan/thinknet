@@ -11,7 +11,7 @@ namespace ThinkNet.Domain
         /// <summary>
         /// 从缓存获取聚合实例
         /// </summary>
-        bool TryGet<T>(Type modelType, object modelId, out T model);
+        bool TryGet<T>(Type modelType, object modelId, out T model) where T : class;
         /// <summary>
         /// 设置一个聚合实例入缓存。不存在加入缓存，存在更新缓存
         /// </summary>

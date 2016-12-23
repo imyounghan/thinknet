@@ -71,35 +71,27 @@ namespace ThinkNet.Runtime.Dispatching
         /// <summary>
         /// 执行消息结果
         /// </summary>
-        public void Execute(IMessage message, out TimeSpan executionTime)
+        public void Execute(object arg, out TimeSpan time)
         {
-            message.NotNull("message");
-
-            executionTime = TimeSpan.Zero;
-
-            if(LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("Start handling '{0}'.", message);
-            }
-
-            var handlers = GetProxyHandlers(message.GetType());
+            time = TimeSpan.Zero;
+            var handlers = GetProxyHandlers(arg.GetType());
             foreach(var handler in handlers) {
-                try {
-                    _stopwatch.Restart();
-                    handler.Handle(message);
-                    _stopwatch.Stop();
+                _stopwatch.Restart();
 
-                    executionTime += _stopwatch.Elapsed;
+                try {                    
+                    handler.Handle(arg);
+                    _stopwatch.Stop();
                 }
                 catch(Exception ex) {
+                    _stopwatch.Stop();
                     if(LogManager.Default.IsErrorEnabled) {
-                        LogManager.Default.Error(ex, "Exception raised when handling '{0}' on '{1}'.", message, handler.GetInnerHandler().GetType().FullName);
+                        LogManager.Default.Error(ex, "Exception raised when handling '{0}' on '{1}'.", arg, handler.GetInnerHandler().GetType().FullName);
                     }
                 }
-            }
-
-            if(LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("Complete handling '{0}'.", message);
-            }
+                finally {
+                    time += _stopwatch.Elapsed;
+                }
+            }            
         }
 
         #region IInitializer 成员

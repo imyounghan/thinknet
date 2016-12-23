@@ -46,7 +46,7 @@ namespace ThinkNet.Runtime
             var @event = message as Event;
             if(@event != null) {
                 envelope.Metadata[StandardMetadata.Kind] = StandardMetadata.EventKind;
-                envelope.Metadata[StandardMetadata.SourceId] = @event.Id;
+                //envelope.Metadata[StandardMetadata.SourceId] = @event.Id;
             }
 
             return envelope;

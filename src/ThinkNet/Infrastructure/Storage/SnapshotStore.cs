@@ -39,7 +39,7 @@ namespace ThinkNet.Infrastructure.Storage
         /// 获取最新的快照
         /// </summary>
         public T GetLastest<T>(SourceKey sourceKey)
-            where T : class, IAggregateRoot
+            where T : class
         {
             if (!_persistent)
                 return null;

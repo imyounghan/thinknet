@@ -207,10 +207,10 @@ namespace ThinkNet.Infrastructure.Storage
             Task.Factory.StartNew(delegate {
                 using (var context = _dataContextFactory.Create()) {
                     context.CreateQuery<EventData>()
-                     .Where(p => p.AggregateRootId == sourceKey.Id &&
-                         p.AggregateRootTypeCode == aggregateRootTypeCode)
-                     .ToList()
-                     .ForEach(context.Delete);
+                        .Where(p => p.AggregateRootId == sourceKey.Id &&
+                            p.AggregateRootTypeCode == aggregateRootTypeCode)
+                        .ToList()
+                        .ForEach(context.Delete);
                     context.Commit();
                 }
             }).Wait();

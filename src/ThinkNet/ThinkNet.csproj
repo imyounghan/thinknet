@@ -82,6 +82,7 @@
     <Compile Include="Database\DataContextBase.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Domain\EventSourced.cs" />
     <Compile Include="Runtime\DefaultCommandService.cs" />
     <Compile Include="Extensions\ExpressionExtensions.cs">
       <SubType>Code</SubType>

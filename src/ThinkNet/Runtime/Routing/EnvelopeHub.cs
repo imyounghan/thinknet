@@ -86,6 +86,8 @@ namespace ThinkNet.Runtime.Routing
                     LogManager.Default.DebugFormat("Receive an envelope from local queue({0}), data:({1}).",
                         position, item.Body);
                 }
+
+                item.Items["ExitQueueTime"] = DateTime.UtcNow;
                 this.EnvelopeReceived(this, item);
             }
         }
@@ -121,14 +123,15 @@ namespace ThinkNet.Runtime.Routing
         public void Send(Envelope envelope)
         {
             int index;
-            var broker = this.GetBroker(this.GetKey(envelope), out index);
+            var broker = this.GetBroker(this.GetKey(envelope), out index);            
+
+            envelope.Items["EntryQueueTime"] = DateTime.UtcNow;
+            broker.Add(envelope, this.cancellationSource.Token);
 
             if(LogManager.Default.IsDebugEnabled) {
-                LogManager.Default.DebugFormat("Distribute an envelope to local queue({0}), data({1}).", 
-                    index, envelope.Body);
+                LogManager.Default.DebugFormat("Distribute an envelope({0}) in queue({1}) waited {2}ms.",
+                    envelope.Body, index, envelope.WaitTime.TotalMilliseconds);
             }
-
-            broker.Add(envelope, this.cancellationSource.Token);
         }
         ///// <summary>
         ///// Sends a batch of envelopes.

@@ -9,7 +9,7 @@ namespace ThinkNet.Messaging
     /// 实现 <see cref="ICommand"/> 的抽象类
     /// </summary>
     [DataContract]
-    public abstract class Command : ICommand, IMessage//, IExtensibleDataObject
+    public abstract class Command : ICommand, IMessage, IUniquelyIdentifiable
     {
 
         /// <summary>
@@ -37,20 +37,6 @@ namespace ThinkNet.Messaging
         /// </summary>
         [DataMember(Name = "timestamp")]
         public DateTime Timestamp { get; private set; }
-
-        //private ExtensionDataObject dataobject;
-        //ExtensionDataObject IExtensibleDataObject.ExtensionData
-        //{
-        //    get
-        //    {
-        //        return dataobject;
-        //    }
-
-        //    set
-        //    {
-        //        dataobject = value;
-        //    }
-        //}
 
         /// <summary>
         /// 获取该命令的Key

@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Collections;
 
 namespace ThinkNet.Runtime.Routing
 {
@@ -11,12 +11,14 @@ namespace ThinkNet.Runtime.Routing
     public class Envelope : EventArgs
     {
         private readonly Dictionary<string, string> dict;
+        private readonly Hashtable ht;
         /// <summary>
         /// Default Constructor.
         /// </summary>
         public Envelope()
         {
             this.dict = new Dictionary<string, string>();
+            this.ht = new Hashtable();
         }
         /// <summary>
         /// Parameterized Constructor.
@@ -36,6 +38,9 @@ namespace ThinkNet.Runtime.Routing
                 { StandardMetadata.TypeName, type.Name },
                 { StandardMetadata.AssemblyName, Path.GetFileNameWithoutExtension(type.Assembly.ManifestModule.FullyQualifiedName) }
             };
+            this.ht = new Hashtable() {
+                { "CreationTime", DateTime.UtcNow }
+            };
         }
         /// <summary>
         /// 元数据
@@ -49,9 +54,17 @@ namespace ThinkNet.Runtime.Routing
             get { return this.dict; }
         }
         /// <summary>
+        /// 用于上下文交互的数据项
+        /// </summary>
+        public IDictionary Items
+        {
+            get { return this.ht; }
+        }
+
+        /// <summary>
         /// 完成后的操作
         /// </summary>
-        public void Complete(object source)
+        public virtual void Complete(object source)
         {
             EnvelopeCompleted.Invoke(source, this);
         }
@@ -78,15 +91,27 @@ namespace ThinkNet.Runtime.Routing
         /// <summary>
         /// 从入队到出队的时间
         /// </summary>
-        public TimeSpan Delay { get; set; }
+        public TimeSpan Delay
+        {
+            get
+            {
+                return (DateTime)Items["ExitQueueTime"] - (DateTime)Items["EntryQueueTime"];
+            }
+        }
 
         /// <summary>
         /// 等待入队的时间
         /// </summary>
-        public TimeSpan WaitTime { get; set; }
+        public TimeSpan WaitTime
+        {
+            get
+            {
+                return (DateTime)Items["EntryQueueTime"] - (DateTime)Items["CreationTime"];
+            }
+        }
 
         /// <summary>
-        /// 处理该消息的时长
+        /// 处理时长
         /// </summary>
         public TimeSpan ProcessTime { get; set; }        
     }

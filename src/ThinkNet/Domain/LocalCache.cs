@@ -37,6 +37,7 @@ namespace ThinkNet.Domain
         /// 从缓存中获取该类型的实例。
         /// </summary>
         public bool TryGet<T>(Type modelType, object modelId, out T model)
+            where T : class
         {
             model = default(T);
             if (!_enabled)

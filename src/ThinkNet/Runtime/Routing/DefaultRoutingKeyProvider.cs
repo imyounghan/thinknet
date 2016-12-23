@@ -14,24 +14,26 @@ namespace ThinkNet.Runtime.Routing
         /// </summary>
         public virtual string GetRoutingKey(object payload)
         {
-            //var reply = payload as RepliedCommand;
-            //if(reply != null) {
-            //    return reply.CommandId;
-            //}
-
-            //var command = payload as ICommand;
-            //if (command != null) {
-            //    return command.AggregateRootId;
-            //}
-
-            //var @event = payload as IEvent;
-            //if (@event != null) {
-            //    return @event.SourceId;
-            //}
-            var message = payload as IMessage;
-            if (message != null) {
-                return message.GetKey();
+            var reply = payload as CommandResult;
+            if(reply != null) {
+                return reply.CommandId;
             }
+
+            var eventCollection = payload as EventCollection;
+            if(eventCollection != null) {
+                return eventCollection.SourceId.Id;
+            }
+
+            var command = payload as Command;
+            if(command != null) {
+                return command.GetKey();
+            }
+
+            var @event = payload as Event;
+            if(@event != null) {
+                return @event.GetKey();
+            }
+            
 
             return null;
         }

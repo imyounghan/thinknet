@@ -86,19 +86,35 @@ namespace ThinkNet.Runtime
             var kind = envelope.GetMetadata(StandardMetadata.Kind)
                 .IfEmpty(() => GetKind(envelope.Body));
 
-            if (string.IsNullOrEmpty(kind)) {
-                //TODO...WriteLog
+            if(envelope.IsNull() || envelope.Body.IsNull()) {
+                if(LogManager.Default.IsWarnEnabled) {
+                    LogManager.Default.WarnFormat("The envelope is null.", envelope.Body);
+                }
                 return;
             }
 
-            var message = envelope.Body as IMessage; 
+            if(string.IsNullOrEmpty(kind)) {
+                if(LogManager.Default.IsWarnEnabled) {
+                    LogManager.Default.WarnFormat("Unknown kind by '{0}'.", envelope.Body);
+                }
+                return;
+            }
+            
+            if(LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.DebugFormat("Start process '{0}' delayed {1}ms.", envelope.Body, envelope.Delay.TotalMilliseconds);
+            }
 
             TimeSpan executionTime;
-            _dispatcherDict[kind].Execute(message, out executionTime);
+            _dispatcherDict[kind].Execute(envelope.Body, out executionTime);
             envelope.ProcessTime = executionTime;
 
             envelope.Complete(sender);
+
+            if(LogManager.Default.IsDebugEnabled) {
+                LogManager.Default.DebugFormat("Complete process '{0}' used {1}ms, ", envelope.Body, executionTime.TotalMilliseconds);
+            }
         }
+
 
         /// <summary>
         /// 启动进程

@@ -131,9 +131,9 @@ namespace ThinkNet.Messaging
             }
         }
 
-        string IMessage.GetKey()
-        {
-            return this.CommandId;
-        }
+        //string IMessage.GetKey()
+        //{
+        //    return this.CommandId;
+        //}
     }
 }

@@ -1,16 +1,15 @@
 ﻿using System;
-using ThinkNet.Messaging;
 
 namespace ThinkNet.Runtime.Dispatching
 {
     /// <summary>
-    /// 执行消息的调度程序
+    /// 表示继承该接口的是一个调试程序
     /// </summary>
     public interface IDispatcher
     {
         /// <summary>
-        /// 执行消息结果。
+        /// 执行结果。
         /// </summary>
-        void Execute(IMessage message, out TimeSpan executionTime);
+        void Execute(object arg, out TimeSpan time);
     }
 }

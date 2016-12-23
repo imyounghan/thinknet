@@ -126,7 +126,7 @@ namespace ThinkNet.Infrastructure
             if (!string.IsNullOrWhiteSpace(this.TypeName))
                 sb.Append(this.TypeName);
             if (!string.IsNullOrWhiteSpace(this.AssemblyName))
-                sb.Append(", ").Append(this.AssemblyName);
+                sb.Append(",").Append(this.AssemblyName);
             if (!string.IsNullOrWhiteSpace(this.Id))
                 sb.Append("@").Append(this.Id);
 

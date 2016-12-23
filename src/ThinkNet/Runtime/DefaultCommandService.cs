@@ -42,18 +42,24 @@ namespace ThinkNet.Runtime
             else {
                 var attribute = command.GetType().GetCustomAttribute<XmlTypeAttribute>(false);
                 if(attribute == null || string.IsNullOrEmpty(attribute.TypeName)) {
-                    string errorMessage = string.Format("Type of '{0}' is not defined XmlTypeAttribute or not set TypeName.");
+                    string errorMessage = string.Format("Type of '{0}' is not defined XmlTypeAttribute or not set TypeName.", command.GetType().FullName);
                     throw new ThinkNetException(errorMessage);
                 }
 
                 Type type;
                 if(!TryGetCommandType(attribute.TypeName, out type)) {
                     if(string.IsNullOrEmpty(attribute.Namespace)) {
-                        string errorMessage = string.Format("Type of '{0}' XmlTypeAttribute not set Namespace.");
+                        string errorMessage = string.Format("Type of '{0}' XmlTypeAttribute not set Namespace.", command.GetType().FullName);
                         throw new ThinkNetException(errorMessage);
                     }
 
-                    type = Type.GetType(string.Format("{0}.{1}", attribute.Namespace, attribute.TypeName));
+                    try {
+                        type = Type.GetType(string.Format("{0}.{1}", attribute.Namespace, attribute.TypeName));
+                    }
+                    catch(Exception ex) {
+                        string errorMessage = string.Format("Can not Get the Type({0}.{1}).", attribute.Namespace, attribute.TypeName);
+                        throw new ThinkNetException(errorMessage, ex);
+                    }                   
                 }
 
                 var converted = _serializer.Deserialize(_serializer.Serialize(command), type);

@@ -125,7 +125,6 @@ namespace ThinkNet.Runtime.Kafka
             offsetPositions[topic].TryAdd(envelope.GetMetadata(StandardMetadata.SourceId), offset);
             lastedOffsetPositions[topic][offset.PartitionId] = offset.Offset;
             envelope.Metadata["Topic"] = topic;
-            
             _sender.Send(envelope);
         }
 

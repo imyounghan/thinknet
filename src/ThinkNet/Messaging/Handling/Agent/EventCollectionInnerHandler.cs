@@ -200,8 +200,7 @@ namespace ThinkNet.Messaging.Handling.Agent
             var array = new ArrayList();
             array.Add(new SourceMetadata {
                 CorrelationId = collection.CorrelationId,
-                SourceId = collection.SourceId.Id,
-                SourceTypeName = collection.SourceId.GetSourceTypeFullName(),
+                SourceId = collection.SourceId,
                 Version = collection.Version
             });
 

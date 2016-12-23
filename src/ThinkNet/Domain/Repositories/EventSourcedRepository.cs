@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.Serialization;
+using ThinkNet.Contracts;
 using ThinkNet.Domain.EventSourcing;
 using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
@@ -120,35 +121,39 @@ namespace ThinkNet.Domain.Repositories
         /// </summary>
         public void Save(IEventSourced eventSourced, string correlationId)
         {
-            if(string.IsNullOrWhiteSpace(correlationId)) {
-                if(LogManager.Default.IsWarnEnabled)
-                    LogManager.Default.Warn("Not use command to modify the state of the aggregate root.");
-            }
-
             var aggregateRootType = eventSourced.GetType();
 
+            if(!eventSourced.IsChanged) {
+                if(LogManager.Default.IsWarnEnabled)
+                    LogManager.Default.WarnFormat("The command does not change the aggregate root. commandId:{0},aggregateRootType:{1},aggregateRootId:{2}.", correlationId, aggregateRootType.FullName, eventSourced.Id);
+
+                _messageBus.PublishAsync(new CommandResult(correlationId, CommandReturnMode.DomainEventHandled, ReturnStatus.Nothing));
+                return;
+            }
+            
             var eventCollection = new EventCollection(eventSourced.Events) {
                 CorrelationId = correlationId,
                 SourceId = new SourceKey(eventSourced.Id, aggregateRootType),
-                Version = eventSourced.Version
+                Version = eventSourced.Version + 1
             };
 
             try {
                 _eventStore.Save(eventCollection);
+                eventSourced.AcceptChanges(eventCollection.Version);
 
                 if (LogManager.Default.IsDebugEnabled)
-                    LogManager.Default.DebugFormat("Domain events persistent completed. aggregateRootId:{0}, aggregateRootType:{1}, commandId:{2}.",
+                    LogManager.Default.DebugFormat("Persistent domain events success. aggregateRootType:{0},aggregateRootId:{1},commandId:{2}.",
                         eventSourced.Id, aggregateRootType.FullName, correlationId);
             }
             catch (Exception ex) {
                 if(LogManager.Default.IsErrorEnabled)
                     LogManager.Default.Error(ex,
-                        "Domain events persistent failed. aggregateRootId:{0},aggregateRootType:{1},version:{2}.",
+                        "Persistent domain events failed. aggregateRootType:{0},aggregateRootId:{1},version:{2}.",
                         eventSourced.Id, aggregateRootType.FullName, eventSourced.Version);
                 throw ex;
             }
 
-            _cache.Set(eventSourced, eventSourced.Id);
+            _cache.Set(eventSourced, eventCollection.SourceId);
             _messageBus.PublishAsync((IMessage)eventCollection);
 
 

@@ -23,6 +23,7 @@ namespace ThinkNet.Runtime.Dispatching
         private readonly IObjectContainer _container;
         private readonly IInterceptorProvider _interceptorProvider;
         private readonly IQueryResultNotification _notification;
+        private readonly Stopwatch _stopwatch;
 
         /// <summary>
         /// Parameterized constructor.
@@ -34,10 +35,18 @@ namespace ThinkNet.Runtime.Dispatching
             this._notification = notification;
             this._parameterTypeMapFetcherType = new Dictionary<Type, Type>();
             this._cachedFetchers = new ConcurrentDictionary<string, IQueryFetcherAgent>();
+            this._stopwatch = new Stopwatch();
         }
 
-        private void Execute(QueryParameter parameter)
+        private void Execute(IQuery parameter)
         {
+            if(parameter.IsNull()) {
+                //TODO log
+                _notification.Notify(parameter.Id, new QueryResult(ReturnStatus.Failed, "unkown parameter."));
+                return;
+            }
+
+
             try {
                 var fetcher = this.GetProxyFetcher(parameter.GetType());
                 var result = fetcher.Fetch(parameter);
@@ -102,33 +111,33 @@ namespace ThinkNet.Runtime.Dispatching
             return cachedFetcher;
         }
 
-
-
-        #region IDispatcher 成员
-
-        void IDispatcher.Execute(IMessage message, out TimeSpan executionTime)
+        public void Execute(object arg, out TimeSpan time)
         {
-            message.NotNull("message");
+            time = TimeSpan.Zero;
 
-            executionTime = TimeSpan.Zero;
-
-
-            var stopwatch = Stopwatch.StartNew();
-            try {
-                stopwatch.Restart();
-                this.Execute(message as QueryParameter);
-                stopwatch.Stop();
-
-                executionTime = stopwatch.Elapsed;                
+            var parameter = arg as QueryParameter;
+            if(parameter.IsNull()) {
+                if(LogManager.Default.IsWarnEnabled) {
+                    LogManager.Default.WarnFormat("The Argument({0}) is not QueryParameter.", arg);
+                }
+                return;
+            }
+            
+            _stopwatch.Restart();
+            try {                
+                this.Execute(parameter);
+                _stopwatch.Stop();
             }
             catch(Exception ex) {
+                _stopwatch.Stop();
                 if(LogManager.Default.IsErrorEnabled) {
-                    LogManager.Default.Error(ex, "Exception raised when fetching ({0}).", message);
+                    LogManager.Default.Error(ex, "Exception raised when fetching ({0}).", arg);
                 }
             }
+            finally {
+                time = _stopwatch.Elapsed;
+            }
         }
-
-        #endregion
 
         #region IInitializer 成员
 

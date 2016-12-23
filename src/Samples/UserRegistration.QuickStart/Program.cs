@@ -2,6 +2,7 @@
 using System.Threading;
 using ThinkNet;
 using ThinkNet.Contracts;
+using ThinkNet.Infrastructure;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
 
@@ -20,7 +21,7 @@ namespace UserRegistration.QuickStart
             //    Password = "123456",
             //    LoginId = "young.han",
             //    Email = "19126332@qq.com"
-            //}, true);
+            //});
             //Console.WriteLine(serialized);
 
 
@@ -35,7 +36,7 @@ namespace UserRegistration.QuickStart
                 Password = "123456",
                 LoginId = "young.han",
                 Email = "19126332@qq.com"
-            }, CommandReturnMode.DomainEventHandled);
+            }, CommandReturnMode.CommandExecuted);
             //int counter = 0;
             //var tasks = new System.Threading.Tasks.Task[5000];
             //var sw = new System.Diagnostics.Stopwatch();

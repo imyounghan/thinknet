@@ -19,6 +19,11 @@ namespace ThinkNet.Domain
         bool IsChanged { get; }
 
         /// <summary>
+        /// 变更版本号
+        /// </summary>
+        void AcceptChanges(int newVersion);
+
+        /// <summary>
         /// 通过事件还原对象状态。
         /// </summary>
         void LoadFrom(IEnumerable<Event> events);

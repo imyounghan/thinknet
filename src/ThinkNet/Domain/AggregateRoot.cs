@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using ThinkNet.Infrastructure;
 using ThinkNet.Messaging;
 
 
@@ -12,7 +13,7 @@ namespace ThinkNet.Domain
     /// 表示一个通过事件溯源的聚合根的抽象类
     /// </summary>
     [DataContract]
-    public abstract class AggregateRoot<TIdentify> : Entity<TIdentify>, IEventSourced
+    public abstract class AggregateRoot<TIdentify> : Entity<TIdentify>, IAggregateRoot, IEventPublisher
     {
         /// <summary>
         /// Default constructor.
@@ -27,12 +28,6 @@ namespace ThinkNet.Domain
             : base(id)
         { }
 
-        /// <summary>
-        /// 版本号
-        /// </summary>
-        [DataMember(Name = "version")]
-        public int Version { get; private set; }
-
         
         [IgnoreDataMember]
         private IList<Event> _pendingEvents;
@@ -44,15 +39,15 @@ namespace ThinkNet.Domain
         {
             @event.SourceId = this.Id;
 
+            this.ApplyEvent(@event);
+
             if (_pendingEvents == null) {
                 _pendingEvents = new List<Event>();
             }
-            _pendingEvents.Add(@event);
-
-            this.ApplyEvent(@event);
+            _pendingEvents.Add(@event);            
         }
 
-        private void ApplyEvent(Event @event)
+        internal void ApplyEvent(Event @event)
         {
             var eventType = @event.GetType();
             var aggregateRootType = this.GetType();
@@ -63,7 +58,10 @@ namespace ThinkNet.Domain
             else {
                 var errorMessage = string.Format("Event handler not found on {0} for {1}.",
                     aggregateRootType.FullName, eventType.FullName);
-                throw new ThinkNetException(errorMessage);
+                if(this is IEventSourced) {
+                    throw new ThinkNetException(errorMessage);
+                }
+                LogManager.Default.Warn(errorMessage);
             }
         }
 
@@ -75,7 +73,7 @@ namespace ThinkNet.Domain
             if (_pendingEvents == null || _pendingEvents.Count == 0) {
                 return Enumerable.Empty<Event>();
             }
-            return new ReadOnlyCollection<Event>(_pendingEvents);
+            return _pendingEvents;
         }
 
         /// <summary>
@@ -100,36 +98,25 @@ namespace ThinkNet.Domain
                 if(_pendingEvents == null || _pendingEvents.Count == 0) {
                     return Enumerable.Empty<Event>();
                 }
-                var array = new Event[_pendingEvents.Count];
-                _pendingEvents.CopyTo(array, 0);
-                this.Version++;
-                this.ClearEvents();
-                return array;
+                return new ReadOnlyCollection<Event>(_pendingEvents);
             }
         }
 
         #endregion
 
-        #region IAggregateRoot 成员
-        [IgnoreDataMember]
-        object IAggregateRoot.Id
+        #region IUniquelyIdentifiable 成员
+
+        string IUniquelyIdentifiable.Id
         {
-            get { return this.Id; }
+            get
+            {
+                if(this.Id != null) {
+                    return this.Id.ToString();
+                }
+                return null;
+            }
         }
 
-        [IgnoreDataMember]
-        bool IEventSourced.IsChanged
-        {
-            get { return _pendingEvents != null && _pendingEvents.Count > 0; }
-        }
-        #endregion
-
-        #region IEventSourced 成员
-        void IEventSourced.LoadFrom(IEnumerable<Event> events)
-        {
-            this.Version++;
-            events.ForEach(this.ApplyEvent);
-        }
         #endregion
     }
 }

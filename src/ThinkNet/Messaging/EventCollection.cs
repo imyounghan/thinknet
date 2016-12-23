@@ -60,17 +60,17 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            var events = this.events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.Id));
+            //var events = this.events.Select(@event => string.Concat(@event.GetType().FullName, "&", @event.Id));
 
             return string.Concat(this.SourceId.GetSourceTypeName(), "@", this.SourceId.Id,
                 "[", string.Join(",", events), "]", "#", this.CorrelationId);
         }
         
 
-        string IMessage.GetKey()
-        {
-            return this.SourceId.Id;
-        }
+        //string IMessage.GetKey()
+        //{
+        //    return this.SourceId.Id;
+        //}
 
         /// <summary>
         /// 返回一个循环访问 <see cref="EventCollection"/> 的枚举器。

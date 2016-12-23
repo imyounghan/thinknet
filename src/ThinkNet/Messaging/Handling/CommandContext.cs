@@ -117,7 +117,7 @@ namespace ThinkNet.Messaging.Handling
                 throw new ThinkNetException("Detected more than one aggregate root created or modified by command.");
             }
             if(dict.Values.Count == 1) {
-                _repository.Save(aggregateRoots.First());
+                _repository.Save(dict.Values.First());
                 SendEvents();
                 return;
             }

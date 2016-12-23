@@ -8,7 +8,7 @@ namespace ThinkNet.Messaging
     /// <see cref="IQuery"/> 的抽象类
     /// </summary>
     [DataContract]
-    public abstract class QueryParameter : IQuery, IMessage
+    public abstract class QueryParameter : IQuery, IMessage, IUniquelyIdentifiable
     {
         /// <summary>
         /// Default Constructor.
@@ -18,19 +18,11 @@ namespace ThinkNet.Messaging
             this.Id = UniqueId.GenerateNewStringId();
         }
 
-        string IMessage.GetKey()
-        {
-            return null;
-        }
-
+        /// <summary>
+        /// 查询标识
+        /// </summary>
         [DataMember(Name = "id")]
-        internal string Id;
-
-        [IgnoreDataMember]
-        string IUniquelyIdentifiable.Id
-        {
-            get { return this.Id; }
-        }
+        public string Id { get; private set; }
 
         /// <summary>
         /// 输出字符串信息

@@ -11,12 +11,10 @@ namespace ThinkNet.Database
     internal class MemoryContextFactory : IDataContextFactory
     {
         private static ConcurrentDictionary<Type, Hashtable> total;
-        private static readonly object lockObj;
 
         static MemoryContextFactory()
         {
             total = new ConcurrentDictionary<Type, Hashtable>();
-            lockObj = new object();
         }
 
         public IDataContext GetCurrent()
@@ -231,12 +229,7 @@ namespace ThinkNet.Database
             {
                 Hashtable entities;
                 if (total.TryGetValue(typeof(TEntity), out entities)) {
-                    Hashtable clone;
-                    lock (lockObj) {
-                        clone = entities.Clone() as Hashtable;
-                    }
-                    return clone.Values.AsParallel().Cast<TEntity>().AsQueryable();
-                    
+                    return new ArrayList(entities.Values).AsParallel().Cast<TEntity>().AsQueryable();
                 }
 
                 return Enumerable.Empty<TEntity>().AsQueryable();
