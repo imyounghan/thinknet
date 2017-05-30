@@ -1,11 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿
 
 namespace ThinkNet.Infrastructure
 {
+    using System;
+    using System.Linq;
+    using System.Runtime.Serialization;
+    using System.Text;
+    using System.Text.RegularExpressions;
+
     /// <summary>
     /// 表示一个完整的源数据主键
     /// </summary>
@@ -23,7 +25,7 @@ namespace ThinkNet.Infrastructure
         public SourceKey(string str)
         {
             var match = Regex.Match(str, @"^([\w-\.]+)\.([\w-]+),\s?([\w-]+)@([\w-]+)$");
-            if (!match.Success) {
+            if(!match.Success) {
                 throw new FormatException(str);
             }
 
@@ -47,7 +49,7 @@ namespace ThinkNet.Infrastructure
         public SourceKey(string sourceId, string sourceTypeName)
         {
             var match = Regex.Match(sourceTypeName, @"^([\w-\.]+)\.([\w-]+),\s?([\w-]+)$");
-            if (!match.Success) {
+            if(!match.Success) {
                 throw new FormatException(sourceTypeName);
             }
 
@@ -74,7 +76,7 @@ namespace ThinkNet.Infrastructure
 
             this.uniqueId = sourceId;
             this.@namespace = sourceNamespace;
-            this.typeName = sourceTypeName;            
+            this.typeName = sourceTypeName;
             this.assemblyName = sourceAssemblyName;
         }
 
@@ -121,13 +123,13 @@ namespace ThinkNet.Infrastructure
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            if (!string.IsNullOrWhiteSpace(this.Namespace))
+            if(!string.IsNullOrWhiteSpace(this.Namespace))
                 sb.Append(this.Namespace).Append(".");
-            if (!string.IsNullOrWhiteSpace(this.TypeName))
+            if(!string.IsNullOrWhiteSpace(this.TypeName))
                 sb.Append(this.TypeName);
-            if (!string.IsNullOrWhiteSpace(this.AssemblyName))
+            if(!string.IsNullOrWhiteSpace(this.AssemblyName))
                 sb.Append(",").Append(this.AssemblyName);
-            if (!string.IsNullOrWhiteSpace(this.Id))
+            if(!string.IsNullOrWhiteSpace(this.Id))
                 sb.Append("@").Append(this.Id);
 
             return sb.ToString();
@@ -138,7 +140,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override bool Equals(object obj)
         {
-            if (obj == null || obj.GetType() != typeof(SourceKey))
+            if(obj == null || obj.GetType() != typeof(SourceKey))
                 return false;
 
             SourceKey other = (SourceKey)obj;
@@ -200,7 +202,7 @@ namespace ThinkNet.Infrastructure
 
         private static bool IsEqual(SourceKey left, SourceKey right)
         {
-            if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null)) {
+            if(ReferenceEquals(left, null) ^ ReferenceEquals(right, null)) {
                 return false;
             }
             return ReferenceEquals(left, null) || left.Equals(right);
@@ -231,7 +233,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public static bool TryParse(string input, out SourceKey result)
         {
-            if (!Regex.IsMatch(input, @"^([\w-\.]+)\.([\w-]+),\s([\w-]+)@([\w-]+)$")) {
+            if(!Regex.IsMatch(input, @"^([\w-\.]+)\.([\w-]+),\s([\w-]+)@([\w-]+)$")) {
                 result = Empty;
                 return false;
             }

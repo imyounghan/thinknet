@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿
 
 namespace ThinkNet.Infrastructure
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     /// <summary>
     /// 对象容器接口
     /// </summary>
@@ -28,9 +30,6 @@ namespace ThinkNet.Infrastructure
         /// 注册一个类型
         /// </summary>
         void RegisterType(Type from, Type to, string name, Lifecycle lifetime = Lifecycle.Singleton);
-
-
-
 
         /// <summary>
         /// 获取类型对应的实例

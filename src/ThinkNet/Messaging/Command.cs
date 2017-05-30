@@ -1,103 +1,48 @@
-﻿using System;
-using System.Runtime.Serialization;
-using ThinkNet.Contracts;
-using ThinkNet.Infrastructure;
+﻿
 
 namespace ThinkNet.Messaging
 {
+    using System;
+    using System.Runtime.Serialization;
+    using ThinkNet.Contracts;
+    using ThinkNet.Infrastructure;
+
     /// <summary>
-    /// 实现 <see cref="ICommand"/> 的抽象类
+    /// 表示继承该抽象类的是一个命令
     /// </summary>
     [DataContract]
-    public abstract class Command : ICommand, IMessage, IUniquelyIdentifiable
+    public abstract class Command : ICommand, IMessage, IKeyProvider
     {
-
         /// <summary>
-        /// Default Constructor.
+        /// 默认构造函数
         /// </summary>
         protected Command()
-            : this(null)
-        { }
-        /// <summary>
-        /// Parameterized Constructor.
-        /// </summary>
-        protected Command(string id)
         {
-            this.Id = id.IfEmpty(UniqueId.GenerateNewStringId);
             this.Timestamp = DateTime.UtcNow;
         }
 
         /// <summary>
-        /// 命令标识
-        /// </summary>
-        [DataMember(Name = "id")]
-        public string Id { get; private set; }
-        /// <summary>
-        /// 生成当前命令的时间戳
+        /// 生成当前消息的时间戳
         /// </summary>
         [DataMember(Name = "timestamp")]
-        public DateTime Timestamp { get; private set; }
+        public DateTime Timestamp { get; set; }
 
         /// <summary>
-        /// 获取该命令的Key
+        /// 获取路由的关键字
         /// </summary>
-        public virtual string GetKey()
+        protected virtual string GetRoutingKey()
         {
             return null;
         }
 
-        /// <summary>
-        /// 输出字符串信息
-        /// </summary>
-        public override string ToString()
+
+        #region IKeyProvider 成员
+
+        string IKeyProvider.GetKey()
         {
-            return string.Format("{0}@{1}", this.GetType().FullName, this.Id);
-        }
-    }
-
-    /// <summary>
-    /// Represents an abstract aggregate command.
-    /// </summary>
-    [DataContract]
-    public abstract class Command<TAggregateRootId> : Command
-    {
-        /// <summary>
-        /// Represents the aggregate root which is related with the command.
-        /// </summary>
-        [DataMember(Name = "aggregateRootId")]
-        public TAggregateRootId AggregateRootId { get; private set; }
-
-        /// <summary>
-        /// Parameterized constructor.
-        /// </summary>
-        protected Command(TAggregateRootId aggregateRootId)
-            : this(null, aggregateRootId)
-        { }
-        /// <summary>
-        /// Parameterized Constructor.
-        /// </summary>
-        protected Command(string commandId, TAggregateRootId aggregateRootId)
-            : base(commandId)
-        {
-            aggregateRootId.NotNull("aggregateRootId");
-
-            this.AggregateRootId = aggregateRootId;
+            return this.GetRoutingKey();
         }
 
-        /// <summary>
-        /// 获取处理聚合命令的聚合根ID的字符串形式
-        /// </summary>
-        public override string GetKey()
-        {
-            return this.AggregateRootId.ToString();
-        }
-
-        /// <summary>
-        /// 输出字符串信息
-        /// </summary>
-        public override string ToString()
-        {
-            return string.Format("{0}@{1}#{2}", this.GetType().FullName, this.Id, this.AggregateRootId);
-        }
+        #endregion
     }
 }

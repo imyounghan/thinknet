@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿
 
 namespace ThinkNet.Infrastructure
 {
+    using System.Collections.Generic;
+    using System.Reflection;
+
     /// <summary>
     /// 应用程序初始化接口
     /// </summary>

@@ -1,21 +1,21 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿
 
 namespace ThinkNet.Messaging
 {
-    /// <summary>
-    /// 表示继承该接口的是事件总线
-    /// </summary>
-    public interface IMessageBus
-    {
-        /// <summary>
-        /// 异步发布消息
-        /// </summary>
-        Task PublishAsync(IMessage message);
+    using System.Collections.Generic;
 
-        /// <summary>
-        /// 异步发布一组消息
-        /// </summary>
-        Task PublishAsync(IEnumerable<IMessage> messages);
-    }   
+    /// <summary>
+    /// 表示一个消息总线的接口
+    /// </summary>
+    /// <typeparam name="TMessage">消息类型</typeparam>
+    public interface IMessageBus<TMessage> where TMessage : IMessage
+    {
+        void Send(TMessage message);
+
+        void Send(Envelope<TMessage> message);
+
+        void Send(IEnumerable<TMessage> messages);
+
+        void Send(IEnumerable<Envelope<TMessage>> messages);
+    }
 }

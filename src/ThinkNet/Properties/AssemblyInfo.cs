@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Sunsoft Studio(mail:young.han@foxmail.com)")]
 [assembly: AssemblyProduct("ThinkNet")]
-[assembly: AssemblyCopyright("Copyright © 2014~2016 Sunsoft Studio")]
+[assembly: AssemblyCopyright("Copyright © 2014~2017 Sunsoft Studio")]
 [assembly: AssemblyTrademark("sunsoft")]
 [assembly: AssemblyCulture("")]
 

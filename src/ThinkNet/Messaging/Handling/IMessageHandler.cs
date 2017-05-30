@@ -1,7 +1,7 @@
 ﻿namespace ThinkNet.Messaging.Handling
 {
     /// <summary>
-    /// 表示继承此接口的是一个消息处理器。
+    /// 表示继承该接口的是一个处理程序
     /// </summary>
     public interface IMessageHandler<TMessage> : IHandler
         where TMessage : class, IMessage

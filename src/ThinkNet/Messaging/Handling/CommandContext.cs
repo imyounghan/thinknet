@@ -1,128 +1,243 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ThinkNet.Domain;
+﻿
 
 namespace ThinkNet.Messaging.Handling
 {
-    /// <summary>
-    /// <see cref="ICommandContext"/> 的实现类
-    /// </summary>
-    public class CommandContext : ICommandContext
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using ThinkNet.Infrastructure;
+    using ThinkNet.Seeds;
+
+    public class CommandContext : ICommandContext, IUnitOfWork
     {
-        private readonly IRepository _repository;
-        private readonly IEventSourcedRepository _eventSourcedRepository;
-        private readonly IMessageBus _bus;
+        private readonly Dictionary<string, IAggregateRoot> trackedAggregateRoots;
 
-        private readonly Dictionary<string, IAggregateRoot> dict;
-        private readonly IList<Event> pendingEvents;
+        private readonly IEventStore eventStore;
+        private readonly ICache cache;
+        private readonly ISnapshotStore snapshotStore;
+        private readonly IEventBus eventBus;
+        private readonly ILogger logger;
 
-        /// <summary>
-        /// Parameterized constructor.
-        /// </summary>
-        public CommandContext(IRepository repository, IEventSourcedRepository eventSourcedRepository, IMessageBus bus)
+        private readonly IRepository repository;
+
+        public CommandContext(IEventBus eventBus,
+            IEventStore eventStore,
+            ISnapshotStore snapshotStore,
+            IRepository repository,
+            ICache cache,
+            ILogger logger)
         {
-            this._repository = repository;
-            this._eventSourcedRepository = eventSourcedRepository;
-            this._bus = bus;
+            this.eventBus = eventBus;
+            this.eventStore = eventStore;
+            this.snapshotStore = snapshotStore;
+            this.repository = repository;
+            this.cache = cache;
+            this.logger = logger;
 
-            this.dict = new Dictionary<string, IAggregateRoot>();
-            this.pendingEvents = new List<Event>();
+            this.trackedAggregateRoots = new Dictionary<string, IAggregateRoot>();
         }
 
-        private static bool IsEventSourced(Type type)
-        {
-            return type.IsClass && !type.IsAbstract && typeof(IEventSourced).IsAssignableFrom(type);
-        }
-        /// <summary>
-        /// 添加该聚合根到当前上下文中。
-        /// </summary>
+        public string CommandId { get; set; }
+
+        public Command Command { get; set; }
+
+        public TraceInfo TraceInfo { get; set; }
+
         public void Add(IAggregateRoot aggregateRoot)
         {
             aggregateRoot.NotNull("aggregateRoot");
 
             string key = string.Concat(aggregateRoot.GetType().FullName, "@", aggregateRoot.Id);
-            dict.TryAdd(key, aggregateRoot);
-        }
-        /// <summary>
-        /// 从当前上下文获取聚合根
-        /// </summary>
-        public T Get<T>(object id) where T : class, IAggregateRoot
-        {
-            var aggregate = this.Find<T>(id);
-            if(aggregate == null)
-                throw new EntityNotFoundException(id, typeof(T));
-
-            return aggregate as T;
+            trackedAggregateRoots.TryAdd(key, aggregateRoot);
         }
 
-        /// <summary>
-        /// 从当前上下文获取聚合根
-        /// </summary>
-        public T Find<T>(object id) where T : class, IAggregateRoot
+        public TEventSourced Get<TEventSourced, TIdentify>(TIdentify id) where TEventSourced : class, IEventSourced
         {
-            var type = typeof(T);
+            var aggregateRoot = this.Find<TEventSourced, TIdentify>(id);
+            if(aggregateRoot == null)
+                throw new EntityNotFoundException(id, typeof(TEventSourced));
+
+            return aggregateRoot;
+        }
+
+        public TAggregateRoot Find<TAggregateRoot, TIdentify>(TIdentify id) where TAggregateRoot : class, IAggregateRoot
+        {
+            var type = typeof(TAggregateRoot);
+            if(!type.IsClass || type.IsAbstract) {
+                string errorMessage = string.Format("The type of '{0}' must be a non abstract class.", type.FullName);
+                throw new ApplicationException(errorMessage);
+            }
+
             string key = string.Concat(type.FullName, "@", id);
 
             IAggregateRoot aggregateRoot;
-            if(!dict.TryGetValue(key, out aggregateRoot)) {
-                if (IsEventSourced(type)) {
-                    aggregateRoot = _eventSourcedRepository.Find(type, id);
+            if(!trackedAggregateRoots.TryGetValue(key, out aggregateRoot)) {
+                if (type.IsAssignableFrom(typeof(IEventSourced)))
+                {
+                    aggregateRoot = this.Restore(type, id);
                 }
-                else {
-                    aggregateRoot = _repository.Find(type, id);
+                else
+                {
+                    aggregateRoot = this.repository.Find(type, id);
                 }
 
-                if (aggregateRoot != null) {
-                    dict.Add(key, aggregateRoot);
+                if(aggregateRoot != null) {
+                    trackedAggregateRoots.Add(key, aggregateRoot);
                 }
             }
 
-            return aggregateRoot as T;
+            return aggregateRoot as TAggregateRoot;
+        }
+
+        private IEventSourced Create(Type sourceType, object sourceId)
+        {
+            var idType = sourceId.GetType();
+            var constructor = sourceType.GetConstructor(new[] { idType });
+
+            if(constructor == null) {
+                string errorMessage = string.Format("Type '{0}' must have a constructor with the following signature: .ctor({1} id)", sourceType.FullName, idType.FullName);
+                throw new ApplicationException(errorMessage);
+                //return FormatterServices.GetUninitializedObject(aggregateRootType) as IEventSourced;
+            }
+
+            return constructor.Invoke(new[] { sourceId }) as IEventSourced;
         }
 
         /// <summary>
-        /// 添加待处理的事件。
+        /// 根据主键获取聚合根实例。
         /// </summary>
-        public void AppendEvent(Event @event)
+        private IEventSourced Restore(Type sourceType, object sourceId)
         {
-            if(pendingEvents.Any(p => p.Id == @event.Id))
-                return;
+            sourceId.NotNull("sourceId");
 
-            pendingEvents.Add(@event);
+            IEventSourced aggregateRoot = null;
+            if(this.cache.TryGet(sourceType, sourceId, out aggregateRoot)) {
+                if(this.logger.IsDebugEnabled)
+                    this.logger.DebugFormat("Find the aggregate root {0} of id {1} from cache.",
+                        sourceType.FullName, sourceId);
+
+                return aggregateRoot;
+            }
+
+            try {
+                aggregateRoot = this.snapshotStore.GetLastest(sourceType, sourceId) as IEventSourced;
+                if(aggregateRoot != null) {
+                    if(this.logger.IsDebugEnabled)
+                        this.logger.DebugFormat("Find the aggregate root '{0}' of id '{1}' from snapshot. current version:{2}.",
+                            sourceType.FullName, sourceId, aggregateRoot.Version);
+                }
+            }
+            catch(Exception ex) {
+                if(this.logger.IsWarnEnabled)
+                    this.logger.Warn(ex,
+                        "Get the latest snapshot failed. aggregateRootId:{0},aggregateRootType:{1}.",
+                        sourceId, sourceType.FullName);
+            }
+
+            var events = this.eventStore.FindAll(new SourceKey(sourceId, sourceType), aggregateRoot.Version);
+            if(!events.IsEmpty()) {
+                if(aggregateRoot == null) {
+                    aggregateRoot = this.Create(sourceType, sourceId);
+                }
+                foreach(var @event in events) {
+                    aggregateRoot.LoadFrom(@event.Value);
+                    aggregateRoot.AcceptChanges(@event.Key);
+                }
+
+                if(this.logger.IsDebugEnabled)
+                    this.logger.DebugFormat("Restore the aggregate root '{0}' of id '{1}' from event stream. version:{2} ~ {3}",
+                        sourceType.FullName,
+                        sourceId,
+                        events.Min(p => p.Key),
+                        events.Max(p => p.Key));
+            }
+
+            this.cache.Set(aggregateRoot, sourceId);
+
+            return aggregateRoot;
         }
 
-        private void SendEvents()
+        public void Commit()
         {
-            if(pendingEvents.Count > 0)
-                _bus.PublishAsync(pendingEvents.Cast<IMessage>());
-        }
-        /// <summary>
-        /// 提交修改结果。
-        /// </summary>
-        public void Commit(string commandId)
-        {
-            var aggregateRoots = dict.Values.OfType<IEventSourced>().Where(p => p.IsChanged);
-            var count = aggregateRoots.Count();
-            if(count > 1) {
-                throw new ThinkNetException("Detected more than one aggregate root created or modified by command.");
-            }
-            if(count == 1) {
-                _eventSourcedRepository.Save(aggregateRoots.First(), commandId);
-                SendEvents();
-                return;
+            var dirtyAggregateRootCount = 0;
+            var dirtyAggregateRoot = default(IEventSourced);
+            var changedEvents = Enumerable.Empty<Event>();
+            foreach(var aggregateRoot in trackedAggregateRoots.Values.OfType<IEventSourced>()) {
+                changedEvents = aggregateRoot.GetEvents();
+                if(changedEvents.IsEmpty()) {
+                    dirtyAggregateRootCount++;
+                    if(dirtyAggregateRootCount > 1) {
+                        var errorMessage = string.Format("Detected more than one aggregate created or modified by command. commandType:{0}, commandId:{1}",
+                            this.Command.GetType().FullName,
+                            this.CommandId);
+                        throw new ApplicationException(errorMessage);
+                    }
+                    dirtyAggregateRoot = aggregateRoot;
+                }
             }
 
-            if(dict.Values.Count > 1) {
-                throw new ThinkNetException("Detected more than one aggregate root created or modified by command.");
-            }
-            if(dict.Values.Count == 1) {
-                _repository.Save(dict.Values.First());
-                SendEvents();
-                return;
+            if(dirtyAggregateRootCount == 0 || changedEvents == null || changedEvents.IsEmpty()) {
+                var errorMessage = string.Format("Not found aggregate to be created or modified by command. commandType:{0}, commandId:{1}",
+                    this.Command.GetType().FullName,
+                    this.CommandId);
+                throw new ApplicationException(errorMessage);
             }
 
-            throw new ThinkNetException("No aggregate root found to be created or modified.");
+            var aggregateRootType = dirtyAggregateRoot.GetType();
+
+            var sourceInfo = new SourceKey(dirtyAggregateRoot.Id, aggregateRootType);
+            var aggregateRootVersion = dirtyAggregateRoot.Version + 1;
+
+            Envelope<Command> envelopedCommand;
+            try {
+                if(this.eventStore.Save(sourceInfo, aggregateRootVersion, changedEvents, this.CommandId)) {
+                    dirtyAggregateRoot.AcceptChanges(aggregateRootVersion);
+
+                    if(this.logger.IsDebugEnabled)
+                        this.logger.DebugFormat("Persistent domain events success. aggregateRootType:{0},aggregateRootId:{1},version:{2}.",
+                            dirtyAggregateRoot.Id, aggregateRootType.FullName, dirtyAggregateRoot.Version);
+                }
+                else
+                {
+                    var existingEvent = this.eventStore.Find(sourceInfo, this.CommandId);
+                    envelopedCommand = new Envelope<Command>(this.Command) {
+                        MessageId = this.CommandId,
+                        CorrelationId = dirtyAggregateRoot.Id
+                    };
+                    envelopedCommand.Items["TraceInfo"] = this.TraceInfo;
+                    envelopedCommand.Items["SourceInfo"] = sourceInfo;
+                    this.eventBus.Publish(existingEvent.Value, existingEvent.Key, envelopedCommand);
+                    return;
+                }
+            }
+            catch(Exception ex) {
+                if(this.logger.IsErrorEnabled)
+                    this.logger.Error(ex,
+                        "Persistent domain events failed. aggregateRootType:{0},aggregateRootId:{1},version:{2}.",
+                        dirtyAggregateRoot.Id, aggregateRootType.FullName, dirtyAggregateRoot.Version);
+                throw ex;
+            }
+
+
+            try {
+                this.cache.Set(dirtyAggregateRoot, dirtyAggregateRoot.Id);
+            }
+            catch(Exception ex) {
+                if(this.logger.IsErrorEnabled)
+                    this.logger.Error(ex,
+                        "Refresh aggregate memory cache failed. aggregateRootType:{0},aggregateRootId:{1},commandId:{2}.",
+                        dirtyAggregateRoot.Id, aggregateRootType.FullName, this.CommandId);
+            }
+
+            envelopedCommand = new Envelope<Command>(this.Command)
+                                       {
+                                           MessageId = this.CommandId,
+                                           CorrelationId = dirtyAggregateRoot.Id
+                                       };
+            envelopedCommand.Items["TraceInfo"] = this.TraceInfo;
+            envelopedCommand.Items["SourceInfo"] = sourceInfo;
+            this.eventBus.Publish(changedEvents, aggregateRootVersion, envelopedCommand);
         }
     }
 }

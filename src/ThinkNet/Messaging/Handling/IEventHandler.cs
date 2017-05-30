@@ -1,45 +1,41 @@
 ﻿
-
 namespace ThinkNet.Messaging.Handling
 {
     /// <summary>
-    /// 表示继承此接口的是一个事件的处理器(主要用于同步数据)。
+    /// 表示继承该接口的是溯源事件处理程序
     /// </summary>
-    /// <remarks>
-    /// 用于同步数据，将匹配EventStream.Events的个数和类型。
-    /// </remarks>
-    public interface IEventHandler<TEvent> : IHandler
+    public interface IEventHandler : IHandler
+    { }
+
+    /// <summary>
+    /// 表示继承该接口的是一个溯源事件处理程序
+    /// </summary>
+    public interface IEventHandler<TEvent> : IEventHandler
         where TEvent : Event
     {
         /// <summary>
         /// 处理事件。
         /// </summary>
-        void Handle(SourceMetadata metadata, TEvent @event);
+        void Handle(IEventContext context, TEvent @event);
     }
 
     /// <summary>
-    /// 表示继承此接口的是两个事件的处理器。
+    /// 表示继承此接口的是两个溯源事件的处理器。
     /// </summary>
-    /// <remarks>
-    /// 用于同步数据，将匹配EventStream.Events的个数和类型。
-    /// </remarks>
-    public interface IEventHandler<TEvent1, TEvent2> : IHandler
+    public interface IEventHandler<TEvent1, TEvent2> : IEventHandler
         where TEvent1 : Event
         where TEvent2 : Event
     {
         /// <summary>
         /// 处理事件。
         /// </summary>
-        void Handle(SourceMetadata metadata, TEvent1 event1, TEvent2 event2);
+        void Handle(IEventContext context, TEvent1 event1, TEvent2 event2);
     }
 
     /// <summary>
-    /// 表示继承此接口的是三个事件的处理器。
+    /// 表示继承此接口的是三个溯源事件的处理器。
     /// </summary>
-    /// <remarks>
-    /// 用于同步数据，将匹配EventStream.Events的个数和类型。
-    /// </remarks>
-    public interface IEventHandler<TEvent1, TEvent2, TEvent3> : IHandler
+    public interface IEventHandler<TEvent1, TEvent2, TEvent3> : IEventHandler
         where TEvent1 : Event
         where TEvent2 : Event
         where TEvent3 : Event
@@ -47,43 +43,6 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 处理事件。
         /// </summary>
-        void Handle(SourceMetadata metadata, TEvent1 event1, TEvent2 event2, TEvent3 event3);
-    }
-
-    /// <summary>
-    /// 表示继承此接口的是四个事件的处理器。
-    /// </summary>
-    /// <remarks>
-    /// 用于同步数据，将匹配EventStream.Events的个数和类型。
-    /// </remarks>
-    public interface IEventHandler<TEvent1, TEvent2, TEvent3, TEvent4> : IHandler
-        where TEvent1 : Event
-        where TEvent2 : Event
-        where TEvent3 : Event
-        where TEvent4 : Event
-    {
-        /// <summary>
-        /// 处理事件。
-        /// </summary>
-        void Handle(SourceMetadata metadata, TEvent1 event1, TEvent2 event2, TEvent3 event3, TEvent4 event4);
-    }
-
-    /// <summary>
-    /// 表示继承此接口的是五个事件的处理器。
-    /// </summary>
-    /// <remarks>
-    /// 用于同步数据，将匹配EventStream.Events的个数和类型。
-    /// </remarks>
-    public interface IEventHandler<TEvent1, TEvent2, TEvent3, TEvent4, TEvent5> : IHandler
-        where TEvent1 : Event
-        where TEvent2 : Event
-        where TEvent3 : Event
-        where TEvent4 : Event
-        where TEvent5 : Event
-    {
-        /// <summary>
-        /// 处理事件。
-        /// </summary>
-        void Handle(SourceMetadata metadata, TEvent1 event1, TEvent2 event2, TEvent3 event3, TEvent4 event4, TEvent5 event5);
+        void Handle(IEventContext context, TEvent1 event1, TEvent2 event2, TEvent3 event3);
     }
 }

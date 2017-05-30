@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 using System.Runtime.Serialization;
 
 namespace ThinkNet.Contracts
@@ -8,16 +9,6 @@ namespace ThinkNet.Contracts
     /// </summary>
     public interface ICommandResult
     {
-        /// <summary>
-        /// 命令处理状态。
-        /// </summary>
-        [DataMember]
-        ReturnStatus Status { get; }
-        ///// <summary>
-        ///// Represents the unique identifier of the command.
-        ///// </summary>
-        //[DataMember]
-        //string CommandId { get; }
         /// <summary>
         /// 错误消息
         /// </summary>

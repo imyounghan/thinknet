@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿
 
 namespace ThinkNet.Infrastructure
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+
     /// <summary>
     /// <see cref="IObjectContainer"/>抽象实现类
     /// </summary>
@@ -91,7 +93,7 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         protected ObjectContainer()
         {
-            this._registeredTypes = new List<TypeRegistration>();            
+            this._registeredTypes = new List<TypeRegistration>();
         }
 
         /// <summary>
@@ -198,13 +200,5 @@ namespace ThinkNet.Infrastructure
             return _registeredTypes.Contains(new TypeRegistration(type, name)) || this.IsRegistered(type, name);
         }
 
-        //#region IInitializer 成员
-
-        //void IInitializer.Initialize(IObjectContainer container, IEnumerable<System.Reflection.Assembly> assemblies)
-        //{
-        //    container.RegisterInstance(container);
-        //}
-
-        //#endregion
-    }    
+    }  
 }

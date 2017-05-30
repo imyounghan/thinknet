@@ -6,9 +6,6 @@ namespace ThinkNet.Contracts
     /// </summary>
     public interface ICommand
     {
-        /// <summary>
-        /// 命令标识
-        /// </summary>
-        string Id { get; }
+        //string GetRoutingKey();
     }
 }

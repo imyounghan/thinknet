@@ -1,4 +1,5 @@
-﻿namespace ThinkNet.Messaging.Handling
+﻿
+namespace ThinkNet.Messaging.Handling
 {
     /// <summary>
     /// 继承该接口的是一个处理程序
