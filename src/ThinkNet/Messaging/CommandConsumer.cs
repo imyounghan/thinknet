@@ -152,7 +152,9 @@ namespace ThinkNet.Messaging
             filter.OnActionExecuting(preContext);
 
             if(!preContext.WillExecute) {
-                return new ActionExecutedContext(preContext, true, null);
+                return new ActionExecutedContext(preContext, true, null) {
+                    ReturnValue = preContext.ReturnValue
+                };
             }
 
             bool wasError = false;

@@ -49,5 +49,14 @@ namespace ThinkNet
                 return collection.Count == 0;
             return !source.Any();
         }
+
+        /// <summary>
+        /// 参数名称为 <paramref name="variableName"/> 的集合不能是 null 或 空的集合。
+        /// </summary>
+        public static void NotEmpty<T>(this IEnumerable<T> source, string variableName)
+        {
+            if (source.IsEmpty())
+                throw new ArgumentNullException(variableName);
+        }
     }
 }

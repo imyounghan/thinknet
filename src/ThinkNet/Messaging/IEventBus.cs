@@ -9,6 +9,6 @@ namespace ThinkNet.Messaging
     /// </summary>
     public interface IEventBus
     {
-        void Publish(IEnumerable<Event> @events, int version, Envelope<Command> command);
+        void Publish(IEnumerable<IEvent> @events, int version, Envelope<Command> command);
     }
 }

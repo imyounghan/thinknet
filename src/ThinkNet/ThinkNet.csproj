@@ -60,6 +60,7 @@
     <Compile Include="Contracts\IQuery.cs" />
     <Compile Include="Contracts\IQueryResult.cs" />
     <Compile Include="Contracts\IQueryService.cs" />
+    <Compile Include="Extensions\ConcurrentDictionaryExtensions.cs" />
     <Compile Include="Infrastructure\DisposableObject.cs" />
     <Compile Include="Extensions\DictionaryExtentions.cs" />
     <Compile Include="Extensions\EnumerableExtentions.cs" />
@@ -86,11 +87,15 @@
     <Compile Include="Messaging\Command`1.cs" />
     <Compile Include="Messaging\Envelope.cs" />
     <Compile Include="Messaging\Event.cs" />
+    <Compile Include="Messaging\EventCollection.cs" />
     <Compile Include="Messaging\EventProducer.cs" />
     <Compile Include="Messaging\EventConsumer.cs" />
+    <Compile Include="Messaging\EventPublishedVersionInMemory.cs" />
+    <Compile Include="Messaging\EventStoreInMemory.cs" />
     <Compile Include="Messaging\Handling\CommandContext.cs" />
     <Compile Include="Messaging\Handling\EventContext.cs" />
     <Compile Include="Messaging\ICommandService.cs" />
+    <Compile Include="Messaging\IEvent.cs" />
     <Compile Include="Messaging\IEventPublishedVersionStore.cs" />
     <Compile Include="Messaging\IMessageBus.cs" />
     <Compile Include="Contracts\ISendReplyService.cs" />
@@ -125,6 +130,7 @@
     <Compile Include="Messaging\IEventPublisher.cs" />
     <Compile Include="Messaging\IMessage.cs" />
     <Compile Include="Messaging\IMessageReceiver.cs" />
+    <Compile Include="Messaging\IPublishableException.cs" />
     <Compile Include="Messaging\MessageBroker.cs" />
     <Compile Include="Messaging\MessageConsumer.cs" />
     <Compile Include="Messaging\MessageProducer.cs" />

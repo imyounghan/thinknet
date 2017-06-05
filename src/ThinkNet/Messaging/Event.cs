@@ -6,7 +6,7 @@ namespace ThinkNet.Messaging
     /// <summary>
     /// 表示继承该抽象类的是一个事件
     /// </summary>
-    public abstract class Event : IMessage
+    public abstract class Event : IEvent
     {
         /// <summary>
         /// 默认构造函数

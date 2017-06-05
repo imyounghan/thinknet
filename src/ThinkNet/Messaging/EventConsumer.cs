@@ -14,11 +14,11 @@ namespace ThinkNet.Messaging
     using ThinkNet.Messaging.Handling;
 
 
-    public class EventConsumer : MessageConsumer<IEnumerable<Event>>, IInitializer
+    public class EventConsumer : MessageConsumer<IEnumerable<IEvent>>, IInitializer
     {
         class EventDescriptor
         {
-            public static EventDescriptor Create(Event @event)
+            public static EventDescriptor Create(IEvent @event)
             {
                 return new EventDescriptor() {
                     Event = @event,
@@ -26,7 +26,7 @@ namespace ThinkNet.Messaging
                 };
             }
 
-            public Event Event { get; set; }
+            public IEvent Event { get; set; }
 
             public Type EventType { get; set; }
         }
@@ -77,22 +77,22 @@ namespace ThinkNet.Messaging
         private readonly ConcurrentDictionary<Type, IEventHandler> _cachedHandlers;
         private readonly IEventPublishedVersionStore _publishedVersionStore;
         private readonly ICommandBus _commandBus;
-        private readonly IMessageBus<Event> _eventBus;
+        private readonly IMessageBus<IEvent> _eventBus;
         private readonly ISendReplyService _sendReplyService;
 
         public EventConsumer(IMessageBus<PublishableException> exceptionBus,
             ISendReplyService sendReplyService,
             ICommandBus commandBus,
-            IMessageBus<Event> eventBus,
+            IMessageBus<IEvent> eventBus,
             ILoggerFactory loggerFactory,
-            IMessageReceiver<Envelope<IEnumerable<Event>>> eventReceiver)
+            IMessageReceiver<Envelope<IEnumerable<IEvent>>> eventReceiver)
             : base(eventReceiver, loggerFactory.GetDefault(), "EventStream")
         {
             this._commandBus = commandBus;
             this._eventBus = eventBus;
         }
 
-        protected override void OnMessageReceived(object sender, Envelope<IEnumerable<Event>> envelope)
+        protected override void OnMessageReceived(object sender, Envelope<IEnumerable<IEvent>> envelope)
         {
             //var traceInfo = new TraceInfo(
             //    Convert.ToString(envelope.Metadata["processId"]),
@@ -152,9 +152,9 @@ namespace ThinkNet.Messaging
             this._eventBus.Send(events);
         }
 
-        private static Envelope<Event> BuildEnvelopedEvent(Event @event, string aggregateRootId, string commandId)
+        private static Envelope<IEvent> BuildEnvelopedEvent(IEvent @event, string aggregateRootId, string commandId)
         {
-            var envelope = new Envelope<Event>(@event);
+            var envelope = new Envelope<IEvent>(@event);
             envelope.CorrelationId = aggregateRootId;
             envelope.MessageId = ObjectId.GenerateNewStringId();
             envelope.Items["CommandId"] = commandId;

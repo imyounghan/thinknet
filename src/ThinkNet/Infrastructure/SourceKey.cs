@@ -140,12 +140,10 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public override bool Equals(object obj)
         {
-            if(obj == null || obj.GetType() != typeof(SourceKey))
+            if(!(obj is SourceKey))
                 return false;
-
-            SourceKey other = (SourceKey)obj;
-
-            return IsEqual(this, other);
+            
+            return IsEqual(this, (SourceKey)obj);
         }
 
         /// <summary>
@@ -154,10 +152,10 @@ namespace ThinkNet.Infrastructure
         public override int GetHashCode()
         {
             var codes = new int[] {
-                this.AssemblyName.GetHashCode(),
-                this.Namespace.GetHashCode(),
-                this.TypeName.GetHashCode(),
-                this.Id.GetHashCode()
+                this.AssemblyName.ToLowerInvariant().GetHashCode(),
+                this.Namespace.ToLowerInvariant().GetHashCode(),
+                this.TypeName.ToLowerInvariant().GetHashCode(),
+                this.Id.ToLowerInvariant().GetHashCode()
             };
             return codes.Aggregate((x, y) => x ^ y);
         }
@@ -202,10 +200,10 @@ namespace ThinkNet.Infrastructure
 
         private static bool IsEqual(SourceKey left, SourceKey right)
         {
-            if(ReferenceEquals(left, null) ^ ReferenceEquals(right, null)) {
-                return false;
-            }
-            return ReferenceEquals(left, null) || left.Equals(right);
+            return string.Equals(left.Id, right.Id, StringComparison.CurrentCultureIgnoreCase) &&
+                string.Equals(left.TypeName, right.TypeName, StringComparison.CurrentCultureIgnoreCase) &&
+                string.Equals(left.Namespace, right.Namespace, StringComparison.CurrentCultureIgnoreCase) &&
+                string.Equals(left.AssemblyName, right.AssemblyName, StringComparison.CurrentCultureIgnoreCase);
         }
 
 
@@ -213,10 +211,7 @@ namespace ThinkNet.Infrastructure
 
         bool IEquatable<SourceKey>.Equals(SourceKey other)
         {
-            return this.Id == other.Id &&
-                this.TypeName == other.TypeName &&
-                this.Namespace == other.Namespace &&
-                this.AssemblyName == other.AssemblyName;
+            return IsEqual(this, other);
         }
 
         #endregion

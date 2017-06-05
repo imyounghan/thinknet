@@ -8,11 +8,18 @@ namespace ThinkNet.Messaging
     /// <summary>
     /// <see cref="IPublishableException"/> 的抽象实现类
     /// </summary>
-    public abstract class PublishableException : Exception, IMessage
+    public abstract class PublishableException : Exception, IPublishableException
     {
-        public PublishableException()
+        protected PublishableException(string errorMessage, int errorCode)
+            : this(errorMessage, errorCode, null)
+        {
+        }
+
+        protected PublishableException(string errorMessage, int errorCode, Exception innerException)
+            : base(errorMessage, innerException)
         {
             this.Timestamp = DateTime.UtcNow;
+            this.HResult = errorCode;
         }
 
         protected PublishableException(SerializationInfo info, StreamingContext context)
