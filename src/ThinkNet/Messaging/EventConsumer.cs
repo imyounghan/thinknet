@@ -8,13 +8,12 @@ namespace ThinkNet.Messaging
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using System.Threading;
 
     using ThinkNet.Infrastructure;
     using ThinkNet.Messaging.Handling;
 
 
-    public class EventConsumer : MessageConsumer<IEnumerable<IEvent>>, IInitializer
+    public class EventConsumer : MessageConsumer<EventCollection>, IInitializer
     {
         class EventDescriptor
         {
@@ -80,19 +79,28 @@ namespace ThinkNet.Messaging
         private readonly IMessageBus<IEvent> _eventBus;
         private readonly ISendReplyService _sendReplyService;
 
-        public EventConsumer(IMessageBus<PublishableException> exceptionBus,
-            ISendReplyService sendReplyService,
+        //private readonly BlockingCollection<Envelope<EventCollection>> _retryQueue;
+
+        public EventConsumer(ISendReplyService sendReplyService,
             ICommandBus commandBus,
             IMessageBus<IEvent> eventBus,
+            IEventPublishedVersionStore publishedVersionStore,
             ILoggerFactory loggerFactory,
-            IMessageReceiver<Envelope<IEnumerable<IEvent>>> eventReceiver)
-            : base(eventReceiver, loggerFactory.GetDefault(), "EventStream")
+            IMessageReceiver<Envelope<EventCollection>> eventReceiver)
+            : base(eventReceiver, loggerFactory.GetDefault(), "EventCollection")
         {
+            this._eventTypesMapContractType = new Dictionary<CompositeKey, Type>();
+            this._cachedHandlers = new ConcurrentDictionary<Type, IEventHandler>();
+
+            this._publishedVersionStore = publishedVersionStore;
+            this._sendReplyService = sendReplyService;
             this._commandBus = commandBus;
             this._eventBus = eventBus;
+
+            //this._retryQueue = new BlockingCollection<Envelope<EventCollection>>();
         }
 
-        protected override void OnMessageReceived(object sender, Envelope<IEnumerable<IEvent>> envelope)
+        protected override void OnMessageReceived(object sender, Envelope<EventCollection> envelope)
         {
             //var traceInfo = new TraceInfo(
             //    Convert.ToString(envelope.Metadata["processId"]),
@@ -106,12 +114,12 @@ namespace ThinkNet.Messaging
 
             var sourceKey = (SourceKey)envelope.Items["SourceKey"];
             var traceInfo = (TraceInfo)envelope.Items["TraceInfo"];
-            var version = Convert.ToInt32(envelope.Items["version"]);
+            var version = envelope.Body.Version;
 
             if(version > 1) {
                 var lastPublishedVersion = _publishedVersionStore.GetPublishedVersion(sourceKey) + 1;
                 if(lastPublishedVersion < version) {
-                    //_eventBus.Publish(envelope.Body, sourceKey, version, );
+                    //_retryQueue.Add(envelope);
                     if(logger.IsDebugEnabled) {
                         logger.DebugFormat("The event cannot be process now as the version is not the next version, it will be handle later. aggregateRootType={0},aggregateRootId={1},lastPublishedVersion={2},eventVersion={3}",
                             sourceKey.GetSourceTypeName(),
@@ -134,14 +142,14 @@ namespace ThinkNet.Messaging
                 }
             }
 
-            IEventContext eventContext = new EventContext(this._commandBus, this._sendReplyService)
+            var eventContext = new EventContext(this._commandBus, this._sendReplyService)
                                              {
                                                  SourceInfo = sourceKey,
                                                  TraceInfo = traceInfo,
                                                  Version = version
                                              };
 
-            this.ProcessingEvents(envelope.Body.Select(EventDescriptor.Create).ToArray(), eventContext);
+            this.ProcessEvents(envelope.Body.Select(EventDescriptor.Create).ToArray(), eventContext);
 
             this._publishedVersionStore.AddOrUpdatePublishedVersion(sourceKey, version);
 
@@ -151,6 +159,7 @@ namespace ThinkNet.Messaging
                     .ToArray();
             this._eventBus.Send(events);
         }
+        
 
         private static Envelope<IEvent> BuildEnvelopedEvent(IEvent @event, string aggregateRootId, string commandId)
         {
@@ -162,7 +171,7 @@ namespace ThinkNet.Messaging
             return envelope;
         }
 
-        private void ProcessingEvents(EventDescriptor[] events, IEventContext eventContext)
+        private void ProcessEvents(EventDescriptor[] events, EventContext eventContext)
         {
             Type[] eventTypes = events.Select(p => p.EventType).ToArray();
             Type eventHandlerType;
@@ -180,44 +189,22 @@ namespace ThinkNet.Messaging
                 throw new SystemException();
             }
 
-            TryMultipleInvokeHandlerMethod(eventHandler, parameters);
+            //TryMultipleInvokeHandlerMethod(eventHandler, parameters);
 
-            eventContext.ActAs<IUnitOfWork>().Commit();
-        }
-
-        void TryMultipleInvokeHandlerMethod(IEventHandler eventHandler, object[] parameters, int retryTimes = 5, int retryInterval = 1000)
-        {
-            int count = 0;
-
-            var messages = string.Join(", ", parameters.Skip(1).Select(p => p.ToString()));
-
-            while(count++ < retryTimes) {
-                try
-                {
-                    TryInvokeHandlerMethod(eventHandler, parameters);
-                    break;
-                }
-                catch(Exception ex) {
-                    if(count == retryTimes) {
-                        if(logger.IsErrorEnabled) {
-                            logger.Error(ex, "Exception raised when handling '{0}' on '{1}'.", messages, eventHandler.GetType().FullName);
-                        }
-                        return;
-                    }
-                    if(logger.IsWarnEnabled) {
-                        logger.Warn(ex,
-                            "An exception happened while handling '{0}' through handler on '{1}', Error will be ignored and retry again({2}).",
-                             messages, eventHandler.GetType().FullName, count);
-                    }
-                    Thread.Sleep(retryInterval);
-                }
+            try
+            {
+                this.TryMultipleInvoke(TryInvokeHandlerMethod, eventHandler, parameters,
+                    handler => eventHandler.GetType().FullName, 
+                    messages => string.Join(", ", messages.Skip(1).Select(msg => msg.ToString())));
             }
+            catch (Exception)
+            {
 
-            if(logger.IsDebugEnabled) {
-                logger.DebugFormat("Handle '{0}' on '{1}' successfully.",
-                    messages, eventHandler.GetType().FullName);
             }
-
+            finally
+            {
+                eventContext.Commit();
+            }
         }
 
         void TryInvokeHandlerMethod(IEventHandler eventHandler, object[] parameters)
@@ -283,11 +270,15 @@ namespace ThinkNet.Messaging
 
             return array.ToArray();
         }
-        
+
         #region IInitializer 成员
+
         static bool FilterType(Type type)
         {
-            if(!type.IsInterface)
+            if(type.IsInterface)
+                return false;
+
+            if (type.IsAbstract)
                 return false;
 
             return type.GetInterfaces().Any(FilterInterfaceType);
@@ -302,9 +293,24 @@ namespace ThinkNet.Messaging
 
             return genericType == typeof(IEventHandler<>) ||
                 genericType == typeof(IEventHandler<,>) ||
-                genericType == typeof(IEventHandler<,,>)/* ||
+                genericType == typeof(IEventHandler<,,>) ||
                 genericType == typeof(IEventHandler<,,,>) ||
-                genericType == typeof(IEventHandler<,,,,>)*/;
+                genericType == typeof(IEventHandler<,,,,>);
+        }
+
+        private void RegisterEventHandler(IObjectContainer container, Type eventHandlerType)
+        {
+            var typeNames = string.Join(", ", eventHandlerType.GetGenericArguments().Select(item => item.FullName));
+            var eventHandlers = container.ResolveAll(eventHandlerType).OfType<IEventHandler>().ToList();
+            switch (eventHandlers.Count) {
+                case 0:
+                    throw new SystemException(string.Format("The type('{0}') of event handler is not found.", typeNames));
+                case 1:
+                    _cachedHandlers[eventHandlerType] = eventHandlers.First();
+                    break;
+                default:
+                    throw new SystemException(string.Format("Found more than one event handler for '{0}' with IEventHandler<>.", typeNames));
+            }
         }
 
         public override void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies)
@@ -315,8 +321,13 @@ namespace ThinkNet.Messaging
                 .SelectMany(type => type.GetInterfaces())
                 .Where(FilterInterfaceType);
 
-            foreach(var interfaceType in eventHandlerInterfaceTypes) {
-                var genericTypes = interfaceType.GetGenericArguments();
+            foreach(var eventHandlerType in eventHandlerInterfaceTypes) {
+                var genericTypes = eventHandlerType.GetGenericArguments();
+                if (genericTypes.Length == 1) {
+                    this.RegisterEventHandler(container, eventHandlerType);
+                    continue;
+                }
+
                 var key = new CompositeKey(genericTypes);
 
                 if(_eventTypesMapContractType.ContainsKey(key)) {
@@ -325,20 +336,11 @@ namespace ThinkNet.Messaging
                     throw new SystemException(errorMessage);
                 }
 
-                _eventTypesMapContractType[key] = interfaceType;
+                _eventTypesMapContractType[key] = eventHandlerType;
             }
 
             foreach(var eventHandlerType in _eventTypesMapContractType.Values) {
-                var eventHandlers = container.ResolveAll(eventHandlerType).OfType<IEventHandler>().ToList();
-                switch(eventHandlers.Count) {
-                    case 0:
-                        break;
-                    case 1:
-                        _cachedHandlers[eventHandlerType] = eventHandlers.First();
-                        break;
-                    default:
-                        throw new SystemException(string.Format("Found more than one event handler for '{0}' with IEventHandler<>.", eventHandlerType.GetGenericArguments().Select(item => item.FullName)));
-                }
+                this.RegisterEventHandler(container, eventHandlerType);
             }
         }
 

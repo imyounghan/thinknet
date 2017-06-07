@@ -11,18 +11,22 @@
         /// 是否启用Debug日志
         /// </summary>
         bool IsDebugEnabled { get; }
+
         /// <summary>
         /// 是否启用Info日志
         /// </summary>
         bool IsInfoEnabled { get; }
+
         /// <summary>
         /// 是否启用Warn日志
         /// </summary>
         bool IsWarnEnabled { get; }
+
         /// <summary>
         /// 是否启用Error日志
         /// </summary>
         bool IsErrorEnabled { get; }
+
         /// <summary>
         /// 是否启用Fatal日志
         /// </summary>

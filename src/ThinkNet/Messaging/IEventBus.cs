@@ -1,14 +1,19 @@
 ﻿
-
 namespace ThinkNet.Messaging
 {
-    using System.Collections.Generic;
+    using ThinkNet.Infrastructure;
 
     /// <summary>
-    /// 表示事件总线的接口。
+    /// 表示领域事件总线的接口。
     /// </summary>
     public interface IEventBus
     {
-        void Publish(IEnumerable<IEvent> @events, int version, Envelope<Command> command);
+        /// <summary>
+        /// 发现领域事件
+        /// </summary>
+        /// <param name="sourceInfo">事件来源</param>
+        /// <param name="eventCollection">领域事件的集合</param>
+        /// <param name="command">产生事件的命令</param>
+        void Publish(SourceKey sourceInfo, EventCollection eventCollection, Envelope<Command> command);
     }
 }

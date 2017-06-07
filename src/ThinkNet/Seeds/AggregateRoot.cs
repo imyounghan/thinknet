@@ -33,26 +33,26 @@ namespace ThinkNet.Seeds
 
         [IgnoreDataMember]
         [NonSerialized]
-        private List<Event> _pendingEvents;
+        private List<IEvent> _pendingEvents;
         /// <summary>
         /// 引发事件并将其加入到待发布事件列表
         /// </summary>
-        protected void RaiseEvent(Event @event)
+        protected void RaiseEvent(IEvent @event)
         {
             this.ApplyEvent(@event);
 
             if(_pendingEvents == null) {
-                _pendingEvents = new List<Event>();
+                _pendingEvents = new List<IEvent>();
             }
             _pendingEvents.Add(@event);
         }
 
-        internal virtual bool ApplyEvent(Event @event)
+        internal virtual bool ApplyEvent(IEvent @event)
         {
             var eventType = @event.GetType();
             var aggregateRootType = this.GetType();
 
-            Action<IAggregateRoot, Event> innerHandler;
+            Action<IAggregateRoot, IEvent> innerHandler;
             if(InnerHandlerProvider.Instance.TryGetHandler(aggregateRootType, eventType, out innerHandler)) {
                 innerHandler.Invoke(this, @event);
                 return true;
@@ -72,12 +72,12 @@ namespace ThinkNet.Seeds
         }
 
         #region IEventPublisher 成员
-        IEnumerable<Event> IEventPublisher.GetEvents()
+        IEnumerable<IEvent> IEventPublisher.GetEvents()
         {
             if(_pendingEvents == null || _pendingEvents.Count == 0) {
-                return Enumerable.Empty<Event>();
+                return Enumerable.Empty<IEvent>();
             }
-            return new ReadOnlyCollection<Event>(_pendingEvents);
+            return new ReadOnlyCollection<IEvent>(_pendingEvents);
         }
         #endregion
     }

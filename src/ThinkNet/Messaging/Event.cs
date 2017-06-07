@@ -1,8 +1,9 @@
-﻿using System;
-using System.Runtime.Serialization;
-
+﻿
 namespace ThinkNet.Messaging
 {
+    using System;
+    using System.Runtime.Serialization;
+
     /// <summary>
     /// 表示继承该抽象类的是一个事件
     /// </summary>

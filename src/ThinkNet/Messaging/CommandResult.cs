@@ -12,5 +12,6 @@ namespace ThinkNet.Messaging
         public string ErrorCode { get; set; }
         public IDictionary ErrorData { get; set; }
         public DateTime ReplyTime { get; set; }
+        public ExecutionStatus Status { get; set; }
     }
 }

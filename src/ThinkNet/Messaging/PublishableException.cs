@@ -6,16 +6,16 @@ namespace ThinkNet.Messaging
     
 
     /// <summary>
-    /// <see cref="IPublishableException"/> 的抽象实现类
     /// </summary>
-    public abstract class PublishableException : Exception, IPublishableException
+    public class PublishableException : Exception, IPublishableException
+    /// <see cref="IPublishableException"/> 的抽象实现类
     {
-        protected PublishableException(string errorMessage, int errorCode)
+        public PublishableException(string errorMessage, int errorCode)
             : this(errorMessage, errorCode, null)
         {
         }
 
-        protected PublishableException(string errorMessage, int errorCode, Exception innerException)
+        public PublishableException(string errorMessage, int errorCode, Exception innerException)
             : base(errorMessage, innerException)
         {
             this.Timestamp = DateTime.UtcNow;
@@ -59,5 +59,16 @@ namespace ThinkNet.Messaging
 
         //#endregion
 
+
+
+        string IPublishableException.ErrorCode
+        {
+            get
+            {
+                return this.HResult.ToString();
+            }
+        }
+
+        
     }
 }

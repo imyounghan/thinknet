@@ -1,9 +1,10 @@
 ﻿using System;
-using ThinkNet.Domain;
+using ThinkNet.Seeds;
 using UserRegistration.Events;
 
 namespace UserRegistration
 {
+
     [Serializable]
     public class User : EventSourced<Guid>
     {

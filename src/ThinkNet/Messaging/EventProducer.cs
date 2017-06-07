@@ -8,7 +8,7 @@ namespace ThinkNet.Messaging
 
     using ThinkNet.Infrastructure;
 
-    public class EventProducer : MessageBroker<IEnumerable<IEvent>>, IEventBus
+    public class EventProducer : MessageProducer<EventCollection>, IEventBus
     {
 
         public EventProducer(ILoggerFactory loggerFactory)
@@ -19,15 +19,14 @@ namespace ThinkNet.Messaging
 
         #region IEventBus 成员
 
-        public void Publish(IEnumerable<IEvent> events, int version, Envelope<Command> command)
+        public void Publish(SourceKey sourceInfo, EventCollection eventCollection, Envelope<Command> command)
         {
-            var envelope = new Envelope<IEnumerable<IEvent>>(
-                events,
-                MD5(string.Format("{0}@{1}", command.CorrelationId, command.MessageId)),
-                command.MessageId);
+            var envelope = new Envelope<EventCollection>(
+                eventCollection,
+                MD5(string.Format("{0}@{1}", sourceInfo.Id, command.MessageId)),
+                sourceInfo.Id);
             envelope.Items["TraceInfo"] = command.Items["TraceInfo"];
-            envelope.Items["SourceInfo"] = command.Items["SourceInfo"];
-            envelope.Items["version"] = version;
+            envelope.Items["SourceKey"] = sourceInfo;
 
             this.Append(envelope);
         }

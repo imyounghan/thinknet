@@ -7,7 +7,7 @@ namespace ThinkNet.Messaging.Handling
 
     using ThinkNet.Infrastructure;
 
-    public class EventContext : IEventContext, IUnitOfWork
+    public class EventContext : IEventContext
     {
         private readonly List<Command> commands;
 

@@ -6,6 +6,7 @@ namespace ThinkNet.Messaging
     using System.Threading.Tasks;
 
     public abstract class MessageReceiver<TMessage> : IMessageReceiver<Envelope<TMessage>>
+        where TMessage : IMessage
     {
         /// <summary>
         /// 通知源

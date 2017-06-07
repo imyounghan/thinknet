@@ -2,17 +2,19 @@
 using System.Threading;
 using ThinkNet;
 using ThinkNet.Contracts;
-using ThinkNet.Infrastructure;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
 
 namespace UserRegistration.QuickStart
 {
+    using ThinkNet.Infrastructure;
+    using ThinkNet.Messaging;
+
     class Program
     {
         static void Main(string[] args)
         {
-            Bootstrapper.Current.DoneWithUnity();
+            Bootstrapper.Current.Done();
 
 
             //var serializer = ObjectContainer.Instance.Resolve<ITextSerializer>();
@@ -30,13 +32,19 @@ namespace UserRegistration.QuickStart
 
 
             Console.WriteLine("开始添加用户...");
-            var commandService = ServiceGateway.Current.GetService<ICommandService>();
-            commandService.Execute(new RegisterUser {
+            ObjectContainer.Instance.Resolve<ICommandBus>().Send(new RegisterUser {
                 UserName = "hanyang",
                 Password = "123456",
                 LoginId = "young.han",
                 Email = "19126332@qq.com"
-            }, CommandReturnMode.CommandExecuted);
+            });
+            //var commandService = ServiceGateway.Current.GetService<ICommandService>();
+            //commandService.Execute(new RegisterUser {
+            //    UserName = "hanyang",
+            //    Password = "123456",
+            //    LoginId = "young.han",
+            //    Email = "19126332@qq.com"
+            //});
             //int counter = 0;
             //var tasks = new System.Threading.Tasks.Task[5000];
             //var sw = new System.Diagnostics.Stopwatch();
@@ -57,23 +65,23 @@ namespace UserRegistration.QuickStart
             //Console.WriteLine("成功完成的命令数量：{0}", tasks.Where(p => p.IsCompleted).Count());
             Thread.Sleep(2000);
 
-            var queryService = ServiceGateway.Current.GetService<IQueryService>();
+            //var queryService = ServiceGateway.Current.GetService<IQueryService>();
 
-            var result = queryService.Execute(new FindAllUser()) as IQueryResultCollection<UserModel>;
-            Console.WriteLine("共有 {0} 个用户。", result == null ? 0 : result.Count);
-            Thread.Sleep(2000);
+            //var result = queryService.Execute(new FindAllUser()) as IQueryResultCollection<UserModel>;
+            //Console.WriteLine("共有 {0} 个用户。", result == null ? 0 : result.Count);
+            //Thread.Sleep(2000);
 
-            var authentication = queryService.Execute(new UserAuthentication() {
-                LoginId = "young.han",
-                Password = "123456",
-                IpAddress = "127.0.0.1"
-            }) as IQueryResultCollection<bool>;
-            if(authentication != null && authentication.Count == 1 && authentication[0]) {
-                Console.WriteLine("登录成功。");
-            }
-            else {
-                Console.WriteLine("用户名或密码错误。");
-            }
+            //var authentication = queryService.Execute(new UserAuthentication() {
+            //    LoginId = "young.han",
+            //    Password = "123456",
+            //    IpAddress = "127.0.0.1"
+            //}) as IQueryResultCollection<bool>;
+            //if(authentication != null && authentication.Count == 1 && authentication[0]) {
+            //    Console.WriteLine("登录成功。");
+            //}
+            //else {
+            //    Console.WriteLine("用户名或密码错误。");
+            //}
 
             Console.ReadKey();
         }

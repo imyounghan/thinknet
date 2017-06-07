@@ -78,6 +78,20 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 注册一个实例
         /// </summary>
+        public static void RegisterInstance(this IObjectContainer that, ObjectContainer.TypeRegistration key, object instance)
+        {
+            var container = that as ObjectContainer;
+            if (container != null) {
+                container.RegisterInstance(key, instance);
+                return;
+            }
+
+            that.RegisterInstance(key.Type, instance, key.Name);
+        }
+
+        /// <summary>
+        /// 注册一个实例
+        /// </summary>
         /// <typeparam name="T">注册类型</typeparam>
         /// <param name="that">容器</param>
         /// <param name="instance">该类型的实例</param>
@@ -85,6 +99,20 @@ namespace ThinkNet.Infrastructure
         public static void RegisterInstance<T>(this IObjectContainer that, T instance, string name = null)
         {
             that.RegisterInstance(typeof(T), instance, name);
+        }
+
+        /// <summary>
+        /// 注册一个类型
+        /// </summary>
+        public static void RegisterType(this IObjectContainer that, ObjectContainer.TypeRegistration key, Lifecycle lifetime = Lifecycle.Singleton)
+        {
+            var container = that as ObjectContainer;
+            if (container != null) {
+                container.RegisterType(key, lifetime);
+                return;
+            }
+
+            that.RegisterType(key.Type, key.Name, lifetime);
         }
 
         /// <summary>
@@ -98,6 +126,23 @@ namespace ThinkNet.Infrastructure
             that.RegisterType(type, (string)null, lifetime);
         }
 
+        /// <summary>
+        /// 注册一个类型
+        /// </summary>
+        /// <param name="that">容器</param>
+        /// <param name="from">注册类型</param>
+        /// <param name="to">目标类型</param>
+        /// <param name="lifetime">生命周期</param>
+        public static void RegisterType(this IObjectContainer that, ObjectContainer.TypeRegistration key, Type implType, Lifecycle lifetime = Lifecycle.Singleton)
+        {
+            var container = that as ObjectContainer;
+            if (container != null) {
+                container.RegisterType(key, implType, lifetime);
+                return;
+            }
+
+            that.RegisterType(key.Type, implType, key.Name, lifetime);
+        }
 
         /// <summary>
         /// 注册一个类型
@@ -164,12 +209,36 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 判断此类型是否已注册
         /// </summary>
+        public static bool IsRegistered(this IObjectContainer that, ObjectContainer.TypeRegistration key)
+        {
+            var container = that as ObjectContainer;
+            if (container != null) {
+                return container.IsRegistered(key);
+            }
+            return that.IsRegistered(key.Type, key.Name);
+        }
+
+        /// <summary>
+        /// 判断此类型是否已注册
+        /// </summary>
         /// <typeparam name="T">注册类型</typeparam>
         /// <param name="that">容器</param>
         /// <param name="name">注册的名称</param>
         public static bool IsRegistered<T>(this IObjectContainer that, string name = null)
         {
             return that.IsRegistered(typeof(T), name);
+        }
+
+        /// <summary>
+        /// 获取类型对应的实例
+        /// </summary>
+        public static object Resolve(this IObjectContainer that, ObjectContainer.TypeRegistration key)
+        {
+            var container = that as ObjectContainer;
+            if (container != null) {
+                return container.Resolve(key);
+            }
+            return that.Resolve(key.Type, key.Name);
         }
 
         /// <summary>

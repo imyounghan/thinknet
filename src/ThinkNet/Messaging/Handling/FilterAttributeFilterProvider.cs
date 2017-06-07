@@ -28,6 +28,9 @@ namespace ThinkNet.Messaging.Handling
         {
             return _methodFilterAttributeCache.GetOrAdd(messageType, delegate {
                 var mi = handlerType.GetMethod("Handle", new Type[] { messageType });
+                if (mi == null) {
+                    mi = handlerType.GetMethod("Handle", new Type[] { typeof(ICommandContext), messageType });
+                }
                 var attributes = mi.GetAnyAttributes<FilterAttribute>(false).ToList();
                 return new ReadOnlyCollection<FilterAttribute>(attributes);
             });

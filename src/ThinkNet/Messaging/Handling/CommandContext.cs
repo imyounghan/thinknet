@@ -9,7 +9,7 @@ namespace ThinkNet.Messaging.Handling
     using ThinkNet.Infrastructure;
     using ThinkNet.Seeds;
 
-    public class CommandContext : ICommandContext, IUnitOfWork
+    public class CommandContext : ICommandContext
     {
         private readonly Dictionary<string, IAggregateRoot> trackedAggregateRoots;
 
@@ -135,25 +135,30 @@ namespace ThinkNet.Messaging.Handling
                         sourceId, sourceType.FullName);
             }
 
+
             var events = this.eventStore.FindAll(new SourceKey(sourceId, sourceType), aggregateRoot.Version);
             if(!events.IsEmpty()) {
                 if(aggregateRoot == null) {
                     aggregateRoot = this.Create(sourceType, sourceId);
                 }
+
                 foreach(var @event in events) {
-                    aggregateRoot.LoadFrom(@event.Value);
-                    aggregateRoot.AcceptChanges(@event.Key);
+                    aggregateRoot.LoadFrom(@event);
+                    aggregateRoot.AcceptChanges(@event.Version);
                 }
 
                 if(this.logger.IsDebugEnabled)
                     this.logger.DebugFormat("Restore the aggregate root '{0}' of id '{1}' from event stream. version:{2} ~ {3}",
                         sourceType.FullName,
                         sourceId,
-                        events.Min(p => p.Key),
-                        events.Max(p => p.Key));
+                        events.Min(p => p.Version),
+                        events.Max(p => p.Version));
             }
 
-            this.cache.Set(aggregateRoot, sourceId);
+            if (aggregateRoot != null)
+            {
+                this.cache.Set(aggregateRoot, sourceId);
+            }
 
             return aggregateRoot;
         }
@@ -162,22 +167,27 @@ namespace ThinkNet.Messaging.Handling
         {
             var dirtyAggregateRootCount = 0;
             var dirtyAggregateRoot = default(IEventSourced);
-            var changedEvents = Enumerable.Empty<Event>();
-            foreach(var aggregateRoot in trackedAggregateRoots.Values.OfType<IEventSourced>()) {
+            var changedEvents = Enumerable.Empty<IEvent>();
+            foreach (var aggregateRoot in trackedAggregateRoots.Values.OfType<IEventSourced>())
+            {
                 changedEvents = aggregateRoot.GetEvents();
-                if(changedEvents.IsEmpty()) {
+                if (!changedEvents.IsEmpty())
+                {
                     dirtyAggregateRootCount++;
-                    if(dirtyAggregateRootCount > 1) {
-                        var errorMessage = string.Format("Detected more than one aggregate created or modified by command. commandType:{0}, commandId:{1}",
-                            this.Command.GetType().FullName,
-                            this.CommandId);
+                    if (dirtyAggregateRootCount > 1)
+                    {
+                        var errorMessage =
+                            string.Format(
+                                "Detected more than one aggregate created or modified by command. commandType:{0}, commandId:{1}",
+                                this.Command.GetType().FullName,
+                                this.CommandId);
                         throw new ApplicationException(errorMessage);
                     }
                     dirtyAggregateRoot = aggregateRoot;
                 }
             }
 
-            if(dirtyAggregateRootCount == 0 || changedEvents == null || changedEvents.IsEmpty()) {
+            if(dirtyAggregateRootCount == 0 || changedEvents.IsEmpty()) {
                 var errorMessage = string.Format("Not found aggregate to be created or modified by command. commandType:{0}, commandId:{1}",
                     this.Command.GetType().FullName,
                     this.CommandId);
@@ -189,9 +199,18 @@ namespace ThinkNet.Messaging.Handling
             var sourceInfo = new SourceKey(dirtyAggregateRoot.Id, aggregateRootType);
             var aggregateRootVersion = dirtyAggregateRoot.Version + 1;
 
-            Envelope<Command> envelopedCommand;
-            try {
-                if(this.eventStore.Save(sourceInfo, aggregateRootVersion, changedEvents, this.CommandId)) {
+            var envelopedCommand = new Envelope<Command>(this.Command)
+                                       {
+                                           MessageId = this.CommandId,
+                                           CorrelationId = dirtyAggregateRoot.Id
+                                       };
+            envelopedCommand.Items["TraceInfo"] = this.TraceInfo;
+            //envelopedCommand.Items["SourceKey"] = sourceInfo;
+
+            var eventCollection = new EventCollection(aggregateRootVersion, this.CommandId, changedEvents);
+            try
+            {
+                if(this.eventStore.Save(sourceInfo, eventCollection)) {
                     dirtyAggregateRoot.AcceptChanges(aggregateRootVersion);
 
                     if(this.logger.IsDebugEnabled)
@@ -200,14 +219,9 @@ namespace ThinkNet.Messaging.Handling
                 }
                 else
                 {
-                    var existingEvent = this.eventStore.Find(sourceInfo, this.CommandId);
-                    envelopedCommand = new Envelope<Command>(this.Command) {
-                        MessageId = this.CommandId,
-                        CorrelationId = dirtyAggregateRoot.Id
-                    };
-                    envelopedCommand.Items["TraceInfo"] = this.TraceInfo;
-                    envelopedCommand.Items["SourceInfo"] = sourceInfo;
-                    this.eventBus.Publish(existingEvent.Value, existingEvent.Key, envelopedCommand);
+                    eventCollection = this.eventStore.Find(sourceInfo, this.CommandId);
+
+                    this.eventBus.Publish(sourceInfo, eventCollection, envelopedCommand);
                     return;
                 }
             }
@@ -230,14 +244,8 @@ namespace ThinkNet.Messaging.Handling
                         dirtyAggregateRoot.Id, aggregateRootType.FullName, this.CommandId);
             }
 
-            envelopedCommand = new Envelope<Command>(this.Command)
-                                       {
-                                           MessageId = this.CommandId,
-                                           CorrelationId = dirtyAggregateRoot.Id
-                                       };
-            envelopedCommand.Items["TraceInfo"] = this.TraceInfo;
-            envelopedCommand.Items["SourceInfo"] = sourceInfo;
-            this.eventBus.Publish(changedEvents, aggregateRootVersion, envelopedCommand);
+
+            this.eventBus.Publish(sourceInfo, eventCollection, envelopedCommand);
         }
     }
 }

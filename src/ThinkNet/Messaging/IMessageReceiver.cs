@@ -4,9 +4,13 @@ namespace ThinkNet.Messaging
 {
     using System;
 
-    public interface IMessageReceiver<TMessage>// where TMessage : IMessage
+    /// <summary>
+    /// 表示
+    /// </summary>
+    /// <typeparam name="TEventArgs"></typeparam>
+    public interface IMessageReceiver<TEventArgs> where TEventArgs : EventArgs
     {
-        event EventHandler<TMessage> MessageReceived;
+        event EventHandler<TEventArgs> MessageReceived;
 
 
         /// <summary>

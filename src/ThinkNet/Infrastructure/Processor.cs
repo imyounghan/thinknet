@@ -2,6 +2,9 @@
 
 namespace ThinkNet.Infrastructure
 {
+    /// <summary>
+    /// <see cref="IProcessor"/> 的抽象实现类
+    /// </summary>
     public abstract class Processor : DisposableObject, IProcessor
     {
         /// <summary>

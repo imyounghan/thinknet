@@ -11,8 +11,10 @@ namespace ThinkNet.Infrastructure
     public interface IInitializer
     {
         /// <summary>
-        /// 初始化
+        /// 当前程序初始化
         /// </summary>
+        /// <param name="container">对象容器</param>
+        /// <param name="assemblies">程序集集合</param>
         void Initialize(IObjectContainer container, IEnumerable<Assembly> assemblies);
     }
 }

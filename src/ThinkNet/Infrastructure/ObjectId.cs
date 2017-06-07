@@ -434,7 +434,7 @@ namespace ThinkNet.Infrastructure
 
             byte[] arr = new byte[s.Length >> 1];
 
-            for(int i = 0; i < s.Length >> 1; ++i) {
+            for(int i = 0; i < (s.Length >> 1); ++i) {
                 arr[i] = (byte)((GetHexVal(s[i << 1]) << 4) + (GetHexVal(s[(i << 1) + 1])));
             }
 

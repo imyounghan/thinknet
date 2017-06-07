@@ -6,24 +6,24 @@ namespace ThinkNet.Infrastructure
     using System.IO;
 
     /// <summary>
-    /// 表示一个序列化的接口
+    /// 表示一个序列化器。用来序列化对象的字符串形式
     /// </summary>
     public interface ITextSerializer
     {
         /// <summary>
-        /// Serializes an object graph to a text reader.
+        /// 序列化一个对象
         /// </summary>
-        void Serialize(TextWriter writer, object graph, bool containType = false);
+        string Serialize(object obj, bool containType = false);
 
         /// <summary>
-        /// Deserializes an object graph from the specified text reader.
+        /// 从 <param name="serialized" /> 反序列化一个对象。
         /// </summary>
-        object Deserialize(TextReader reader);
+        object Deserialize(string serialized);
 
         /// <summary>
-        /// Deserializes an object graph from the specified text reader.
+        /// 根据 <param name="type" /> 从 <param name="serialized" /> 反序列化一个对象。
         /// </summary>
-        object Deserialize(TextReader reader, Type type);
+        object Deserialize(string serialized, Type type);
     }
 
 
@@ -35,53 +35,13 @@ namespace ThinkNet.Infrastructure
         /// <summary>
         /// 从字符串反序列化一个对象。
         /// </summary>
-        public static object Deserialize(this ITextSerializer serializer, string serialized, Type type)
-        {
-            using(var reader = new StringReader(serialized)) {
-                return serializer.Deserialize(reader, type);
-            }
-        }
-        /// <summary>
-        /// 从字符串反序列化一个对象。
-        /// </summary>
-        public static object Deserialize(this ITextSerializer serializer, string serialized)
-        {
-            using(var reader = new StringReader(serialized)) {
-                return serializer.Deserialize(reader);
-            }
-        }
-
-        /// <summary>
-        /// 序列化一个对象到字符串。
-        /// </summary>
-        public static string Serialize(this ITextSerializer serializer, object graph)
-        {
-            return serializer.Serialize(graph, false);
-        }
-
-        /// <summary>
-        /// 序列化一个对象到字符串。
-        /// </summary>
-        public static string Serialize(this ITextSerializer serializer, object graph, bool containType)
-        {
-            using(var writer = new StringWriter()) {
-                serializer.Serialize(writer, graph, containType);
-                return writer.ToString();
-            }
-        }
-
-        /// <summary>
-        /// 从字符串反序列化一个对象。
-        /// </summary>
         public static T Deserialize<T>(this ITextSerializer serializer, string serialized, bool resolveType = false)
             where T : class
         {
-            using(var reader = new StringReader(serialized)) {
-                if(resolveType)
-                    return (T)serializer.Deserialize(reader, typeof(T));
-                else
-                    return (T)serializer.Deserialize(reader);
-            }
+            if (resolveType)
+                return (T)serializer.Deserialize(serialized, typeof(T));
+            else
+                return (T)serializer.Deserialize(serialized);
         }
     }
 }

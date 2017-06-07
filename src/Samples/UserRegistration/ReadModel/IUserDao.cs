@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using ThinkNet.Infrastructure;
+using ThinkNet;
 
 namespace UserRegistration.ReadModel
 {

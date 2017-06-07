@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
-
+﻿
 namespace ThinkNet
 {
+    using System;
+    using System.Collections.Concurrent;
+
     /// <summary>
     /// ConcurrentDictionary的扩展
     /// </summary>

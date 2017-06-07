@@ -1,12 +1,13 @@
 ﻿
 namespace ThinkNet.Messaging
 {
+    using System;
     using System.Collections;
 
     /// <summary>
     /// 提供封装一个对象的信封
     /// </summary>
-    public class Envelope<T>
+    public class Envelope<T> : EventArgs
     {
         public Envelope()
         {

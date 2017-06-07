@@ -27,6 +27,11 @@ namespace ThinkNet.Messaging.Handling
         public Exception Exception { get; set; }
 
         /// <summary>
+        /// 获取或设置一个值，该值指示是否处理异常。
+        /// </summary>
+        public bool ExceptionHandled { get; set; }
+
+        /// <summary>
         /// 获取或设置操作结果。
         /// </summary>
         public object ReturnValue { get; set; }

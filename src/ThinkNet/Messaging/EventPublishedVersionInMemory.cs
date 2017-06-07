@@ -32,7 +32,7 @@
 
         private int GetPublishedVersionFromMemory(SourceKey sourceKey)
         {
-            var dict = _versionCaches[Math.Abs(sourceKey.GetHashCode() % 10)];
+            var dict = _versionCaches[Math.Abs(sourceKey.GetHashCode() % _versionCaches.Length)];
             int version;
             if (dict.TryGetValue(sourceKey, out version)) {
                 return version;
@@ -43,7 +43,7 @@
 
         private void AddOrUpdatePublishedVersionToMemory(SourceKey sourceKey, int version)
         {
-            var dict = _versionCaches[Math.Abs(sourceKey.GetHashCode() % 10)];
+            var dict = _versionCaches[Math.Abs(sourceKey.GetHashCode() % _versionCaches.Length)];
 
             dict.AddOrUpdate(sourceKey,
                 version,

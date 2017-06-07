@@ -35,7 +35,7 @@ namespace ThinkNet.Seeds
         [DataMember(Name = "version")]
         public int Version { get; internal set; }
 
-        internal override bool ApplyEvent(Event @event)
+        internal override bool ApplyEvent(IEvent @event)
         {
             var applied = base.ApplyEvent(@event);
 
@@ -50,7 +50,7 @@ namespace ThinkNet.Seeds
         #region IEventSourced 成员
 
 
-        void IEventSourced.LoadFrom(IEnumerable<Event> events)
+        void IEventSourced.LoadFrom(IEnumerable<IEvent> events)
         {
             //foreach(var @event in events) {
             //    if(@event.Version != this.Version + 1) {

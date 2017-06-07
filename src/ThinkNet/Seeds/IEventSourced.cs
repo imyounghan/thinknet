@@ -23,6 +23,6 @@ namespace ThinkNet.Seeds
         /// <summary>
         /// 加载事件。
         /// </summary>
-        void LoadFrom(IEnumerable<Event> events);
+        void LoadFrom(IEnumerable<IEvent> events);
     }
 }

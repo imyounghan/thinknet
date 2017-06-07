@@ -6,7 +6,7 @@ namespace UserRegistration.Events
 {
     [DataContract]
     [Serializable]
-    public class UserCreated : Event<Guid>
+    public class UserCreated : Event
     {
         public UserCreated()
         { }

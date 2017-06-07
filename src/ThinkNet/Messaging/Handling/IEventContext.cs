@@ -22,10 +22,5 @@ namespace ThinkNet.Messaging.Handling
         /// 添加一个命令到当前上下文
         /// </summary>
         void AddCommand(Command command);
-
-        ///// <summary>
-        ///// 完成命令
-        ///// </summary>
-        //void Complete();
     }
 }

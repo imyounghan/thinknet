@@ -2,7 +2,6 @@
 namespace ThinkNet
 {
     using System;
-    using System.Reflection;
 
     /// <summary>
     /// 表示实例的生命周期的特性(默认为Singleton)

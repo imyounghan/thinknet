@@ -15,12 +15,22 @@ namespace ThinkNet.Messaging
 
         #region ICommandBus 成员
 
+        public override void Send(Command message)
+        {
+            this.Send(message, TraceInfo.Empty);
+        }
+
         public void Send(Command command, TraceInfo traceInfo)
         {
             var envelope = new Envelope<Command>(command, ObjectId.GenerateNewStringId());
             envelope.Items["TraceInfo"] = traceInfo;
 
             this.Send(envelope);
+        }
+
+        public override void Send(IEnumerable<Command> messages)
+        {
+            this.Send(messages, TraceInfo.Empty);
         }
 
         public void Send(IEnumerable<Command> commands, TraceInfo traceInfo)

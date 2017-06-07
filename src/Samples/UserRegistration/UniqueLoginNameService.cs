@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using ThinkNet.Infrastructure;
+using ThinkNet;
 
 namespace UserRegistration
 {
+
     [Register(typeof(IUniqueLoginNameService))]
     public class UniqueLoginNameService : IUniqueLoginNameService
     {

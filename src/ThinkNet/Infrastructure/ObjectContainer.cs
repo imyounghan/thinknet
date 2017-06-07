@@ -68,7 +68,10 @@ namespace ThinkNet.Infrastructure
                 if(other == null)
                     return false;
 
-                if(this.Type != other.Type)
+                if (ReferenceEquals(this, other))
+                    return true;
+
+                if (this.Type != other.Type)
                     return false;
 
                 if(!String.Equals(this.Name, other.Name, StringComparison.Ordinal))
@@ -112,6 +115,14 @@ namespace ThinkNet.Infrastructure
         /// </summary>
         public abstract object Resolve(Type type, string name);
         /// <summary>
+        /// 获取类型对应的实例
+        /// </summary>
+        public virtual object Resolve(TypeRegistration key)
+        {
+            return this.Resolve(key.Type, key.Name);
+        }
+
+        /// <summary>
         /// 获取类型所有的实例
         /// </summary>
         public abstract IEnumerable<object> ResolveAll(Type type);
@@ -121,21 +132,54 @@ namespace ThinkNet.Infrastructure
         /// 注册一个实例
         /// </summary>
         public abstract void RegisterInstance(Type type, string name, object instance);
+        /// <summary>
+        /// 注册一个实例
+        /// </summary>
+        public virtual void RegisterInstance(TypeRegistration key, object instance)
+        {
+            this.RegisterInstance(key.Type, key.Name, instance);
+        }
 
         /// <summary>
         /// 注册一个类型
         /// </summary>
-        public abstract void RegisterType(Type type, string name, Lifecycle lifetime);
+        public virtual void RegisterType(Type type, string name, Lifecycle lifetime)
+        {
+            this.RegisterType(type, type, name, lifetime);
+        }
+        /// <summary>
+        /// 注册一个类型
+        /// </summary>
+        public virtual void RegisterType(TypeRegistration key, Lifecycle lifetime)
+        {
+            this.RegisterType(key.Type, key.Name, lifetime);
+        }
 
         /// <summary>
         /// 注册一个类型
         /// </summary>
         public abstract void RegisterType(Type from, Type to, string name, Lifecycle lifetime);
 
+        // <summary>
+        /// 注册一个类型
+        /// </summary>
+        public virtual void RegisterType(TypeRegistration key, Type implType, Lifecycle lifetime)
+        {
+            this.RegisterType(key.Type, implType, key.Name, lifetime);
+        }
+
         /// <summary>
         /// 判断此类型是否已注册
         /// </summary>
         public abstract bool IsRegistered(Type type, string name);
+
+        /// <summary>
+        /// 判断此类型是否已注册
+        /// </summary>
+        public virtual bool IsRegistered(TypeRegistration key)
+        {
+            return this.IsRegistered(key.Type, key.Name);
+        }
 
 
         void IObjectContainer.RegisterInstance(Type type, object instance, string name)

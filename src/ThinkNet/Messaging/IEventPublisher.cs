@@ -12,6 +12,6 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 获取待发布的事件。
         /// </summary>
-        IEnumerable<Event> GetEvents();
+        IEnumerable<IEvent> GetEvents();
     }
 }

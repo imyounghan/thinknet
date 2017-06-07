@@ -15,7 +15,7 @@ namespace UserRegistration.ReadModel
         }
 
         [DataMember]
-        public Guid UserID { get; set; }
+        public string UserID { get; set; }
         [DataMember]
         public string LoginId { get; set; }
         [DataMember]

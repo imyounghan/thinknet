@@ -9,13 +9,14 @@ namespace ThinkNet.Messaging
     /// <summary>
     /// 表示这是一个可溯源的有序事件流。
     /// </summary>
-    public class EventCollection : IEnumerable<Event>, ICollection, IMessage, IUniquelyIdentifiable
+    public class EventCollection : IEnumerable<IEvent>, ICollection, IMessage, IUniquelyIdentifiable
     {
-        private readonly List<Event> events;
+        private readonly List<IEvent> eventList;
+
         /// <summary>
         /// Parameterized Constructor.
         /// </summary>
-        public EventCollection(int version, string correlationId, IEnumerable<Event> events)
+        public EventCollection(int version, string correlationId, IEnumerable<IEvent> events)
         {
             version.MustPositive("version");
             correlationId.NotNullOrWhiteSpace("correlationId");
@@ -23,7 +24,7 @@ namespace ThinkNet.Messaging
 
             this.CorrelationId = correlationId;
             this.Version = version;
-            this.events = new List<Event>(events);
+            this.eventList = new List<IEvent>(events);
         }
         
         /// <summary>
@@ -69,7 +70,7 @@ namespace ThinkNet.Messaging
         /// </summary>
         public override string ToString()
         {
-            return string.Concat("[", string.Join(",", events), "]", 
+            return string.Concat("[", string.Join(",", eventList), "]", 
                 "#", this.Version, 
                 "@", this.CorrelationId);
         }
@@ -78,14 +79,14 @@ namespace ThinkNet.Messaging
          /// <summary>
         /// 返回一个循环访问 <see cref="EventCollection"/> 的枚举器。
         /// </summary>
-        public IEnumerator<Event> GetEnumerator()
+        public IEnumerator<IEvent> GetEnumerator()
         {
-            return events.GetEnumerator();
+            return eventList.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            foreach (Event @event in events)
+            foreach(IEvent @event in eventList)
                 yield return @event;
         }
 
@@ -95,8 +96,8 @@ namespace ThinkNet.Messaging
         public void CopyTo(Array array, int index)
         {
             int destIndex = 0;
-            events.GetRange(index, events.Count - index).ForEach(
-                delegate (Event info) {
+            eventList.GetRange(index, eventList.Count - index).ForEach(
+                delegate(IEvent info) {
                     array.SetValue(info, destIndex++);
                 });
         }
@@ -114,7 +115,7 @@ namespace ThinkNet.Messaging
         {
             get
             {
-                return events.Count;
+                return eventList.Count;
             }
         }
 

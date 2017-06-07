@@ -36,7 +36,7 @@ namespace ThinkNet.Seeds
                           where method.Name.ToLower() == "handle"
                             && returnType == typeof(void)
                             && parameters.Length == 1
-                            && typeof(Event).IsAssignableFrom(parameter.ParameterType)
+                            && typeof(IEvent).IsAssignableFrom(parameter.ParameterType)
                           select new { Method = method, EventType = parameter.ParameterType };
             foreach(var entry in entries) {
                 if(eventHandlerDic.ContainsKey(entry.EventType)) {
@@ -74,7 +74,7 @@ namespace ThinkNet.Seeds
         /// <summary>
         /// 获取聚合内部事件处理器
         /// </summary>
-        public bool TryGetHandler(Type aggregateRootType, Type eventType, out Action<IAggregateRoot, Event> innerHandler)
+        public bool TryGetHandler(Type aggregateRootType, Type eventType, out Action<IAggregateRoot, IEvent> innerHandler)
         {
             IDictionary<Type, MethodInfo> eventHandlerDic;
             MethodInfo targetMethod;
@@ -84,7 +84,7 @@ namespace ThinkNet.Seeds
                 return false;
             }
 
-            innerHandler = delegate(IAggregateRoot aggregateRoot, Event @event) {
+            innerHandler = delegate(IAggregateRoot aggregateRoot, IEvent @event) {
                 targetMethod.Invoke(aggregateRoot, new[] { @event });
             };
             return true;
