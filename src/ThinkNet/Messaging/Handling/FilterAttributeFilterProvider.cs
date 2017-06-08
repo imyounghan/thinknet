@@ -19,7 +19,7 @@ namespace ThinkNet.Messaging.Handling
         static ICollection<FilterAttribute> GetTypeFilterAttributes(Type handlerType)
         {
             return _typeFilterAttributeCache.GetOrAdd(handlerType, delegate(Type type) {
-                var attributes = type.GetAnyAttributes<FilterAttribute>(false).ToList();
+                var attributes = type.GetAllAttributes<FilterAttribute>(false).ToList();
                 return new ReadOnlyCollection<FilterAttribute>(attributes);
             });
         }
@@ -31,7 +31,7 @@ namespace ThinkNet.Messaging.Handling
                 if (mi == null) {
                     mi = handlerType.GetMethod("Handle", new Type[] { typeof(ICommandContext), messageType });
                 }
-                var attributes = mi.GetAnyAttributes<FilterAttribute>(false).ToList();
+                var attributes = mi.GetAllAttributes<FilterAttribute>(false).ToList();
                 return new ReadOnlyCollection<FilterAttribute>(attributes);
             });
         }

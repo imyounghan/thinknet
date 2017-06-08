@@ -26,6 +26,9 @@ namespace ThinkNet.Messaging
         /// </summary>
         private readonly BlockingCollection<Envelope<TMessage>> broker;
 
+        /// <summary>
+        /// 将该消息追加到队列末尾，如果成功则返回true，失败则返回false（出现这种情况是由于队列已满）
+        /// </summary>
         protected bool Append(Envelope<TMessage> message)
         {
             if (this.broker.TryAdd(message))
@@ -45,6 +48,10 @@ namespace ThinkNet.Messaging
             }
         }
 
+        /// <summary>
+        /// 从队列里取出消息
+        /// </summary>
+        /// <param name="cancellationToken">通知取消的令牌</param>
         protected override void ReceiveMessages(CancellationToken cancellationToken)
         {
             foreach(var item in broker.GetConsumingEnumerable(cancellationToken)) {

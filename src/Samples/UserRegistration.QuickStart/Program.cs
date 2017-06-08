@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using ThinkNet;
-using ThinkNet.Contracts;
 using UserRegistration.Commands;
 using UserRegistration.ReadModel;
 
@@ -32,12 +31,13 @@ namespace UserRegistration.QuickStart
 
 
             Console.WriteLine("开始添加用户...");
-            ObjectContainer.Instance.Resolve<ICommandBus>().Send(new RegisterUser {
+            ObjectContainer.Instance.Resolve<ICommandService>().Execute(new RegisterUser {
                 UserName = "hanyang",
                 Password = "123456",
                 LoginId = "young.han",
                 Email = "19126332@qq.com"
             });
+            Console.WriteLine("命令处理完成...");
             //var commandService = ServiceGateway.Current.GetService<ICommandService>();
             //commandService.Execute(new RegisterUser {
             //    UserName = "hanyang",

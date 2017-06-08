@@ -4,7 +4,7 @@ namespace ThinkNet.Messaging
 {
     using System;
     using System.Runtime.Serialization;
-    using ThinkNet.Contracts;
+
     using ThinkNet.Infrastructure;
 
     /// <summary>

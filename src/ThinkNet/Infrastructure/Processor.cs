@@ -20,13 +20,6 @@ namespace ThinkNet.Infrastructure
             this.lockObject = new object();
         }
 
-        /// <summary>
-        /// 释放相关资源
-        /// </summary>
-        /// <param name="disposing">true表示释放资源</param>
-        protected override void Dispose(bool disposing)
-        { }
-
         #region IProcessor 成员
         /// <summary>
         /// 启动程序

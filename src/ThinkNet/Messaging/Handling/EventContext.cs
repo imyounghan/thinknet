@@ -5,8 +5,6 @@ namespace ThinkNet.Messaging.Handling
     using System;
     using System.Collections.Generic;
 
-    using ThinkNet.Infrastructure;
-
     public class EventContext : IEventContext
     {
         private readonly List<Command> commands;
@@ -44,7 +42,7 @@ namespace ThinkNet.Messaging.Handling
         //{
         //}
 
-        public SourceKey SourceInfo { get; set; }
+        public SourceInfo SourceInfo { get; set; }
 
         /// <summary>
         /// 版本号
@@ -62,10 +60,10 @@ namespace ThinkNet.Messaging.Handling
         {
             if(this.commands.IsEmpty()) {
                 var commandResult = new CommandResult {
-                    ProcessId = this.TraceInfo.ProcessId,
+                    TraceId = this.TraceInfo.Id,
                     ReplyTime = DateTime.UtcNow
                 };
-                sendReplyService.SendReply(commandResult, this.TraceInfo.ReplyAddress);
+                sendReplyService.SendReply(commandResult, this.TraceInfo.Address);
             }
             else {
                 commandBus.Send(this.commands, this.TraceInfo);

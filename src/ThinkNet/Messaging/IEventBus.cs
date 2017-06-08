@@ -1,8 +1,6 @@
 ﻿
 namespace ThinkNet.Messaging
 {
-    using ThinkNet.Infrastructure;
-
     /// <summary>
     /// 表示领域事件总线的接口。
     /// </summary>
@@ -14,6 +12,6 @@ namespace ThinkNet.Messaging
         /// <param name="sourceInfo">事件来源</param>
         /// <param name="eventCollection">领域事件的集合</param>
         /// <param name="command">产生事件的命令</param>
-        void Publish(SourceKey sourceInfo, EventCollection eventCollection, Envelope<Command> command);
+        void Publish(SourceInfo sourceInfo, EventCollection eventCollection, Envelope<ICommand> command);
     }
 }

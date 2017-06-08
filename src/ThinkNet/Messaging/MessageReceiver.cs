@@ -39,6 +39,9 @@ namespace ThinkNet.Messaging
             }
         }
 
+        /// <summary>
+        /// 当收到消息后的处理方法
+        /// </summary>
         protected virtual void OnMessageReceived(object sender, Envelope<TMessage> message)
         {
             this.MessageReceived(sender, message);
@@ -49,6 +52,10 @@ namespace ThinkNet.Messaging
             this.ReceiveMessages(this.cancellationSource.Token);
         }
 
+        /// <summary>
+        /// 取出消息的方法
+        /// </summary>
+        /// <param name="cancellationToken">通知取消的令牌</param>
         protected abstract void ReceiveMessages(CancellationToken cancellationToken);
 
         #endregion

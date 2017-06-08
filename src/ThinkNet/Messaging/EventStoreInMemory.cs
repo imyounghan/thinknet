@@ -4,19 +4,18 @@ namespace ThinkNet.Messaging
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using ThinkNet.Infrastructure;
 
     public class EventStoreInMemory : IEventStore
     {
 
-        private readonly ConcurrentDictionary<SourceKey, HashSet<EventCollection>> collection;
+        private readonly ConcurrentDictionary<SourceInfo, HashSet<EventCollection>> collection;
 
         public EventStoreInMemory()
         {
-            this.collection = new ConcurrentDictionary<SourceKey, HashSet<EventCollection>>();
+            this.collection = new ConcurrentDictionary<SourceInfo, HashSet<EventCollection>>();
         }
 
-        public EventCollection Find(SourceKey sourceInfo, string correlationId)
+        public EventCollection Find(SourceInfo sourceInfo, string correlationId)
         {
             HashSet<EventCollection> set;
             if (!collection.TryGetValue(sourceInfo, out set)) {
@@ -26,7 +25,7 @@ namespace ThinkNet.Messaging
             return set.FirstOrDefault(item => item.CorrelationId == correlationId);
         }
 
-        public IEnumerable<EventCollection> FindAll(SourceKey sourceInfo, int startVersion)
+        public IEnumerable<EventCollection> FindAll(SourceInfo sourceInfo, int startVersion)
         {
             HashSet<EventCollection> set;
             if (!collection.TryGetValue(sourceInfo, out set)) {
@@ -36,7 +35,7 @@ namespace ThinkNet.Messaging
             return set.Where(item => item.Version > startVersion).ToArray();
         }
 
-        public bool Save(SourceKey sourceInfo, EventCollection eventCollection)
+        public bool Save(SourceInfo sourceInfo, EventCollection eventCollection)
         {
             return collection.GetOrAdd(sourceInfo, () => new HashSet<EventCollection>()).Add(eventCollection);
         }

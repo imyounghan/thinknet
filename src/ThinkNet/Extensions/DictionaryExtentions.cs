@@ -9,7 +9,6 @@ namespace ThinkNet
     /// </summary>
     public static class DictionaryExtentions
     {
-        #region Public Methods and Operators
 
         /// <summary>
         /// 如果指定的键尚不存在，则将键/值对添加到 <see cref="Dictionary{TKey, TValue}"/> 中；如果指定的键已存在，则更新
@@ -210,7 +209,5 @@ namespace ThinkNet
 
             return false;
         }
-
-        #endregion
     }
 }

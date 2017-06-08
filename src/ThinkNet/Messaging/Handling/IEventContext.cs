@@ -1,8 +1,6 @@
 ﻿
 namespace ThinkNet.Messaging.Handling
 {
-    using ThinkNet.Infrastructure;
-
     /// <summary>
     /// 表示继承该接口的是一个溯源事件的上下文
     /// </summary>
@@ -11,7 +9,7 @@ namespace ThinkNet.Messaging.Handling
         /// <summary>
         /// 源信息
         /// </summary>
-        SourceKey SourceInfo { get; }
+        SourceInfo SourceInfo { get; }
 
         /// <summary>
         /// 版本号

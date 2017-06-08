@@ -40,7 +40,7 @@ namespace ThinkNet.Messaging.Handling
 
         public string CommandId { get; set; }
 
-        public Command Command { get; set; }
+        public ICommand Command { get; set; }
 
         public TraceInfo TraceInfo { get; set; }
 
@@ -136,7 +136,7 @@ namespace ThinkNet.Messaging.Handling
             }
 
 
-            var events = this.eventStore.FindAll(new SourceKey(sourceId, sourceType), aggregateRoot.Version);
+            var events = this.eventStore.FindAll(new SourceInfo(sourceId, sourceType), aggregateRoot.Version);
             if(!events.IsEmpty()) {
                 if(aggregateRoot == null) {
                     aggregateRoot = this.Create(sourceType, sourceId);
@@ -196,10 +196,10 @@ namespace ThinkNet.Messaging.Handling
 
             var aggregateRootType = dirtyAggregateRoot.GetType();
 
-            var sourceInfo = new SourceKey(dirtyAggregateRoot.Id, aggregateRootType);
+            var sourceInfo = new SourceInfo(dirtyAggregateRoot.Id, aggregateRootType);
             var aggregateRootVersion = dirtyAggregateRoot.Version + 1;
 
-            var envelopedCommand = new Envelope<Command>(this.Command)
+            var envelopedCommand = new Envelope<ICommand>(this.Command)
                                        {
                                            MessageId = this.CommandId,
                                            CorrelationId = dirtyAggregateRoot.Id

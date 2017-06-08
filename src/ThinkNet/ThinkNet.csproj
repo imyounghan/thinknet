@@ -56,13 +56,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bootstrapper.cs" />
-    <Compile Include="Contracts\ExecutionStatus.cs" />
-    <Compile Include="Contracts\ICommandResult.cs" />
-    <Compile Include="Contracts\ICommandService.cs" />
-    <Compile Include="Contracts\IQuery.cs" />
-    <Compile Include="Contracts\IQueryResult.cs" />
-    <Compile Include="Contracts\IQueryResultCollection.cs" />
-    <Compile Include="Contracts\IQueryService.cs" />
+    <Compile Include="Messaging\CommandService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\ExecutionStatus.cs" />
+    <Compile Include="Communication\IRequest.cs" />
+    <Compile Include="Communication\IResponse.cs" />
+    <Compile Include="Communication\Response.cs" />
+    <Compile Include="Messaging\ICommandResult.cs" />
+    <Compile Include="Messaging\IReplyResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\ICommandService.cs" />
+    <Compile Include="Messaging\IQuery.cs" />
     <Compile Include="Extensions\ConcurrentDictionaryExtensions.cs" />
     <Compile Include="Infrastructure\DefaultLoggerFactory.cs" />
     <Compile Include="Infrastructure\DefaultObjectContainer.cs" />
@@ -81,7 +87,7 @@
     <Compile Include="Infrastructure\IUniquelyIdentifiable.cs" />
     <Compile Include="Infrastructure\ObjectId.cs" />
     <Compile Include="Infrastructure\Processor.cs" />
-    <Compile Include="Infrastructure\SourceKey.cs" />
+    <Compile Include="Messaging\SourceInfo.cs" />
     <Compile Include="Infrastructure\IObjectContainer.cs" />
     <Compile Include="Lifecycle.cs" />
     <Compile Include="LifecycleAttribute.cs" />
@@ -102,7 +108,7 @@
     <Compile Include="Messaging\IEvent.cs" />
     <Compile Include="Messaging\IEventPublishedVersionStore.cs" />
     <Compile Include="Messaging\IMessageBus.cs" />
-    <Compile Include="Contracts\ISendReplyService.cs" />
+    <Compile Include="Messaging\ISendReplyService.cs" />
     <Compile Include="Messaging\Handling\ActionExecutedContext.cs" />
     <Compile Include="Messaging\Handling\ActionExecutingContext.cs" />
     <Compile Include="Messaging\Handling\ExceptionContext.cs" />
@@ -127,7 +133,7 @@
     <Compile Include="Messaging\Handling\IFilterProvider.cs" />
     <Compile Include="Messaging\Handling\IHandler.cs" />
     <Compile Include="Messaging\Handling\IMessageHandler.cs" />
-    <Compile Include="Contracts\ICommand.cs" />
+    <Compile Include="Messaging\ICommand.cs" />
     <Compile Include="Messaging\ICommandBus.cs" />
     <Compile Include="Messaging\IEventBus.cs" />
     <Compile Include="Messaging\IEventStore.cs" />

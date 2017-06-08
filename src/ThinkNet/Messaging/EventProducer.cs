@@ -2,7 +2,6 @@
 
 namespace ThinkNet.Messaging
 {
-    using System.Collections.Generic;
     using System.Security.Cryptography;
     using System.Text;
 
@@ -19,14 +18,14 @@ namespace ThinkNet.Messaging
 
         #region IEventBus 成员
 
-        public void Publish(SourceKey sourceInfo, EventCollection eventCollection, Envelope<Command> command)
+        public void Publish(SourceInfo sourceInfo, EventCollection eventCollection, Envelope<ICommand> command)
         {
             var envelope = new Envelope<EventCollection>(
                 eventCollection,
                 MD5(string.Format("{0}@{1}", sourceInfo.Id, command.MessageId)),
                 sourceInfo.Id);
             envelope.Items["TraceInfo"] = command.Items["TraceInfo"];
-            envelope.Items["SourceKey"] = sourceInfo;
+            envelope.Items["SourceInfo"] = sourceInfo;
 
             this.Append(envelope);
         }

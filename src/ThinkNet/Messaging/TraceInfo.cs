@@ -8,42 +8,54 @@ namespace ThinkNet.Messaging
     /// <summary>
     /// 表示一个
     /// </summary>
-    [Serializable]
-    [DataContract]
     public struct TraceInfo : ISerializable
     {
         public static readonly TraceInfo Empty = new TraceInfo();
 
 
-        private string processId;
+        private string traceId;
 
-        private string replyAddress;
+        private string traceAddress;
 
-        public TraceInfo(string processId, string replyAddress)
+        public TraceInfo(string traceId, string traceAddress)
         {
-            this.processId = processId;
-            this.replyAddress = replyAddress;
+            this.traceId = traceId;
+            this.traceAddress = traceAddress;
         }
-
-        [DataMember(Name = "replyAddress")]
-        public string ReplyAddress
+        
+        public string Address
         {
             get
             {
-                return this.replyAddress;
+                return this.traceAddress;
             }
         }
 
         /// <summary>
-        /// 源命令ID
+        /// 跟踪ID
         /// </summary>
-        [DataMember(Name = "processId")]
-        public string ProcessId
+        public string Id
         {
             get
             {
-                return this.processId;
+                return this.traceId;
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if(!(obj is TraceInfo)) {
+                return false;
+            }
+
+            TraceInfo other = (TraceInfo)obj;
+
+            return this.traceId == other.traceId;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.traceId.GetHashCode();
         }
 
 
@@ -51,8 +63,8 @@ namespace ThinkNet.Messaging
 
         void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue("ProcessId", this.processId);
-            info.AddValue("ReplyAddress", this.replyAddress);
+            info.AddValue("TraceId", this.traceId);
+            info.AddValue("TraceAddress", this.traceAddress);
         }
 
         #endregion

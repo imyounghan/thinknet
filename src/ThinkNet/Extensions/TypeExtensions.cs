@@ -57,7 +57,7 @@ namespace ThinkNet
         /// <summary>
         /// 获取该成员上的全部特性
         /// </summary>
-        public static IEnumerable<TAttribute> GetAnyAttributes<TAttribute>(this ICustomAttributeProvider target, bool inherit)
+        public static IEnumerable<TAttribute> GetAllAttributes<TAttribute>(this ICustomAttributeProvider target, bool inherit)
            where TAttribute : Attribute
         {
             return target.GetCustomAttributes(typeof(TAttribute), inherit).Cast<TAttribute>();
@@ -69,7 +69,7 @@ namespace ThinkNet
         public static TAttribute GetSingleAttribute<TAttribute>(this ICustomAttributeProvider target, bool inherit)
            where TAttribute : Attribute
         {
-            return target.GetAnyAttributes<TAttribute>(inherit).FirstOrDefault();
+            return target.GetAllAttributes<TAttribute>(inherit).FirstOrDefault();
         }
     }
 }
