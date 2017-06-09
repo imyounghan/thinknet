@@ -1,42 +1,38 @@
-﻿using System;
-using System.ServiceModel;
-using ThinkNet;
+﻿
 
 namespace UserRegistration.Application
 {
+    using System;
+    using System.ServiceModel;
+
+    using ThinkNet;
+    using ThinkNet.Communication;
+    using ThinkNet.Infrastructure;
+
     class Program
     {
-        static ServiceHost CreateServiceHost(Type type)
-        {
-            var host = new ServiceHost(type);
-            host.AddServiceEndpoint(type, new NetTcpBinding(), 
-                new Uri("net.tcp://127.0.0.1:9999/".AfterContact(type.Name)));
-
-            host.Opened += (sender, e) => {
-                Console.WriteLine("{0} Started.", type.Name);
-            };
-            
-            return host;
-        }
-
         static void Main(string[] args)
         {
-            Bootstrapper.Current.UsingKafka().DoneWithUnity();
+            Bootstrapper.Current.SetDefault<WcfRequestService>().Done();
 
-            var hosts = new ServiceHost[] {
-                CreateServiceHost(typeof(CommandService)),
-                CreateServiceHost(typeof(QueryService))
-            };
+            using(var host = new ServiceHost(ObjectContainer.Instance.Resolve<WcfRequestService>()))
+            {
+                host.AddServiceEndpoint(
+                    typeof(WcfRequestService),
+                    new NetTcpBinding(),
+                    new Uri("net.tcp://127.0.0.1:9999/Request"));
 
-            hosts.ForEach(host => host.Open());
+                host.Opened += (sender, e) => {
+                    Console.WriteLine("WCF Request Service Started.");
+                };
 
+                host.Open();
 
-            Console.WriteLine();
-            Console.WriteLine();
-
-            Console.WriteLine("type 'ESC' to exit service...");
-            while(Console.ReadLine() == "ESC") {
-                hosts.ForEach(host => host.Close());
+                Console.WriteLine("type 'ESC' key to exit service...");
+                while(Console.ReadKey().Key == ConsoleKey.Escape) {
+                    host.Close();
+                    break;
+                }
             }
         }
     }

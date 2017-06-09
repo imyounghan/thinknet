@@ -293,9 +293,13 @@ namespace ThinkNet
 
             Type genericType = type.GetGenericTypeDefinition();
 
-            return IsMessageHandlerInterfaceType(genericType); // || IsQueryFetcherInterfaceType(genericType);
+            return IsMessageHandlerInterfaceType(genericType) || IsQueryHandlerInterfaceType(genericType);
         }
 
+        private static bool IsQueryHandlerInterfaceType(Type genericType)
+        {
+            return genericType == typeof(IQueryHandler<,>);
+        }
 
         private static bool IsMessageHandlerInterfaceType(Type genericType)
         {
@@ -348,18 +352,18 @@ namespace ThinkNet
             this.SetDefault<IMessageReceiver<Envelope<IEvent>>, MessageProducer<IEvent>>();
             this.SetDefault<IMessageBus<IPublishableException>, MessageProducer<IPublishableException>>();
             this.SetDefault<IMessageReceiver<Envelope<IPublishableException>>, MessageProducer<IPublishableException>>();
+            this.SetDefault<IQueryBus, QueryProducer>();
+            this.SetDefault<IMessageReceiver<Envelope<IQuery>>, QueryProducer>();
 
-            this.SetDefault<ICommandService, CommandService>();
-            this.SetDefault<ISendReplyService, CommandService>();
-
-            // this.SetDefault<IQueryService, QueryService>();
-            // this.SetDefault<IQueryResultNotification, QueryService>();
-            // this.SetDefault<IEnvelopeSender, EnvelopeHub>();
-            // this.SetDefault<IEnvelopeReceiver, EnvelopeHub>();
+            this.SetDefault<ICommandService, CentralService>();
+            this.SetDefault<IQueryService, CentralService>();
+            this.SetDefault<ISendReplyService, CentralService>();
+            
             this.SetDefault<IProcessor, CommandConsumer>("command");
             this.SetDefault<IProcessor, EventConsumer>("evtcore");
             this.SetDefault<IProcessor, MessageConsumer<IEvent>>("event");
             this.SetDefault<IProcessor, MessageConsumer<IPublishableException>>("publish");
+            this.SetDefault<IProcessor, QueryConsumer>("query");
         }
 
         private void RegisterHandlerAndFetcher(IEnumerable<Type> types)

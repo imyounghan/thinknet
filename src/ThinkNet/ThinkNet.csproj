@@ -56,14 +56,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bootstrapper.cs" />
-    <Compile Include="Messaging\CommandService.cs">
+    <Compile Include="Communication\WcfRequestService.cs" />
+    <Compile Include="Messaging\CentralService.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messaging\ExecutionStatus.cs" />
     <Compile Include="Communication\IRequest.cs" />
     <Compile Include="Communication\IResponse.cs" />
     <Compile Include="Communication\Response.cs" />
+    <Compile Include="Messaging\Handling\IQueryHandler.cs" />
     <Compile Include="Messaging\ICommandResult.cs" />
+    <Compile Include="Messaging\IPageQuery.cs" />
+    <Compile Include="Messaging\IQueryBus.cs" />
+    <Compile Include="Messaging\IQueryResult.cs" />
+    <Compile Include="Messaging\IQueryService.cs" />
     <Compile Include="Messaging\IReplyResult.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -87,6 +93,11 @@
     <Compile Include="Infrastructure\IUniquelyIdentifiable.cs" />
     <Compile Include="Infrastructure\ObjectId.cs" />
     <Compile Include="Infrastructure\Processor.cs" />
+    <Compile Include="Messaging\PageQuery.cs" />
+    <Compile Include="Messaging\PageResult.cs" />
+    <Compile Include="Messaging\QueryConsumer.cs" />
+    <Compile Include="Messaging\QueryProducer.cs" />
+    <Compile Include="Messaging\QueryResult.cs" />
     <Compile Include="Messaging\SourceInfo.cs" />
     <Compile Include="Infrastructure\IObjectContainer.cs" />
     <Compile Include="Lifecycle.cs" />

@@ -49,10 +49,13 @@
     <Compile Include="Commands\RegisterUser.cs" />
     <Compile Include="Events\UserSigned.cs" />
     <Compile Include="IUniqueLoginNameService.cs" />
+    <Compile Include="ReadModel\FindAllUser.cs" />
     <Compile Include="ReadModel\IUserDao.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ReadModel\UserAuthentication.cs" />
     <Compile Include="ReadModel\UserModel.cs" />
+    <Compile Include="ReadModel\UserQueryHandler.cs" />
     <Compile Include="UniqueLoginNameService.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Events\UserCreated.cs" />

@@ -92,7 +92,13 @@ namespace ThinkNet.Messaging
             IHandler handler;
             if (!this._commandHandlers.TryGetValue(commandType, out handler))
             {
-                handler = this.GetHandlers(commandType).FirstOrDefault();
+                var handlers = this.GetHandlers(commandType);
+                if (handlers.IsEmpty())
+                {
+                    var errorMessage = string.Format("The type('{0}') of handler is not found.", commandType.FullName);
+                    throw new ApplicationException(errorMessage);
+                }
+                handler = handlers.FirstOrDefault();
             }
 
             var handlerContext = new HandlerContext(envelope.Body, handler);
@@ -215,12 +221,9 @@ namespace ThinkNet.Messaging
             // 如果出现了可发布异常则将异常转换成返回结果发送
             if (publishableException != null)
             {
-                commandResult = new CommandResult {
-                    TraceId = traceInfo.Id,
-                    ErrorMessage = publishableException.Message,
+                commandResult = new CommandResult(traceInfo.Id, ExecutionStatus.Failed, publishableException.Message) {
                     ErrorCode = publishableException.ErrorCode,
-                    ErrorData = publishableException.Data, 
-                    ReplyTime = DateTime.UtcNow
+                    ErrorData = publishableException.Data,
                 };
                 this.exceptionBus.Send(publishableException);
                 this.sendReplyService.SendReply(commandResult, traceInfo.Address);
@@ -232,12 +235,9 @@ namespace ThinkNet.Messaging
             // 如果出现了系统异常则将异常转换成返回结果发送
             if (ex != null)
             {
-                commandResult = new CommandResult {
-                    TraceId = traceInfo.Id,
-                    ErrorMessage = ex.Message,
+                commandResult = new CommandResult(traceInfo.Id, ExecutionStatus.Failed, ex.Message) {
                     ErrorCode = "-1",
                     ErrorData = ex.Data, 
-                    ReplyTime = DateTime.UtcNow
                 };
                 this.sendReplyService.SendReply(commandResult, traceInfo.Address);
                 return;
@@ -246,14 +246,14 @@ namespace ThinkNet.Messaging
             // 如果是非ICommandHandler处理器则发送成功结果
             if (!(context.Handler is ICommandHandler))
             {
-                commandResult = new CommandResult { TraceId = traceInfo.Id, ReplyTime = DateTime.UtcNow };
+                commandResult = new CommandResult(traceInfo.Id);
                 this.sendReplyService.SendReply(commandResult, traceInfo.Address);
             }
 
             // 剩下的则交由事件处理器来发送
         }
 
-        private void InvokeHandler(IHandler commandHandler, Envelope<ICommand> envelope)
+        private void InvokeHandler(ICommandHandler commandHandler, Envelope<ICommand> envelope)
         {
             var context = new CommandContext(
                 this.eventBus, 
@@ -279,7 +279,7 @@ namespace ThinkNet.Messaging
 
             Func<ActionExecutedContext> continuation = () =>
                 {
-                    this.ProcessMessage(envelope);
+                    this.ProcessCommand(handlerContext.Handler as ICommandHandler, envelope);
                     return new ActionExecutedContext(handlerContext, false, null);
                 };
 
@@ -291,17 +291,15 @@ namespace ThinkNet.Messaging
                     .Invoke();
         }
 
-        private void ProcessMessage(Envelope<ICommand> envelope)
+        private void ProcessCommand(ICommandHandler handler, Envelope<ICommand> envelope)
         {
-            Type commandType = envelope.Body.GetType();
-
-            if (this._commandHandlers.ContainsKey(commandType))
+            if (handler != null)
             {
-                this.TryMultipleInvoke(this.InvokeHandler, this._commandHandlers[commandType], envelope);
+                this.TryMultipleInvoke(this.InvokeHandler, handler, envelope);
                 return;
             }
 
-            this.ProcessMessage(envelope, commandType);
+            this.ProcessMessage(envelope);
         }
 
         #endregion

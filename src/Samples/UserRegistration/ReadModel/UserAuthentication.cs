@@ -2,7 +2,7 @@
 
 namespace UserRegistration.ReadModel
 {
-    public class UserAuthentication : QueryParameter
+    public class UserAuthentication : IQuery
     {
         public string LoginId { get; set; }
 

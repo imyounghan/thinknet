@@ -1,60 +1,70 @@
-﻿using System.ComponentModel.Composition;
-using System.ServiceModel;
-using System.Threading.Tasks;
-using ThinkNet.Contracts;
-using ThinkNet.Messaging;
-using UserRegistration.Commands;
+﻿
 
 namespace UserRegistration
 {
-    [ServiceContract(Name = "CommandService", Namespace = "http://www.thinknet.com")]
-    [DataContractFormat(Style = OperationFormatStyle.Rpc)]
-    [ServiceKnownType(typeof(RegisterUser))]
-    [ServiceKnownType(typeof(CommandResult))]
-    public interface ICommandClient
-    {
-        /// <summary>
-        /// 发送命令
-        /// </summary>
-        [OperationContract]
-        void Send(ICommand command);
+    using System.Collections;
+    using System.ComponentModel.Composition;
+    using System.ServiceModel;
 
-        /// <summary>
-        /// 执行命令
-        /// </summary>
-        [OperationContract]
-        ICommandResult Execute(ICommand command, CommandReturnMode returnMode);
-    }
+    using ThinkNet.Communication;
+    using ThinkNet.Infrastructure;
+    using ThinkNet.Messaging;
 
     [Export(typeof(ICommandService))]
     public class CommandService : ICommandService
     {
 
-        private readonly ChannelFactory<ICommandClient> channelFactory;
+        private readonly ChannelFactory<IRequest> channelFactory;
+
+        private readonly ITextSerializer serializer;
 
         public CommandService()
         {
-            channelFactory = new ChannelFactory<ICommandClient>(new NetTcpBinding(), "net.tcp://127.0.0.1:9999/CommandService");
+            this.channelFactory = new ChannelFactory<IRequest>(new NetTcpBinding(), "net.tcp://127.0.0.1:9999/Request");
+            this.serializer = new DefaultTextSerializer();
         }
 
-        public ICommandResult Execute(ICommand command, CommandReturnMode returnMode)
+        #region ICommandService 成员
+
+        public ICommandResult Send(ICommand command)
         {
-            return channelFactory.CreateChannel().Execute(command, returnMode);
+            var commandName = command.GetType().Name;
+            var commandData = serializer.Serialize(command);
+
+            var response = channelFactory.CreateChannel().Send(commandName, commandData);
+
+            var commandResult = new CommandResult {
+                ErrorCode = response.ErrorCode,
+                ErrorMessage = response.ErrorMessage,
+                Status = (ExecutionStatus)response.Status,
+            };
+            if (!string.IsNullOrEmpty(response.Result))
+            {
+                commandResult.ErrorData = serializer.Deserialize<IDictionary>(response.Result);
+            }
+
+            return commandResult;
         }
 
-        public Task<ICommandResult> ExecuteAsync(ICommand command, CommandReturnMode returnMode)
+        public ICommandResult Execute(ICommand command)
         {
-            return Task.Factory.StartNew(() => this.Execute(command, returnMode));
+            var commandName = command.GetType().Name;
+            var commandData = serializer.Serialize(command);
+            
+            var response = channelFactory.CreateChannel().Execute(commandName, commandData);
+
+            var commandResult = new CommandResult {
+                ErrorCode = response.ErrorCode,
+                ErrorMessage = response.ErrorMessage,
+                Status = (ExecutionStatus)response.Status,
+            };
+            if(!string.IsNullOrEmpty(response.Result)) {
+                commandResult.ErrorData = serializer.Deserialize<Hashtable>(response.Result);
+            }
+
+            return commandResult;
         }
 
-        public void Send(ICommand command)
-        {
-            channelFactory.CreateChannel().Send(command);
-        }
-
-        public Task SendAsync(ICommand command)
-        {
-            return Task.Factory.StartNew(() => this.Send(command));
-        }
+        #endregion
     }
 }

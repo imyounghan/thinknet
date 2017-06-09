@@ -59,10 +59,7 @@ namespace ThinkNet.Messaging.Handling
         public void Commit()
         {
             if(this.commands.IsEmpty()) {
-                var commandResult = new CommandResult {
-                    TraceId = this.TraceInfo.Id,
-                    ReplyTime = DateTime.UtcNow
-                };
+                var commandResult = new CommandResult(this.TraceInfo.Id);
                 sendReplyService.SendReply(commandResult, this.TraceInfo.Address);
             }
             else {

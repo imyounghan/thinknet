@@ -183,7 +183,7 @@ namespace ThinkNet.Messaging
         protected virtual void OnMessageReceived(object sender, Envelope<TMessage> envelope)
         {
             try {
-                this.ProcessMessage(envelope, envelope.Body.GetType());
+                this.ProcessMessage(envelope);
             }
             catch (PublishableException) {
             }
@@ -198,8 +198,10 @@ namespace ThinkNet.Messaging
         /// <summary>
         /// 处理消息.
         /// </summary>
-        protected void ProcessMessage(Envelope<TMessage> envelope, Type messageType)
+        protected void ProcessMessage(Envelope<TMessage> envelope)
         {
+            Type messageType = envelope.Body.GetType();
+
             IEnumerable<IHandler> combinedHandlers = this.GetHandlers(messageType);
 
             if (combinedHandlers.IsEmpty()) {

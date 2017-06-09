@@ -10,13 +10,6 @@ namespace UserRegistration
     {
         private readonly ConcurrentDictionary<string, string> dict = new ConcurrentDictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
 
-        //private readonly IDataContextFactory _dataContextFactory;
-
-        //public UniqueLoginNameService(IDataContextFactory dataContextFactory)
-        //{
-        //    this._dataContextFactory = dataContextFactory;
-        //}
-
 
         public bool Validate(string loginName, string correlationId)
         {
@@ -26,23 +19,6 @@ namespace UserRegistration
             }
             
             return correlationId == commandId;
-            //using(var context = _dataContextFactory.Create()) {
-            //    try {
-            //        var data = context.Find<LoginNameData>(loginName);
-            //        if(data == null) {
-            //            context.Save(new LoginNameData() {
-            //                LoginName = loginName,
-            //                CorrelationId = correlationId
-            //            });
-            //            context.Commit();
-            //            return true;
-            //        }
-            //        return correlationId == data.CorrelationId;
-            //    }
-            //    catch(Exception) {
-            //        return false;
-            //    }
-            //}
         }
     }
 }

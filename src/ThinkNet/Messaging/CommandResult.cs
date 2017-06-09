@@ -6,6 +6,31 @@ namespace ThinkNet.Messaging
 
     public class CommandResult : ICommandResult
     {
+        public CommandResult()
+        {
+            this.ReplyTime = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public CommandResult(string traceId)
+            : this(traceId, ExecutionStatus.Success)
+        {
+        }
+
+        /// <summary>
+        /// Parameterized Constructor.
+        /// </summary>
+        public CommandResult(string traceId, ExecutionStatus status, string errorMessage = null, string errorCode = "-1")
+            : this()
+        {
+            this.TraceId = traceId;
+            this.Status = status;
+            this.ErrorMessage = errorMessage;
+            this.ErrorCode = errorCode;
+        }
+
         /// <summary>
         /// 跟踪ID
         /// </summary>

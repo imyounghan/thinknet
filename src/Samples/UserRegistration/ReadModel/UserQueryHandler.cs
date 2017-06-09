@@ -1,41 +1,44 @@
 ﻿using System.Collections.Generic;
 using ThinkNet.Messaging;
-using ThinkNet.Messaging.Fetching;
 using UserRegistration.Events;
 
 namespace UserRegistration.ReadModel
 {
-    public class UserQueryFetcher : 
-        IQueryMultipleFetcher<FindAllUser, UserModel>,
-        IQueryFetcher<UserAuthentication, bool>
+    using System.Linq;
+
+    using ThinkNet.Messaging.Handling;
+
+    public class UserQueryHandler :
+        IQueryHandler<FindAllUser, IEnumerable<UserModel>>,
+        //IQueryHandler<FindAllUser, PageResult<UserModel>>,
+        IQueryHandler<UserAuthentication, bool>
     {
         private readonly IUserDao dao;
-        private readonly IMessageBus bus;
+        private readonly IMessageBus<IEvent> bus;
 
-        public UserQueryFetcher(IUserDao userDao, IMessageBus messageBus)
+        public UserQueryHandler(IUserDao userDao, IMessageBus<IEvent> messageBus)
         {
             this.dao = userDao;
             this.bus = messageBus;
         }
 
-        //public object Fetch(FindAllData parameter)
-        //{
-        //    return dao.GetAll();
-        //}
-
 
         #region IQueryMultipleFetcher<FindAllData,UserModel> 成员
 
-        public IEnumerable<UserModel> Fetch(FindAllUser parameter)
+        public IEnumerable<UserModel> Handle(FindAllUser parameter)
         {
-            return dao.GetAll();
+            return dao.GetAll().ToArray();
         }
+        //public PageResult<UserModel> Handle(FindAllUser parameter)
+        //{
+        //    return new PageResult<UserModel>(dao.GetAll());
+        //}
 
         #endregion
 
         #region IQueryFetcher<UserAuthentication,bool> 成员
 
-        public bool Fetch(UserAuthentication parameter)
+        public bool Handle(UserAuthentication parameter)
         {
             var user = dao.Find(parameter.LoginId);
             if(user == null)
@@ -45,7 +48,7 @@ namespace UserRegistration.ReadModel
                 return false;
 
             var userSigned = new UserSigned(parameter.LoginId, parameter.IpAddress);
-            bus.PublishAsync(userSigned);
+            bus.Send(userSigned);
 
             return true;
         }

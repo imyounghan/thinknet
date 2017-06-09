@@ -37,6 +37,25 @@ namespace ThinkNet
         }
 
         /// <summary>
+        /// 获取该类型的完整名称且包括程序集名称
+        /// </summary>
+        public static string GetFullName(this Type type)
+        {
+            return string.Concat(type.FullName, ", ", type.GetAssemblyName());
+        }
+
+        /// <summary>
+        /// Returns type name without generic specification
+        /// </summary>
+        public static string GetShortName(this Type t)
+        {
+            var name = t.Name;
+            if(t.IsGenericTypeDefinition)
+                return name.Split('`')[0];
+            return name;
+        }
+
+        /// <summary>
         /// 获取该类型的默认值
         /// </summary>
         public static object GetDefaultValue(this Type type)

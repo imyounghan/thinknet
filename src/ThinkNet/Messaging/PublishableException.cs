@@ -6,9 +6,9 @@ namespace ThinkNet.Messaging
     
 
     /// <summary>
+    /// <see cref="IPublishableException"/> 的默认实现类
     /// </summary>
     public class PublishableException : Exception, IPublishableException
-    /// <see cref="IPublishableException"/> 的抽象实现类
     {
         public PublishableException(string errorMessage, int errorCode)
             : this(errorMessage, errorCode, null)
